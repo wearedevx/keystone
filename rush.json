@@ -309,6 +309,10 @@
     {
       "packageName": "@keystone/mail",
       "projectFolder": "keystone-mail"
+    },
+    {
+      "packageName": "@keystone/web",
+      "projectFolder": "keystone-web"
     }
     // {
     //   /**
