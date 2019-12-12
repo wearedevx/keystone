@@ -3,7 +3,7 @@ const { cli } = require('cli-ux')
 // const { deleteFiles } = require('../lib/core')
 const { CommandSignedIn } = require('../lib/commands')
 
-const deleteFiles = require('../lib/core-2.0/commands/delete')
+const deleteFiles = require('@keystone/core/lib/commands/delete')
 
 class DeleteCommand extends CommandSignedIn {
   async deleteFile(project, env, files) {

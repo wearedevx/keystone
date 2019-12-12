@@ -1,8 +1,8 @@
 const { CommandSignedIn } = require('../lib/commands')
 
-const { readFileFromDisk } = require('../lib/core-2.0/file')
+const { readFileFromDisk } = require('@keystone/core/lib/file')
 
-const { push, pushModifiedFiles } = require('../lib/core-2.0/commands/push')
+const { push, pushModifiedFiles } = require('@keystone/core/lib/commands/push')
 
 class PushCommand extends CommandSignedIn {
   async push(project, env, filenames) {
@@ -41,9 +41,9 @@ class PushCommand extends CommandSignedIn {
     try {
       // at least 1 arguments required, a glob that returns 1 file and the project name
       // if (argv.length >= 1) {
-        const project = await this.getProjectName()
-        const env = await this.getProjectEnv()
-        await this.push(project, env, argv)
+      const project = await this.getProjectName()
+      const env = await this.getProjectEnv()
+      await this.push(project, env, argv)
       // } else {
       //   throw new Error('You need to specify at least one filename!')
       // }

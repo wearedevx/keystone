@@ -1,15 +1,15 @@
 const debug = require('debug')('keystone:command:project')
 const { cli } = require('cli-ux')
 const chalk = require('chalk')
-const { assertUserIsAdminOrContributor } = require('../lib/core-2.0/member')
+const { assertUserIsAdminOrContributor } = require('@keystone/core/lib/member')
 const {
   getLatestProjectDescriptor,
   getLatestMembersDescriptor,
   getMembers,
-} = require('../lib/core-2.0/descriptor')
+} = require('@keystone/core/lib/descriptor')
 
 const { CommandSignedIn } = require('../lib/commands')
-const { config } = require('../lib/core-2.0/commands/project')
+const { config } = require('@keystone/core/lib/commands/project')
 
 class ProjectCommand extends CommandSignedIn {
   async saveChanges(project, projectDescriptor) {

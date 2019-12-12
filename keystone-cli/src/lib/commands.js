@@ -10,14 +10,16 @@ const { logo } = require('../lib/ux')
 const { getProjectDescriptor } = require('../lib/core')
 const { getSession, getProjectConfig } = require('../lib/blockstackLoader')
 
-const { isOneOrMoreAdmin, setMembersToEnvs } = require('../lib/core-2.0/env')
+const { isOneOrMoreAdmin, setMembersToEnvs } = require('@keystone/core/lib/env')
 
 function promptEnvToChange(envs, project = false) {
   return inquirer.prompt([
     {
       type: 'list',
       name: 'env',
-      message: `Which ${project?'project':'environment'} you want to configure?`,
+      message: `Which ${
+        project ? 'project' : 'environment'
+      } you want to configure?`,
       choices: [
         ...envs,
         new inquirer.Separator(),

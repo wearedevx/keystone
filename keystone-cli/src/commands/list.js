@@ -10,7 +10,7 @@ const {
   listAllFiles,
   listEnvFiles,
   listProjects,
-} = require('../lib/core-2.0/commands/list')
+} = require('@keystone/core/lib/commands/list')
 
 class ListCommand extends CommandSignedIn {
   async listProjects() {

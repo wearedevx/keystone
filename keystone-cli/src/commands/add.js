@@ -1,9 +1,9 @@
 const { flags } = require('@oclif/command')
 const chalk = require('chalk')
 const { CommandSignedIn } = require('../lib/commands')
-const { add } = require('../lib/core-2.0/commands/add')
-const KeystoneError = require('../lib/error')
-const { assertUserIsAdmin } = require('../lib/core-2.0/member')
+const { add } = require('@keystone/core/lib/commands/add')
+const KeystoneError = require('@keystone/core/lib/error')
+const { assertUserIsAdmin } = require('@keystone/core/lib/member')
 
 class AddCommand extends CommandSignedIn {
   async add(blockstackId, email, project) {

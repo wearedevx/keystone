@@ -2,7 +2,7 @@ const { cli } = require('cli-ux')
 const chalk = require('chalk')
 const { flags } = require('@oclif/command')
 
-const pull = require('../lib/core-2.0/commands/pull')
+const pull = require('@keystone/core/lib/commands/pull')
 
 const { CommandSignedIn } = require('../lib/commands')
 
@@ -12,7 +12,7 @@ class PullCommand extends CommandSignedIn {
       cli.action.start(`Fetching`)
 
       const absoluteProjectPath = await this.getConfigFolderPath()
-      
+
       try {
         const pulledFiles = await pull(userSession, {
           project,
