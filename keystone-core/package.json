@@ -10,7 +10,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:browser": "parcel build src/**/*.js --target browser",
-    "build:node": "parcel build src/**/*.js src/*.js *.js --target node -d build"
+    "build": "parcel build src/**/*.js src/*.js --target node -d build"
   },
   "author": "",
   "license": "MIT",
