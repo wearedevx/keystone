@@ -1,0 +1,60 @@
+{
+  "name": "keystone-cli",
+  "description": "Decentralized workspaces for developers to store, share and use secrets securely.",
+  "version": "0.0.1",
+  "author": "Samuel Roy",
+  "bin": {
+    "secret": "./bin/run"
+  },
+  "bugs": "https://github.com/keystone.sh/issues",
+  "dependencies": {
+    "@oclif/command": "^1",
+    "@oclif/config": "^1",
+    "@oclif/plugin-help": "^2",
+    "axios": "^0.19.0",
+    "blockstack": "^19.1.0",
+    "chalk": "^2.4.2",
+    "cli-ux": "^5.3.0",
+    "elliptic": "^6.4.1",
+    "inquirer": "^6.4.1",
+    "listr": "^0.14.3",
+    "open": "^6.3.0"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1",
+    "eslint": "^5.13",
+    "eslint-config-oclif": "^3.1",
+    "globby": "^8"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json",
+    "/src"
+  ],
+  "homepage": "https://keystone.sh",
+  "keywords": [
+    "oclif"
+  ],
+  "license": "MIT",
+  "main": "src/index.js",
+  "oclif": {
+    "commands": "./src/commands",
+    "bin": "ks",
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
+  },
+  "repository": "https://github.com/keystone.sh",
+  "scripts": {
+    "postpack": "rm -f oclif.manifest.json",
+    "posttest": "eslint .",
+    "prepack": "oclif-dev manifest && oclif-dev readme",
+    "test": "echo NO TESTS",
+    "pack": "oclif-dev pack",
+    "version": "oclif-dev readme && git add README.md"
+  }
+}

@@ -26,10 +26,10 @@
    * Specify one of: "pnpmVersion", "npmVersion", or "yarnVersion".  See the Rush documentation
    * for details about these alternatives.
    */
-  "pnpmVersion": "2.15.1",
+  "pnpmVersion": "4.4.0",
 
   // "npmVersion": "4.5.0",
-  // "yarnVersion": "1.9.4",
+  //"yarnVersion": "1.17.3",
 
   /**
    * Options that are only used when the PNPM package manager is selected
@@ -301,6 +301,10 @@
     {
       "packageName": "@keystone/core",
       "projectFolder": "keystone-core"
+    },
+    {
+      "packageName": "@keystone/cli",
+      "projectFolder": "keystone-cli"
     }
     // {
     //   /**
