@@ -1,4 +1,5 @@
 dependencies:
+  '@google-cloud/functions-framework': 1.3.2
   '@oclif/command': 1.5.19
   '@oclif/config': 1.13.3
   '@oclif/dev-cli': 1.22.2
@@ -6,12 +7,14 @@ dependencies:
   '@oclif/plugin-help': 2.2.2
   '@rush-temp/cli': 'file:projects/cli.tgz'
   '@rush-temp/core': 'file:projects/core.tgz'
+  '@rush-temp/mail': 'file:projects/mail.tgz'
   axios: 0.19.0
   blockstack: 19.3.0
   chalk: 2.4.2
   cli-ux: 5.4.0
   daffy: 1.0.3
   debug: 4.1.1
+  dotenv: 8.2.0
   elliptic: 6.5.2
   eslint: 5.16.0
   eslint-config-airbnb: 17.1.1_d0a5fc70a35b58e06920952d99aab4ef
@@ -28,15 +31,12 @@ dependencies:
   jest: 24.9.0
   listr: 0.14.3_listr@0.14.3
   lodash: 4.17.15
+  mandrill-api: 1.0.45
   mock-stdin: 0.3.1
   normalize-path: 3.0.0
   open: 6.4.0
   parcel-bundler: 1.12.4
   prettier: 1.18.2
-  rollup: 1.27.11
-  rollup-plugin-commonjs: 10.1.0_rollup@1.27.11
-  rollup-plugin-multi-entry: 2.1.0
-  rollup-plugin-node-resolve: 5.2.0_rollup@1.27.11
   treeify: 1.1.0
   user-home: 2.0.0
   uuid: 3.3.3
@@ -829,6 +829,18 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-r5160ogAvGyHsal38Kux7YYtodEKOj89RGb28ht1jh3SJb08VwRwAKKJL0bGb04Zd/3r9FL3BFIc3bBidYffCA==
+  /@google-cloud/functions-framework/1.3.2:
+    dependencies:
+      body-parser: 1.19.0
+      express: 4.17.1
+      minimist: 1.2.0
+      on-finished: 2.3.0
+    dev: false
+    engines:
+      node: '>=10.0.0'
+    hasBin: true
+    resolution:
+      integrity: sha512-xRBokqMNLTK70dWoRJ0AYPGkm9W6IKoZgUArcRhR0idPJa9US8qolhHM7CDMs2sROiMNSSNdmsc+tnsPjzFcEA==
   /@iarna/toml/2.2.3:
     dev: false
     resolution:
@@ -1294,6 +1306,15 @@ packages:
     dev: false
     resolution:
       integrity: sha512-tsFzPpcttalNjFBCFMqsKYQcWxxen1pgJR56by//QwvJc4/OUS3kPOOttx2tSIfjsylB0pYu7f5D3K1RCxUnUg==
+  /accepts/1.3.7:
+    dependencies:
+      mime-types: 2.1.25
+      negotiator: 0.6.2
+    dev: false
+    engines:
+      node: '>= 0.6'
+    resolution:
+      integrity: sha512-Il80Qs2WjYlJIBNzNkK6KYqlVMTbZLXgHx2oT0pU/fjRHyEp+PEfEPY0R3WCwAGVOtauxh1hOxNgIf5bv7dQpA==
   /acorn-globals/4.3.4:
     dependencies:
       acorn: 6.4.0
@@ -1453,6 +1474,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-jCpe8kcv2ep0KwTHenUJO6J1fJM=
+  /array-flatten/1.1.1:
+    dev: false
+    resolution:
+      integrity: sha1-ml9pkFGx5wczKPKgCJaLZOopVdI=
   /array-includes/3.1.0:
     dependencies:
       define-properties: 1.1.3
@@ -1841,6 +1866,23 @@ packages:
     dev: false
     resolution:
       integrity: sha512-ItfYfPLkWHUjckQCk8xC+LwxgK8NYcXywGigJgSwOP8Y2iyWT4f2vsZnoOXTTbo+o5yXmIUJ4gn5538SO5S3gA==
+  /body-parser/1.19.0:
+    dependencies:
+      bytes: 3.1.0
+      content-type: 1.0.4
+      debug: 2.6.9
+      depd: 1.1.2
+      http-errors: 1.7.2
+      iconv-lite: 0.4.24
+      on-finished: 2.3.0
+      qs: 6.7.0
+      raw-body: 2.4.0
+      type-is: 1.6.18
+    dev: false
+    engines:
+      node: '>= 0.8'
+    resolution:
+      integrity: sha512-dhEPs72UPbDnAQJ9ZKMNTP6ptJaionhP5cBb541nXPlW60Jepo9RV/a4fX4XWW9CuFNK22krhrj1+rgzifNCsw==
   /boolbase/1.0.0:
     dev: false
     resolution:
@@ -2015,6 +2057,12 @@ packages:
     dev: false
     resolution:
       integrity: sha1-hZgoeOIbmOHGZCXgPQF0eI9Wnug=
+  /bytes/3.1.0:
+    dev: false
+    engines:
+      node: '>= 0.8'
+    resolution:
+      integrity: sha512-zauLjrfCG+xvoyaqLoV8bLVXXNGC4JqlxFCutSDWA6fJrTo2ZuvLYTqZ7aHBLZSMOopbzwv8f+wZcVzfVTI2Dg==
   /cache-base/1.0.1:
     dependencies:
       collection-visit: 1.0.0
@@ -2423,6 +2471,14 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-/ozxhP9mcLa67wGp1IYaXL7EEgo=
+  /content-disposition/0.5.3:
+    dependencies:
+      safe-buffer: 5.1.2
+    dev: false
+    engines:
+      node: '>= 0.6'
+    resolution:
+      integrity: sha512-ExO0774ikEObIAEV9kDo50o+79VCUdEB6n6lzKgGwupcVeRlhrj3qGAfwq8G6uBJjkqLrhT0qEYFcWng8z1z0g==
   /content-type/1.0.4:
     dev: false
     engines:
@@ -2435,6 +2491,16 @@ packages:
     dev: false
     resolution:
       integrity: sha512-4FJkXzKXEDB1snCFZlLP4gpC3JILicCpGbzG9f9G7tGqGCzETQ2hWPrcinA9oU4wtf2biUaEH5065UnMeR33oA==
+  /cookie-signature/1.0.6:
+    dev: false
+    resolution:
+      integrity: sha1-4wOogrNCzD7oylE6eZmXNNqzriw=
+  /cookie/0.4.0:
+    dev: false
+    engines:
+      node: '>= 0.6'
+    resolution:
+      integrity: sha512-+Hp8fLp57wnUSt0tY0tHEXh4voZRDnoIrZPqlo3DPiI4y9lwg/jqx+1Om94/W6ZaPDOUbnjOt/99w66zk+l1Xg==
   /copy-descriptor/0.1.1:
     dev: false
     engines:
@@ -3006,6 +3072,12 @@ packages:
       node: '>=4.6.0'
     resolution:
       integrity: sha512-4As8uPrjfwb7VXC+WnLCbXK7y+Ueb2B3zgNCePYfhxS1PYeaO1YTeplffTEcbfLhvFNGLAz90VvJs9yomG7bow==
+  /dotenv/8.2.0:
+    dev: false
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==
   /duplexer2/0.1.4:
     dependencies:
       readable-stream: 2.3.6
@@ -3634,6 +3706,43 @@ packages:
       node: '>= 6'
     resolution:
       integrity: sha512-wvVAx8XIol3Z5m9zvZXiyZOQ+sRJqNTIm6sGjdWlaZIeupQGO3WbYI+15D/AmEwZywL6wtJkbAbJtzkOfBuR0Q==
+  /express/4.17.1:
+    dependencies:
+      accepts: 1.3.7
+      array-flatten: 1.1.1
+      body-parser: 1.19.0
+      content-disposition: 0.5.3
+      content-type: 1.0.4
+      cookie: 0.4.0
+      cookie-signature: 1.0.6
+      debug: 2.6.9
+      depd: 1.1.2
+      encodeurl: 1.0.2
+      escape-html: 1.0.3
+      etag: 1.8.1
+      finalhandler: 1.1.2
+      fresh: 0.5.2
+      merge-descriptors: 1.0.1
+      methods: 1.1.2
+      on-finished: 2.3.0
+      parseurl: 1.3.3
+      path-to-regexp: 0.1.7
+      proxy-addr: 2.0.5
+      qs: 6.7.0
+      range-parser: 1.2.1
+      safe-buffer: 5.1.2
+      send: 0.17.1
+      serve-static: 1.14.1
+      setprototypeof: 1.1.1
+      statuses: 1.5.0
+      type-is: 1.6.18
+      utils-merge: 1.0.1
+      vary: 1.1.2
+    dev: false
+    engines:
+      node: '>= 0.10.0'
+    resolution:
+      integrity: sha512-mHJ9O79RqluphRrcw2X/GTh3k9tVv8YcoyY4Kkh4WDMUYKRZUq0h1o0w2rrrxBqM7VoeUVqgb27xlEMXTnYt4g==
   /extend-shallow/2.0.1:
     dependencies:
       is-extendable: 0.1.1
@@ -3820,6 +3929,20 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-qOo9F+dMUmC2Lcb4BbVvnKJxTPjCm+RRpe4gDuGrzkL7mEVl/djYSu2OdQ2Pa302N4oqkSg9ir6jaLWJ2USVpQ==
+  /finalhandler/1.1.2:
+    dependencies:
+      debug: 2.6.9
+      encodeurl: 1.0.2
+      escape-html: 1.0.3
+      on-finished: 2.3.0
+      parseurl: 1.3.3
+      statuses: 1.5.0
+      unpipe: 1.0.0
+    dev: false
+    engines:
+      node: '>= 0.8'
+    resolution:
+      integrity: sha512-aAWcW57uxVNrQZqFXjITpW3sIUQmHGG3qSb9mUah9MgMC4NeWhNOlNjXEYq3HjRAvL6arUviZGGJsBg6z0zsWA==
   /find-up/2.1.0:
     dependencies:
       locate-path: 2.0.0
@@ -3901,6 +4024,12 @@ packages:
       node: '>= 0.12'
     resolution:
       integrity: sha512-m21N3WOmEEURgk6B9GLOE4RuWOFf28Lhh9qGYeNlGq4VDXUlJy2th2slBNU8Gp8EzloYZOibZJ7t5ecIrFSjVA==
+  /forwarded/0.1.2:
+    dev: false
+    engines:
+      node: '>= 0.6'
+    resolution:
+      integrity: sha1-mMI9qxF1ZXuMBXPozszZGw/xjIQ=
   /fragment-cache/0.2.1:
     dependencies:
       map-cache: 0.2.2
@@ -4334,6 +4463,18 @@ packages:
       node: '>=8.0.0'
     resolution:
       integrity: sha512-ahwimsC23ICE4kPl9xTBjKB4inbRaeLyZeRunC/1Jy/Z6X8tv22MEAjK+KBOMSVLaqXPTTmd8638waVIKLGx2w==
+  /http-errors/1.7.2:
+    dependencies:
+      depd: 1.1.2
+      inherits: 2.0.3
+      setprototypeof: 1.1.1
+      statuses: 1.5.0
+      toidentifier: 1.0.0
+    dev: false
+    engines:
+      node: '>= 0.6'
+    resolution:
+      integrity: sha512-uUQBt3H/cSIVfch6i1EuPNy/YsRSOUBXTVfZ+yR7Zjez3qjBz6i9+i4zjNaoqcoFVI4lQJ5plg63TvGfRSDCRg==
   /http-errors/1.7.3:
     dependencies:
       depd: 1.1.2
@@ -4512,6 +4653,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==
+  /ipaddr.js/1.9.0:
+    dev: false
+    engines:
+      node: '>= 0.10'
+    resolution:
+      integrity: sha512-M4Sjn6N/+O6/IXSJseKqHoFc+5FdGJ22sXqnjTpdZweHK64MzEPAyQZyEU3R/KRv2GLoa7nNtg/C2Ev6m7z+eA==
   /is-absolute-url/2.1.0:
     dev: false
     engines:
@@ -5842,6 +5989,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-4BpckQnyr3lmDk6LlYd5AYT1qWw=
+  /mandrill-api/1.0.45:
+    dev: false
+    resolution:
+      integrity: sha1-Fjk5z0hr0YJ3sPO69BLD5l2Epy0=
   /map-cache/0.2.2:
     dev: false
     engines:
@@ -5881,6 +6032,16 @@ packages:
     dev: false
     resolution:
       integrity: sha512-iV3XNKw06j5Q7mi6h+9vbx23Tv7JkjEVgKHW4pimwyDGWm0OIQntJJ+u1C6mg6mK1EaTv42XQ7w76yuzH7M2cA==
+  /media-typer/0.3.0:
+    dev: false
+    engines:
+      node: '>= 0.6'
+    resolution:
+      integrity: sha1-hxDXrwqmJvj/+hzgAWhUUmMlV0g=
+  /merge-descriptors/1.0.1:
+    dev: false
+    resolution:
+      integrity: sha1-sAqqVW3YtEVoFQ7J0blT8/kMu2E=
   /merge-source-map/1.0.4:
     dependencies:
       source-map: 0.5.7
@@ -5901,6 +6062,12 @@ packages:
     dev: false
     resolution:
       integrity: sha1-grjbrnXieneFOItz+ddyXQ9vMyY=
+  /methods/1.1.2:
+    dev: false
+    engines:
+      node: '>= 0.6'
+    resolution:
+      integrity: sha1-VSmk1nZUE07cxSZmVoNbD4Ua/O4=
   /micromatch/3.1.10:
     dependencies:
       arr-diff: 4.0.0
@@ -6063,6 +6230,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-p7KTHxU0CUrcOXe62Zfrb5Z13nLvPhSWR/so3kFulUQU0sgUll2Z0LwpsLN351eOOD+hRGu/F1g+6xDfPeD++Q==
+  /negotiator/0.6.2:
+    dev: false
+    engines:
+      node: '>= 0.6'
+    resolution:
+      integrity: sha512-hZXc7K2e+PgeI1eDBe/10Ard4ekbfrrqG8Ep+8Jmf4JID2bNg7NvCPOZN+kfF574pFQI7mum2AUqDidoKqcTOw==
   /neo-async/2.6.1:
     dev: false
     resolution:
@@ -6682,6 +6855,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-GSmOT2EbHrINBf9SR7CDELwlJ8AENk3Qn7OikK4nFYAu3Ote2+JYNVvkpAEQm3/TLNEJFD/xZJjzyxg3KBWOzw==
+  /path-to-regexp/0.1.7:
+    dev: false
+    resolution:
+      integrity: sha1-32BBeABfUi8V60SQ5yR6G/qmf4w=
   /path-type/2.0.0:
     dependencies:
       pify: 2.3.0
@@ -7251,6 +7428,15 @@ packages:
     dev: false
     resolution:
       integrity: sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
+  /proxy-addr/2.0.5:
+    dependencies:
+      forwarded: 0.1.2
+      ipaddr.js: 1.9.0
+    dev: false
+    engines:
+      node: '>= 0.10'
+    resolution:
+      integrity: sha512-t/7RxHXPH6cJtP0pRG6smSr9QJidhB+3kXu0KgXnbGYMgzEnUxRQ4/LDdfOwZEMyIh3/xHb8PX3t+lfL9z+YVQ==
   /psl/1.6.0:
     dev: false
     resolution:
@@ -7339,6 +7525,12 @@ packages:
       node: '>=0.6'
     resolution:
       integrity: sha512-N5ZAX4/LxJmF+7wN74pUD6qAh9/wnvdQcjq9TZjevvXzSUo7bfmw91saqMjzGS2xq91/odN2dW/WOl7qQHNDGA==
+  /qs/6.7.0:
+    dev: false
+    engines:
+      node: '>=0.6'
+    resolution:
+      integrity: sha512-VCdBRNFTX1fyE7Nb6FYoURo/SPe62QCaAyzJvUjwRaIsc+NePBEniHlvxFmmX56+HZphIGtV0XeCirBtpDrTyQ==
   /query-string/6.9.0:
     dependencies:
       decode-uri-component: 0.2.0
@@ -7393,6 +7585,17 @@ packages:
       node: '>= 0.6'
     resolution:
       integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==
+  /raw-body/2.4.0:
+    dependencies:
+      bytes: 3.1.0
+      http-errors: 1.7.2
+      iconv-lite: 0.4.24
+      unpipe: 1.0.0
+    dev: false
+    engines:
+      node: '>= 0.8'
+    resolution:
+      integrity: sha512-4Oz8DUIwdvoa5qMJelxipzi/iJIi40O5cGV1wNYp5hvZP8ZN0T+jiNkL0QepXs+EsQ9XJ8ipEDoiH70ySUJP3Q==
   /react-is/16.12.0:
     dev: false
     resolution:
@@ -8682,6 +8885,15 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-q+MB8nYR1KDLrgr4G5yemftpMC7/QLqVndBmEEdqzmNj5dcFOO4Oo8qlwZE3ULT3+Zim1F8Kq4cBnikNhlCMlg==
+  /type-is/1.6.18:
+    dependencies:
+      media-typer: 0.3.0
+      mime-types: 2.1.25
+    dev: false
+    engines:
+      node: '>= 0.6'
+    resolution:
+      integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==
   /typedarray-to-buffer/3.1.5:
     dependencies:
       is-typedarray: 1.0.0
@@ -8782,6 +8994,12 @@ packages:
       node: '>= 4.0.0'
     resolution:
       integrity: sha512-rBJeI5CXAlmy1pV+617WB9J63U6XcazHHF2f2dbJix4XzpUF0RS3Zbj0FGIOCAva5P/d/GBOYaACQ1w+0azUkg==
+  /unpipe/1.0.0:
+    dev: false
+    engines:
+      node: '>= 0.8'
+    resolution:
+      integrity: sha1-sr9O6FFKrmFltIF4KdIbLvSZBOw=
   /unquote/1.1.1:
     dev: false
     resolution:
@@ -8855,6 +9073,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-HShAsny+zS2TZfaXxD9tYj4HQGlBezXZMZuM/S5PKLLoZkShZiGk9o5CzukI1LVHZvjdvZ2Sj1aW/Ndn2NB/HQ==
+  /utils-merge/1.0.1:
+    dev: false
+    engines:
+      node: '>= 0.4.0'
+    resolution:
+      integrity: sha1-n5VxD1CiZ5R7LMwSR0HBAoQn5xM=
   /uuid/3.3.3:
     dev: false
     hasBin: true
@@ -8877,6 +9101,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-4EVb+w4rx+YfVM32HQX42AbbT7/1f5zwAYhIujKXKk8NQK+JfRVl3pqT3hjNn/L+RstigmGGKVwHA/P0wgITZw==
+  /vary/1.1.2:
+    dev: false
+    engines:
+      node: '>= 0.8'
+    resolution:
+      integrity: sha1-IpnwLG3tMNSllhsLn3RSShj2NPw=
   /vendors/1.0.3:
     dev: false
     resolution:
@@ -9201,7 +9431,9 @@ packages:
     dependencies:
       axios: 0.19.0
       daffy: 1.0.3
+      debug: 4.1.1
       is-email: 1.0.0
+      lodash: 4.17.15
       node-cache: 5.1.0
       object-hash: 2.0.1
       parcel-bundler: 1.12.4
@@ -9210,15 +9442,28 @@ packages:
       rollup-plugin-multi-entry: 2.1.0
       rollup-plugin-node-resolve: 5.2.0_rollup@1.27.11
       treeify: 1.1.0
+      uuid: 3.3.3
       walkdir: 0.4.1
     dev: false
     name: '@rush-temp/core'
     resolution:
-      integrity: sha512-Vs+/IJPGOKRT8JSeCE6czMx8axgkd1G6tiuRa2lpZ7JIkcTVKCeehShV5Jj3L0sQsKsRsNSpnUeAsRQ9Grr3tg==
+      integrity: sha512-8KYqP5hhXvalw+RT2IA6CPi5DSNUvoZ6uXgoIS5tgqSuNZ4uVhTFbFVej0ToWwCTHszm7rEWYT4wUHAd0XFY9A==
       tarball: 'file:projects/core.tgz'
+    version: 0.0.0
+  'file:projects/mail.tgz':
+    dependencies:
+      '@google-cloud/functions-framework': 1.3.2
+      dotenv: 8.2.0
+      mandrill-api: 1.0.45
+    dev: false
+    name: '@rush-temp/mail'
+    resolution:
+      integrity: sha512-rr61S/YANs0dxDPTRwEpCM74H0p+t8j+b1BDEhZ85FxoytqYU1E4h2NHStPjPaEI8wg4m1g+lcBuAzN/VGKJjA==
+      tarball: 'file:projects/mail.tgz'
     version: 0.0.0
 registry: ''
 specifiers:
+  '@google-cloud/functions-framework': ^1.1.1
   '@oclif/command': ^1
   '@oclif/config': ^1
   '@oclif/dev-cli': ^1
@@ -9226,12 +9471,14 @@ specifiers:
   '@oclif/plugin-help': ^2
   '@rush-temp/cli': 'file:./projects/cli.tgz'
   '@rush-temp/core': 'file:./projects/core.tgz'
+  '@rush-temp/mail': 'file:./projects/mail.tgz'
   axios: ^0.19.0
   blockstack: ^19.2.1
   chalk: ^2.4.2
   cli-ux: ^5.3.0
   daffy: ^1.0.3
   debug: ^4.1.1
+  dotenv: ^8.0.0
   elliptic: ^6.4.1
   eslint: ^5.13
   eslint-config-airbnb: 17.1.1
@@ -9248,15 +9495,12 @@ specifiers:
   jest: ^24.9.0
   listr: ^0.14.3
   lodash: ^4.17.15
+  mandrill-api: ^1.0.45
   mock-stdin: ^0.3.1
   normalize-path: ^3.0.0
   open: ^6.4.0
   parcel-bundler: ^1.12.4
   prettier: 1.18.2
-  rollup: ^1.20.0
-  rollup-plugin-commonjs: ^10.0.0
-  rollup-plugin-multi-entry: ^2.1.0
-  rollup-plugin-node-resolve: ^5.1.0
   treeify: ^1.1.0
   user-home: ^2.0.0
   uuid: ^3.3.3

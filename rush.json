@@ -305,6 +305,10 @@
     {
       "packageName": "@keystone/cli",
       "projectFolder": "keystone-cli"
+    },
+    {
+      "packageName": "@keystone/mail",
+      "projectFolder": "keystone-mail"
     }
     // {
     //   /**

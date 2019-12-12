@@ -1,0 +1,19 @@
+{
+  "name": "@keystone/mail",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "functions-framework --target=mail",
+    "deploy": "gcloud functions deploy keystone-mail --runtime nodejs10 --trigger-http --entry-point mail --env-vars-file .env.yaml",
+    "build": ""
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/functions-framework": "^1.1.1",
+    "dotenv": "^8.0.0",
+    "mandrill-api": "^1.0.45"
+  }
+}
