@@ -7,7 +7,7 @@ const {
   getLatestMembersDescriptor,
   extractMembersByRole,
 } = require('../../descriptor')
-console.log('TCL: KeystoneError', 'puuuulll')
+
 const KeystoneError = require('../../error')
 const { findProjectByUUID, getProjects } = require('../../projects')
 const {

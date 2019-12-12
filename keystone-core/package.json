@@ -9,8 +9,8 @@
   "browser": "./dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:browser": "parcel build src/**/*.js src/*.js --target browser -d dist",
-    "build": "parcel build src/**/*.js src/*.js --target node -d lib"
+    "build:browser": "parcel build lib/**/*.js lib/*.js --target browser -d dist",
+    "build": ""
   },
   "author": "",
   "license": "MIT",
@@ -24,10 +24,13 @@
   "dependencies": {
     "axios": "^0.19.0",
     "daffy": "^1.0.3",
+    "debug": "^4.1.1",
     "is-email": "^1.0.0",
+    "lodash": "^4.17.15",
     "node-cache": "^5.1.0",
     "object-hash": "^2.0.1",
     "treeify": "^1.1.0",
+    "uuid": "^3.3.3",
     "walkdir": "^0.4.1"
   }
 }

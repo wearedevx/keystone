@@ -2,7 +2,6 @@ const fs = require('fs')
 const uuid = require('uuid/v4')
 // const { ERROR_CODES } = require('../../constants')
 
-console.log('TCL: KeystoneError', 'intiiitit')
 const KeystoneError = require('../../error')
 const {
   getProjects,

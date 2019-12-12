@@ -5,12 +5,10 @@ const normalize = require('normalize-path')
 const treeify = require('treeify')
 const inquirer = require('inquirer')
 const path = require('path')
-
+const { isOneOrMoreAdmin, setMembersToEnvs } = require('@keystone/core/lib/env')
 const { logo } = require('../lib/ux')
 const { getProjectDescriptor } = require('../lib/core')
 const { getSession, getProjectConfig } = require('../lib/blockstackLoader')
-
-const { isOneOrMoreAdmin, setMembersToEnvs } = require('@keystone/core/lib/env')
 
 function promptEnvToChange(envs, project = false) {
   return inquirer.prompt([
