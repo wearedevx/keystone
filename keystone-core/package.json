@@ -1,0 +1,33 @@
+{
+  "name": "@keystone/core",
+  "version": "0.0.1",
+  "description": "",
+  "files": [
+    "build"
+  ],
+  "main": "./build/index.js",
+  "browser": "./dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:browser": "parcel build src/**/*.js --target browser",
+    "build:node": "parcel build src/**/*.js src/*.js *.js --target node -d build"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://gitlab.com/wearedevx/keystone-core/issues"
+  },
+  "homepage": "https://gitlab.com/wearedevx/keystone-core#readme",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4"
+  },
+  "dependencies": {
+    "axios": "^0.19.0",
+    "daffy": "^1.0.3",
+    "is-email": "^1.0.0",
+    "node-cache": "^5.1.0",
+    "object-hash": "^2.0.1",
+    "treeify": "^1.1.0",
+    "walkdir": "^0.4.1"
+  }
+}
