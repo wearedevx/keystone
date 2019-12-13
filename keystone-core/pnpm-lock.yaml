@@ -3,8 +3,10 @@ dependencies:
   debug: 4.1.1
   diff-match-patch: 1.0.4
   is-buffer: 2.0.4
+  js-sizeof: 0.0.1
   lodash: 4.17.15
   ms: 2.1.2
+  tinycache: 1.1.2
   uuid: 3.3.3
 lockfileVersion: 5.1
 packages:
@@ -30,6 +32,10 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha512-Kq1rokWXOPXWuaMAqZiJW4XxsmD9zGx9q4aePabbn3qCRGedtH7Cm+zV8WETitMfu1wdh+Rvd6w5egwSngUX2A==
+  /js-sizeof/0.0.1:
+    dev: false
+    resolution:
+      integrity: sha1-vzW7k7WavgLk9E3YI52/RH6mIzQ=
   /lodash/4.17.15:
     dev: false
     resolution:
@@ -38,6 +44,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
+  /tinycache/1.1.2:
+    dependencies:
+      js-sizeof: 0.0.1
+    dev: false
+    resolution:
+      integrity: sha512-dCtHE5Fm8rWFp11hktEiJOtiYLyJ7PuCMPmBSweht0/TrJNUbmz5oFfqfpEMMRjM39DUJZCix/c+Gl/3p/cVOA==
   /uuid/3.3.3:
     dev: false
     hasBin: true
@@ -48,6 +60,8 @@ specifiers:
   debug: ^4.1.1
   diff-match-patch: ^1.0.4
   is-buffer: ^2.0.4
+  js-sizeof: ^0.0.1
   lodash: ^4.17.15
   ms: ^2.1.2
+  tinycache: ^1.1.2
   uuid: ^3.3.3

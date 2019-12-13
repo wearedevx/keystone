@@ -3,6 +3,9 @@ import path from 'path'
 export default {
   devServer: {
     port: 8000,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    },
   },
   plugins: [
     [

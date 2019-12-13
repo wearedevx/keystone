@@ -1,5 +1,7 @@
 dependencies:
+  query-string: 6.9.0
   react-static: 7.2.3
+  tinycache: 1.1.2
 devDependencies:
   '@babel/runtime': 7.7.6
   babel-plugin-universal-import: 4.0.0
@@ -4612,6 +4614,10 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-X2BB11YZtrRqY4EnQcLX5Rh373zbK4alC1FW7D7MBhL2gtcC17cTnr6DmfHZeS0s2rTHjUTMMHfG7gO8SSdw+g==
+  /js-sizeof/0.0.1:
+    dev: false
+    resolution:
+      integrity: sha1-vzW7k7WavgLk9E3YI52/RH6mIzQ=
   /js-tokens/4.0.0:
     resolution:
       integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==
@@ -6329,6 +6335,16 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-gjWOsm2SoGlgLEdAGt7a6slVOk9mGiXmPFMqrEhLQ68rhQuBnpfs3+EmlvqKyxnCo9/PPlF+9MtY02S1aFg+Jw==
+  /query-string/6.9.0:
+    dependencies:
+      decode-uri-component: 0.2.0
+      split-on-first: 1.1.0
+      strict-uri-encode: 2.0.0
+    dev: false
+    engines:
+      node: '>=6'
+    resolution:
+      integrity: sha512-KG4bhCFYapExLsUHrFt+kQVEegF2agm4cpF/VNc6pZVthIfCc/GK8t8VyNIE3nyXG9DK3Tf2EGkxjR6/uRdYsA==
   /querystring-es3/0.2.1:
     dev: false
     engines:
@@ -7305,6 +7321,12 @@ packages:
       node: '>=6.0.0'
     resolution:
       integrity: sha512-HeZS3PBdMA+sZSu0qwpCxl3DeALD5ASx8pAX0jZdKXSpPWbQ6SYGnlg3BBmYLx5LtiZrmkAZfErCm2oECBcioA==
+  /split-on-first/1.1.0:
+    dev: false
+    engines:
+      node: '>=6'
+    resolution:
+      integrity: sha512-43ZssAJaMusuKWL8sKUBQXHWOpq8d6CfN/u1p4gUzfJkM05C8rxTmYrkIPTXapZpORA6LkkzcUulJ8FqA7Uudw==
   /split-string/3.1.0:
     dependencies:
       extend-shallow: 3.0.2
@@ -7376,6 +7398,12 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-J5siXfHVgrH1TmWt3UNS4Y+qBxM=
+  /strict-uri-encode/2.0.0:
+    dev: false
+    engines:
+      node: '>=4'
+    resolution:
+      integrity: sha1-ucczDHBChi9rFC3CdLvMWGbONUY=
   /string-width/1.0.2:
     dependencies:
       code-point-at: 1.1.0
@@ -7654,6 +7682,12 @@ packages:
     dev: false
     resolution:
       integrity: sha1-QFQRqOfmM5/mTbmiNN4R3DHgK9Q=
+  /tinycache/1.1.2:
+    dependencies:
+      js-sizeof: 0.0.1
+    dev: false
+    resolution:
+      integrity: sha512-dCtHE5Fm8rWFp11hktEiJOtiYLyJ7PuCMPmBSweht0/TrJNUbmz5oFfqfpEMMRjM39DUJZCix/c+Gl/3p/cVOA==
   /tmp/0.0.33:
     dependencies:
       os-tmpdir: 1.0.2
@@ -8347,5 +8381,7 @@ specifiers:
   babel-plugin-universal-import: ^4.0.0
   extract-text-webpack-plugin: ^3.0.2
   purgecss-webpack-plugin: ^1.6.0
+  query-string: ^6.9.0
   react-hot-loader: ^4.12.18
   react-static: ^7.2.3
+  tinycache: ^1.1.2

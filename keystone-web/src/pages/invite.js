@@ -1,5 +1,7 @@
 import React from 'react'
 import useUser from '../hooks/useUser'
+import invitations from '@keystone/core/dist/invitation'
+console.log('TCL: invitations', invitations)
 
 export default () => {
   const { loggedIn, userData } = useUser()

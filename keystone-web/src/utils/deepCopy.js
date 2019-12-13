@@ -24,6 +24,11 @@ const deepCopy = obj => {
       if (Object.prototype.hasOwnProperty.call(obj, attr))
         copy[attr] = deepCopy(obj[attr])
     })
+
+    // if object is a Class, keep the constructor and original prototype
+    copy.constructor = obj.constructor
+    Object.setPrototypeOf(copy, obj.constructor.prototype)
+
     return copy
   }
 

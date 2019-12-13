@@ -1,3 +1,5 @@
+const dbg = require('debug')
+
 /**
  * Deeply copies an object
  * @param {object} obj Object to Copy
@@ -30,6 +32,16 @@ const deepCopy = obj => {
   throw new Error('Unable to copy obj this object.')
 }
 
+const debug = namespace => log => {
+  if (process.env.BUILD_TARGET === IS_BROWSER) {
+    dbg(namespace)(log)
+  } else {
+    // const debugBrowser = localStorage.debug = namespace
+    console.log(namespace, log)
+  }
+}
+
 module.exports = {
   deepCopy,
+  debug,
 }

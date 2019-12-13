@@ -8,8 +8,10 @@ module.exports = {
     PullBeforeYouPush: 'PullBeforeYouPush',
     NeedToBeAdminOrContributor: 'NeedToBeAdminOrContributor',
     NeedToBeAdmin: 'NeedToBeAdmin',
+    MissingParams: 'MissingParams',
   },
   KEYSTONE_MAIL: 'http://localhost:8080',
+  KEYSTONE_WEB: 'http://localhost:8000',
   INVITATIONS_STORE: 'invitations.json',
   ROLES: {
     ADMINS: 'admins',

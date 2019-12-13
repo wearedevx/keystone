@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import useStore from '../utils/store'
-
-console.log('fifjfjkefjhdjhddfbjksbfhh')
+import { KEYSTONE_WEB } from '@keystone/core/dist/constants'
 
 export default () => {
   const userSession = useStore(s => s.userSession)
@@ -13,21 +12,17 @@ export default () => {
   const [signinPending, setSigninPending] = useState(false)
 
   useEffect(() => {
-    if (
-      userSession &&
-      userSession.isUserSignedIn &&
-      userSession.isUserSignedIn()
-    ) {
+    if (userSession && userSession.isUserSignedIn()) {
       setLoggedIn(true)
-      setUserData(userSession.loadUserData())
     } else {
       setLoggedIn(false)
-
-      if (userSession.isSignInPending) {
-        setSigninPending(userSession.isSignInPending())
-      }
+      setSigninPending(userSession.isSignInPending())
     }
   }, [])
+
+  useEffect(() => {
+    if (loggedIn) setUserData(userSession.loadUserData())
+  }, [loggedIn])
 
   useEffect(() => {
     if (signinPending) {
@@ -55,5 +50,25 @@ export default () => {
     }
   }, [signinPending])
 
-  return { loggedIn, userData }
+  return {
+    loggedIn,
+    userData,
+    redirectToSignIn: path => {
+      userSession.redirectToSignIn(
+        `${KEYSTONE_WEB}${path}`,
+        `${KEYSTONE_WEB}/manifest.json`,
+        ['email', 'publish_data', 'store_write']
+      )
+
+      const intervalId = setInterval(() => {
+        const isUserSignedIn = userSession.isUserSignedIn()
+        if (isUserSignedIn) {
+          setSigninPending(false)
+          clearInterval(intervalId)
+        }
+      }, 2000)
+    },
+    signUserOut: userSession.signUserOut,
+    userSession,
+  }
 }

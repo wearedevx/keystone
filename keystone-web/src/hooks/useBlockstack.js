@@ -3,6 +3,10 @@ import blockstack, { UserSession, AppConfig } from 'blockstack'
 import useStore from '../utils/store'
 // import initWorkspace from '../core/initWorkspace'
 
+window.testUserSession = new UserSession({
+  appConfig: new AppConfig(['email', 'store_write', 'publish_data']),
+})
+
 export default () => {
   const appConfig = useStore(s => s.appConfig)
   const setAppConfig = useStore(s => s.setAppConfig)
@@ -63,6 +67,7 @@ export default () => {
       const session = new UserSession({
         appConfig,
       })
+      console.log('TCL: session', session.isUserSignedIn)
       setUserSession(session)
     }
     // if ((!userSession || !userSession.isUserSignedIn()) && appConfig) {
