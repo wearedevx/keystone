@@ -1,15 +1,35 @@
 dependencies:
+  clone: 2.1.2
   debug: 4.1.1
+  diff-match-patch: 1.0.4
+  is-buffer: 2.0.4
   lodash: 4.17.15
+  ms: 2.1.2
   uuid: 3.3.3
 lockfileVersion: 5.1
 packages:
+  /clone/2.1.2:
+    dev: false
+    engines:
+      node: '>=0.8'
+    resolution:
+      integrity: sha1-G39Ln1kfHo+DZwQBYANFoCiHQ18=
   /debug/4.1.1:
     dependencies:
       ms: 2.1.2
     dev: false
     resolution:
       integrity: sha512-pYAIzeRo8J6KPEaJ0VWOh5Pzkbw/RetuzehGM7QRRX5he4fPHx2rdKMB256ehJCkX+XRQm16eZLqLNS8RSZXZw==
+  /diff-match-patch/1.0.4:
+    dev: false
+    resolution:
+      integrity: sha512-Uv3SW8bmH9nAtHKaKSanOQmj2DnlH65fUpcrMdfdaOxUG02QQ4YGZ8AE7kKOMisF7UqvOlGKVYWRvezdncW9lg==
+  /is-buffer/2.0.4:
+    dev: false
+    engines:
+      node: '>=4'
+    resolution:
+      integrity: sha512-Kq1rokWXOPXWuaMAqZiJW4XxsmD9zGx9q4aePabbn3qCRGedtH7Cm+zV8WETitMfu1wdh+Rvd6w5egwSngUX2A==
   /lodash/4.17.15:
     dev: false
     resolution:
@@ -24,6 +44,10 @@ packages:
     resolution:
       integrity: sha512-pW0No1RGHgzlpHJO1nsVrHKpOEIxkGg1xB+v0ZmdNH5OAeAwzAVrCnI2/6Mtx+Uys6iaylxa+D3g4j63IKKjSQ==
 specifiers:
+  clone: ^2.1.2
   debug: ^4.1.1
+  diff-match-patch: ^1.0.4
+  is-buffer: ^2.0.4
   lodash: ^4.17.15
+  ms: ^2.1.2
   uuid: ^3.3.3
