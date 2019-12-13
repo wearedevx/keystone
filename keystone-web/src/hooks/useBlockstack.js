@@ -67,16 +67,8 @@ export default () => {
       const session = new UserSession({
         appConfig,
       })
-      console.log('TCL: session', session.isUserSignedIn)
       setUserSession(session)
     }
-    // if ((!userSession || !userSession.isUserSignedIn()) && appConfig) {
-    //   setUserSession(
-    //     new UserSession({
-    //       appConfig,
-    //     })
-    //   )
-    // }
   }, [appConfig])
 
   return {

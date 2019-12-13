@@ -6,6 +6,7 @@ const EC = require('elliptic').ec
 const { decryptECIES } = require('blockstack/lib/encryption/ec')
 const axios = require('axios')
 const chalk = require('chalk')
+const { KEYSTONE_WEB } = require('@keystone/core/lib/constants')
 const {
   createUserSession,
   getFilepath,
@@ -25,8 +26,7 @@ class LoginCommand extends Command {
         const { publicKey, privateKey } = LoginCommand.getKeypair()
         const uri = getFilepath({ apphub, filename: `${publicKey}.json` })
 
-        // FIXME: use .env file for CONSTANTS.
-        await open(`http://localhost:8000/confirm?token=${publicKey}&id=${id}`)
+        await open(`${KEYSTONE_WEB}/confirm?token=${publicKey}&id=${id}`)
 
         cli.action.start('Linking your account...')
 
@@ -68,8 +68,8 @@ class LoginCommand extends Command {
                 resolve()
               }
             }
+            cli.action.stop('Done')
           }
-          cli.action.stop('Done')
         }, 3000)
       } else {
         this.log(
@@ -126,6 +126,7 @@ LoginCommand.connect = async uri => {
     const keyfile = await axios.get(uri)
     return keyfile
   } catch (error) {
+    // we ignore 404 errors
     return false
   }
 }
