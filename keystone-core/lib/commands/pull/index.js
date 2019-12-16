@@ -6,6 +6,7 @@ const {
   getLatestEnvDescriptor,
   getLatestMembersDescriptor,
   extractMembersByRole,
+  getDescriptor,
 } = require('../../descriptor')
 
 const KeystoneError = require('../../error')
@@ -61,7 +62,13 @@ const pull = async (
     origin: projectByUUID.createdBy,
   })
 
-  const ownEnvDescriptor = await getLatestEnvDescriptor(userSession, {
+  const ownEnvDescriptor = await getDescriptor(userSession, {
+    env,
+    project,
+    type: 'env',
+  })
+
+  const envDescriptor = await getLatestEnvDescriptor(userSession, {
     project,
     env,
     type: 'env',
@@ -73,55 +80,59 @@ const pull = async (
     type: 'members',
   })
 
-  const { files } = ownEnvDescriptor.content
+  const { files } = envDescriptor.content
 
   const allLatestFileDescriptors = await Promise.all(
     files.map(file => {
-      const filePath = getPath({
-        project,
-        env,
-        type: 'file',
-        blockstackId: username,
-        filename: file.name,
-      })
+      const ownFile = ownEnvDescriptor.content.files.find(
+        f => f.name === file.name
+      )
+      if (!ownFile || (ownFile && file.checksum !== ownFile.checksum)) {
+        const filePath = getPath({
+          project,
+          env,
+          type: 'file',
+          blockstackId: username,
+          filename: file.name,
+        })
 
-      return getLatestDescriptorByPath(userSession, {
-        descriptorPath: filePath,
-        members: extractMembersByRole(envMembersDescriptor, [
-          ROLES.ADMINS,
-          ROLES.CONTRIBUTORS,
-        ]),
-      })
-    })
-  )
-
-  // For all files, update them
-  const writtenFile = await Promise.all(
-    allLatestFileDescriptors.map(async fileDescriptor => {
-      writeFileToDisk(fileDescriptor, absoluteProjectPath)
-      writeFileToDisk(fileDescriptor, cacheFolder)
-      try {
-        uploadDescriptorForEveryone(userSession, {
+        const fileDescriptor = getLatestDescriptorByPath(userSession, {
+          descriptorPath: filePath,
           members: extractMembersByRole(envMembersDescriptor, [
             ROLES.ADMINS,
             ROLES.CONTRIBUTORS,
           ]),
-          env,
-          project,
-          descriptor: fileDescriptor,
-          type: 'file',
         })
-      } catch (error) {
-        console.error(error)
-        throw new Error(
-          `Failed to upload file descriptor on private remote storage`
-        )
+
+        // Write files on disk
+        writeFileToDisk(fileDescriptor, absoluteProjectPath)
+        writeFileToDisk(fileDescriptor, cacheFolder)
+
+        // Upload in own hub for everyone
+        try {
+          uploadDescriptorForEveryone(userSession, {
+            members: extractMembersByRole(envMembersDescriptor, [
+              ROLES.ADMINS,
+              ROLES.CONTRIBUTORS,
+            ]),
+            env,
+            project,
+            descriptor: fileDescriptor,
+            type: 'file',
+          })
+        } catch (error) {
+          console.error(error)
+          throw new Error(
+            `Failed to upload file descriptor on private remote storage`
+          )
+        }
+        return { fileDescriptor, updated: true }
       }
-      return fileDescriptor
+      return { fileDescriptor: ownFile, updated: false }
     })
   )
 
-  return writtenFile
+  return allLatestFileDescriptors
 }
 
 module.exports = pull

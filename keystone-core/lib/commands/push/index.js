@@ -18,7 +18,6 @@ const push = async (
   // create keystone cache folder
   const cacheFolder = getCacheFolder(absoluteProjectPath)
 
-  // const promises =
   await Promise.all(
     files.map(async file => {
       const { filename, fileContent } = file

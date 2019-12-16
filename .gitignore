@@ -62,4 +62,6 @@ temp
 common/temp/**
 .rush/temp/**
 
+projects/**
+
 .DS_Store
