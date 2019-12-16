@@ -2,7 +2,7 @@ const {
   getLatestProjectDescriptor,
   uploadDescriptorForEveryone,
 } = require('../../descriptor')
-const { addMemberToProject } = require('../../projects')
+const { addMemberToProject } = require('../../invitation')
 const { assertUserIsAdmin } = require('../../member')
 
 const add = async (userSession, { project, invitee }) => {

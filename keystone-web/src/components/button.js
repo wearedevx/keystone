@@ -1,7 +1,10 @@
 import React from 'react'
 
-export default ({ onClick, children, type = 'primary' }) => {
+export default ({ onClick, children, type = 'primary', disabled = false }) => {
   let colors = ''
+  let disabledStyle = disabled ? 'opacity-25 cursor-not-allowed' : ''
+  let clickAction = disabled ? () => {} : onClick
+
   switch (type) {
     case 'secondary':
       colors = 'text-white bg-secondary'
@@ -18,8 +21,8 @@ export default ({ onClick, children, type = 'primary' }) => {
 
   return (
     <div
-      className={`rounded font-bold ${colors} py-1 px-4 shadow-md text-center cursor-pointer ml-2`}
-      onClick={onClick}
+      className={`rounded font-bold ${colors} py-1 px-4 shadow-md text-center cursor-pointer ml-2 ${disabledStyle}`}
+      onClick={clickAction}
     >
       {children}
     </div>

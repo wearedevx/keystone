@@ -1,6 +1,6 @@
 const { readFileFromGaia, writeFileToGaia } = require('../file/gaia')
 const { getPath } = require('../descriptor-path')
-const { getInvitations, isMemberInvited } = require('../invitation')
+// const { getInvitations, isMemberInvited } = require('../invitation')
 const KeystoneError = require('../error')
 const { ERROR_CODES, ROLES, PROJECTS_STORE } = require('../constants')
 const {
@@ -8,7 +8,6 @@ const {
   updateDescriptor,
   getDescriptor,
 } = require('../descriptor')
-const { addMember } = require('../member')
 const isUUID = require('uuid-validate')
 
 // const PROJECTS_STORE = 'projects.json'
@@ -34,7 +33,7 @@ const getProjects = async userSession => {
 
 const findProjectByUUID = (projects, name) => {
   try {
-    const uuid = name.split('/')[1]
+    const [_, uuid] = getNameAndUUID(name)
     return projects.find(p => p.name.indexOf(`/${uuid}`) > 0)
   } catch (err) {
     return undefined
@@ -150,27 +149,6 @@ const syncProjectsStatus = async userSession => {
 //   }
 // }
 
-const addMemberToProject = async (userSession, { project, invitee }) => {
-  const { role } = invitee
-  // get invitations. We can only add people with invitations open.
-  const invitations = await getInvitations(userSession)
-
-  const member = isMemberInvited(invitations, project, invitee)
-  if (!member) {
-    throw new KeystoneError(
-      ERROR_CODES.InvitationFailed,
-      'User has not been invited to the project',
-      invitee
-    )
-  }
-
-  return addMember(userSession, {
-    project,
-    member: member.blockstack_id,
-    role: `${role}s`,
-  })
-}
-
 const addEnvToProject = (userSession, { projectDescriptor, env }) => {
   const newProjectDescriptor = { ...projectDescriptor }
 
@@ -210,15 +188,15 @@ const removeEnvFromProject = async (userSession, { project, env }) => {
 }
 
 const getNameAndUUID = projectFullname => {
-  projectParts = projectFullname.split('/')
   try {
+    projectParts = projectFullname.split('/')
     const name = projectParts[0]
     const uuid = projectParts[1]
     // UUID should be in version 4
     if (!isUUID(uuid, 4)) throw new Error('UUID missing')
     return [name, uuid]
   } catch (err) {
-    throw KeystoneError(
+    throw new KeystoneError(
       'InvalidProjectName',
       'Invalid project name',
       projectFullname
@@ -232,7 +210,6 @@ module.exports = {
   createProject,
   findProjectByName,
   findProjectByUUID,
-  addMemberToProject,
   addEnvToProject,
   removeEnvFromProject,
   getNameAndUUID,
