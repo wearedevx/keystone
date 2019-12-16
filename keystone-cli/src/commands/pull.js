@@ -21,16 +21,25 @@ class PullCommand extends CommandSignedIn {
           force,
         })
 
-        pulledFiles.map(async file => {
-          if (file.name) {
-            this.log(`▻ File written to ${file.name} ${chalk.green.bold('✓')}`)
-          } else {
+        pulledFiles.map(async ({ fileDescriptor, updated }) => {
+          if (updated) {
             this.log(
-              `▻ Couldn't save the file : ${chalk.bold(file)} ${chalk.red.bold(
-                '✗'
+              `▻ File written to ${fileDescriptor.name} ${chalk.green.bold(
+                '✓'
               )}`
             )
+          } else {
+            this.log(
+              `▻ File ${
+                fileDescriptor.name
+              } already is the latest version ${chalk.green.bold('✓')}`
+            )
           }
+          // this.log(
+          //   `▻ Couldn't save the file : ${chalk.bold(
+          //     fileDescriptor.content.name
+          //   )} ${chalk.red.bold('✗')}`
+          // )
         })
       } catch (error) {
         switch (error.code) {

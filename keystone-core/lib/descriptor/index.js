@@ -352,6 +352,9 @@ const updateDescriptorForMembers = async (
   if (latestDescriptor && previousDescriptor && content) {
     let newDescriptor = { ...previousDescriptor, content }
 
+    if (hash(content) === previousDescriptor.checksum) {
+      return previousDescriptor
+    }
     try {
       newDescriptor = incrementVersion({
         descriptor: newDescriptor,
