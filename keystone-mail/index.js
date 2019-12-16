@@ -56,7 +56,7 @@ exports.mail = async (req, res) => {
  * @param {*} to
  * @param {*} from
  */
-function sendReceipt({ project, id, to, from }) {
+function sendReceipt({ project, id, to, from, uuid }) {
   const url = `${inviteUrl}?action=accept&id=${id}&project=${project}/${uuid}&to=${to}`;
   const link = encodeURI(url);
   return new Promise((resolve, reject) => {

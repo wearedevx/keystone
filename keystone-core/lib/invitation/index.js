@@ -223,27 +223,31 @@ const acceptInvite = async (
       env: [],
     }
     projects.push(project)
-    await writeFileToGaia(userSession, {
-      path: PROJECTS_STORE,
-      content: JSON.stringify(projects),
-    })
+    try {
+      await writeFileToGaia(userSession, {
+        path: PROJECTS_STORE,
+        content: JSON.stringify(projects),
+      })
 
-    const [humanName, uuid] = getNameAndUUID(name)
+      const [humanName, uuid] = getNameAndUUID(name)
 
-    await axios({
-      method: 'post',
-      url: KEYSTONE_MAIL,
-      data: {
-        request: 'accept',
-        from: userEmail,
-        to: from,
-        id: username,
-        project: humanName,
-        uuid,
-      },
-    })
+      await axios({
+        method: 'post',
+        url: KEYSTONE_MAIL,
+        data: {
+          request: 'accept',
+          from: userEmail,
+          to: from,
+          id: username,
+          project: humanName,
+          uuid,
+        },
+      })
 
-    return projects
+      return projects
+    } catch (error) {
+      console.log('TCL: error', error)
+    }
   }
 }
 
