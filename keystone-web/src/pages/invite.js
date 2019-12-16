@@ -7,6 +7,7 @@ import queryString from 'query-string'
 import ErrorCard from '../components/cards/error'
 import BaseCard from '../components/cards/base'
 import Button from '../components/button'
+import { getNameAndUUID } from '@keystone/core/lib/projects'
 
 const TitlePromptInvite = ({ project }) => (
   <>
@@ -17,16 +18,20 @@ const TitlePromptInvite = ({ project }) => (
     >
       ✉️
     </span>
-    You are invited to join the project {project}.
+    You are invited to project <strong>{project}</strong>.
   </>
 )
 
-const PromptInvite = ({ project, from }) => {
+const PromptInvite = ({ project, uuid, from }) => {
+  console.log('TCL: PromptInvite -> project', project)
   return (
     <>
       <BaseCard title={<TitlePromptInvite project={project} />}>
-        This invite is sent by {from}. Click join to join the project or decline
-        if you don't know the sender.
+        <p>
+          This invite is sent by <strong>{from}</strong>. Click join to join the
+          project or decline if you don't know the sender.
+        </p>
+        <p className="italic text-red-400 mt-6">Project id: {uuid}</p>
       </BaseCard>
       <div className="my-4 flex flex-row w-2/4 justify-end">
         <Button>Join</Button>
@@ -39,6 +44,7 @@ const PromptInvite = ({ project, from }) => {
 export default () => {
   const { action, project, id, from, to } = queryString.parse(location.search)
   const missingParams = !action || !project || !id || !from || !to
+  const [projectName, projectUUID] = getNameAndUUID(project)
   // const { loggedIn, redirectToSignIn, userSession } = useUser()
   // const [terminalConnected, setTerminalConnected] = useState(false)
   // const [missingParams, setMissingParams] = useState(false)
@@ -78,7 +84,9 @@ export default () => {
         </ErrorCard>
       )}
 
-      {!missingParams && <PromptInvite project={project} from={from} />}
+      {!missingParams && (
+        <PromptInvite project={projectName} uuid={projectUUID} from={from} />
+      )}
     </div>
   )
 }

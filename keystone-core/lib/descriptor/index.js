@@ -11,9 +11,8 @@ const {
   readFileFromGaia,
   writeFileToGaia,
   getPubkey,
-  deleteFileFromDisk,
   deleteFilesFromGaia,
-} = require('../file')
+} = require('../file/gaia')
 
 /**
  * Return the user's descriptor content.
@@ -245,9 +244,13 @@ const removeDescriptorForMembers = async (
   debug('removeDescriptorForMembers', descriptorPath)
 
   // Remove physical file on local disk if absoluteProjectPath is given
-  if (absoluteProjectPath) {
-    await deleteFileFromDisk(path.join(absoluteProjectPath, descriptorPath))
-  }
+
+  // *Ask Kévin*: Why do we need to delete files on disk? This should not be the responsibility
+  // of the descriptor system.
+
+  // if (absoluteProjectPath) {
+  //   await deleteFileFromDisk(path.join(absoluteProjectPath, descriptorPath))
+  // }
 
   // Remove file from gaiagetMembers
   const promises = members.map(async member => {

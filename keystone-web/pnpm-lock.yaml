@@ -1,11 +1,10 @@
 dependencies:
   query-string: 6.9.0
   react-static: 7.2.3
-  tinycache: 1.1.2
 devDependencies:
   '@babel/runtime': 7.7.6
   babel-plugin-universal-import: 4.0.0
-  extract-text-webpack-plugin: 3.0.2
+  eslint-plugin-prettier: 3.1.2
   purgecss-webpack-plugin: 1.6.0
   react-hot-loader: 4.12.18
 lockfileVersion: 5.1
@@ -1140,15 +1139,6 @@ packages:
       ajv: ^6.9.1
     resolution:
       integrity: sha512-RO1ibKvd27e6FEShVFfPALuHI3WjSVNeK5FIsmme/LYRNxjKuNj+Dt7bucLa6NdSv3JcVTyMlm9kGR84z1XpaQ==
-  /ajv/5.5.2:
-    dependencies:
-      co: 4.6.0
-      fast-deep-equal: 1.1.0
-      fast-json-stable-stringify: 2.0.0
-      json-schema-traverse: 0.3.1
-    dev: true
-    resolution:
-      integrity: sha1-c7Xuyj+rZT49P5Qis0GtQiBdyWU=
   /ajv/6.10.2:
     dependencies:
       fast-deep-equal: 2.0.1
@@ -1348,6 +1338,7 @@ packages:
   /async/2.6.3:
     dependencies:
       lodash: 4.17.15
+    dev: false
     resolution:
       integrity: sha512-zflvls11DCy+dQWzTW2dzuilv8Z5X/pjfmZOWba6TNIVDm+2UDaJmXSOXlasHKfNBs8oo3M0aT50fDEWfKZjXg==
   /atob/2.1.2:
@@ -2044,13 +2035,6 @@ packages:
     dev: false
     resolution:
       integrity: sha1-0dyXOSAxTfZ/vrlCI7TuNQI56Ws=
-  /co/4.6.0:
-    dev: true
-    engines:
-      iojs: '>= 1.0.0'
-      node: '>= 0.12.0'
-    resolution:
-      integrity: sha1-bqa989hTrlTMuOR7+gvz+QMfsYQ=
   /coa/2.0.2:
     dependencies:
       '@types/q': 1.5.2
@@ -3073,6 +3057,17 @@ packages:
       node: '>=0.8.0'
     resolution:
       integrity: sha1-G2HAViGQqN/2rjuyzwIAyhMLhtQ=
+  /eslint-plugin-prettier/3.1.2:
+    dependencies:
+      prettier-linter-helpers: 1.0.0
+    dev: true
+    engines:
+      node: '>=6.0.0'
+    peerDependencies:
+      eslint: '>= 5.0.0'
+      prettier: '>= 1.13.0'
+    resolution:
+      integrity: sha512-GlolCC9y3XZfv3RQfwGew7NnuFDKsfI4lbvRK+PIIo23SFH+LemGs4cKwzAaRa+Mdb+lQO/STaIayno8T5sJJA==
   /eslint-scope/4.0.3:
     dependencies:
       esrecurse: 4.2.1
@@ -3306,29 +3301,16 @@ packages:
       webpack: ^4.4.0
     resolution:
       integrity: sha512-dpcOJA3wQk4rbgbOGRXyK3Gjl+/Ng8miD162/0uol31Ld4PLnQqIMbKV6ju/gi+uwfZIQcBW3KW1pmfU0epmDg==
-  /extract-text-webpack-plugin/3.0.2:
-    dependencies:
-      async: 2.6.3
-      loader-utils: 1.2.3
-      schema-utils: 0.3.0
-      webpack-sources: 1.4.3
-    deprecated: 'Deprecated. Please use https://github.com/webpack-contrib/mini-css-extract-plugin'
-    dev: true
-    engines:
-      node: '>= 4.8 < 5.0.0 || >= 5.10'
-    peerDependencies:
-      webpack: ^3.1.0
-    resolution:
-      integrity: sha512-bt/LZ4m5Rqt/Crl2HiKuAl/oqg0psx1tsTLkvWbJen1CtD+fftkZhMaQ9HOtY2gWsl2Wq+sABmMVi9z3DhKWQQ==
-  /fast-deep-equal/1.1.0:
-    dev: true
-    resolution:
-      integrity: sha1-wFNHeBfIa1HaqFPIHgWbcz0CNhQ=
   /fast-deep-equal/2.0.1:
     dev: false
     resolution:
       integrity: sha1-ewUhjd+WZ79/Nwv3/bLLFf3Qqkk=
+  /fast-diff/1.2.0:
+    dev: true
+    resolution:
+      integrity: sha512-xJuoT5+L99XlZ8twedaRf6Ax2TgQVxvgZOYoPKqZufmJib0tL2tegPBOZb1pVNgIhlqDlA0eO0c3wBvQcmzx4w==
   /fast-json-stable-stringify/2.0.0:
+    dev: false
     resolution:
       integrity: sha1-1RQsDK7msRifh9OnYREGT4bIu/I=
   /fast-levenshtein/2.0.6:
@@ -4614,10 +4596,6 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-X2BB11YZtrRqY4EnQcLX5Rh373zbK4alC1FW7D7MBhL2gtcC17cTnr6DmfHZeS0s2rTHjUTMMHfG7gO8SSdw+g==
-  /js-sizeof/0.0.1:
-    dev: false
-    resolution:
-      integrity: sha1-vzW7k7WavgLk9E3YI52/RH6mIzQ=
   /js-tokens/4.0.0:
     resolution:
       integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==
@@ -4649,10 +4627,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-mrqyZKfX5EhL7hvqcV6WG1yYjnjeuYDzDhhcAAUrq8Po85NBQBJP+ZDUT75qZQ98IkUoBqdkExkukOU7Ts2wrw==
-  /json-schema-traverse/0.3.1:
-    dev: true
-    resolution:
-      integrity: sha1-NJptRMU6Ud6JtAgFxdXlm0F9M0A=
   /json-schema-traverse/0.4.1:
     dev: false
     resolution:
@@ -6161,6 +6135,14 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha1-6SQ0v6XqjBn0HN/UAddBo8gZ2Jc=
+  /prettier-linter-helpers/1.0.0:
+    dependencies:
+      fast-diff: 1.2.0
+    dev: true
+    engines:
+      node: '>=6.0.0'
+    resolution:
+      integrity: sha512-GbK2cP9nraSSUF9N2XwUwqfzlAFlMNYYl+ShE/V+H8a9uNl/oUqB1w2EL54Jh0OlyRSd8RfWYJ3coVS4TROP2w==
   /pretty-error/2.1.1:
     dependencies:
       renderkid: 2.0.3
@@ -6924,14 +6906,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-agTSHR1Nbfi6ulI0kYNK0203joW2Y5W4po4l+v03tOoiJKpTBbxpNhWDvqc/4IcOw+KLmSiQLTasZ4cab2/UWQ==
-  /schema-utils/0.3.0:
-    dependencies:
-      ajv: 5.5.2
-    dev: true
-    engines:
-      node: '>= 4.3 < 5.0.0 || >= 5.10'
-    resolution:
-      integrity: sha1-9YdyIs4+kx7a4DnxfrNxbnE3+M8=
   /schema-utils/1.0.0:
     dependencies:
       ajv: 6.10.2
@@ -7682,12 +7656,6 @@ packages:
     dev: false
     resolution:
       integrity: sha1-QFQRqOfmM5/mTbmiNN4R3DHgK9Q=
-  /tinycache/1.1.2:
-    dependencies:
-      js-sizeof: 0.0.1
-    dev: false
-    resolution:
-      integrity: sha512-dCtHE5Fm8rWFp11hktEiJOtiYLyJ7PuCMPmBSweht0/TrJNUbmz5oFfqfpEMMRjM39DUJZCix/c+Gl/3p/cVOA==
   /tmp/0.0.33:
     dependencies:
       os-tmpdir: 1.0.2
@@ -8379,9 +8347,8 @@ packages:
 specifiers:
   '@babel/runtime': ^7.7.6
   babel-plugin-universal-import: ^4.0.0
-  extract-text-webpack-plugin: ^3.0.2
+  eslint-plugin-prettier: ^3.1.2
   purgecss-webpack-plugin: ^1.6.0
   query-string: ^6.9.0
   react-hot-loader: ^4.12.18
   react-static: ^7.2.3
-  tinycache: ^1.1.2

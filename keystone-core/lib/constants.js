@@ -10,6 +10,7 @@ module.exports = {
     NeedToBeAdmin: 'NeedToBeAdmin',
     MissingParams: 'MissingParams',
     AccountMismatch: 'AccountMismatch',
+    InvalidProjectName: 'InvalidProjectName',
   },
   KEYSTONE_MAIL: 'http://localhost:8080',
   KEYSTONE_WEB: 'http://localhost:8000',
