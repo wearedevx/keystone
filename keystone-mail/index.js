@@ -57,7 +57,7 @@ exports.mail = async (req, res) => {
  * @param {*} from
  */
 function sendReceipt({ project, id, to, from }) {
-  const url = `${inviteUrl}?action=accept&id=${id}&project=${project}&to=${to}`;
+  const url = `${inviteUrl}?action=accept&id=${id}&project=${project}/${uuid}&to=${to}`;
   const link = encodeURI(url);
   return new Promise((resolve, reject) => {
     mandrill_client.messages.sendTemplate(
@@ -99,7 +99,7 @@ function sendReceipt({ project, id, to, from }) {
 }
 
 async function sendInvite({ email, project, id, from, uuid }) {
-  const url = `${inviteUrl}?action=join&id=${id}&project=${project}&from=${from}&to=${email}`;
+  const url = `${inviteUrl}?action=join&id=${id}&project=${project}/${uuid}&from=${from}&to=${email}`;
   const link = encodeURI(url);
 
   return new Promise((resolve, reject) => {
