@@ -91,6 +91,7 @@ const inviteMember = async (
   { from, project, emails, role = 'reader' }
 ) => {
   const userData = userSession.loadUserData()
+  const [projectName, projectUUID] = getNameAndUUID(project)
   const emailsSent = await Promise.all(
     emails.map(async email => {
       // loosely check if format is an email
@@ -109,9 +110,10 @@ const inviteMember = async (
               request: 'invite',
               from,
               id: userData.username,
-              project,
+              project: projectName,
               role,
               email,
+              uuid: projectUUID,
             },
           })
 
@@ -122,7 +124,6 @@ const inviteMember = async (
             sent: true,
           }
         } catch (error) {
-          console.log(error)
           return {
             email,
             sent: false,
@@ -238,6 +239,7 @@ const acceptInvite = async (
         to: from,
         id: username,
         project: humanName,
+        uuid,
       },
     })
 

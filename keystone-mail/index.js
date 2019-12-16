@@ -4,7 +4,7 @@ const mandrill = require("mandrill-api/mandrill");
 const mandrill_client = new mandrill.Mandrill(process.env.MANDRILL_KEY);
 const inviteUrl = process.env.INVITE_URL;
 
-exports.mail = (req, res) => {
+exports.mail = async (req, res) => {
   // Set CORS headers for preflight requests
   // Allows GETs from any origin with the Content-Type header
   // and caches preflight response for 3600s
@@ -18,79 +18,123 @@ exports.mail = (req, res) => {
     res.set("Access-Control-Max-Age", "3600");
     res.status(204).send("");
   } else {
-    console.log("body", req.body);
-    const { request, project, email, id, from, to, role } = req.body;
+    const { request, project, email, id, from, to, role, uuid } = req.body;
 
     switch (request) {
       case "invite":
-        // mails.map(mail => {
-        sendMailRequestInvite(email, project, id, from, role);
-        res.send("");
-        // })
-
+        try {
+          await sendInvite({
+            email,
+            project,
+            id,
+            from,
+            uuid
+          });
+          res.send("");
+        } catch (error) {
+          res.status(500).send(error.message);
+        }
         break;
       case "accept":
-        // const to = req.body.to
-
-        // console.log(to,'|',from)
-
-        sendMailAcceptInvite(project, id, to, from);
-        res.send("");
+        try {
+          await sendReceipt({ project, id, to, from, uuid });
+          res.send();
+        } catch (error) {
+          res.status(500).send(error.message);
+        }
         break;
       default:
-        console.log("request", request);
-        throw new Error("Unknown mail request");
+        res.status(403).send("Request Unauthorized");
     }
   }
 };
 
-function sendMailAcceptInvite(project, id, to, from) {
-  // const url = `${inviteUrl}?action=accept&id=${id}&project=${project}&to=${to}`
-  // const link = encodeURI(url)
-  try {
-    mandrill_client.messages.send(
+/**
+ * Send an email when an invitee joined a project
+ * @param {*} project
+ * @param {*} id
+ * @param {*} to
+ * @param {*} from
+ */
+function sendReceipt({ project, id, to, from }) {
+  const url = `${inviteUrl}?action=accept&id=${id}&project=${project}&to=${to}`;
+  const link = encodeURI(url);
+  return new Promise((resolve, reject) => {
+    mandrill_client.messages.sendTemplate(
       {
+        template_name: "keystone",
+        template_content: [],
         message: {
           from_email: "contact@wearedevx.com",
           from_name: "Keystone",
           to: [{ email: to }],
           subject: `${from} is ready to join ${project}`,
-          text: `${from} (${id}) has accepted your invitation. Type the following commands in your terminal to encrypt the files for him.`
+          merge_language: "handlebars",
+          global_merge_vars: [
+            {
+              name: "headline",
+              content: `Project ${project}`
+            },
+            {
+              name: "tags",
+              content: `#${uuid} #${id}`
+            },
+            {
+              name: "content",
+              content: `<strong>${from}</strong> has accepted your invitation. <br><br>You need to set permissions for him so he can access files from your project.
+              <br><br>
+              <a href="${link}">Click here</a> to start.`
+            }
+          ]
         }
       },
       success => {
-        console.log("success", success);
+        resolve(success);
       },
       error => {
-        console.log("error", error);
+        reject(error);
       }
     );
-  } catch (error) {}
+  });
 }
 
-function sendMailRequestInvite(email, project, id, from, role) {
+async function sendInvite({ email, project, id, from, uuid }) {
   const url = `${inviteUrl}?action=join&id=${id}&project=${project}&from=${from}&to=${email}`;
   const link = encodeURI(url);
 
-  try {
-    mandrill_client.messages.send(
+  return new Promise((resolve, reject) => {
+    mandrill_client.messages.sendTemplate(
       {
+        template_name: "keystone",
+        template_content: [],
         message: {
           from_email: "contact@wearedevx.com",
           from_name: "Keystone",
           to: [{ email: email }],
-          subject: `${from} invites you to join ${project}`,
-          text: `You received an invite to the project ${project}. Click the link to join: ${link}`
+          subject: `${from} invites you to project ${project}`,
+          merge_language: "handlebars",
+          global_merge_vars: [
+            {
+              name: "headline",
+              content: `Project ${project}`
+            },
+            {
+              name: "tags",
+              content: `#${uuid} #${id}`
+            },
+            {
+              name: "content",
+              content: `This invite is sent by <strong>${from}</strong>. <br><br><a href="${link}">Click here to join</a> the project or ignore if you don't know the sender.`
+            }
+          ]
         }
       },
       success => {
-        console.log("success", success);
+        resolve(success);
       },
       error => {
-        console.log("error", error);
+        reject(error);
       }
     );
-  } catch (error) {
-    throw error;
-  }
+  });
 }

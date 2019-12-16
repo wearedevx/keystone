@@ -23,7 +23,7 @@ const TitlePromptInvite = ({ project }) => (
 
 const join = async (
   userSession,
-  { name, from, blockstackId, userEmail, onError, onDone }
+  { name, from, blockstackId, userEmail, onError, onDone, onSuccess }
 ) => {
   try {
     const projects = await acceptInvite(userSession, {
@@ -32,6 +32,7 @@ const join = async (
       blockstackId,
       userEmail,
     })
+    onSuccess(projects)
     return projects
   } catch (error) {
     onError(error)
@@ -40,20 +41,27 @@ const join = async (
   }
 }
 
-const PromptInvite = ({ project, uuid, from, blockstackId, userEmail }) => {
+const PromptInvite = ({
+  project,
+  uuid,
+  adminUserEmail,
+  blockstackId,
+  userEmail,
+}) => {
   const { userSession } = useUser()
   const [joining, setJoining] = useState(false)
   const [error, setError] = useState(false)
+  const [success, setSuccess] = useState(false)
 
   return (
     <>
-      <BaseCard title={<TitlePromptInvite project={project} error={error} />}>
+      <BaseCard title={<TitlePromptInvite project={project} />}>
         {joining && <p>Updating your projects list, please wait...</p>}
 
         {!joining && (
           <p>
-            This invite is sent by <strong>{from}</strong>. Click join to join
-            the project or ignore if you don't know the sender.
+            This invite is sent by <strong>{adminUserEmail}</strong>. Click join
+            to join the project or ignore if you don't know the sender.
           </p>
         )}
 
@@ -61,6 +69,7 @@ const PromptInvite = ({ project, uuid, from, blockstackId, userEmail }) => {
           Project id: {uuid}
         </p>
       </BaseCard>
+
       {error && (
         <p className="text-red-600 font-bold mt-4">
           <span
@@ -73,18 +82,38 @@ const PromptInvite = ({ project, uuid, from, blockstackId, userEmail }) => {
           {error}
         </p>
       )}
+
+      {success && (
+        <p className="text-green-600 font-bold mt-4 text-center">
+          <p>
+            <span
+              role="img"
+              aria-label="A thumbs-up gesture indicating approval."
+              className="mr-1"
+            >
+              👍
+            </span>
+            An email has been sent to {adminUserEmail}.
+          </p>
+          <p>
+            This user will confirm your membership and encrypt the projects
+            files for you.
+          </p>
+        </p>
+      )}
       <div className="my-4 flex flex-row w-2/4 justify-end">
         <Button
-          disabled={joining}
+          disabled={joining || success}
           onClick={async () => {
             setJoining(true)
             await join(userSession, {
               name: `${project}/${uuid}`,
-              from,
+              from: adminUserEmail,
               blockstackId,
               userEmail,
               onError: e => setError(e.message),
               onDone: () => setJoining(false),
+              onSuccess: () => setSuccess(true),
             })
           }}
         >
@@ -122,7 +151,7 @@ export default () => {
           <PromptInvite
             project={projectName}
             uuid={projectUUID}
-            from={from}
+            adminUserEmail={from}
             userEmail={to}
             blockstackId={id}
           />
