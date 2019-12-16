@@ -11,7 +11,6 @@ const writeFileToGaia = async (
   debug(`Write file on gaia to ${path} with encrypt ${encrypt || 'no encrypt'}`)
 
   const cacheKey = `${origin}/${path}`
-
   await userSession.putFile(path, content, { encrypt })
 
   fileCache.put(cacheKey, JSON.parse(content))
@@ -73,6 +72,8 @@ const deleteFilesFromGaia = (
 }
 
 const getPubkey = async (userSession, { blockstackId }) => {
+  console.log('blockstackId', blockstackId)
+  if (/shared-.*/.test(blockstackId)) return blockstackId.split('-')[1]
   const pubkeyFile = await readFileFromGaia(userSession, {
     decrypt: false,
     path: PUBKEY,

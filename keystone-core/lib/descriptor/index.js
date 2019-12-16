@@ -311,6 +311,8 @@ const updateDescriptorForMembers = async (
     descriptorPath,
   })
 
+  console.log({ latestDescriptor, previousDescriptor, content })
+
   // The file does not exist at anywhere at all in the world
   if (!latestDescriptor && !previousDescriptor) {
     const descriptorToCreate = createDescriptor({

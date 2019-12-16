@@ -20,6 +20,7 @@ const createEnv = async (userSession, { env, projectDescriptor }) => {
     files: [],
   }
 
+  console.log(projectDescriptor)
   try {
     const envMembersDescriptor = await createMembersDescriptor(userSession, {
       project: projectDescriptor.name,
