@@ -44,6 +44,7 @@
     "tinycache": "^1.1.2",
     "treeify": "^1.1.0",
     "uuid": "^3.3.3",
+    "uuid-validate": "^0.0.3",
     "walkdir": "^0.4.1"
   }
 }

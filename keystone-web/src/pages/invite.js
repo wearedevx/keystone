@@ -1,34 +1,92 @@
-import React from 'react'
-import useUser from '../hooks/useUser'
-import invitations from '@keystone/core/dist/invitation'
-console.log('TCL: invitations', invitations)
+import React, { useState } from 'react'
+// import useUser from '../hooks/useUser'
+// import { Link } from '@reach/router'
+import queryString from 'query-string'
+// import KeystoneError from '@keystone/core/lib/error'
+// import { writeFileToGaia } from '@keystone/core/lib/file/gaia'
+import ErrorCard from '../components/cards/error'
+import BaseCard from '../components/cards/base'
+import Button from '../components/button'
+import { getNameAndUUID } from '@keystone/core/lib/projects'
+
+const TitlePromptInvite = ({ project }) => (
+  <>
+    <span
+      role="img"
+      aria-label="The back of an envelope, as used to send a letter or card in the mail."
+      className="mr-2"
+    >
+      ✉️
+    </span>
+    You are invited to project <strong>{project}</strong>.
+  </>
+)
+
+const PromptInvite = ({ project, uuid, from }) => {
+  console.log('TCL: PromptInvite -> project', project)
+  return (
+    <>
+      <BaseCard title={<TitlePromptInvite project={project} />}>
+        <p>
+          This invite is sent by <strong>{from}</strong>. Click join to join the
+          project or decline if you don't know the sender.
+        </p>
+        <p className="italic text-red-400 mt-6">Project id: {uuid}</p>
+      </BaseCard>
+      <div className="my-4 flex flex-row w-2/4 justify-end">
+        <Button>Join</Button>
+        <Button type="secondary">Decline</Button>
+      </div>
+    </>
+  )
+}
 
 export default () => {
-  const { loggedIn, userData } = useUser()
-  console.log('TCL: loggedIn', loggedIn)
+  const { action, project, id, from, to } = queryString.parse(location.search)
+  const missingParams = !action || !project || !id || !from || !to
+  const [projectName, projectUUID] = getNameAndUUID(project)
+  // const { loggedIn, redirectToSignIn, userSession } = useUser()
+  // const [terminalConnected, setTerminalConnected] = useState(false)
+  // const [missingParams, setMissingParams] = useState(false)
+  // const [error, setError] = useState(false)
+  // const [connecting, setConnecting] = useState(false)
+
+  // if (loggedIn && !connecting) {
+  //   setConnecting(true)
+  //   connectTerminal({
+  //     location: window.location,
+  //     userSession,
+  //     setTerminalConnected,
+  //     // userData,
+  //   }).catch(error => {
+  //     switch (error.code) {
+  //       case 'MissingParams':
+  //         setMissingParams(true)
+  //         break
+  //       case 'AccountMismatch':
+  //         setError(error.message)
+  //         break
+  //       default:
+  //         setError(error.message)
+  //         throw error
+  //     }
+  //   })
+  // }
+
   return (
     <div className="flex flex-col items-center ">
-      <div className="shadow-md rounded p-4 bg-white w-2/4">
-        <h1 className="text-xl">
-          <span
-            role="img"
-            aria-label="A party popper, as explodes in a shower of confetti and streamers at a celebration"
-          >
-            🎉
-          </span>
-          You've been invited by ___ to join ___
-        </h1>
-      </div>
-      <div className="my-4 flex flex-row w-2/4 justify-end">
-        <div className="rounded font-bold text-white bg-primary py-1 px-4 shadow-md text-center mx-2">
-          Join
-        </div>
-        <div className="rounded font-bold text-gray-300 bg-secondary py-1 px-4 shadow-md text-center">
-          Decline
-        </div>
-      </div>
-      {/* <InvitationBannerJoin project={project} from={from} id={id} /> */}
-      {/* <InvitationBoard project={project} /> */}
+      {missingParams && (
+        <ErrorCard
+          title={'Your link is malformed. Please open an issue on GitHub.'}
+        >
+          Or check that the link in your browser is the same than the link you
+          received in your mailbox.
+        </ErrorCard>
+      )}
+
+      {!missingParams && (
+        <PromptInvite project={projectName} uuid={projectUUID} from={from} />
+      )}
     </div>
   )
 }

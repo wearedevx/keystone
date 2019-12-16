@@ -1,7 +1,7 @@
 const axios = require('axios')
 const isEmail = require('is-email')
 const { KEYSTONE_MAIL, INVITATIONS_STORE } = require('../constants')
-const { readFileFromGaia, writeFileToGaia } = require('../file')
+const { readFileFromGaia, writeFileToGaia } = require('../file/gaia')
 
 const createInvitationsFile = async userSession => {
   try {

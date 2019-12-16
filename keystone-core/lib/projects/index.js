@@ -1,54 +1,54 @@
-const { readFileFromGaia, writeFileToGaia } = require("../file");
-const { getPath } = require("../descriptor-path");
-const { getInvitations, isMemberInvited } = require("../invitation");
-const KeystoneError = require("../error");
-const { ERROR_CODES, ROLES, PROJECTS_STORE } = require("../constants");
+const { readFileFromGaia, writeFileToGaia } = require('../file/gaia')
+const { getPath } = require('../descriptor-path')
+const { getInvitations, isMemberInvited } = require('../invitation')
+const KeystoneError = require('../error')
+const { ERROR_CODES, ROLES, PROJECTS_STORE } = require('../constants')
 const {
   updateDescriptorForMembers,
   updateDescriptor,
-  getDescriptor
-} = require("../descriptor");
-
-const { addMember } = require("../member");
+  getDescriptor,
+} = require('../descriptor')
+const { addMember } = require('../member')
+const isUUID = require('uuid-validate')
 
 // const PROJECTS_STORE = 'projects.json'
 
 const createProjectsStore = async userSession => {
   return writeFileToGaia(userSession, {
     path: PROJECTS_STORE,
-    content: JSON.stringify([])
-  });
-};
+    content: JSON.stringify([]),
+  })
+}
 
 const getProjects = async userSession => {
   const projectsFile = await readFileFromGaia(userSession, {
-    path: PROJECTS_STORE
-  });
+    path: PROJECTS_STORE,
+  })
 
-  if (projectsFile) return projectsFile;
+  if (projectsFile) return projectsFile
 
   // if null, it means projects.json hasn't been found on Gaia. We need to create it.
-  createProjectsStore(userSession);
-  return [];
-};
+  createProjectsStore(userSession)
+  return []
+}
 
 const findProjectByUUID = (projects, name) => {
   try {
-    const uuid = name.split("/")[1];
-    return projects.find(p => p.name.indexOf(`/${uuid}`) > 0);
+    const uuid = name.split('/')[1]
+    return projects.find(p => p.name.indexOf(`/${uuid}`) > 0)
   } catch (err) {
-    return undefined;
+    return undefined
   }
-};
+}
 // is there a project with the same name?
 const findProjectByName = (projects, name) =>
-  projects.filter(p => p.name.indexOf(`${name}/`) === 0);
+  projects.filter(p => p.name.indexOf(`${name}/`) === 0)
 
 const createProject = async (
   userSession,
   { name, members, pendingInvite = false }
 ) => {
-  const { username } = userSession.loadUserData();
+  const { username } = userSession.loadUserData()
 
   // TODO: validate members format
   const project = {
@@ -56,56 +56,56 @@ const createProject = async (
     members,
     createdBy: username,
     pendingInvite,
-    env: ["default"]
-  };
+    env: ['default'],
+  }
 
-  const projects = await getProjects(userSession);
+  const projects = await getProjects(userSession)
 
-  const duplicate = findProjectByName(projects, name);
+  const duplicate = findProjectByName(projects, name)
 
-  if (duplicate.length > 0) throw new Error("The project is already created");
+  if (duplicate.length > 0) throw new Error('The project is already created')
 
-  projects.push(project);
+  projects.push(project)
 
   // update Projects store
   await writeFileToGaia(userSession, {
     path: PROJECTS_STORE,
-    content: JSON.stringify(projects)
-  });
+    content: JSON.stringify(projects),
+  })
 
   const descriptorPath = getPath({
-    type: "project",
+    type: 'project',
     project: name,
-    blockstackId: username
-  });
+    blockstackId: username,
+  })
 
   const membersDescriptor = {
     content: {
       [ROLES.ADMINS]: [{ blockstack_id: username }],
       [ROLES.CONTRIBUTORS]: [],
-      [ROLES.READERS]: []
-    }
-  };
+      [ROLES.READERS]: [],
+    },
+  }
 
   // create project descriptor and update user storage space for every members
   const projectDescriptor = await updateDescriptorForMembers(userSession, {
     descriptorPath,
     project: name,
     name,
-    type: "project",
+    type: 'project',
     membersDescriptor,
-    content: { env: ["default"] }
-  });
+    content: { env: ['default'] },
+  })
 
-  return projectDescriptor;
-};
+  return projectDescriptor
+}
 
 const syncProjectsStatus = async userSession => {
-  const projectsFiles = await getProjects(userSession);
+  const projectsFiles = await getProjects(userSession)
 
   const projects = await Promise.all(
     projectsFiles.map(async project => {
-      console.log(project);
+      console.log(project)
       //   if (!project.pendingInvite) {
       //     return project
       //   }
@@ -130,9 +130,9 @@ const syncProjectsStatus = async userSession => {
       //     return { ...project, pendingInvite: true }
       //   }
     })
-  );
-  return projects;
-};
+  )
+  return projects
+}
 
 // const addMember = async (descriptor, user) => {
 //   const allMembers = await getMembers(userSession, { project, env })
@@ -151,63 +151,80 @@ const syncProjectsStatus = async userSession => {
 // }
 
 const addMemberToProject = async (userSession, { project, invitee }) => {
-  const { role } = invitee;
+  const { role } = invitee
   // get invitations. We can only add people with invitations open.
-  const invitations = await getInvitations(userSession);
+  const invitations = await getInvitations(userSession)
 
-  const member = isMemberInvited(invitations, project, invitee);
+  const member = isMemberInvited(invitations, project, invitee)
   if (!member) {
     throw new KeystoneError(
       ERROR_CODES.InvitationFailed,
-      "User has not been invited to the project",
+      'User has not been invited to the project',
       invitee
-    );
+    )
   }
 
   return addMember(userSession, {
     project,
     member: member.blockstack_id,
-    role: `${role}s`
-  });
-};
+    role: `${role}s`,
+  })
+}
 
 const addEnvToProject = (userSession, { projectDescriptor, env }) => {
-  const newProjectDescriptor = { ...projectDescriptor };
+  const newProjectDescriptor = { ...projectDescriptor }
 
-  newProjectDescriptor.content.env.push(env);
+  newProjectDescriptor.content.env.push(env)
 
   return updateDescriptor(userSession, {
     descriptorPath: projectDescriptor.path,
     project: projectDescriptor.name,
-    type: "project",
+    type: 'project',
     content: newProjectDescriptor.content,
-    name: projectDescriptor.name
-  });
-};
+    name: projectDescriptor.name,
+  })
+}
 
 const removeEnvFromProject = async (userSession, { project, env }) => {
-  const { username } = userSession.loadUserData();
+  const { username } = userSession.loadUserData()
 
   const projectDescriptor = await getDescriptor(userSession, {
     project,
-    type: "project",
-    blockstackId: username
-  });
+    type: 'project',
+    blockstackId: username,
+  })
 
-  const newProjectDescriptor = { ...projectDescriptor };
+  const newProjectDescriptor = { ...projectDescriptor }
 
   newProjectDescriptor.content.env = newProjectDescriptor.content.env.filter(
     e => e !== env
-  );
+  )
 
   return updateDescriptor(userSession, {
     descriptorPath: projectDescriptor.path,
     project: projectDescriptor.name,
-    type: "project",
+    type: 'project',
     content: newProjectDescriptor.content,
-    name: projectDescriptor.name
-  });
-};
+    name: projectDescriptor.name,
+  })
+}
+
+const getNameAndUUID = projectFullname => {
+  projectParts = projectFullname.split('/')
+  try {
+    const name = projectParts[0]
+    const uuid = projectParts[1]
+    // UUID should be in version 4
+    if (!isUUID(uuid, 4)) throw new Error('UUID missing')
+    return [name, uuid]
+  } catch (err) {
+    throw KeystoneError(
+      'InvalidProjectName',
+      'Invalid project name',
+      projectFullname
+    )
+  }
+}
 
 module.exports = {
   syncProjectsStatus,
@@ -217,5 +234,6 @@ module.exports = {
   findProjectByUUID,
   addMemberToProject,
   addEnvToProject,
-  removeEnvFromProject
-};
+  removeEnvFromProject,
+  getNameAndUUID,
+}
