@@ -51,6 +51,8 @@ const pull = async (
     throw new Error('The project does not exist in user workspace')
   }
 
+  // TODO: we should use createdBy only when it's the first time
+  // we pull and we don't have any member list yet.
   await getLatestMembersDescriptor(userSession, {
     project,
     origin: projectByUUID.createdBy,

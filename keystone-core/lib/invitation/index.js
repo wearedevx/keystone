@@ -1,7 +1,18 @@
 const axios = require('axios')
 const isEmail = require('is-email')
-const { KEYSTONE_MAIL, INVITATIONS_STORE } = require('../constants')
+const KeystoneError = require('../error')
+const {
+  KEYSTONE_MAIL,
+  INVITATIONS_STORE,
+  PROJECTS_STORE,
+} = require('../constants')
 const { readFileFromGaia, writeFileToGaia } = require('../file/gaia')
+const {
+  getProjects,
+  findProjectByUUID,
+  getNameAndUUID,
+} = require('../projects')
+const { addMember } = require('../member')
 
 const createInvitationsFile = async userSession => {
   try {
@@ -188,9 +199,78 @@ const deleteInvites = async (userSession, { project, emails }) => {
   }
 }
 
+const acceptInvite = async (
+  userSession,
+  { name, from, blockstackId, userEmail }
+) => {
+  const projects = await getProjects(userSession)
+  const { username } = userSession.loadUserData()
+  const projectFound = findProjectByUUID(projects, name)
+
+  // the project is not in the user projects list
+  if (projectFound) {
+    throw new KeystoneError(
+      'ProjectNameExists',
+      'You already have this project in your account',
+      name
+    )
+  } else {
+    const project = {
+      name,
+      createdBy: blockstackId,
+      pendingInvite: true,
+      env: [],
+    }
+    projects.push(project)
+    await writeFileToGaia(userSession, {
+      path: PROJECTS_STORE,
+      content: JSON.stringify(projects),
+    })
+
+    const [humanName, uuid] = getNameAndUUID(name)
+
+    await axios({
+      method: 'post',
+      url: KEYSTONE_MAIL,
+      data: {
+        request: 'accept',
+        from: userEmail,
+        to: from,
+        id: username,
+        project: humanName,
+      },
+    })
+
+    return projects
+  }
+}
+
+const addMemberToProject = async (userSession, { project, invitee }) => {
+  const { role } = invitee
+  // get invitations. We can only add people with invitations open.
+  const invitations = await getInvitations(userSession)
+
+  const member = isMemberInvited(invitations, project, invitee)
+  if (!member) {
+    throw new KeystoneError(
+      ERROR_CODES.InvitationFailed,
+      'User has not been invited to the project',
+      invitee
+    )
+  }
+
+  return addMember(userSession, {
+    project,
+    member: member.blockstack_id,
+    role: `${role}s`,
+  })
+}
+
 module.exports = {
   inviteMember,
   getInvitations,
   isMemberInvited,
   deleteInvites,
+  acceptInvite,
+  addMemberToProject,
 }
