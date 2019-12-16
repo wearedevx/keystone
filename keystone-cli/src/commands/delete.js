@@ -1,9 +1,8 @@
 const chalk = require('chalk')
 const { cli } = require('cli-ux')
-// const { deleteFiles } = require('../lib/core')
-const { CommandSignedIn } = require('../lib/commands')
-
 const deleteFiles = require('@keystone/core/lib/commands/delete')
+
+const { CommandSignedIn } = require('../lib/commands')
 
 class DeleteCommand extends CommandSignedIn {
   async deleteFile(project, env, files) {

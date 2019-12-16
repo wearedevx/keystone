@@ -74,6 +74,10 @@ const pull = async (
     type: 'env',
   })
 
+  if (envDescriptor.checksum === ownEnvDescriptor.checksum) {
+    return [{ descriptorUpToDate: true }]
+  }
+
   const envMembersDescriptor = await getLatestMembersDescriptor(userSession, {
     project,
     env,

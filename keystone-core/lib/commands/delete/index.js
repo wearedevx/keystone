@@ -1,14 +1,15 @@
 const {
-  getLastEnvDescriptor,
+  getLatestEnvDescriptor,
   incrementVersion,
-  uploadDescriptorForEveryone,
-} = require('../../env')
+  updateDescriptor,
+} = require('../../descriptor')
+
 const { deepCopy } = require('../../utils')
 
 const deleteFiles = async (userSession, { project, env, files }) => {
   const { username } = userSession.loadUserData()
 
-  const latestEnvDescriptor = await getLastEnvDescriptor(userSession, {
+  const latestEnvDescriptor = await getLatestEnvDescriptor(userSession, {
     project,
     env,
     username,
@@ -26,18 +27,13 @@ const deleteFiles = async (userSession, { project, env, files }) => {
     throw new Error('No file to delete in keystone')
   }
 
-  const newEnvDescriptor = incrementVersion({
-    descriptor: envDescriptorCloned,
-    author: username,
-    previousDescriptor: latestEnvDescriptor,
+  const updatedDescriptor = await updateDescriptor(userSession, {
+    env,
+    project,
+    content: envDescriptorCloned.content,
     type: 'env',
   })
-
-  return uploadDescriptorForEveryone(userSession, {
-    type: 'env',
-    descriptor: newEnvDescriptor,
-    envDescriptor: newEnvDescriptor,
-  })
+  return updatedDescriptor
 }
 
 module.exports = deleteFiles

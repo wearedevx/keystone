@@ -21,26 +21,32 @@ class PullCommand extends CommandSignedIn {
           force,
         })
 
-        pulledFiles.map(async ({ fileDescriptor, updated }) => {
-          if (updated) {
-            this.log(
-              `▻ File written to ${fileDescriptor.name} ${chalk.green.bold(
-                '✓'
-              )}`
-            )
-          } else {
-            this.log(
-              `▻ File ${
-                fileDescriptor.name
-              } already is the latest version ${chalk.green.bold('✓')}`
-            )
+        pulledFiles.map(
+          async ({ fileDescriptor, updated, descriptorUpToDate }) => {
+            if (descriptorUpToDate) {
+              this.log(`▻ You are already up to date. Nothing to do !`)
+              return
+            }
+            if (updated) {
+              this.log(
+                `▻ File written to ${fileDescriptor.name} ${chalk.green.bold(
+                  '✓'
+                )}`
+              )
+            } else {
+              this.log(
+                `▻ File ${
+                  fileDescriptor.name
+                } already is the latest version ${chalk.green.bold('✓')}`
+              )
+            }
+            // this.log(
+            //   `▻ Couldn't save the file : ${chalk.bold(
+            //     fileDescriptor.content.name
+            //   )} ${chalk.red.bold('✗')}`
+            // )
           }
-          // this.log(
-          //   `▻ Couldn't save the file : ${chalk.bold(
-          //     fileDescriptor.content.name
-          //   )} ${chalk.red.bold('✗')}`
-          // )
-        })
+        )
       } catch (error) {
         switch (error.code) {
           case 'PullWhileFilesModified':

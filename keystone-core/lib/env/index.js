@@ -73,7 +73,6 @@ const removeFilesFromEnv = async (
     })
   }
 
-
   return Promise.all(
     files.map(file =>
       removeDescriptorForMembers(userSession, {
@@ -160,8 +159,6 @@ const checkoutEnv = async (
   userSession,
   { project, env, absoluteProjectPath }
 ) => {
-  const { username } = userSession.loadUserData()
-
   const projectDescriptor = await getLatestProjectDescriptor(userSession, {
     project,
     type: 'project',
