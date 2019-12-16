@@ -66,7 +66,6 @@ const push = async (
       }
     }
   })
-  console.log(envDescriptor.content)
 
   const envDescriptorPath = getPath({
     project,
