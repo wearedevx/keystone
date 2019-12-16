@@ -1,5 +1,6 @@
 const debug = require('debug')('keystone:core:file')
 const fileCache = require('./cache')
+const { PUBKEY } = require('../constants')
 
 // TODO: we shouldn't need origin as encrypt already has that information: if set to true or false, it's the logged user else it's the blockstack id of another user
 const writeFileToGaia = async (

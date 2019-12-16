@@ -1,8 +1,7 @@
-const { CommandSignedIn } = require('../lib/commands')
-
 const { readFileFromDisk } = require('@keystone/core/lib/file')
 
 const { push, pushModifiedFiles } = require('@keystone/core/lib/commands/push')
+const { CommandSignedIn } = require('../lib/commands')
 
 class PushCommand extends CommandSignedIn {
   async push(project, env, filenames) {

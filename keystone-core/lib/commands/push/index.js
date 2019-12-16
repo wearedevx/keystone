@@ -1,5 +1,5 @@
 const fs = require('fs')
-
+const hash = require('object-hash')
 const { getPath } = require('../../descriptor-path')
 
 const { updateDescriptor, getLatestEnvDescriptor } = require('../../descriptor')
@@ -50,35 +50,39 @@ const push = async (
     env,
   })
 
-  let envModified = false
-
   // If file is not present, add it.
-  files.forEach(({ filename }) => {
-    if (!envDescriptor.content.files.find(f => f.name === filename)) {
-      envModified = true
-
+  files.forEach(({ filename, fileContent }) => {
+    const foundFile = envDescriptor.content.files.findIndex(
+      f => f.name === filename
+    )
+    if (foundFile === -1) {
       envDescriptor.content.files.push({
+        checksum: hash(fileContent),
         name: filename,
       })
+    } else {
+      envDescriptor.content.files[foundFile] = {
+        name: filename,
+        checksum: hash(fileContent),
+      }
     }
   })
+  console.log(envDescriptor.content)
 
-  if (envModified) {
-    const envDescriptorPath = getPath({
-      project,
-      env,
-      type: 'env',
-    })
+  const envDescriptorPath = getPath({
+    project,
+    env,
+    type: 'env',
+  })
 
-    updateDescriptor(userSession, {
-      project,
-      env,
-      type: 'env',
-      content: envDescriptor.content,
-      descriptorPath: envDescriptorPath,
-      name: env,
-    })
-  }
+  updateDescriptor(userSession, {
+    project,
+    env,
+    type: 'env',
+    content: envDescriptor.content,
+    descriptorPath: envDescriptorPath,
+    name: env,
+  })
 }
 
 /**
@@ -103,7 +107,7 @@ const pushModifiedFiles = (
     return
   }
 
-  console.log("TCL: modifiedFiles", modifiedFiles)
+  console.log('TCL: modifiedFiles', modifiedFiles)
   // return
 
   const formatModifiedFiles = modifiedFiles.map(({ path }) => ({
