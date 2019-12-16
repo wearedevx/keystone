@@ -269,7 +269,7 @@ const removeDescriptorForMembers = async (
 
 const updateDescriptorForMembers = async (
   userSession,
-  { env, project, type, membersDescriptor, content, name }
+  { env, project, type, membersDescriptor, content, name, updateAnyway = false }
 ) => {
   const { username } = userSession.loadUserData()
 
@@ -395,7 +395,10 @@ const updateDescriptorForMembers = async (
       return latestDescriptor
     }
 
-    if (latestDescriptor.version === previousDescriptor.version) {
+    if (
+      latestDescriptor.version === previousDescriptor.version &&
+      !updateAnyway
+    ) {
       return latestDescriptor
     }
 
@@ -457,7 +460,7 @@ const getMembers = (userSession, { project, env }) => {
 
 const updateDescriptor = async (
   userSession,
-  { env, project, type, content, name, membersDescriptor }
+  { env, project, type, content, name, membersDescriptor, updateAnyway }
 ) => {
   debug('Update descriptor', type)
 
@@ -475,8 +478,6 @@ const updateDescriptor = async (
     opts.type = 'env'
   }
 
-  // members = await getAdminsAndContributors(userSession, { project, env })
-
   if (!membersDescriptor) {
     membersDescriptor = await getLatestMembersDescriptor(userSession, {
       project,
@@ -491,6 +492,7 @@ const updateDescriptor = async (
     membersDescriptor,
     content,
     name,
+    updateAnyway,
   })
 }
 
