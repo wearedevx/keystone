@@ -193,19 +193,22 @@ const PromptConfigure = ({
                 environment={environment}
                 role={role}
                 onConfirm={async () => {
-                  const {
-                    envsMembers,
-                    envMembersDescriptors,
-                    projectMembers,
-                  } = projectDetails
+                  setLoading('Updating your project settings, please wait...')
+                  try {
+                    const {
+                      envsMembers,
+                      envMembersDescriptors,
+                      projectMembers,
+                    } = projectDetails
 
-                  // if it's not the case
-                  // start by adding the user to the project
-                  // by default as a reader
-                  if (
-                    !projectMembers.find(m => m.blockstack_id === blockstackId)
-                  ) {
-                    try {
+                    // if it's not the case
+                    // start by adding the user to the project
+                    // by default as a reader
+                    if (
+                      !projectMembers.find(
+                        m => m.blockstack_id === blockstackId
+                      )
+                    ) {
                       await add(userSession, {
                         project,
                         invitee: {
@@ -214,34 +217,30 @@ const PromptConfigure = ({
                           email,
                         },
                       })
-                    } catch (error) {
-                      setError(error.message)
                     }
-                  }
 
-                  const envMembersDescriptor = envMembersDescriptors.find(
-                    envDescriptor => envDescriptor.env === environment
-                  )
-                  const newEnvsMembers = setMembersToEnvs({
-                    envsMembers,
-                    members: [
-                      ...envsMembers[environment][role],
-                      { blockstack_id: blockstackId },
-                    ],
-                    role,
-                    env: environment,
-                  })
-
-                  if (!isOneOrMoreAdmin(newEnvsMembers)) {
-                    setError(
-                      'One or more admin member is required for this environment'
+                    const envMembersDescriptor = envMembersDescriptors.find(
+                      envDescriptor => envDescriptor.env === environment
                     )
-                  }
+                    const newEnvsMembers = setMembersToEnvs({
+                      envsMembers,
+                      members: [
+                        ...envsMembers[environment][role],
+                        { blockstack_id: blockstackId },
+                      ],
+                      role,
+                      env: environment,
+                    })
 
-                  envMembersDescriptor.descriptor.content =
-                    newEnvsMembers[environment]
-                  try {
-                    setLoading('Updating your project settings, please wait...')
+                    if (!isOneOrMoreAdmin(newEnvsMembers)) {
+                      setError(
+                        'One or more admin member is required for this environment'
+                      )
+                    }
+
+                    envMembersDescriptor.descriptor.content =
+                      newEnvsMembers[environment]
+
                     await configureEnv(userSession, {
                       project,
                       descriptors: [envMembersDescriptor],
@@ -252,6 +251,7 @@ const PromptConfigure = ({
                     setRole(null)
                     setEnvironment(null)
                   } catch (error) {
+                    console.error(error)
                     setError(error.message)
                   } finally {
                     setLoading(false)
@@ -305,7 +305,7 @@ const PromptConfigure = ({
 
 export default () => {
   const { project, id, email } = queryString.parse(location.search)
-  let missingParams = !project || !id
+  let missingParams = !project || !id || !email
   let projectName,
     projectUUID = null
   try {

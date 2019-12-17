@@ -5,6 +5,7 @@ const {
   KEYSTONE_MAIL,
   INVITATIONS_STORE,
   PROJECTS_STORE,
+  ERROR_CODES,
 } = require('../constants')
 const { readFileFromGaia, writeFileToGaia } = require('../file/gaia')
 const {
@@ -268,7 +269,7 @@ const addMemberToProject = async (userSession, { project, invitee }) => {
   return addMember(userSession, {
     project,
     member: member.blockstack_id,
-    role: `${role}s`,
+    role,
   })
 }
 

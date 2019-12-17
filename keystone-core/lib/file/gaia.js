@@ -49,18 +49,24 @@ const readFileFromGaia = async (
     options.username = origin
   }
 
-  const fetchedFile = await userSession.getFile(path, options)
+  try {
+    const fetchedFile = await userSession.getFile(path, options)
+    if (json) {
+      const fetchedFileJSON = JSON.parse(fetchedFile)
+      fileCache.put(cacheKey, fetchedFileJSON)
+      return fetchedFileJSON
+    }
 
-  // debug(`${path} => `, fetchedFile)
-
-  if (json) {
-    const fetchedFileJSON = JSON.parse(fetchedFile)
-    fileCache.put(cacheKey, fetchedFileJSON)
-    return fetchedFileJSON
+    fileCache.put(cacheKey, fetchedFile)
+    return fetchedFile
+  } catch (error) {
+    // we can't retrieve the file from remote
+    // make it like a 404 not found
+    console.error(error)
+    return null
   }
 
-  fileCache.put(cacheKey, fetchedFile)
-  return fetchedFile
+  // debug(`${path} => `, fetchedFile)
 }
 
 const deleteFilesFromGaia = (
