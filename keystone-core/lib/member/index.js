@@ -5,7 +5,7 @@ const {
 } = require('../descriptor')
 const KeystoneError = require('../error')
 const { ROLES, ERROR_CODES, SHARED_MEMBER } = require('../constants')
-const { getPubkey } = require('../file')
+const { getPubkey } = require('../file/gaia')
 
 const doesUserHasRole = async (userSession, { project, env }, roles) => {
   const { username } = userSession.loadUserData()

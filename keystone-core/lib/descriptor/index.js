@@ -10,7 +10,6 @@ const { getPath, changeBlockstackId } = require('../descriptor-path')
 const {
   readFileFromGaia,
   writeFileToGaia,
-  getPubkey,
   deleteFilesFromGaia,
 } = require('../file/gaia')
 
