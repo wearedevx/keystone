@@ -8,8 +8,8 @@ const {
   getMembers,
 } = require('@keystone/core/lib/descriptor')
 
-const { CommandSignedIn } = require('../lib/commands')
 const { config } = require('@keystone/core/lib/commands/project')
+const { CommandSignedIn } = require('../lib/commands')
 
 class ProjectCommand extends CommandSignedIn {
   async saveChanges(project, projectDescriptor) {

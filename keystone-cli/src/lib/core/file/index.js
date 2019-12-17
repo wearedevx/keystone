@@ -496,7 +496,7 @@ const getFileFromEveryone = async (
     .filter(member => member !== userData.username)
     .map(async member =>
       getFileFromOther(userSession, {
-        origin: member, 
+        origin: member,
         project,
         filename: fileDescriptor.name || fileDescriptor.content.name,
         type,
@@ -648,7 +648,7 @@ const incrementVersion = ({
     if (newChecksum === lastDescriptor.checksum) {
       // we avoid throwing an error for project files
       // as it would happens everytime a user push files.
-      if (type !== 'project' && type !== 'env') { 
+      if (type !== 'project' && type !== 'env') {
         throw new Error(
           'A version of this file with the same content already exists.'
         )
@@ -768,13 +768,16 @@ const syncFile = async (
       return version
     }
 
-    if (files.length === 0 || version.stable.checksum === fileDescriptor.checksum) {
+    if (
+      files.length === 0 ||
+      version.stable.checksum === fileDescriptor.checksum
+    ) {
       return version.stable
     }
     // the current user is the only owner
 
     // we have known history
-    if (version.stable ) {
+    if (version.stable) {
       return incrementVersion({
         fileDescriptor,
         author: userData.username,

@@ -48,7 +48,6 @@ const createMembersDescriptor = (userSession, { project, env }) => {
     [ROLES.ADMINS]: [{ blockstack_id: username }],
     [ROLES.CONTRIBUTORS]: [],
     [ROLES.READERS]: [],
-    [ROLES.SHARES]: [],
   }
 
   const membersDescriptor = { content: members }

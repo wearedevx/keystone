@@ -83,7 +83,6 @@ const createProject = async (
       [ROLES.ADMINS]: [{ blockstack_id: username }],
       [ROLES.CONTRIBUTORS]: [],
       [ROLES.READERS]: [],
-      [ROLES.SHARES]: [],
     },
   }
 

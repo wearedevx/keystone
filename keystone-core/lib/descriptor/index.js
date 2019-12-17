@@ -281,7 +281,7 @@ const updateDescriptorForMembers = async (
     blockstackId: username,
   })
 
-  let membersToWriteTo = extractMembersByRole(
+  const membersToWriteTo = extractMembersByRole(
     membersDescriptor,
     Object.values(CONSTANTS.ROLES)
   )

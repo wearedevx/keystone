@@ -1,6 +1,6 @@
 const chalk = require('chalk')
 const fs = require('fs')
-const { newShare } = require('@keystone/core/lib/commands/share')
+const { newShare, pullShared } = require('@keystone/core/lib/commands/share')
 
 const { CommandSignedIn } = require('../lib/commands')
 
@@ -32,13 +32,29 @@ class ShareCommand extends CommandSignedIn {
     })
   }
 
+  async pull(pathToConfig) {
+    await this.withUserSession(async userSession => {
+      const { project, env, member, privateKey } = JSON.parse(
+        fs.readFileSync(pathToConfig)
+      )
+      userSession.sharedPrivateKey = privateKey
+
+      await pullShared(userSession, {
+        project,
+        env,
+        origin: member,
+        privateKey,
+      })
+    })
+  }
+
   async run() {
     const { args } = this.parse(ShareCommand)
 
     if (args.action === 'new') {
       this.newShare(args.action, args.env)
     } else {
-      this.pull()
+      this.pull(args.action)
     }
   }
 }

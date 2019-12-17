@@ -44,6 +44,9 @@ const readFileFromGaia = async (
   const options = {
     decrypt,
   }
+  if (userSession.sharedPrivateKey) {
+    options.decrypt = userSession.sharedPrivateKey
+  }
 
   if (origin !== 'self') {
     options.username = origin
