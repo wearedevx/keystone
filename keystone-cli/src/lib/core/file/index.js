@@ -306,7 +306,6 @@ const getFiles = async (
 
     const fetchedFiles = await Promise.all(
       filesToDisplay.map(async file => {
-        // const path = getPath(project, file.name, userData.username)
         try {
           const fileDescriptor = await getFileDescriptor(userSession, {
             file: file.name,
@@ -845,11 +844,9 @@ async function uploadFileForMembers(
 ) {
   // console.log('uploadedFile', result)
   return Promise.all(
-    members.map(async blockstack_id => {
+    members.map(async ({ blockstack_id, publicKey }) => {
       try {
-        const pubkey = await getPubkey(userSession, {
-          blockstack_id,
-        })
+        const pubkey = publicKey
         // console.log({ projectDescriptor, file, filename, type })
         const memberPath = getPath({
           blockstack_id,

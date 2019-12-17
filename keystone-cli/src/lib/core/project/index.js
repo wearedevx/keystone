@@ -249,8 +249,8 @@ const copyFilesForMembers = async (userSession, { projectDescriptor }) => {
   return Promise.all(
     await members.map(async member => {
       // const { blockstack_id } = member
-      const blockstackId = member
-      const pubkey = await getPubkey(userSession, { blockstackId })
+      const blockstackId = member.blockstack_id
+      const pubkey = member.publicKey
 
       const files = []
 
@@ -386,10 +386,6 @@ const addMembersToProject = async (userSession, { project, invitees }) => {
         try {
           // get their public key, if they don't they are not ready
           await getPubkey(userSession, { blockstack_id: id })
-
-          // projectDescriptor.content.members = projectDescriptor.content.members.filter(
-          //   m => m.blockstack_id === userData.blockstack_id
-          // )
 
           projectDescriptor = await addMemberToProject(userSession, {
             projectDescriptor,

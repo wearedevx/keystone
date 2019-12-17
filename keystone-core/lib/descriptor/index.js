@@ -102,11 +102,11 @@ const getLatestDescriptorByPath = async (
 
   let descriptors = await Promise.all(
     members.map(async member => {
-      const pubkey = await getPubkey(userSession, { blockstackId: member })
+      const pubkey = member.publicKey
 
       return readFileFromGaia(userSession, {
         path: descriptorPath,
-        origin: member,
+        origin: member.blockstack_id,
         decrypt: pubkey,
       })
     })
@@ -162,12 +162,15 @@ const uploadDescriptorForEveryone = (
 
   return Promise.all(
     members.map(async member => {
-      const pubkey = await getPubkey(userSession, { blockstackId: member })
-      const descriptorPath = changeBlockstackId(descriptor.path, member)
+      const pubkey = member.publicKey
+      const descriptorPath = changeBlockstackId(
+        descriptor.path,
+        member.blockstack_id
+      )
 
       return writeFileToGaia(userSession, {
         path: descriptorPath,
-        origin: member,
+        origin: member.blockstack_id,
         content: JSON.stringify({ ...descriptor, path: descriptorPath }),
         encrypt: pubkey,
       })
@@ -421,10 +424,7 @@ const getMembersByRoles = async (userSession, { project, env }, roles) => {
 const extractMembersByRole = (membersDescriptor, roles) => {
   if (membersDescriptor) {
     return roles.reduce((members, role) => {
-      return [
-        ...members,
-        ...membersDescriptor.content[role].map(m => m.blockstack_id),
-      ]
+      return [...members, ...membersDescriptor.content[role]]
     }, [])
   }
 
