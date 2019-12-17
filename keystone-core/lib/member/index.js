@@ -4,7 +4,8 @@ const {
   updateDescriptorForMembers,
 } = require('../descriptor')
 const KeystoneError = require('../error')
-const { ROLES, ERROR_CODES } = require('../constants')
+const { ROLES, ERROR_CODES, SHARED_MEMBER } = require('../constants')
+const { getPubkey } = require('../file')
 
 const doesUserHasRole = async (userSession, { project, env }, roles) => {
   const { username } = userSession.loadUserData()
@@ -62,7 +63,13 @@ const createMembersDescriptor = (userSession, { project, env }) => {
   })
 }
 
-const addMember = async (userSession, { project, env, member, role }) => {
+const addMember = async (
+  userSession,
+  { project, env, member, role, publicKey }
+) => {
+  if (!publicKey) {
+    publicKey = await getPubkey(userSession, { blockstackId: member })
+  }
   const membersDescriptor = await getLatestMembersDescriptor(userSession, {
     project,
     env,
@@ -72,7 +79,7 @@ const addMember = async (userSession, { project, env, member, role }) => {
     return [...members, membersDescriptor.content[r]]
   }, [])
 
-  if (allMembers.find(m => m === member)) {
+  if (member !== SHARED_MEMBER && allMembers.find(m => m === member)) {
     throw new KeystoneError(
       ERROR_CODES.InvitationFailed,
       'User already in the project',
@@ -80,14 +87,13 @@ const addMember = async (userSession, { project, env, member, role }) => {
     )
   }
 
-  console.log({ role, const: ROLES.SHARES })
-  if (role === ROLES.SHARES) {
-    console.log('CESTLECASEburehgirivgiegiufvisdvhiusdhiuvhiudhvhiu')
-    membersDescriptor.content[role] = [{ blockstack_id: member }]
-  } else {
-    membersDescriptor.content[role].push({ blockstack_id: member })
-  }
-  console.log(membersDescriptor.content)
+  const newMember = { blockstack_id: member, publicKey }
+
+  membersDescriptor.content[role] = membersDescriptor.content[role].filter(
+    m => m.blockstack_id !== SHARED_MEMBER
+  )
+
+  membersDescriptor.content[role].push(newMember)
 
   return updateDescriptor(userSession, {
     project,

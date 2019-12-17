@@ -21,28 +21,30 @@ const { ROLES } = require('../../constants')
 
 const pull = async (
   userSession,
-  { project, env, absoluteProjectPath, force = false }
+  { project, env, absoluteProjectPath, force = false, cache = true, origin }
 ) => {
-  // create keystone cache folder
-  const cacheFolder = getCacheFolder(absoluteProjectPath)
+  if (cache) {
+    // create keystone cache folder
+    const cacheFolder = getCacheFolder(absoluteProjectPath)
 
-  // Can't pull if you have modified files under Keystone watch
-  // - get all files from the cache folder
-  // - check if they still exists on the current folder
-  // - check if the content is the same.
-  const changes = getModifiedFilesFromCacheFolder(
-    cacheFolder,
-    absoluteProjectPath
-  )
-
-  const uncommitted = changes.filter(change => change.status !== 'ok')
-
-  if (uncommitted.length > 0 && !force) {
-    throw new KeystoneError(
-      'PullWhileFilesModified',
-      'You should push your changes first.',
-      uncommitted
+    // Can't pull if you have modified files under Keystone watch
+    // - get all files from the cache folder
+    // - check if they still exists on the current folder
+    // - check if the content is the same.
+    const changes = getModifiedFilesFromCacheFolder(
+      cacheFolder,
+      absoluteProjectPath
     )
+
+    const uncommitted = changes.filter(change => change.status !== 'ok')
+
+    if (uncommitted.length > 0 && !force) {
+      throw new KeystoneError(
+        'PullWhileFilesModified',
+        'You should push your changes first.',
+        uncommitted
+      )
+    }
   }
 
   const { username } = userSession.loadUserData()
@@ -56,12 +58,12 @@ const pull = async (
   // we pull and we don't have any member list yet.
   await getLatestMembersDescriptor(userSession, {
     project,
-    origin: projectByUUID.createdBy,
+    origin: origin || projectByUUID.createdBy,
   })
 
   await getLatestProjectDescriptor(userSession, {
     project,
-    origin: projectByUUID.createdBy,
+    origin: origin || projectByUUID.createdBy,
   })
 
   const ownEnvDescriptor = await getDescriptor(userSession, {

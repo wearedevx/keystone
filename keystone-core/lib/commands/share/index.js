@@ -1,10 +1,12 @@
 const EC = require('elliptic').ec
 const { addMember } = require('../../member')
-const { ROLES } = require('../../constants')
+const { ROLES, SHARED_MEMBER } = require('../../constants')
+const pull = require('../pull')
 
 const ec = new EC('secp256k1')
 
-const newShare = (userSession, { project }) => {
+const newShare = async (userSession, { project, env }) => {
+  const { username } = userSession.loadUserData()
   const keypair = ec.genKeyPair()
   const pubPoint = keypair.getPublic()
 
@@ -12,11 +14,20 @@ const newShare = (userSession, { project }) => {
     publicKey: pubPoint.encode('hex'),
     privateKey: keypair.getPrivate('hex'),
   }
-  return addMember(userSession, {
+  await addMember(userSession, {
     project,
-    member: `shared-${userKeypair.publicKey}`,
-    role: ROLES.SHARES,
+    env,
+    member: SHARED_MEMBER,
+    role: ROLES.READERS,
+    publicKey: userKeypair.publicKey,
   })
+  await pull(userSession, {
+    project,
+    env,
+    origin: username,
+    absoluteProjectPath: '.',
+  })
+  return userKeypair
 }
 
 module.exports = { newShare }

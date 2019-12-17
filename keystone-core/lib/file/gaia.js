@@ -1,6 +1,6 @@
 const debug = require('debug')('keystone:core:file')
 const fileCache = require('./cache')
-const { PUBKEY } = require('../constants')
+const { PUBKEY, SHARED_MEMBER } = require('../constants')
 
 // TODO: we shouldn't need origin as encrypt already has that information: if set to true or false, it's the logged user else it's the blockstack id of another user
 const writeFileToGaia = async (
@@ -78,8 +78,8 @@ const deleteFilesFromGaia = (
 }
 
 const getPubkey = async (userSession, { blockstackId }) => {
-  console.log('blockstackId', blockstackId)
-  if (/shared-.*/.test(blockstackId)) return blockstackId.split('-')[1]
+  if (new RegExp(SHARED_MEMBER).test(blockstackId))
+    return blockstackId.split('-')[1]
   const pubkeyFile = await readFileFromGaia(userSession, {
     decrypt: false,
     path: PUBKEY,

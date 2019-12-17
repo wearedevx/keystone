@@ -19,10 +19,10 @@ module.exports = {
     ADMINS: 'admins',
     CONTRIBUTORS: 'contributors',
     READERS: 'readers',
-    SHARES: 'shares',
   },
   PUBKEY: 'public.key',
   KEYSTONE_CONFIG_PATH: '.ksconfig',
   PROJECTS_STORE: 'projects.json',
   KEYSTONE_HIDDEN_FOLDER: '.keystone',
+  SHARED_MEMBER: '{{shared}}',
 }
