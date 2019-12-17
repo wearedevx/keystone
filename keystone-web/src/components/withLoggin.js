@@ -6,7 +6,6 @@ export default ({
   children,
   loggedOutText = 'You need to sign in with your Blockstack account continue.',
   loggedOutContent = null,
-  redirectURI = '/',
 }) => {
   const { loggedIn, redirectToSignIn } = useUser()
 

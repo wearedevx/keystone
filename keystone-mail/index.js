@@ -3,6 +3,7 @@ const mandrill = require("mandrill-api/mandrill");
 
 const mandrill_client = new mandrill.Mandrill(process.env.MANDRILL_KEY);
 const inviteUrl = process.env.INVITE_URL;
+const configureUrl = process.env.CONFIGURE_URL;
 
 exports.mail = async (req, res) => {
   // Set CORS headers for preflight requests
@@ -57,7 +58,7 @@ exports.mail = async (req, res) => {
  * @param {*} from
  */
 function sendReceipt({ project, id, to, from, uuid }) {
-  const url = `${inviteUrl}?action=accept&id=${id}&project=${project}/${uuid}&to=${to}`;
+  const url = `${configureUrl}?id=${id}&project=${project}/${uuid}`;
   const link = encodeURI(url);
   return new Promise((resolve, reject) => {
     mandrill_client.messages.sendTemplate(
@@ -99,7 +100,7 @@ function sendReceipt({ project, id, to, from, uuid }) {
 }
 
 async function sendInvite({ email, project, id, from, uuid }) {
-  const url = `${inviteUrl}?action=join&id=${id}&project=${project}/${uuid}&from=${from}&to=${email}`;
+  const url = `${inviteUrl}?id=${id}&project=${project}/${uuid}&from=${from}&to=${email}`;
   const link = encodeURI(url);
 
   return new Promise((resolve, reject) => {
