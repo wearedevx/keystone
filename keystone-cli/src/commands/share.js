@@ -7,9 +7,21 @@ const { CommandSignedIn } = require('../lib/commands')
 class ShareCommand extends CommandSignedIn {
   async newShare(action, env) {
     await this.withUserSession(async userSession => {
+      const { username } = userSession.loadUserData()
       const project = await this.getProjectName()
       if (action === 'new') {
         const addedShare = await newShare(userSession, { project, env })
+
+        fs.writeFile(
+          'config.json',
+          JSON.stringify({
+            project,
+            env,
+            member: username,
+            privateKey: addedShare.privateKey,
+          }),
+          err => console.log(err)
+        )
 
         this.log(
           `Private key to decrypt shared user files :\n▻ ${chalk.yellow(

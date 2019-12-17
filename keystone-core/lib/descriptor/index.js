@@ -281,8 +281,6 @@ const updateDescriptorForMembers = async (
     blockstackId: username,
   })
 
-  debug('updateDescriptorForMembers', type, descriptorPath)
-
   let membersToWriteTo = extractMembersByRole(
     membersDescriptor,
     Object.values(CONSTANTS.ROLES)
@@ -310,8 +308,6 @@ const updateDescriptorForMembers = async (
   const previousDescriptor = await getOwnDescriptorByPath(userSession, {
     descriptorPath,
   })
-
-  console.log({ latestDescriptor, previousDescriptor, content })
 
   // The file does not exist at anywhere at all in the world
   if (!latestDescriptor && !previousDescriptor) {

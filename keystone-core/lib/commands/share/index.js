@@ -25,7 +25,8 @@ const newShare = async (userSession, { project, env }) => {
     project,
     env,
     origin: username,
-    absoluteProjectPath: '.',
+    absoluteProjectPath: './',
+    force: true,
   })
   return userKeypair
 }
