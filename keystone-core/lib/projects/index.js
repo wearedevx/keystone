@@ -83,6 +83,7 @@ const createProject = async (
       [ROLES.ADMINS]: [{ blockstack_id: username }],
       [ROLES.CONTRIBUTORS]: [],
       [ROLES.READERS]: [],
+      [ROLES.SHARES]: [],
     },
   }
 
@@ -189,7 +190,7 @@ const removeEnvFromProject = async (userSession, { project, env }) => {
 
 const getNameAndUUID = projectFullname => {
   try {
-    projectParts = projectFullname.split('/')
+    const projectParts = projectFullname.split('/')
     const name = projectParts[0]
     const uuid = projectParts[1]
     // UUID should be in version 4

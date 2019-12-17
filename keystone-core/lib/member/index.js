@@ -12,6 +12,7 @@ const doesUserHasRole = async (userSession, { project, env }, roles) => {
     project,
     env,
   })
+
   return roles.reduce((hasRole, role) => {
     return (
       hasRole ||
@@ -46,6 +47,7 @@ const createMembersDescriptor = (userSession, { project, env }) => {
     [ROLES.ADMINS]: [{ blockstack_id: username }],
     [ROLES.CONTRIBUTORS]: [],
     [ROLES.READERS]: [],
+    [ROLES.SHARES]: [],
   }
 
   const membersDescriptor = { content: members }
@@ -78,7 +80,14 @@ const addMember = async (userSession, { project, env, member, role }) => {
     )
   }
 
-  membersDescriptor.content[role].push({ blockstack_id: member })
+  console.log({ role, const: ROLES.SHARES })
+  if (role === ROLES.SHARES) {
+    console.log('CESTLECASEburehgirivgiegiufvisdvhiusdhiuvhiudhvhiu')
+    membersDescriptor.content[role] = [{ blockstack_id: member }]
+  } else {
+    membersDescriptor.content[role].push({ blockstack_id: member })
+  }
+  console.log(membersDescriptor.content)
 
   return updateDescriptor(userSession, {
     project,

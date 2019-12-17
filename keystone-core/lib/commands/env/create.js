@@ -1,14 +1,15 @@
 const debug = require('debug')('keystone:commands:env:create')
 
 const { createEnv } = require('../../env')
-const { getProjectDescriptor } = require('../../projects')
+const { getDescriptor } = require('../../descriptor')
 
 const create = async (userSession, { project, env }) => {
   try {
     await createEnv(userSession, {
       env,
-      projectDescriptor: await getProjectDescriptor(userSession, {
+      projectDescriptor: await getDescriptor(userSession, {
         project,
+        type: 'project',
       }),
     })
     debug(`▻ Environment name successfully created`)

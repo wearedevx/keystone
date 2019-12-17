@@ -38,36 +38,33 @@ class EnvCommand extends CommandSignedIn {
   async newEnv(project, name) {
     await this.withUserSession(async userSession => {
       await assertUserIsAdminOrContributor(userSession, { project })
-
-      if (userSession && userSession.isUserSignedIn()) {
-        try {
-          // Check if env already exists.
-          const projectDescriptor = await getLatestProjectDescriptor(
-            userSession,
-            {
-              project,
-            }
-          )
-
-          // If not, create it.
-          if (projectDescriptor.content.env.includes(name)) {
-            throw new Error(`Env ${name} already exists.`)
+      try {
+        // Check if env already exists.
+        const projectDescriptor = await getLatestProjectDescriptor(
+          userSession,
+          {
+            project,
           }
+        )
 
-          await createEnv(userSession, {
-            env: name,
-            projectDescriptor,
-          })
-
-          await addEnvToProject(userSession, {
-            projectDescriptor,
-            env: name,
-          })
-          this.log(`▻ Environment ${chalk.bold(name)} successfully created`)
-        } catch (err) {
-          console.log(err)
-          this.log(`▻ Environment creation failed : ${chalk.bold(err)}`)
+        // If not, create it.
+        if (projectDescriptor.content.env.includes(name)) {
+          throw new Error(`Env ${name} already exists.`)
         }
+
+        await createEnv(userSession, {
+          env: name,
+          projectDescriptor,
+        })
+
+        await addEnvToProject(userSession, {
+          projectDescriptor,
+          env: name,
+        })
+        this.log(`▻ Environment ${chalk.bold(name)} successfully created`)
+      } catch (err) {
+        console.log(err)
+        this.log(`▻ Environment creation failed : ${chalk.bold(err)}`)
       }
     })
   }
