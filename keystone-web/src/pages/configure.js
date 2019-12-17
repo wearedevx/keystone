@@ -18,6 +18,7 @@ import {
   isOneOrMoreAdmin,
 } from '@keystone/core/lib/env/configure'
 import configureEnv from '@keystone/core/lib/commands/env/config'
+import { add } from '@keystone/core/lib/commands/add'
 
 const TitlePrompt = ({ project, env }) => (
   <>
@@ -33,30 +34,21 @@ const TitlePrompt = ({ project, env }) => (
   </>
 )
 
-const join = async (
-  userSession,
-  { name, from, blockstackId, userEmail, onError, onDone, onSuccess }
-) => {
-  try {
-    const projects = await acceptInvite(userSession, {
-      name,
-      from,
-      blockstackId,
-      userEmail,
-    })
-    onSuccess(projects)
-    return projects
-  } catch (error) {
-    onError(error)
-  } finally {
-    onDone()
-  }
-}
-
 const getProjectDetails = async (userSession, { project }) => {
   const projectDescriptor = await getLatestProjectDescriptor(userSession, {
     project,
   })
+
+  const projectMembersDescriptor = await getLatestMembersDescriptor(
+    userSession,
+    { project }
+  )
+
+  const projectMembers = [
+    ...projectMembersDescriptor.content[ROLES.ADMINS],
+    ...projectMembersDescriptor.content[ROLES.CONTRIBUTORS],
+    ...projectMembersDescriptor.content[ROLES.READERS],
+  ]
 
   const envMembersDescriptors = await Promise.all(
     projectDescriptor.content.env.map(async env => {
@@ -78,7 +70,14 @@ const getProjectDetails = async (userSession, { project }) => {
   )
 
   const allMembers = await getMembers(userSession, { project })
-  return { envsMembers, allMembers, projectDescriptor, envMembersDescriptors }
+  return {
+    envsMembers,
+    allMembers,
+    projectDescriptor,
+    envMembersDescriptors,
+    projectMembersDescriptor,
+    projectMembers,
+  }
 }
 
 const ChooseEnv = ({ setEnvironment, environments, blockstackId }) => {
@@ -133,7 +132,13 @@ const Confirm = ({ onReset, onConfirm, role, blockstackId }) => {
   )
 }
 
-const PromptConfigure = ({ project, projectName, uuid, blockstackId }) => {
+const PromptConfigure = ({
+  project,
+  projectName,
+  uuid,
+  blockstackId,
+  email,
+}) => {
   const { userSession } = useUser()
   const [configuring, setConfiguring] = useState(false)
   const [error, setError] = useState(false)
@@ -188,7 +193,32 @@ const PromptConfigure = ({ project, projectName, uuid, blockstackId }) => {
                 environment={environment}
                 role={role}
                 onConfirm={async () => {
-                  const { envsMembers, envMembersDescriptors } = projectDetails
+                  const {
+                    envsMembers,
+                    envMembersDescriptors,
+                    projectMembers,
+                  } = projectDetails
+
+                  // if it's not the case
+                  // start by adding the user to the project
+                  // by default as a reader
+                  if (
+                    !projectMembers.find(m => m.blockstack_id === blockstackId)
+                  ) {
+                    try {
+                      await add(userSession, {
+                        project,
+                        invitee: {
+                          blockstackId,
+                          role: ROLES.READERS,
+                          email,
+                        },
+                      })
+                    } catch (error) {
+                      setError(error.message)
+                    }
+                  }
+
                   const envMembersDescriptor = envMembersDescriptors.find(
                     envDescriptor => envDescriptor.env === environment
                   )
@@ -274,7 +304,7 @@ const PromptConfigure = ({ project, projectName, uuid, blockstackId }) => {
 }
 
 export default () => {
-  const { project, id } = queryString.parse(location.search)
+  const { project, id, email } = queryString.parse(location.search)
   let missingParams = !project || !id
   let projectName,
     projectUUID = null
@@ -302,6 +332,7 @@ export default () => {
             projectName={projectName}
             uuid={projectUUID}
             blockstackId={id}
+            email={email}
           />
         )}
       </WithLoggin>
