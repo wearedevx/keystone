@@ -6,7 +6,10 @@ const EC = require('elliptic').ec
 const { decryptECIES } = require('blockstack/lib/encryption/ec')
 const axios = require('axios')
 const chalk = require('chalk')
-const { KEYSTONE_WEB } = require('@keystone/core/lib/constants')
+const {
+  KEYSTONE_WEB,
+  LOGIN_KEY_PREFIX,
+} = require('@keystone/core/lib/constants')
 const {
   createUserSession,
   getFilepath,
@@ -24,7 +27,10 @@ class LoginCommand extends Command {
 
       if (apphub) {
         const { publicKey, privateKey } = LoginCommand.getKeypair()
-        const uri = getFilepath({ apphub, filename: `${publicKey}.json` })
+        const uri = getFilepath({
+          apphub,
+          filename: `${LOGIN_KEY_PREFIX}${publicKey}.json`,
+        })
 
         await open(`${KEYSTONE_WEB}/confirm?token=${publicKey}&id=${id}`)
 
@@ -40,7 +46,11 @@ class LoginCommand extends Command {
 
             // Blockstack use the private in HEX to decrypt, see below
             // https://github.com/blockstack/blockstack.js/blob/master/src/encryption/ec.ts
-            const keyfileUnencrypted = decryptECIES(privateKey, keyfile.data)
+            const keyfileUnencrypted = await decryptECIES(
+              privateKey,
+              keyfile.data
+            )
+
             const userCredentials = JSON.parse(keyfileUnencrypted)
             await write({
               path: this.config.configDir,
@@ -56,12 +66,17 @@ class LoginCommand extends Command {
                 `▻ You are connected under ${chalk.bold(userData.username)}`
               )
               this.log(`▻ You can logout with: ${chalk.yellow(`$ ks logout`)}`)
-              // remove the file
+              // remove every files used to connect the terminal
               try {
-                await userSession.deleteFile(`${publicKey}.json`)
+                userSession.listFiles(async file => {
+                  if (file.indexOf(LOGIN_KEY_PREFIX) > -1) {
+                    userSession.deleteFile(file)
+                  }
+                  return true
+                })
               } catch (error) {
                 this.log(
-                  "Can't remove your temporary keyfile from Gaïa",
+                  "Can't remove your temporary keyfile from Gaïa. Please open a Github issue.",
                   error.message
                 )
               } finally {

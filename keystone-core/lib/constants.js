@@ -25,4 +25,5 @@ module.exports = {
   PROJECTS_STORE: 'projects.json',
   KEYSTONE_HIDDEN_FOLDER: '.keystone',
   SHARED_MEMBER: '{{shared}}',
+  LOGIN_KEY_PREFIX: '{{login}}',
 }

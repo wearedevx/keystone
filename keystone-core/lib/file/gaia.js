@@ -5,13 +5,13 @@ const { PUBKEY, SHARED_MEMBER } = require('../constants')
 // TODO: we shouldn't need origin as encrypt already has that information: if set to true or false, it's the logged user else it's the blockstack id of another user
 const writeFileToGaia = async (
   userSession,
-  { path, origin = 'self', content, encrypt = true }
+  { path, origin = 'self', content, encrypt = true, sign = false }
 ) => {
   debug('')
   debug(`Write file on gaia to ${path} with encrypt ${encrypt || 'no encrypt'}`)
 
   const cacheKey = `${origin}/${path}`
-  await userSession.putFile(path, content, { encrypt })
+  await userSession.putFile(path, content, { encrypt, sign })
 
   fileCache.put(cacheKey, JSON.parse(content))
 
@@ -20,7 +20,7 @@ const writeFileToGaia = async (
 
 const readFileFromGaia = async (
   userSession,
-  { path, origin = 'self', decrypt = true, json = true }
+  { path, origin = 'self', decrypt = true, json = true, verify = false }
 ) => {
   const { username } = userSession.loadUserData()
   const cacheKey = `${origin}/${path}`
@@ -43,6 +43,7 @@ const readFileFromGaia = async (
 
   const options = {
     decrypt,
+    verify,
   }
   if (userSession.sharedPrivateKey) {
     options.decrypt = userSession.sharedPrivateKey
@@ -88,6 +89,7 @@ const getPubkey = async (userSession, { blockstackId }) => {
     path: PUBKEY,
     origin: blockstackId,
     json: false,
+    verify: true,
   })
   if (pubkeyFile) {
     return pubkeyFile

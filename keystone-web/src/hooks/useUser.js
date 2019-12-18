@@ -1,6 +1,19 @@
 import { useEffect, useState } from 'react'
 import useStore from '../utils/store'
-import { KEYSTONE_WEB } from '@keystone/core/dist/constants'
+import { KEYSTONE_WEB, PUBKEY } from '@keystone/core/dist/constants'
+import * as blockstack from 'blockstack'
+import { readFileFromGaia, writeFileToGaia } from '@keystone/core/lib/file/gaia'
+
+const savePublicKey = async userSession => {
+  const userData = userSession.loadUserData()
+  const publicKey = blockstack.getPublicKeyFromPrivate(userData.appPrivateKey)
+  await writeFileToGaia(userSession, {
+    path: PUBKEY,
+    content: publicKey,
+    sign: true,
+    encrypt: false,
+  })
+}
 
 export default () => {
   const userSession = useStore(s => s.userSession)
@@ -13,6 +26,24 @@ export default () => {
 
   useEffect(() => {
     if (userSession && userSession.isUserSignedIn()) {
+      // makes sure the public key is available to others.
+      const setPublicKey = async () => {
+        let remotePubKey = undefined
+        try {
+          remotePubKey = await readFileFromGaia(userSession, {
+            path: PUBKEY,
+            decrypt: false,
+            json: false,
+          })
+        } catch (error) {
+          console.error(error)
+        } finally {
+          if (!remotePubKey) {
+            await savePublicKey(userSession)
+          }
+        }
+      }
+      setPublicKey()
       setLoggedIn(true)
     } else {
       setLoggedIn(false)
@@ -30,22 +61,9 @@ export default () => {
       userSession.handlePendingSignIn().then(async data => {
         /* initialize workspace, create required db files for keystone */
 
-        //initWorkspace({ userSession, userData })
-        /* save Data */
-        // setUserData(userData)
-        /* set Name */
-        // setUserName(userData.username)
-        /* set Public Key  */
-        // setUserPublicKey(
-        //   blockstack.getPublicKeyFromPrivate(userData.appPrivateKey)
-        // )
-
         setLoggedIn(true)
 
         setSigninPending(false)
-
-        /* --END LOADING-- */
-        // setLoading(false)
       })
     }
   }, [signinPending])

@@ -4,6 +4,7 @@ import { Link } from '@reach/router'
 import queryString from 'query-string'
 import KeystoneError from '@keystone/core/lib/error'
 import { writeFileToGaia } from '@keystone/core/lib/file/gaia'
+import { LOGIN_KEY_PREFIX } from '@keystone/core/lib/constants'
 
 const connectTerminal = async ({
   location,
@@ -36,7 +37,7 @@ const connectTerminal = async ({
 
   // Upload and encrypt with the public key which is the token
   const file = await writeFileToGaia(userSession, {
-    path: `${token}.json`,
+    path: `${LOGIN_KEY_PREFIX}${token}.json`,
     content: blockstackSessionStore,
     encrypt: token,
   })
