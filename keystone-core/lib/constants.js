@@ -26,4 +26,5 @@ module.exports = {
   KEYSTONE_HIDDEN_FOLDER: '.keystone',
   SHARED_MEMBER: '{{shared}}',
   LOGIN_KEY_PREFIX: '{{login}}',
+  SHARE_FILENAME: 'keystone-link.json',
 }

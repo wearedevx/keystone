@@ -2,6 +2,7 @@ const chalk = require('chalk')
 const fs = require('fs')
 const { newShare, pullShared } = require('@keystone/core/lib/commands/share')
 const { flags } = require('@oclif/command')
+const { SHARE_FILENAME } = require('@keystone/core/lib/constants')
 
 const { CommandSignedIn } = require('../lib/commands')
 
@@ -14,7 +15,7 @@ class ShareCommand extends CommandSignedIn {
         const addedShare = await newShare(userSession, { project, env })
 
         fs.writeFile(
-          'config.json',
+          SHARE_FILENAME,
           JSON.stringify({
             project,
             env,
@@ -59,11 +60,11 @@ class ShareCommand extends CommandSignedIn {
         throw new Error(
           'You need to give the name of the envivronment you want to create the user in !'
         )
-      this.newShare(args.action, args.env)
+      this.newShare(args.action, flags.env)
     } else if (args.action === 'pull') {
-      if (!flags.config)
-        throw new Error('You need to give the path to the config file ! ')
-      this.pull(flags.config)
+      if (!flags.link)
+        throw new Error('You need to give the path to the link file ! ')
+      this.pull(flags.link)
     } else {
       this.log(`The action ${chalk.bold(args.action)} is not a valid one`)
     }
@@ -79,8 +80,7 @@ ShareCommand.args = [
   {
     name: 'action',
     required: true, // make the arg required with `required: true`
-    description:
-      'new || pull. Create a new shared user or pull files based on config.json file.', // help description
+    description: `new || pull. Create a new shared user or pull files based on ${SHARE_FILENAME} file.`, // help description
     hidden: false,
   },
 ]
@@ -91,10 +91,10 @@ ShareCommand.flags = {
     multiple: false,
     description: `Env you want to create the user in.`,
   }),
-  config: flags.string({
-    char: 'c',
+  link: flags.string({
+    char: 'l',
     multiple: false,
-    description: `Path to your config file.`,
+    description: `Path to your link file.`,
   }),
 }
 
