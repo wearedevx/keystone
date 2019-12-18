@@ -19,6 +19,23 @@ const pullShared = async (userSession, { project, env, origin }) => {
     { descriptorPath: envPath, members: [{ blockstack_id: origin }] },
     true
   )
+
+  const files = await Promise.all(
+    envDescriptor.content.files.map(async ({ name: filename }) => {
+      const path = getPath({
+        env,
+        blockstackId: SHARED_MEMBER,
+        project,
+        filename,
+        type: 'file',
+      })
+
+      return getLatestDescriptorByPath(userSession, {
+        descriptorPath: path,
+        members: [{ blockstack_id: member }],
+      })
+    })
+  )
 }
 
 const newShare = async (userSession, { project, env }) => {
@@ -29,6 +46,8 @@ const newShare = async (userSession, { project, env }) => {
     publicKey: pubPoint.encode('hex'),
     privateKey: keypair.getPrivate('hex'),
   }
+
+  console.log(userKeypair)
 
   const memberDescriptor = await addMember(userSession, {
     project,

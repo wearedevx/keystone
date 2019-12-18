@@ -26,7 +26,7 @@ const readFileFromGaia = async (
   const cacheKey = `${origin}/${path}`
   const file = fileCache.get(cacheKey)
 
-  if (origin === username) {
+  if (origin === username && !new RegExp('{{shared}}').test(path)) {
     origin = 'self'
   }
 
