@@ -3,10 +3,13 @@ const { addMember } = require('../../member')
 const { ROLES, SHARED_MEMBER } = require('../../constants')
 const { getPath } = require('../../descriptor-path')
 const { getLatestDescriptorByPath } = require('../../descriptor')
-
+const { writeFileToDisk } = require('../../file/disk')
 const ec = new EC('secp256k1')
 
-const pullShared = async (userSession, { project, env, origin }) => {
+const pullShared = async (
+  userSession,
+  { project, env, origin, absoluteProjectPath }
+) => {
   const envPath = getPath({
     env,
     blockstackId: SHARED_MEMBER,
@@ -19,9 +22,10 @@ const pullShared = async (userSession, { project, env, origin }) => {
     { descriptorPath: envPath, members: [{ blockstack_id: origin }] },
     true
   )
+  console.log('TCL: pullShared -> envDescriptor', envDescriptor.content)
 
   const files = await Promise.all(
-    envDescriptor.content.files.map(async ({ name: filename }) => {
+    envDescriptor[0].content.files.map(async ({ name: filename }) => {
       const path = getPath({
         env,
         blockstackId: SHARED_MEMBER,
@@ -30,10 +34,12 @@ const pullShared = async (userSession, { project, env, origin }) => {
         type: 'file',
       })
 
-      return getLatestDescriptorByPath(userSession, {
+      const fileDescriptor = await getLatestDescriptorByPath(userSession, {
         descriptorPath: path,
-        members: [{ blockstack_id: member }],
+        members: [{ blockstack_id: origin }],
       })
+
+      writeFileToDisk(fileDescriptor, absoluteProjectPath)
     })
   )
 }
