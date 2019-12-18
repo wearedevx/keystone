@@ -178,7 +178,6 @@ const PromptConfigure = ({
                 setEnvironment={setEnvironment}
               />
             )}
-
             {environment && !role && (
               <ChooseRole
                 blockstackId={blockstackId}
@@ -186,7 +185,6 @@ const PromptConfigure = ({
                 setRole={setRole}
               />
             )}
-
             {environment && role && (
               <Confirm
                 blockstackId={blockstackId}
@@ -201,14 +199,14 @@ const PromptConfigure = ({
                       projectMembers,
                     } = projectDetails
 
-                    // if it's not the case
-                    // start by adding the user to the project
-                    // by default as a reader
-                    if (
-                      !projectMembers.find(
-                        m => m.blockstack_id === blockstackId
-                      )
-                    ) {
+                    // Add user to the project
+                    // if he's not already there
+                    // - by default as a reader
+                    const found = projectMembers.find(m => {
+                      return m.blockstack_id === blockstackId
+                    })
+
+                    if (!found) {
                       await add(userSession, {
                         project,
                         invitee: {
@@ -216,6 +214,16 @@ const PromptConfigure = ({
                           role: ROLES.READERS,
                           email,
                         },
+                      })
+
+                      const newProjectMembers = [
+                        ...projectMembers,
+                        { blockstack_id: blockstackId },
+                      ]
+                      // avoid duplicates at the project level
+                      setProjectDetails({
+                        ...projectDetails,
+                        projectMembers: newProjectMembers,
                       })
                     }
 
