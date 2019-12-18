@@ -78,7 +78,10 @@ const pull = async (
     type: 'env',
   })
 
-  if (envDescriptor.checksum === ownEnvDescriptor.checksum) {
+  if (
+    ownEnvDescriptor &&
+    envDescriptor.checksum === ownEnvDescriptor.checksum
+  ) {
     return [{ descriptorUpToDate: true }]
   }
 

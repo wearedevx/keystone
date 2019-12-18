@@ -94,7 +94,7 @@ const addMember = async (
 
   membersDescriptor.content[role].push(newMember)
 
-  return updateDescriptor(userSession, {
+  const newMembersDescriptor = await updateDescriptor(userSession, {
     project,
     env,
     type: 'members',
@@ -102,6 +102,31 @@ const addMember = async (
     content: membersDescriptor.content,
     membersDescriptor,
   })
+
+  // If the member is added to an env
+  if (env) {
+    const envDescriptor = await updateDescriptor(userSession, {
+      project,
+      env,
+      type: 'env',
+      name: env,
+      membersDescriptor: newMembersDescriptor,
+      updateAnyway: true,
+    })
+    const fileDescriptor = await Promise.all(
+      envDescriptor.content.files.map(async ({ name: filename }) => {
+        return updateDescriptor(userSession, {
+          project,
+          env,
+          type: 'file',
+          name: filename,
+          membersDescriptor: newMembersDescriptor,
+          updateAnyway: true,
+        })
+      })
+    )
+  }
+  return membersDescriptor
 }
 
 module.exports = {

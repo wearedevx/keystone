@@ -16,7 +16,7 @@ const pullShared = async (userSession, { project, env, origin }) => {
 
   const envDescriptor = await getLatestDescriptorByPath(
     userSession,
-    { descrpitorPath: envPath, members: [origin] },
+    { descriptorPath: envPath, members: [{ blockstack_id: origin }] },
     true
   )
 }
@@ -29,7 +29,8 @@ const newShare = async (userSession, { project, env }) => {
     publicKey: pubPoint.encode('hex'),
     privateKey: keypair.getPrivate('hex'),
   }
-  await addMember(userSession, {
+
+  const memberDescriptor = await addMember(userSession, {
     project,
     env,
     member: SHARED_MEMBER,
