@@ -24,7 +24,7 @@ const add = async (userSession, { project, invitee }) => {
   // updateDescriptor(userSession, { project })
 
   await uploadDescriptorForEveryone(userSession, {
-    members: [invitee.blockstackId],
+    members: [{ blockstack_id: invitee.blockstackId }],
     descriptor: projectDescriptor,
     type: 'project',
   })
