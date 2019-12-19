@@ -2,8 +2,8 @@ const debug = require('debug')('keystone:core:descriptor')
 const _ = require('lodash')
 const hash = require('object-hash')
 const daffy = require('daffy')
-const path = require('path')
 
+const { getPubkey } = require('../file/gaia')
 const { KeystoneError } = require('../error')
 const CONSTANTS = require('../constants')
 const { getPath, changeBlockstackId } = require('../descriptor-path')
@@ -157,7 +157,14 @@ const uploadDescriptorForEveryone = (
 
   return Promise.all(
     members.map(async member => {
-      const pubkey = member.publicKey
+      let pubkey = member.publicKey
+
+      if (!pubkey) {
+        pubkey = await getPubkey(userSession, {
+          blockstackId: member.blockstack_id,
+        })
+      }
+
       const descriptorPath = changeBlockstackId(
         descriptor.path,
         member.blockstack_id
