@@ -7,7 +7,7 @@ const inquirer = require('inquirer')
 const path = require('path')
 const { isOneOrMoreAdmin, setMembersToEnvs } = require('@keystone/core/lib/env')
 const { logo } = require('../lib/ux')
-const { getProjectDescriptor } = require('../lib/core')
+// const { getProjectDescriptor } = require('../lib/core')
 const { getSession, getProjectConfig } = require('../lib/blockstackLoader')
 
 function promptEnvToChange(envs, project = false) {
@@ -158,7 +158,7 @@ const CommandSignedIn = class extends Command {
           envsMembers,
           envs
         )
-        console.log("TCL: extends -> configureMembers -> members", members)
+        console.log('TCL: extends -> configureMembers -> members', members)
 
         currentStep = 0
 
@@ -183,17 +183,17 @@ const CommandSignedIn = class extends Command {
     }
   }
 
-  async fetchProject(userSession, project) {
-    try {
-      cli.action.start('Fetching project')
-      return await getProjectDescriptor(userSession, { project })
-    } catch (error) {
-      cli.action.stop('Failed')
-      this.log(`▻ ${error.message} ${chalk.red.bold('✗')}`)
-      // end the cli
-      return false
-    }
-  }
+  // async fetchProject(userSession, project) {
+  //   try {
+  //     cli.action.start('Fetching project')
+  //     return await getProjectDescriptor(userSession, { project })
+  //   } catch (error) {
+  //     cli.action.stop('Failed')
+  //     this.log(`▻ ${error.message} ${chalk.red.bold('✗')}`)
+  //     // end the cli
+  //     return false
+  //   }
+  // }
 
   async getConfigFolderPath() {
     try {
