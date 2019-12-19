@@ -34,13 +34,6 @@ class ProjectCommand extends CommandSignedIn {
       try {
         debug('Get last project descriptor')
 
-        const projectDescriptor = await getLatestProjectDescriptor(
-          userSession,
-          {
-            project,
-          }
-        )
-
         console.log('\x1Bc')
 
         const allMembers = await getMembers(userSession, { project })
@@ -55,7 +48,7 @@ class ProjectCommand extends CommandSignedIn {
 
         await this.configureMembers({
           allMembers,
-          projectMembers: projectDescriptor.content.members,
+          projectMembers: projectMembersDescriptor.content,
           envsMembers: { [project]: projectMembersDescriptor.content },
           project: true,
           env: project,
@@ -63,7 +56,7 @@ class ProjectCommand extends CommandSignedIn {
           type: 'project',
         })
 
-        await this.saveChanges(project, projectDescriptor)
+        await this.saveChanges(project, projectMembersDescriptor)
       } catch (err) {
         this.log(chalk.bold(err))
       }

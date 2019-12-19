@@ -340,7 +340,7 @@ export default () => {
             projectName={projectName}
             uuid={projectUUID}
             blockstackId={id}
-            email={email}
+            email={decodeURIComponent(email)}
           />
         )}
       </WithLoggin>

@@ -89,7 +89,9 @@ const deleteFilesFromGaia = (
   return userSession.deleteFile(path, opts)
 }
 
-const getPubkey = async (userSession, { blockstackId }) => {
+const getPubkey = async (userSession, { blockstackId, publicKey }) => {
+  if (publicKey) return publicKey
+
   if (new RegExp(SHARED_MEMBER).test(blockstackId))
     return blockstackId.split('-')[1]
   const pubkeyFile = await readFileFromGaia(userSession, {

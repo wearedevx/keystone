@@ -157,13 +157,7 @@ const uploadDescriptorForEveryone = (
 
   return Promise.all(
     members.map(async member => {
-      let pubkey = member.publicKey
-
-      if (!pubkey) {
-        pubkey = await getPubkey(userSession, {
-          blockstackId: member.blockstack_id,
-        })
-      }
+      const pubkey = await getPubkey(userSession, member)
 
       const descriptorPath = changeBlockstackId(
         descriptor.path,

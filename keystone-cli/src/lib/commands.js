@@ -39,11 +39,13 @@ function promptUsersToChange(role, env, allMembers, envsMembers, envs) {
       choices: [
         ...allMembers.map(user => {
           if (
-            envsMembers[env][role].find(member => member.blockstack_id === user)
+            envsMembers[env][role].find(
+              member => member.blockstack_id === user.blockstack_id
+            )
           ) {
-            return { name: user, value: user, checked: true }
+            return { name: user.blockstack_id, value: user, checked: true }
           }
-          return { name: user, value: user }
+          return { name: user.blockstack_id, value: user }
         }),
       ],
       default: [envs],
@@ -156,12 +158,13 @@ const CommandSignedIn = class extends Command {
           envsMembers,
           envs
         )
+        console.log("TCL: extends -> configureMembers -> members", members)
 
         currentStep = 0
 
-        members = members.map(member => ({
-          blockstack_id: member,
-        }))
+        // members = members.map(member => ({
+        //   blockstack_id: member,
+        // }))
         envsMembers = setMembersToEnvs({ envsMembers, members, role, env })
       }
       console.log('\x1Bc')

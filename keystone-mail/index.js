@@ -58,9 +58,7 @@ exports.mail = async (req, res) => {
  * @param {*} from
  */
 function sendReceipt({ project, id, to, from, uuid }) {
-  const url = `${configureUrl}?id=${id}&project=${project}/${uuid}&email=${encodeURIComponent(
-    from
-  )}`;
+  const url = `${configureUrl}?id=${id}&project=${project}/${uuid}&email=${from}`;
   const link = encodeURI(url);
   return new Promise((resolve, reject) => {
     mandrill_client.messages.sendTemplate(
