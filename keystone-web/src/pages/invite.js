@@ -30,7 +30,7 @@ const join = async (
       name,
       from,
       blockstackId,
-      userEmail: encodeURIComponent(userEmail),
+      userEmail,
     })
     onSuccess(projects)
     return projects
