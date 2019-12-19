@@ -151,8 +151,8 @@ export default () => {
           <PromptInvite
             project={projectName}
             uuid={projectUUID}
-            adminUserEmail={from}
-            userEmail={to}
+            adminUserEmail={decodeURIComponent(from)}
+            userEmail={decodeURIComponent(to)}
             blockstackId={id}
           />
         )}
