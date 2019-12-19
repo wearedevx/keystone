@@ -12,6 +12,7 @@ const savePublicKey = async userSession => {
     content: publicKey,
     sign: true,
     encrypt: false,
+    json: false,
   })
 }
 
