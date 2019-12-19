@@ -19,16 +19,7 @@ exports.mail = async (req, res) => {
     res.set("Access-Control-Max-Age", "3600");
     res.status(204).send("");
   } else {
-    const {
-      request,
-      project,
-      email,
-      id,
-      from,
-      to,
-      role,
-      uuid
-    } = req.body;
+    const { request, project, email, id, from, to, role, uuid } = req.body;
 
     switch (request) {
       case "invite":
@@ -67,8 +58,10 @@ exports.mail = async (req, res) => {
  * @param {*} from
  */
 function sendReceipt({ project, id, to, from, uuid }) {
-  const url = `${configureUrl}?id=${id}&project=${project}/${uuid}&email=${from}`;
-  const link = encodeURIComponent(url);
+  const url = `${configureUrl}?id=${id}&project=${project}/${uuid}&email=${encodeURIComponent(
+    from
+  )}`;
+  const link = encodeURI(url);
   return new Promise((resolve, reject) => {
     mandrill_client.messages.sendTemplate(
       {
@@ -109,8 +102,10 @@ function sendReceipt({ project, id, to, from, uuid }) {
 }
 
 async function sendInvite({ email, project, id, from, uuid }) {
-  const url = `${inviteUrl}?id=${id}&project=${project}/${uuid}&from=${from}&to=${email}`;
-  const link = encodeURIComponent(url);
+  const url = `${inviteUrl}?id=${id}&project=${project}/${uuid}&from=${encodeURIComponent(
+    from
+  )}&to=${encodeURIComponent(email)}`;
+  const link = encodeURI(url);
 
   return new Promise((resolve, reject) => {
     mandrill_client.messages.sendTemplate(
