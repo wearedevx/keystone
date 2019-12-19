@@ -1,12 +1,13 @@
 const blockstack = require('blockstack')
-const { AppConfig, UserSession } = blockstack
 const { SessionData } = require('blockstack/lib/auth/sessionData')
 const fs = require('fs')
 const path = require('path')
+const { KEYSTONE_WEB_URL } = require('@keystone/core/lib/constants')
 
 const { read } = require('../lib/cliStorage')
+const { createLocalStorage } = require('./localStorage')
 
-const { createLocalStorage, updateLocalStorage } = require('./localStorage')
+const { AppConfig, UserSession } = blockstack
 
 const blockstackLoader = (userCredentials = {}) => {
   //   blockstackData = blockstackData || {
@@ -19,7 +20,7 @@ const blockstackLoader = (userCredentials = {}) => {
   window = {
     localStorage,
     location: {
-      origin: 'http://localhost:8000',
+      origin: KEYSTONE_WEB_URL,
     },
   }
   return localStorage
@@ -37,7 +38,7 @@ const createUserSession = (userCredentials = {}) => {
 const getAppHub = async id => {
   const profile = await blockstack.lookupProfile(id)
   if (profile && profile.apps) {
-    return profile.apps['http://localhost:8000']
+    return profile.apps[KEYSTONE_WEB_URL]
   }
   return false
 }

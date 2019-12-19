@@ -27,4 +27,5 @@ module.exports = {
   SHARED_MEMBER: '{{shared}}',
   LOGIN_KEY_PREFIX: '{{login}}',
   SHARE_FILENAME: 'keystone-link.json',
+  KEYSTONE_WEB_URL: 'http://localhost:8000',
 }
