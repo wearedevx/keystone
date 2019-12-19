@@ -2,25 +2,35 @@ const chalk = require('chalk')
 const { cli } = require('cli-ux')
 const { flags } = require('@oclif/command')
 const util = require('util')
+const { readFileFromGaia } = require('@keystone/core/lib/file/gaia')
 
 const { CommandSignedIn } = require('../lib/commands')
-const {
-  getFiles,
-  getFileDescriptor,
-  getFileFromGaia,
-} = require('../lib/core/file')
+// const {
+//   getFiles,
+//   getFileDescriptor,
+//   getFileFromGaia,
+// } = require('@keystone/core/lib/file/')
+
+// const { getFileDescriptor } =
 
 class CatCommand extends CommandSignedIn {
-  async cat(files, project, env, flags) {
+  async cat(path, project, env, flags) {
     await this.withUserSession(async userSession => {
       cli.action.start('Fetching')
       let success
       try {
         let fetchedFiles
         if (flags.debug) {
-          fetchedFiles = await getFileFromGaia(userSession, files, {
-            username: flags.origin,
-          })
+
+          const opts = {
+            origin: flags.origin,
+            path,
+            decrypt: flags.decrypt,
+            json: flags.json,
+          }
+
+          fetchedFiles = await readFileFromGaia(userSession, opts)
+
           console.log(util.inspect(fetchedFiles, false, null))
           return
         }
@@ -37,7 +47,7 @@ class CatCommand extends CommandSignedIn {
 
         fetchedFiles = await getFiles(userSession, {
           project,
-          files: [files],
+          files: [path],
           envDescriptor,
         })
 
@@ -103,6 +113,17 @@ CatCommand.flags = {
     multiple: false,
     default: false,
     description: `Deletes an invitation`,
+  }),
+  decrypt: flags.boolean({
+    default: true,
+    description: `Indiciate to decrypt or not`,
+    allowNo: true,
+  }),
+  json: flags.boolean({
+    multiple: false,
+    default: true,
+    description: `Indiciate to parse json or not`,
+    allowNo: true,
   }),
 }
 
