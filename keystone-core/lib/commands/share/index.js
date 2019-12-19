@@ -4,6 +4,9 @@ const { ROLES, SHARED_MEMBER } = require('../../constants')
 const { getPath } = require('../../descriptor-path')
 const { getLatestDescriptorByPath } = require('../../descriptor')
 const { writeFileToDisk } = require('../../file/disk')
+
+const { extractMembersByRole } = require('../../descriptor')
+
 const ec = new EC('secp256k1')
 
 const getLastVersionOfMemberDescriptor = async (
@@ -59,11 +62,16 @@ const pullShared = async (
     type: 'env',
   })
 
+  const membersToRetrieveFiles = extractMembersByRole(memberDescriptor, [
+    ROLES.ADMINS,
+    ROLES.CONTRIBUTORS,
+  ])
+
   const envDescriptor = await getLatestDescriptorByPath(
     userSession,
     {
       descriptorPath: envPath,
-      members,
+      members: membersToRetrieveFiles,
     },
     true
   )
@@ -80,7 +88,7 @@ const pullShared = async (
 
       const fileDescriptor = await getLatestDescriptorByPath(userSession, {
         descriptorPath: path,
-        members,
+        members: membersToRetrieveFiles,
       })
 
       writeFileToDisk(fileDescriptor, absoluteProjectPath)

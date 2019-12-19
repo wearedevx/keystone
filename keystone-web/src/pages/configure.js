@@ -19,6 +19,7 @@ import {
 } from '@keystone/core/lib/env/configure'
 import configureEnv from '@keystone/core/lib/commands/env/config'
 import { add } from '@keystone/core/lib/commands/add'
+import { getPubkey } from '@keystone/core/lib/file/gaia'
 
 const TitlePrompt = ({ project, env }) => (
   <>
@@ -248,6 +249,36 @@ const PromptConfigure = ({
 
                     envMembersDescriptor.descriptor.content =
                       newEnvsMembers[environment]
+
+                    // const newEnvMembersDescriptor = await Promise.all(
+                    // envMembersDescriptor.map(async envDescriptor => {
+                    // const envDescriptorClone = { ...envDescriptor }
+
+                    for (const role of Object.values(ROLES)) {
+                      console.log('coucou')
+                      console.log("TCL: envMembersDescriptor.descriptor.content[role]", envMembersDescriptor.descriptor.content[role])
+                      const members = await Promise.all(
+                        envMembersDescriptor.descriptor.content[role].map(
+                          async member => {
+                            if (!member.publicKey) {
+                              member.publicKey = await getPubkey(
+                                userSession,
+                                member
+                              )
+                            }
+
+                            return member
+                          }
+                        )
+                      )
+                      console.log("TCL: members", members)
+
+                      envMembersDescriptor.descriptor.content[role] = members
+                    }
+
+                    // return envDescriptorClone
+                    //   })
+                    // )
 
                     await configureEnv(userSession, {
                       project,

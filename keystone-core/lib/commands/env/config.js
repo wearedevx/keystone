@@ -5,11 +5,11 @@ const { uploadFilesForNewMembers } = require('../../env/configure')
 const config = (userSession, { project, descriptors }) => {
   return Promise.all(
     descriptors.map(async ({ descriptor, env }) => {
-      const { content: members } = await getOwnDescriptor(userSession, {
-        project,
-        env,
-        type: 'members',
-      })
+      // const { content: members } = await getOwnDescriptor(userSession, {
+      //   project,
+      //   env,
+      //   type: 'members',
+      // })
       const updatedDescriptor = await Promise.all([
         updateDescriptor(userSession, {
           descriptorPath: descriptor.path,
