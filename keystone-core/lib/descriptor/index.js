@@ -101,12 +101,9 @@ const getLatestDescriptorByPath = async (
 
   let descriptors = await Promise.all(
     members.map(async member => {
-      const pubkey = member.publicKey
-
       return readFileFromGaia(userSession, {
         path: descriptorPath,
         origin: member.blockstack_id,
-        decrypt: pubkey,
       })
     })
   )
@@ -147,7 +144,6 @@ const getOwnDescriptor = async (
 
 const getOwnDescriptorByPath = (userSession, { descriptorPath }) => {
   debug('getOwnDescriptorByPath', descriptorPath)
-
   return readFileFromGaia(userSession, {
     path: descriptorPath,
   })
@@ -287,6 +283,7 @@ const updateDescriptorForMembers = async (
     membersDescriptor,
     Object.values(CONSTANTS.ROLES)
   )
+  console.log('TCL: membersToWriteTo', membersToWriteTo)
 
   let membersToReadFrom = []
 
@@ -294,6 +291,7 @@ const updateDescriptorForMembers = async (
     membersToReadFrom = extractMembersByRole(membersDescriptor, [
       CONSTANTS.ROLES.ADMINS,
     ])
+    console.log('TCL: membersToReadFrom', membersToReadFrom)
   } else {
     membersToReadFrom = extractMembersByRole(membersDescriptor, [
       CONSTANTS.ROLES.ADMINS,

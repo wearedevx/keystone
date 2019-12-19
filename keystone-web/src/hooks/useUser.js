@@ -34,6 +34,7 @@ export default () => {
             path: PUBKEY,
             decrypt: false,
             json: false,
+            verify: true,
           })
         } catch (error) {
           console.error(error)

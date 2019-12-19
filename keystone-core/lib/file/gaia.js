@@ -23,9 +23,13 @@ const readFileFromGaia = async (
   { path, origin = 'self', decrypt = true, json = true, verify = false }
 ) => {
   const { username } = userSession.loadUserData()
+
   const cacheKey = `${origin}/${path}`
   const file = fileCache.get(cacheKey)
 
+  if (decrypt && userSession.sharedPrivateKey) {
+    decrypt = userSession.sharedPrivateKey
+  }
   if (origin === username && !new RegExp('{{shared}}').test(path)) {
     origin = 'self'
   }

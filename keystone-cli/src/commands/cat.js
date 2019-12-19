@@ -11,7 +11,6 @@ const {
 } = require('../lib/core/file')
 
 class CatCommand extends CommandSignedIn {
-  
   async cat(files, project, env, flags) {
     await this.withUserSession(async userSession => {
       cli.action.start('Fetching')
@@ -19,7 +18,9 @@ class CatCommand extends CommandSignedIn {
       try {
         let fetchedFiles
         if (flags.debug) {
-          fetchedFiles = JSON.parse(await getFileFromGaia(userSession, files, { username: flags.origin }))
+          fetchedFiles = await getFileFromGaia(userSession, files, {
+            username: flags.origin,
+          })
           console.log(util.inspect(fetchedFiles, false, null))
           return
         }

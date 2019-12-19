@@ -2,32 +2,34 @@ const chalk = require('chalk')
 const fs = require('fs')
 const { newShare, pullShared } = require('@keystone/core/lib/commands/share')
 const { flags } = require('@oclif/command')
-const { SHARE_FILENAME } = require('@keystone/core/lib/constants')
+const { SHARE_FILENAME, ROLES } = require('@keystone/core/lib/constants')
 
 const { CommandSignedIn } = require('../lib/commands')
 
 class ShareCommand extends CommandSignedIn {
   async newShare(action, env) {
     await this.withUserSession(async userSession => {
-      const { username } = userSession.loadUserData()
       const project = await this.getProjectName()
       if (action === 'new') {
-        const addedShare = await newShare(userSession, { project, env })
+        const { privateKey, memberDescriptor } = await newShare(userSession, {
+          project,
+          env,
+        })
 
         fs.writeFile(
           SHARE_FILENAME,
           JSON.stringify({
             project,
             env,
-            member: username,
-            privateKey: addedShare.privateKey,
+            members: memberDescriptor.content[ROLES.ADMINS],
+            privateKey,
           }),
           err => console.log(err)
         )
 
         this.log(
           `Private key to decrypt shared user files :\n▻ ${chalk.yellow(
-            addedShare.privateKey
+            privateKey
           )}`
         )
       }
@@ -36,7 +38,7 @@ class ShareCommand extends CommandSignedIn {
 
   async pull(pathToConfig) {
     await this.withUserSession(async userSession => {
-      const { project, env, member, privateKey } = JSON.parse(
+      const { project, env, members, privateKey } = JSON.parse(
         fs.readFileSync(pathToConfig)
       )
       userSession.sharedPrivateKey = privateKey
@@ -45,7 +47,7 @@ class ShareCommand extends CommandSignedIn {
       await pullShared(userSession, {
         project,
         env,
-        origin: member,
+        origins: members,
         privateKey,
         absoluteProjectPath,
       })

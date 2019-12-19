@@ -27,7 +27,13 @@ const getFileFromGaia = async (userSession, path, opts) => {
       opts && opts.username ? opts.username : 'self'
     }`
   )
-  const fetchedFile = await userSession.getFile(path, opts)
+  const fetchedFile = JSON.parse(
+    await userSession.getFile(path, {
+      ...opts,
+      decrypt: true,
+      verify: false,
+    })
+  )
   fileCache.set(cacheKey, fetchedFile)
   return fetchedFile
 }

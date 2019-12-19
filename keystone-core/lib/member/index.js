@@ -41,11 +41,14 @@ const assertUserIsAdminOrContributor = async (
   }
 }
 
-const createMembersDescriptor = (userSession, { project, env }) => {
+const createMembersDescriptor = async (userSession, { project, env }) => {
   const { username } = userSession.loadUserData()
 
+  const publicKey = await getPubkey(userSession, { username })
+  console.log('TCL: createMembersDescriptor -> publicKey', publicKey)
+
   const members = {
-    [ROLES.ADMINS]: [{ blockstack_id: username }],
+    [ROLES.ADMINS]: [{ blockstack_id: username, publicKey }],
     [ROLES.CONTRIBUTORS]: [],
     [ROLES.READERS]: [],
   }
@@ -113,7 +116,8 @@ const addMember = async (
       membersDescriptor: newMembersDescriptor,
       updateAnyway: true,
     })
-    const fileDescriptor = await Promise.all(
+
+    await Promise.all(
       envDescriptor.content.files.map(async ({ name: filename }) => {
         return updateDescriptor(userSession, {
           project,

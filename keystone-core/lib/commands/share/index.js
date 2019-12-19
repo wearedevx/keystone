@@ -6,10 +6,52 @@ const { getLatestDescriptorByPath } = require('../../descriptor')
 const { writeFileToDisk } = require('../../file/disk')
 const ec = new EC('secp256k1')
 
+const getLastVersionOfMemberDescriptor = async (
+  userSession,
+  { project, env, members, stable = false }
+) => {
+  const memberPath = getPath({
+    env,
+    blockstackId: SHARED_MEMBER,
+    project,
+    type: 'members',
+  })
+
+  const memberDescriptor = await getLatestDescriptorByPath(
+    userSession,
+    {
+      descriptorPath: memberPath,
+      members,
+    },
+    stable
+  )
+
+  // If the is admin in fetched descriptor that we didn't know before
+  if (
+    memberDescriptor[0].content[ROLES.ADMINS].find(
+      m => !members.find(me => me.blockstack_id === m.blockstack_id)
+    )
+  ) {
+    return getLastVersionOfMemberDescriptor(userSession, {
+      project,
+      env,
+      members: memberDescriptor[0].content[ROLES.ADMINS],
+      stable,
+    })
+  }
+  return memberDescriptor[0]
+}
+
 const pullShared = async (
   userSession,
-  { project, env, origin, absoluteProjectPath }
+  { project, env, origins: members, absoluteProjectPath }
 ) => {
+  const memberDescriptor = await getLastVersionOfMemberDescriptor(userSession, {
+    project,
+    env,
+    members,
+    stable: true,
+  })
   const envPath = getPath({
     env,
     blockstackId: SHARED_MEMBER,
@@ -19,10 +61,12 @@ const pullShared = async (
 
   const envDescriptor = await getLatestDescriptorByPath(
     userSession,
-    { descriptorPath: envPath, members: [{ blockstack_id: origin }] },
+    {
+      descriptorPath: envPath,
+      members,
+    },
     true
   )
-  console.log('TCL: pullShared -> envDescriptor', envDescriptor.content)
 
   const files = await Promise.all(
     envDescriptor[0].content.files.map(async ({ name: filename }) => {
@@ -36,7 +80,7 @@ const pullShared = async (
 
       const fileDescriptor = await getLatestDescriptorByPath(userSession, {
         descriptorPath: path,
-        members: [{ blockstack_id: origin }],
+        members,
       })
 
       writeFileToDisk(fileDescriptor, absoluteProjectPath)
@@ -53,8 +97,6 @@ const newShare = async (userSession, { project, env }) => {
     privateKey: keypair.getPrivate('hex'),
   }
 
-  console.log(userKeypair)
-
   const memberDescriptor = await addMember(userSession, {
     project,
     env,
@@ -63,7 +105,7 @@ const newShare = async (userSession, { project, env }) => {
     publicKey: userKeypair.publicKey,
   })
 
-  return userKeypair
+  return { privateKey: userKeypair.privateKey, memberDescriptor }
 }
 
 module.exports = { newShare, pullShared }
