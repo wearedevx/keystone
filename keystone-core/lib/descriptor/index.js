@@ -633,11 +633,8 @@ module.exports = {
   getOwnDescriptor,
   uploadDescriptorForEveryone,
   createDescriptor,
-
   getDescriptor,
-
   removeDescriptorForMembers,
-
   updateDescriptorForMembers,
   updateDescriptor,
   extractMembersByRole,

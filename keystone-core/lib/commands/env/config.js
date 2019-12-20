@@ -5,11 +5,6 @@ const { uploadFilesForNewMembers } = require('../../env/configure')
 const config = (userSession, { project, descriptors }) => {
   return Promise.all(
     descriptors.map(async ({ descriptor, env }) => {
-      // const { content: members } = await getOwnDescriptor(userSession, {
-      //   project,
-      //   env,
-      //   type: 'members',
-      // })
       const updatedDescriptor = await Promise.all([
         updateDescriptor(userSession, {
           descriptorPath: descriptor.path,
@@ -30,22 +25,19 @@ const config = (userSession, { project, descriptors }) => {
         }),
       ])
 
-      // const previousMembers = members.reduce((members, role) => {
-      //   members.push(...role)
-      // }, [])
-      // const currentMembers = descriptor.content.reduce((members, role) => {
-      //   members.push(...role)
-      // }, [])
+      await Promise.all(
+        updatedDescriptor[1].content.files.map(async ({ name: filename }) => {
+          return updateDescriptor(userSession, {
+            project,
+            env,
+            type: 'file',
+            name: filename,
+            membersDescriptor: updatedDescriptor[0],
+            updateAnyway: true,
+          })
+        })
+      )
 
-      // const newMembers = !previousMembers.find(m =>
-      //   currentMembers.find(me => me.blockstack_id === m.blockstack_id)
-      // )
-
-      // await uploadFilesForNewMembers(userSession, {
-      //   project,
-      //   env,
-      //   members: newMembers,
-      // })
       return updatedDescriptor
     })
   )
