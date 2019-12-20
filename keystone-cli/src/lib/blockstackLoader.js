@@ -2,7 +2,10 @@ const blockstack = require('blockstack')
 const { SessionData } = require('blockstack/lib/auth/sessionData')
 const fs = require('fs')
 const path = require('path')
-const { KEYSTONE_WEB_URL } = require('@keystone/core/lib/constants')
+const {
+  KEYSTONE_WEB,
+  SESSION_FILENAME,
+} = require('@keystone/core/lib/constants')
 
 const { read } = require('../lib/cliStorage')
 const { createLocalStorage } = require('./localStorage')
@@ -20,7 +23,7 @@ const blockstackLoader = (userCredentials = {}) => {
   window = {
     localStorage,
     location: {
-      origin: KEYSTONE_WEB_URL,
+      origin: KEYSTONE_WEB,
     },
   }
   return localStorage
@@ -38,7 +41,7 @@ const createUserSession = (userCredentials = {}) => {
 const getAppHub = async id => {
   const profile = await blockstack.lookupProfile(id)
   if (profile && profile.apps) {
-    return profile.apps[KEYSTONE_WEB_URL]
+    return profile.apps[KEYSTONE_WEB]
   }
   return false
 }
@@ -48,7 +51,7 @@ const getFilepath = ({ filename, apphub }) => {
 }
 
 const getSession = async path => {
-  const session = await read({ path: `${path}/`, filename: 'session.json' })
+  const session = await read({ path: `${path}/`, filename: SESSION_FILENAME })
   const userSession = createUserSession(session)
   if (userSession && userSession.isUserSignedIn()) {
     return userSession

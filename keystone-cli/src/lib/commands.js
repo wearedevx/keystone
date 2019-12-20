@@ -257,6 +257,7 @@ const CommandSignedIn = class extends Command {
 
   async withUserSession(callback, options = {}) {
     const { configPath } = options
+    console.log("TCL: extends -> withUserSession -> configPath", configPath)
     const userSession = await this.getUserSession(configPath)
     if (userSession) {
       await callback(userSession)
@@ -266,6 +267,7 @@ const CommandSignedIn = class extends Command {
   async getUserSession(configPath) {
     try {
       const config = configPath || this.config.configDir
+      console.log("TCL: extends -> getUserSession -> config", config)
       const userSession = await getSession(config)
       if (userSession && userSession.isUserSignedIn()) {
         return userSession

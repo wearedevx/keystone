@@ -1,4 +1,5 @@
 const chalk = require('chalk')
+const { SESSION_FILENAME } = require('@keystone/core/lib/constants')
 const { del } = require('../lib/cliStorage')
 const { CommandSignedIn } = require('../lib/commands')
 
@@ -9,7 +10,7 @@ class LogoutCommand extends CommandSignedIn {
       try {
         await del({
           path: `${this.config.configDir}/`,
-          filename: 'session.json',
+          filename: SESSION_FILENAME,
         })
         this.log(
           `▻ Sign out from ${chalk.yellow(

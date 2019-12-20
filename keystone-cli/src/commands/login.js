@@ -9,6 +9,7 @@ const chalk = require('chalk')
 const {
   KEYSTONE_WEB,
   LOGIN_KEY_PREFIX,
+  SESSION_FILENAME,
 } = require('@keystone/core/lib/constants')
 const {
   createUserSession,
@@ -54,7 +55,7 @@ class LoginCommand extends Command {
             const userCredentials = JSON.parse(keyfileUnencrypted)
             await write({
               path: this.config.configDir,
-              filename: 'session.json',
+              filename: SESSION_FILENAME,
               content: keyfileUnencrypted,
             })
 
