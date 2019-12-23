@@ -255,8 +255,6 @@ const PromptConfigure = ({
                     // const envDescriptorClone = { ...envDescriptor }
 
                     for (const role of Object.values(ROLES)) {
-                      console.log('coucou')
-                      console.log("TCL: envMembersDescriptor.descriptor.content[role]", envMembersDescriptor.descriptor.content[role])
                       const members = await Promise.all(
                         envMembersDescriptor.descriptor.content[role].map(
                           async member => {
@@ -271,7 +269,7 @@ const PromptConfigure = ({
                           }
                         )
                       )
-                      console.log("TCL: members", members)
+                      console.log('TCL: members', members)
 
                       envMembersDescriptor.descriptor.content[role] = members
                     }

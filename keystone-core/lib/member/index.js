@@ -44,7 +44,7 @@ const assertUserIsAdminOrContributor = async (
 const createMembersDescriptor = async (userSession, { project, env }) => {
   const { username } = userSession.loadUserData()
 
-  const publicKey = await getPubkey(userSession, { blockstackId: username })
+  const publicKey = await getPubkey(userSession, { blockstack_id: username })
   console.log('TCL: createMembersDescriptor -> publicKey', publicKey)
 
   const members = {
@@ -70,7 +70,7 @@ const addMember = async (
   { project, env, member, role, publicKey }
 ) => {
   if (!publicKey) {
-    publicKey = await getPubkey(userSession, { blockstackId: member })
+    publicKey = await getPubkey(userSession, { blockstack_id: member })
   }
   const membersDescriptor = await getLatestMembersDescriptor(userSession, {
     project,
