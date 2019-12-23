@@ -158,7 +158,6 @@ const CommandSignedIn = class extends Command {
           envsMembers,
           envs
         )
-        console.log('TCL: extends -> configureMembers -> members', members)
 
         currentStep = 0
 

@@ -1,4 +1,9 @@
 import React from 'react'
+import setEnv from '../../config'
+
+setEnv(process.env.NODE_ENV)
+
+console.log(process.env)
 
 export default () => (
   <div>

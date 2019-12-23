@@ -3,3 +3,4 @@ dist
 artifacts
 .DS_Store
 tmp
+/config/

@@ -12,8 +12,8 @@ module.exports = {
     AccountMismatch: 'AccountMismatch',
     InvalidProjectName: 'InvalidProjectName',
   },
-  KEYSTONE_MAIL: 'http://localhost:8080',
-  KEYSTONE_WEB: 'http://localhost:8000',
+  KEYSTONE_MAIL: process.env.KEYSTONE_MAIL || 'http://localhost:8080',
+  KEYSTONE_WEB: process.env.KEYSTONE_WEB || 'http://localhost:8000',
   INVITATIONS_STORE: 'invitations.json',
   ROLES: {
     ADMINS: 'admins',
@@ -22,9 +22,10 @@ module.exports = {
   },
   PUBKEY: 'public.key',
   KEYSTONE_CONFIG_PATH: '.ksconfig',
-  PROJECTS_STORE: 'projects.json',
-  KEYSTONE_HIDDEN_FOLDER: '.keystone',
+  PROJECTS_STORE: process.env.PROJECTS_STORE || 'projects.json',
+  KEYSTONE_HIDDEN_FOLDER: process.env.KEYSTONE_HIDDEN_FOLDER || '.keystone',
   SHARED_MEMBER: '{{shared}}',
   LOGIN_KEY_PREFIX: '{{login}}',
   SHARE_FILENAME: 'keystone-link.json',
+  SESSION_FILENAME: process.env.SESSION_FILENAME || 'session.json',
 }
