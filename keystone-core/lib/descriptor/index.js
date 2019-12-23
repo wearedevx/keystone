@@ -69,7 +69,7 @@ const getStableVersion = descriptors => {
 
 const mergeContents = ({ left, right, base }) => {
   const merged = merge(left, base, right)
-  return { reqult: merged.joinedResults(), conflict: merged.conflict }
+  return { result: merged.joinedResults(), conflict: merged.conflict }
 }
 
 const manageConflictBetweenDescriptors = (descriptors = []) => {

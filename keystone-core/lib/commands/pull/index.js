@@ -141,13 +141,14 @@ const pull = async (
             right: fileDescriptor.content,
             base,
           })
-          fileDescriptorToWriteOnDisk.content = mergeResult.mergeResult
+          fileDescriptorToWriteOnDisk.content = mergeResult.result
           conflict = mergeResult.conflict
+        } else {
+          writeFileToDisk(fileDescriptorToWriteOnDisk, cacheFolder)
         }
 
         // Write files on disk
         writeFileToDisk(fileDescriptorToWriteOnDisk, absoluteProjectPath)
-        writeFileToDisk(fileDescriptorToWriteOnDisk, cacheFolder)
 
         // Upload in own hub for everyone
         try {
