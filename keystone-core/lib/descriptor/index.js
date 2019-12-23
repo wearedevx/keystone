@@ -67,17 +67,9 @@ const getStableVersion = descriptors => {
   return lastVersionStable
 }
 
-const mergeContents = ({ left, right, maxVersion }) => {
-  if (descriptors.length === 2) {
-    // Take previous versino a descriptor as base to merge
-    const base = descriptors[0].history[maxVersion - 1]
-
-    const merged = merge(left, base, right)
-
-    expect(merged.conflict).toBeFalsy()
-  } else {
-    throw new Error('Too much conflicts')
-  }
+const mergeContents = ({ left, right, base }) => {
+  const merged = merge(left, base, right)
+  return merged.joinedResults()
 }
 
 const manageConflictBetweenDescriptors = (descriptors = []) => {

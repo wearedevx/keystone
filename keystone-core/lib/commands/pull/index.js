@@ -27,19 +27,18 @@ const pull = async (
   userSession,
   { project, env, absoluteProjectPath, force = false, cache = true, origin }
 ) => {
+  // create keystone cache folder
+  const cacheFolder = getCacheFolder(absoluteProjectPath)
+
+  // Can't pull if you have modified files under Keystone watch
+  // - get all files from the cache folder
+  // - check if they still exists on the current folder
+  // - check if the content is the same.
+  const changes = getModifiedFilesFromCacheFolder(
+    cacheFolder,
+    absoluteProjectPath
+  )
   if (cache) {
-    // create keystone cache folder
-    const cacheFolder = getCacheFolder(absoluteProjectPath)
-
-    // Can't pull if you have modified files under Keystone watch
-    // - get all files from the cache folder
-    // - check if they still exists on the current folder
-    // - check if the content is the same.
-    const changes = getModifiedFilesFromCacheFolder(
-      cacheFolder,
-      absoluteProjectPath
-    )
-
     const uncommitted = changes.filter(change => change.status !== 'ok')
     console.log('UNCOMMITED', uncommitted)
 
@@ -99,7 +98,7 @@ const pull = async (
   const { files } = envDescriptor.content
 
   const allLatestFileDescriptors = await Promise.all(
-    files.map(file => {
+    files.map(async file => {
       const ownFile = ownEnvDescriptor.content.files.find(
         f => f.name === file.name
       )
@@ -112,7 +111,7 @@ const pull = async (
           filename: file.name,
         })
 
-        const fileDescriptor = getLatestDescriptorByPath(userSession, {
+        const fileDescriptor = await getLatestDescriptorByPath(userSession, {
           descriptorPath: filePath,
           members: extractMembersByRole(envMembersDescriptor, [
             ROLES.ADMINS,
@@ -121,15 +120,15 @@ const pull = async (
         })
 
         const fileModified = changes.find(c => {
-          const filename = c.path.replace(absoluteProjectPath, '')
-          return file === filename
+          const filename = c.path.replace(`${absoluteProjectPath}/`, '')
+          return file.name === filename
         })
 
         const fileDescriptorToWriteOnDisk = deepCopy(fileDescriptor)
-        if (fileModified.status !== 'ok') {
-          const currentVersion = readFileFromDisk(fileModified.content)
+        if (fileModified && fileModified.status !== 'ok') {
+          const currentVersion = await readFileFromDisk(fileModified.path)
           const base = daffy.applyPatch(
-            currentVersion,
+            fileDescriptor.content,
             fileDescriptor.history.find(
               h => h.version === fileDescriptor.version - 1
             ).content || ''
@@ -144,26 +143,26 @@ const pull = async (
 
         // Write files on disk
         writeFileToDisk(fileDescriptorToWriteOnDisk, absoluteProjectPath)
-        // writeFileToDisk(fileDescriptorToWriteOnDisk, cacheFolder)
+        writeFileToDisk(fileDescriptorToWriteOnDisk, cacheFolder)
 
-        // // Upload in own hub for everyone
-        // try {
-        //   uploadDescriptorForEveryone(userSession, {
-        //     members: extractMembersByRole(envMembersDescriptor, [
-        //       ROLES.ADMINS,
-        //       ROLES.CONTRIBUTORS,
-        //     ]),
-        //     env,
-        //     project,
-        //     descriptor: fileDescriptor,
-        //     type: 'file',
-        //   })
-        // } catch (error) {
-        //   console.error(error)
-        //   throw new Error(
-        //     `Failed to upload file descriptor on private remote storage`
-        //   )
-        // }
+        // Upload in own hub for everyone
+        try {
+          uploadDescriptorForEveryone(userSession, {
+            members: extractMembersByRole(envMembersDescriptor, [
+              ROLES.ADMINS,
+              ROLES.CONTRIBUTORS,
+            ]),
+            env,
+            project,
+            descriptor: fileDescriptor,
+            type: 'file',
+          })
+        } catch (error) {
+          console.error(error)
+          throw new Error(
+            `Failed to upload file descriptor on private remote storage`
+          )
+        }
         return { fileDescriptor, updated: true }
       }
       return { fileDescriptor: ownFile, updated: false }
