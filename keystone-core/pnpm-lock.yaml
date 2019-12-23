@@ -7,9 +7,12 @@ dependencies:
   js-sizeof: 0.0.1
   lodash: 4.17.15
   ms: 2.1.2
+  three-way-merge: 0.1.0
   tinycache: 1.1.2
   uuid: 3.3.3
   uuid-validate: 0.0.3
+devDependencies:
+  eslint-plugin-prettier: 3.1.2
 lockfileVersion: 5.1
 packages:
   /bn.js/4.11.8:
@@ -48,6 +51,21 @@ packages:
     dev: false
     resolution:
       integrity: sha512-f4x70okzZbIQl/NSRLkI/+tteV/9WqL98zx+SQ69KbXxmVrmjwsNUPn/gYJJ0sHvEak24cZgHIPegRePAtA/xw==
+  /eslint-plugin-prettier/3.1.2:
+    dependencies:
+      prettier-linter-helpers: 1.0.0
+    dev: true
+    engines:
+      node: '>=6.0.0'
+    peerDependencies:
+      eslint: '>= 5.0.0'
+      prettier: '>= 1.13.0'
+    resolution:
+      integrity: sha512-GlolCC9y3XZfv3RQfwGew7NnuFDKsfI4lbvRK+PIIo23SFH+LemGs4cKwzAaRa+Mdb+lQO/STaIayno8T5sJJA==
+  /fast-diff/1.2.0:
+    dev: true
+    resolution:
+      integrity: sha512-xJuoT5+L99XlZ8twedaRf6Ax2TgQVxvgZOYoPKqZufmJib0tL2tegPBOZb1pVNgIhlqDlA0eO0c3wBvQcmzx4w==
   /hash.js/1.1.7:
     dependencies:
       inherits: 2.0.4
@@ -93,12 +111,30 @@ packages:
     dev: false
     resolution:
       integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
+  /prettier-linter-helpers/1.0.0:
+    dependencies:
+      fast-diff: 1.2.0
+    dev: true
+    engines:
+      node: '>=6.0.0'
+    resolution:
+      integrity: sha512-GbK2cP9nraSSUF9N2XwUwqfzlAFlMNYYl+ShE/V+H8a9uNl/oUqB1w2EL54Jh0OlyRSd8RfWYJ3coVS4TROP2w==
+  /three-way-merge/0.1.0:
+    dependencies:
+      ts-std: 0.6.2
+    dev: false
+    resolution:
+      integrity: sha512-FzQCDf2No6a1bYop4B4WWAlI9FcnV9+WCXRENaae1fZMRobxj92JDA/W1pc6eV7QQoDyUdoud2tCyZYolP6DYg==
   /tinycache/1.1.2:
     dependencies:
       js-sizeof: 0.0.1
     dev: false
     resolution:
       integrity: sha512-dCtHE5Fm8rWFp11hktEiJOtiYLyJ7PuCMPmBSweht0/TrJNUbmz5oFfqfpEMMRjM39DUJZCix/c+Gl/3p/cVOA==
+  /ts-std/0.6.2:
+    dev: false
+    resolution:
+      integrity: sha512-mhlyyOBvF7r+Xh8Ut4Fa3qe3BxjQMTWxHLb7NBSkOmxOe1V5Oc5+PpUl/y7tpBOL2sJZwLL1r5T8hqmc0SAFTw==
   /uuid-validate/0.0.3:
     dev: false
     resolution:
@@ -113,10 +149,12 @@ specifiers:
   debug: ^4.1.1
   diff-match-patch: ^1.0.4
   elliptic: ^6.5.2
+  eslint-plugin-prettier: ^3.1.0
   is-buffer: ^2.0.4
   js-sizeof: ^0.0.1
   lodash: ^4.17.15
   ms: ^2.1.2
+  three-way-merge: ^0.1.0
   tinycache: ^1.1.2
   uuid: ^3.3.3
   uuid-validate: ^0.0.3

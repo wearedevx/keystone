@@ -2,6 +2,7 @@ const debug = require('debug')('keystone:core:descriptor')
 const _ = require('lodash')
 const hash = require('object-hash')
 const daffy = require('daffy')
+const { merge } = require('three-way-merge')
 
 const { getPubkey } = require('../file/gaia')
 const { KeystoneError } = require('../error')
@@ -66,6 +67,19 @@ const getStableVersion = descriptors => {
   return lastVersionStable
 }
 
+const mergeContents = ({ left, right, maxVersion }) => {
+  if (descriptors.length === 2) {
+    // Take previous versino a descriptor as base to merge
+    const base = descriptors[0].history[maxVersion - 1]
+
+    const merged = merge(left, base, right)
+
+    expect(merged.conflict).toBeFalsy()
+  } else {
+    throw new Error('Too much conflicts')
+  }
+}
+
 const manageConflictBetweenDescriptors = (descriptors = []) => {
   debug('manageConflictBetweenDescriptors')
 
@@ -83,7 +97,10 @@ const manageConflictBetweenDescriptors = (descriptors = []) => {
       d => d.checksum === firstCheckSum
     )
 
-    if (!allSamechecksum) throw new Error('Conflict!!')
+    // Conflict !!
+    if (!allSamechecksum) {
+      throw new Error('Conflicts !!')
+    }
   }
 }
 
@@ -206,7 +223,6 @@ const incrementVersion = ({
       sourcePatch: newChecksum,
       author: previousDescriptor.author,
     }
-
     const history =
       previousDescriptor.history && previousDescriptor.history.length > 0
         ? previousDescriptor.history
@@ -642,4 +658,5 @@ module.exports = {
   getMembers,
   getAdminsAndContributors,
   isAdmin,
+  mergeContents,
 }

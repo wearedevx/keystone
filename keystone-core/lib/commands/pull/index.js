@@ -1,3 +1,5 @@
+const daffy = require('daffy')
+const { deepCopy } = require('../../utils')
 const { getPath } = require('../../descriptor-path')
 const {
   getLatestDescriptorByPath,
@@ -7,6 +9,7 @@ const {
   getLatestMembersDescriptor,
   extractMembersByRole,
   getDescriptor,
+  mergeContents,
 } = require('../../descriptor')
 
 const KeystoneError = require('../../error')
@@ -15,6 +18,7 @@ const {
   getCacheFolder,
   getModifiedFilesFromCacheFolder,
   writeFileToDisk,
+  readFileFromDisk,
 } = require('../../file')
 
 const { ROLES } = require('../../constants')
@@ -37,13 +41,14 @@ const pull = async (
     )
 
     const uncommitted = changes.filter(change => change.status !== 'ok')
+    console.log('UNCOMMITED', uncommitted)
 
     if (uncommitted.length > 0 && !force) {
-      throw new KeystoneError(
-        'PullWhileFilesModified',
-        'You should push your changes first.',
-        uncommitted
-      )
+      // throw new KeystoneError(
+      //   'PullWhileFilesModified',
+      //   'You should push your changes first.',
+      //   uncommitted
+      // )
     }
   }
 
@@ -115,28 +120,50 @@ const pull = async (
           ]),
         })
 
-        // Write files on disk
-        writeFileToDisk(fileDescriptor, absoluteProjectPath)
-        writeFileToDisk(fileDescriptor, cacheFolder)
+        const fileModified = changes.find(c => {
+          const filename = c.path.replace(absoluteProjectPath, '')
+          return file === filename
+        })
 
-        // Upload in own hub for everyone
-        try {
-          uploadDescriptorForEveryone(userSession, {
-            members: extractMembersByRole(envMembersDescriptor, [
-              ROLES.ADMINS,
-              ROLES.CONTRIBUTORS,
-            ]),
-            env,
-            project,
-            descriptor: fileDescriptor,
-            type: 'file',
-          })
-        } catch (error) {
-          console.error(error)
-          throw new Error(
-            `Failed to upload file descriptor on private remote storage`
+        const fileDescriptorToWriteOnDisk = deepCopy(fileDescriptor)
+        if (fileModified.status !== 'ok') {
+          const currentVersion = readFileFromDisk(fileModified.content)
+          const base = daffy.applyPatch(
+            currentVersion,
+            fileDescriptor.history.find(
+              h => h.version === fileDescriptor.version - 1
+            ).content || ''
           )
+
+          fileDescriptorToWriteOnDisk.content = mergeContents({
+            left: currentVersion,
+            right: fileDescriptor.content,
+            base,
+          })
         }
+
+        // Write files on disk
+        writeFileToDisk(fileDescriptorToWriteOnDisk, absoluteProjectPath)
+        // writeFileToDisk(fileDescriptorToWriteOnDisk, cacheFolder)
+
+        // // Upload in own hub for everyone
+        // try {
+        //   uploadDescriptorForEveryone(userSession, {
+        //     members: extractMembersByRole(envMembersDescriptor, [
+        //       ROLES.ADMINS,
+        //       ROLES.CONTRIBUTORS,
+        //     ]),
+        //     env,
+        //     project,
+        //     descriptor: fileDescriptor,
+        //     type: 'file',
+        //   })
+        // } catch (error) {
+        //   console.error(error)
+        //   throw new Error(
+        //     `Failed to upload file descriptor on private remote storage`
+        //   )
+        // }
         return { fileDescriptor, updated: true }
       }
       return { fileDescriptor: ownFile, updated: false }
