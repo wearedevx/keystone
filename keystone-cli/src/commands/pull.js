@@ -22,28 +22,35 @@ class PullCommand extends CommandSignedIn {
         })
 
         pulledFiles.map(
-          async ({ fileDescriptor, updated, descriptorUpToDate }) => {
+          async ({ fileDescriptor, updated, descriptorUpToDate, conflict }) => {
             if (descriptorUpToDate) {
               this.log(`▻ You are already up to date. Nothing to do !`)
               return
             }
+
             if (updated) {
-              this.log(
-                `▻ File written to ${fileDescriptor.name} ${chalk.green.bold(
-                  '✓'
-                )}`
-              )
-            } else {
-              this.log(
-                `▻ File ${
-                  fileDescriptor.name
-                } already is the latest version ${chalk.green.bold('✓')}`
-              )
+              if (!(typeof conflict === 'boolean')) {
+                this.log(
+                  ` ${chalk.green.bold('✔')} ${fileDescriptor.name}: updated.`
+                )
+              } else if (conflict) {
+                this.log(
+                  ` ${chalk.red.bold('✗')} ${
+                    fileDescriptor.name
+                  }: conflict. Correct them and push your changes !`
+                )
+              } else {
+                this.log(
+                  ` ${chalk.green.bold('✔')} ${
+                    fileDescriptor.name
+                  }: auto-merge.`
+                )
+              }
             }
             // this.log(
             //   `▻ Couldn't save the file : ${chalk.bold(
             //     fileDescriptor.content.name
-            //   )} ${chalk.red.bold('✗')}`
+            //   )} ${chalk.red.bold('')}`
             // )
           }
         )

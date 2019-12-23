@@ -125,6 +125,8 @@ const pull = async (
         })
 
         const fileDescriptorToWriteOnDisk = deepCopy(fileDescriptor)
+        let conflict
+
         if (fileModified && fileModified.status !== 'ok') {
           const currentVersion = await readFileFromDisk(fileModified.path)
           const base = daffy.applyPatch(
@@ -134,11 +136,13 @@ const pull = async (
             ).content || ''
           )
 
-          fileDescriptorToWriteOnDisk.content = mergeContents({
+          const mergeResult = mergeContents({
             left: currentVersion,
             right: fileDescriptor.content,
             base,
           })
+          fileDescriptorToWriteOnDisk.content = mergeResult.mergeResult
+          conflict = mergeResult.conflict
         }
 
         // Write files on disk
@@ -163,7 +167,7 @@ const pull = async (
             `Failed to upload file descriptor on private remote storage`
           )
         }
-        return { fileDescriptor, updated: true }
+        return { fileDescriptor, updated: true, conflict }
       }
       return { fileDescriptor: ownFile, updated: false }
     })
