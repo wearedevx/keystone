@@ -51,6 +51,10 @@ const getCacheFolder = absoluteProjectPath => {
   return cacheFolder
 }
 
+const isFileExist = filePath => {
+  return fs.existsSync(filePath)
+}
+
 const getModifiedFilesFromCacheFolder = (cacheFolder, absoluteProjectPath) => {
   const paths = walk.sync(cacheFolder)
   const changes = paths.map(path => {
@@ -91,4 +95,5 @@ module.exports = {
   deleteFileFromDisk,
   getCacheFolder,
   getModifiedFilesFromCacheFolder,
+  isFileExist,
 }

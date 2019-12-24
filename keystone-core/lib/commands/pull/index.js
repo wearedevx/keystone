@@ -1,4 +1,6 @@
 const daffy = require('daffy')
+const path = require('path')
+
 const { deepCopy } = require('../../utils')
 const { getPath } = require('../../descriptor-path')
 const {
@@ -12,16 +14,62 @@ const {
   mergeContents,
 } = require('../../descriptor')
 
-const KeystoneError = require('../../error')
+// const KeystoneError = require('../../error')
 const { findProjectByUUID, getProjects } = require('../../projects')
 const {
   getCacheFolder,
   getModifiedFilesFromCacheFolder,
   writeFileToDisk,
   readFileFromDisk,
+  isFileExist,
 } = require('../../file')
 
 const { ROLES } = require('../../constants')
+
+/**
+ * For all files in env descriptor, and not in cache folder,
+ * write them in cache folder and work folder.
+ * @param {*} userSession 
+ * @param {*} param1 
+ */
+const checkFilesToWrite = (
+  userSession,
+  {
+    project,
+    env,
+    envMembersDescriptor,
+    envDescriptor,
+    cacheFolder,
+    absoluteProjectPath,
+  }
+) => {
+  const { username } = userSession.loadUserData()
+
+  return Promise.all(
+    envDescriptor.content.files.map(async file => {
+      if (!isFileExist(path.join(cacheFolder, file.name))) {
+        const filePath = getPath({
+          project,
+          env,
+          type: 'file',
+          filename: file.name,
+          blockstackId: username,
+        })
+
+        const fileDescriptor = await getLatestDescriptorByPath(userSession, {
+          descriptorPath: filePath,
+          members: extractMembersByRole(envMembersDescriptor, [
+            ROLES.ADMINS,
+            ROLES.CONTRIBUTORS,
+          ]),
+        })
+
+        writeFileToDisk(fileDescriptor, cacheFolder)
+        writeFileToDisk(fileDescriptor, absoluteProjectPath)
+      }
+    })
+  )
+}
 
 const pull = async (
   userSession,
@@ -82,18 +130,27 @@ const pull = async (
     type: 'env',
   })
 
-  if (
-    ownEnvDescriptor &&
-    envDescriptor.checksum === ownEnvDescriptor.checksum
-  ) {
-    return [{ descriptorUpToDate: true }]
-  }
-
   const envMembersDescriptor = await getLatestMembersDescriptor(userSession, {
     project,
     env,
     type: 'members',
   })
+
+  if (
+    ownEnvDescriptor &&
+    envDescriptor.checksum === ownEnvDescriptor.checksum
+  ) {
+    // Check files to write
+    await checkFilesToWrite(userSession, {
+      project,
+      env,
+      envMembersDescriptor,
+      envDescriptor,
+      cacheFolder,
+      absoluteProjectPath,
+    })
+    return [{ descriptorUpToDate: true }]
+  }
 
   const { files } = envDescriptor.content
 
