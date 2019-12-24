@@ -9,6 +9,41 @@ const {
   getModifiedFilesFromCacheFolder,
 } = require('../../file')
 
+const updateFilesInEnvDesciptor = async (
+  userSession,
+  { files, envDescriptor, project, env }
+) => {
+  files.forEach(({ filename, fileContent }) => {
+    const foundFile = envDescriptor.content.files.findIndex(
+      f => f.name === filename
+    )
+    if (foundFile === -1) {
+      envDescriptor.content.files.push({
+        checksum: hash(fileContent),
+        name: filename,
+      })
+    } else {
+      envDescriptor.content.files[foundFile] = {
+        name: filename,
+        checksum: hash(fileContent),
+      }
+    }
+  })
+  const envDescriptorPath = getPath({
+    project,
+    env,
+    type: 'env',
+  })
+  await updateDescriptor(userSession, {
+    project,
+    env,
+    type: 'env',
+    content: envDescriptor.content,
+    descriptorPath: envDescriptorPath,
+    name: env,
+  })
+}
+
 const push = async (
   userSession,
   { project, env, files, absoluteProjectPath }
@@ -49,38 +84,8 @@ const push = async (
     env,
   })
 
-  // If file is not present, add it.
-  files.forEach(({ filename, fileContent }) => {
-    const foundFile = envDescriptor.content.files.findIndex(
-      f => f.name === filename
-    )
-    if (foundFile === -1) {
-      envDescriptor.content.files.push({
-        checksum: hash(fileContent),
-        name: filename,
-      })
-    } else {
-      envDescriptor.content.files[foundFile] = {
-        name: filename,
-        checksum: hash(fileContent),
-      }
-    }
-  })
-
-  const envDescriptorPath = getPath({
-    project,
-    env,
-    type: 'env',
-  })
-
-  updateDescriptor(userSession, {
-    project,
-    env,
-    type: 'env',
-    content: envDescriptor.content,
-    descriptorPath: envDescriptorPath,
-    name: env,
-  })
+  // If file is not present, add it. If present, update checksum
+  updateFilesInEnvDesciptor(userSession, { files, envDescriptor, project, env })
 }
 
 /**
@@ -121,4 +126,4 @@ const pushModifiedFiles = (
   })
 }
 
-module.exports = { push, pushModifiedFiles }
+module.exports = { push, pushModifiedFiles, updateFilesInEnvDesciptor }

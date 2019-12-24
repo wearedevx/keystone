@@ -26,11 +26,13 @@ const {
 
 const { ROLES } = require('../../constants')
 
+const { updateFilesInEnvDesciptor } = require('../push')
+
 /**
  * For all files in env descriptor, and not in cache folder,
  * write them in cache folder and work folder.
- * @param {*} userSession 
- * @param {*} param1 
+ * @param {*} userSession
+ * @param {*} param1
  */
 const checkFilesToWrite = (
   userSession,
@@ -209,6 +211,12 @@ const pull = async (
 
         // Upload in own hub for everyone
         try {
+          // await push(userSession, {
+          //   project,
+          //   env,
+          //   files: [{ filename: file.name, fileContent: file.content }],
+          //   absoluteProjectPath,
+          // })
           uploadDescriptorForEveryone(userSession, {
             members: extractMembersByRole(envMembersDescriptor, [
               ROLES.ADMINS,
@@ -219,6 +227,8 @@ const pull = async (
             descriptor: fileDescriptor,
             type: 'file',
           })
+
+          // uploadDescriptorForEveryone()
         } catch (error) {
           console.error(error)
           throw new Error(
@@ -230,6 +240,17 @@ const pull = async (
       return { fileDescriptor: ownFile, updated: false }
     })
   )
+  await updateFilesInEnvDesciptor(userSession, {
+    files: allLatestFileDescriptors
+      .filter(file => !(typeof file.conflict === 'boolean') && !file.conflict)
+      .map(file => ({
+        filename: file.fileDescriptor.name,
+        fileContent: file.fileDescriptor.content,
+      })),
+    envDescriptor,
+    project,
+    env,
+  })
 
   return allLatestFileDescriptors
 }
