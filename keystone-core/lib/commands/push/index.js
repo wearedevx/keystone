@@ -109,7 +109,7 @@ const pushModifiedFiles = (
   // return
 
   const formatModifiedFiles = modifiedFiles.map(({ path }) => ({
-    filename: path.replace(absoluteProjectPath, ''),
+    filename: path.replace(`${absoluteProjectPath}/`, ''),
     fileContent: fs.readFileSync(path).toString(),
   }))
 
