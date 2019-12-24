@@ -211,12 +211,6 @@ const pull = async (
 
         // Upload in own hub for everyone
         try {
-          // await push(userSession, {
-          //   project,
-          //   env,
-          //   files: [{ filename: file.name, fileContent: file.content }],
-          //   absoluteProjectPath,
-          // })
           uploadDescriptorForEveryone(userSession, {
             members: extractMembersByRole(envMembersDescriptor, [
               ROLES.ADMINS,
@@ -227,8 +221,6 @@ const pull = async (
             descriptor: fileDescriptor,
             type: 'file',
           })
-
-          // uploadDescriptorForEveryone()
         } catch (error) {
           console.error(error)
           throw new Error(

@@ -5,7 +5,7 @@ const daffy = require('daffy')
 const { merge } = require('three-way-merge')
 
 const { getPubkey } = require('../file/gaia')
-const { KeystoneError } = require('../error')
+const KeystoneError = require('../error')
 const CONSTANTS = require('../constants')
 const { getPath, changeBlockstackId } = require('../descriptor-path')
 const {
@@ -292,7 +292,6 @@ const updateDescriptorForMembers = async (
     membersDescriptor,
     Object.values(CONSTANTS.ROLES)
   )
-  console.log('TCL: membersToWriteTo', membersToWriteTo)
 
   let membersToReadFrom = []
 
@@ -300,7 +299,6 @@ const updateDescriptorForMembers = async (
     membersToReadFrom = extractMembersByRole(membersDescriptor, [
       CONSTANTS.ROLES.ADMINS,
     ])
-    console.log('TCL: membersToReadFrom', membersToReadFrom)
   } else {
     membersToReadFrom = extractMembersByRole(membersDescriptor, [
       CONSTANTS.ROLES.ADMINS,
@@ -362,6 +360,7 @@ const updateDescriptorForMembers = async (
     if (hash(content) === previousDescriptor.checksum) {
       return previousDescriptor
     }
+    manageConflictBetweenDescriptors([latestDescriptor, previousDescriptor])
     try {
       newDescriptor = incrementVersion({
         descriptor: newDescriptor,
@@ -373,9 +372,17 @@ const updateDescriptorForMembers = async (
       console.error(err)
       return newDescriptor
     }
-    manageConflictBetweenDescriptors([latestDescriptor, previousDescriptor])
+    if (
+      latestDescriptor.version === newDescriptor.version &&
+      hash(latestDescriptor.content) !== hash(newDescriptor.content)
+    ) {
+      throw new KeystoneError(
+        'PullBeforeYouPush',
+        'A version of this file exist with another content.\nPlease pull before pushing your file.'
+      )
+    }
 
-    if (latestDescriptor && latestDescriptor.version > newDescriptor.version) {
+    if (latestDescriptor.version > newDescriptor.version) {
       await uploadDescriptorForEveryone(userSession, {
         members: membersToWriteTo,
         descriptor: latestDescriptor,
