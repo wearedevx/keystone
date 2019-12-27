@@ -93,11 +93,13 @@ const manageConflictBetweenDescriptors = async (descriptors = []) => {
     // Conflict !!
     if (!allSamechecksum) {
       // check what type of descriptor it is
+      const result = await emit(EVENTS.CONFLICT, {
+        conflictFiles: descriptorsWithMaxVersion,
+      })
+
       return {
         merged: true,
-        result: await emit(EVENTS.CONFLICT, {
-          conflictFiles: descriptorsWithMaxVersion,
-        }),
+        result,
       }
     }
   }
@@ -135,7 +137,7 @@ const getLatestDescriptorByPath = async (
   stableOnly = false
 ) => {
   debug('getLatestDescriptorByPath', descriptorPath)
-
+  const { username } = userSession.loadUserData()
   let descriptors = await Promise.all(
     members.map(async member => {
       return readFileFromGaia(userSession, {
@@ -153,11 +155,43 @@ const getLatestDescriptorByPath = async (
   }
 
   const { merged, result } = await manageConflictBetweenDescriptors(descriptors)
-  if (!merged) {
-    return _.maxBy(descriptors, descriptor => descriptor.version)
+  if (merged) {
+    const newDescriptor = incrementVersion({
+      descriptor: { ...descriptors[0], content: result },
+      previousDescriptor: descriptors[0],
+      type: descriptors[0].type,
+      author: username,
+    })
+
+    await uploadDescriptorForEveryone(userSession, {
+      members,
+      descriptor: newDescriptor,
+      type: descriptors[0].type,
+    })
+
+    if (descriptors[0].type === 'file') {
+      // TODO update files checksums in  env descriptor
+      const pathParts = descriptorPath.split('/')
+      const envPath = pathParts.splice(pathParts.length - 2, 1).join('/')
+
+      const envDescriptor = await getLatestDescriptorByPath(userSession, {
+        descriptorPath: envPath,
+        members,
+      })
+      // replace checksum for changed file
+      envDescriptor.content = envDescriptor.content.map(file =>
+        file.name === newDescriptor.name
+          ? { ...file, checksum: hash(newDescriptor.content) }
+          : file
+      )
+      await uploadDescriptorForEveryone(userSession, {
+        members,
+        descriptor: envDescriptor,
+      })
+    }
+    return newDescriptor
   }
 
-  // TODO update the descriptor with result and return it
   return _.maxBy(descriptors, descriptor => descriptor.version)
 }
 
@@ -388,24 +422,6 @@ const updateDescriptorForMembers = async (
   }
 
   if (latestDescriptor && !previousDescriptor && content) {
-    // TODO throw error instead of creating a descriptor
-    const descriptorToCreate = createDescriptor({
-      name,
-      project,
-      content,
-      author: username,
-      env,
-      type,
-      version: 0,
-    })
-
-    await uploadDescriptorForEveryone(userSession, {
-      members: membersToWriteTo,
-      descriptor: descriptorToCreate,
-      type,
-    })
-
-    return descriptorToCreate
     throw new KeystoneError(
       'PullBeforeYouPush',
       'A version of this file exist with another content.\nPlease pull before pushing your file.'

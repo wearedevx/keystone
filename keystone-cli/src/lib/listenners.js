@@ -9,44 +9,56 @@ const { getProjectConfigFolderPath } = require('../lib/blockstackLoader')
 
 on(EVENTS.CONFLICT, ({ conflictFiles }) => {
   return new Promise(async resolve => {
-    const cacheFolder = getCacheFolder(getProjectConfigFolderPath('.ksconfig'))
-
-    const pathToFile = path.join(cacheFolder, `${conflictFiles[0].name}.merge`)
-
-    // Get previous version of the content if exist
-    const history = conflictFiles[0].history.find(
-      x => x.version === conflictFiles.version - 1
-    )
-
-    // merge the two descriptor based on the previous version
-    const { result, conflict } = mergeContents({
-      left: conflictFiles[0].content,
-      right: conflictFiles[1].content,
-      base: history ? daffy.applyPatch(conflictFiles[0].content, history) : '',
-    })
-
-    if (conflict) {
-      // write merge file in chache folder
-      fs.writeFile(pathToFile, result, () => {})
-
-      // open the file  in default editor
-      const editorSpawned = editorSpawn.spawn(
-        process.env.EDITOR || 'vi',
-        [pathToFile],
-        {
-          stdio: 'inherit',
-          detached: true,
-        }
+    if (typeof conflictFiles[0].content === 'string') {
+      const cacheFolder = getCacheFolder(
+        getProjectConfigFolderPath('.ksconfig')
       )
 
-      // on editor exit, return the new content (merged by the user)
-      editorSpawned.on('close', () => {
-        const newContent = fs.readFileSync(pathToFile)
+      const pathToFile = path.join(
+        cacheFolder,
+        `${conflictFiles[0].name}.merge`
+      )
 
-        resolve(newContent)
+      // Get previous version of the content if exist
+      const history = conflictFiles[0].history.find(
+        x => x.version === conflictFiles.version - 1
+      )
+
+      // merge the two descriptor based on the previous version
+      const { result, conflict } = mergeContents({
+        left: conflictFiles[0].content,
+        right: conflictFiles[1].content,
+        base: history
+          ? daffy.applyPatch(conflictFiles[0].content, history)
+          : '',
       })
+
+      if (conflict) {
+        // write merge file in chache folder
+        fs.writeFile(pathToFile, result, () => {})
+
+        // open the file  in default editor
+        const editorSpawned = editorSpawn.spawn(
+          process.env.EDITOR || 'vi',
+          [pathToFile],
+          {
+            stdio: 'inherit',
+            detached: true,
+          }
+        )
+
+        // on editor exit, return the new content (merged by the user)
+        editorSpawned.on('close', () => {
+          let newContent = fs.readFileSync(pathToFile)
+          newContent = newContent.toString()
+          resolve(newContent)
+        })
+      } else {
+        resolve(result)
+      }
+    } else {
+      resolve(conflictFiles[0].content)
     }
-    resolve(result)
   })
 })
 
