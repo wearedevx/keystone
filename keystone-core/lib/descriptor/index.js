@@ -93,14 +93,37 @@ const manageConflictBetweenDescriptors = async (descriptors = []) => {
     // Conflict !!
     if (!allSamechecksum) {
       // check what type of descriptor it is
-      const descriptor = await emit(EVENTS.CONFLICT, {
-        conflictFiles: descriptorsWithMaxVersion,
-      })
-      console.log(`\n\nDESCRIPTOR : \n ${descriptor}\n\n`)
+      return {
+        merged: true,
+        result: await emit(EVENTS.CONFLICT, {
+          conflictFiles: descriptorsWithMaxVersion,
+        }),
+      }
     }
   }
+  return { merged: false }
 }
 
+// const extractInfoFromPath = path => {
+//   let parts = path.split('/')
+//   let type = 'project'
+//   if (/members/.test(parts[1])) {
+//     type = 'members'
+//     parts[1] = parts[1].split('-')[0]
+//   }
+//   if (!/.*json/.test(parts[2])) {
+//     env = parts[2]
+//     if (/members/.test(parts[2])) {
+//       type = 'members'
+//       parts[2] = parts[2].split('-')[0]
+//     }
+//   } else {
+
+//   }
+//   const project = [parts[0], parts[1]].join('/')
+
+//   return { project, env, filename }
+// }
 /**
  * Return the latest version of a descriptor and will manage conflict.
  * @param {*} userSession
@@ -129,7 +152,12 @@ const getLatestDescriptorByPath = async (
     return getStableVersion(descriptors)
   }
 
-  await manageConflictBetweenDescriptors(descriptors)
+  const { merged, result } = await manageConflictBetweenDescriptors(descriptors)
+  if (!merged) {
+    return _.maxBy(descriptors, descriptor => descriptor.version)
+  }
+
+  // TODO update the descriptor with result and return it
   return _.maxBy(descriptors, descriptor => descriptor.version)
 }
 
@@ -358,7 +386,9 @@ const updateDescriptorForMembers = async (
       'A version of this file exist with another content.\nPlease pull before pushing your file.'
     )
   }
+
   if (latestDescriptor && !previousDescriptor && content) {
+    // TODO throw error instead of creating a descriptor
     const descriptorToCreate = createDescriptor({
       name,
       project,
@@ -388,14 +418,16 @@ const updateDescriptorForMembers = async (
       return previousDescriptor
     }
 
-    await manageConflictBetweenDescriptors([
+    const { result, merged } = await manageConflictBetweenDescriptors([
       latestDescriptor,
       previousDescriptor,
     ])
 
     try {
       newDescriptor = incrementVersion({
-        descriptor: newDescriptor,
+        descriptor: merged
+          ? { ...newDescriptor, content: result }
+          : newDescriptor,
         author: username,
         previousDescriptor,
         type,
@@ -548,6 +580,7 @@ const createDescriptor = ({ name, project, content, author, env, type }) => {
       type,
       env,
     }),
+    type,
     name,
     content,
     checksum: hash(content),

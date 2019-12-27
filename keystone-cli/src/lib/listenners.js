@@ -2,34 +2,51 @@ const { on, EVENTS } = require('@keystone/core/lib/pubsub')
 const editorSpawn = require('child_process')
 const path = require('path')
 const fs = require('fs')
+const daffy = require('daffy')
+const { mergeContents } = require('@keystone/core/lib/descriptor')
 const { getCacheFolder } = require('@keystone/core/lib/file')
 const { getProjectConfigFolderPath } = require('../lib/blockstackLoader')
 
 on(EVENTS.CONFLICT, ({ conflictFiles }) => {
   return new Promise(async resolve => {
-    console.log(conflictFiles)
-    // inquirer avec conflictFiles
-    // const conflictResolved = result of inquirer
-    // resolve(conflictResolved)
     const cacheFolder = getCacheFolder(getProjectConfigFolderPath('.ksconfig'))
 
     const pathToFile = path.join(cacheFolder, `${conflictFiles[0].name}.merge`)
-    console.log('TCL: pathToFile', pathToFile)
 
-    fs.writeFile(pathToFile, conflictFiles[0].content, () => {})
+    // Get previous version of the content if exist
+    const history = conflictFiles[0].history.find(
+      x => x.version === conflictFiles.version - 1
+    )
 
-    const editorSpawned = editorSpawn.spawn('vim', [pathToFile], {
-      stdio: 'inherit',
-      detached: true,
+    // merge the two descriptor based on the previous version
+    const { result, conflict } = mergeContents({
+      left: conflictFiles[0].content,
+      right: conflictFiles[1].content,
+      base: history ? daffy.applyPatch(conflictFiles[0].content, history) : '',
     })
 
-    editorSpawned.on('close', () => {
-      const newContent = fs.readFileSync(pathToFile)
+    if (conflict) {
+      // write merge file in chache folder
+      fs.writeFile(pathToFile, result, () => {})
 
-      resolve(newContent)
+      // open the file  in default editor
+      const editorSpawned = editorSpawn.spawn(
+        process.env.EDITOR || 'vi',
+        [pathToFile],
+        {
+          stdio: 'inherit',
+          detached: true,
+        }
+      )
 
-      console.log('FINISH')
-    })
+      // on editor exit, return the new content (merged by the user)
+      editorSpawned.on('close', () => {
+        const newContent = fs.readFileSync(pathToFile)
+
+        resolve(newContent)
+      })
+    }
+    resolve(result)
   })
 })
 
