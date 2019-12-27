@@ -11,6 +11,7 @@ module.exports = {
     MissingParams: 'MissingParams',
     AccountMismatch: 'AccountMismatch',
     InvalidProjectName: 'InvalidProjectName',
+    Conflict: 'Conflict',
   },
   KEYSTONE_MAIL: process.env.KEYSTONE_MAIL || 'http://localhost:8080',
   KEYSTONE_WEB: process.env.KEYSTONE_WEB || 'http://localhost:8000',
@@ -28,4 +29,5 @@ module.exports = {
   LOGIN_KEY_PREFIX: '{{login}}',
   SHARE_FILENAME: 'keystone-link.json',
   SESSION_FILENAME: process.env.SESSION_FILENAME || 'session.json',
+  EVENTS: { CONFLICT: 'CONFLICT' },
 }

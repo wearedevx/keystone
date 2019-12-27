@@ -92,4 +92,5 @@ module.exports = {
   getFilepath,
   getSession,
   getProjectConfig,
+  getProjectConfigFolderPath,
 }

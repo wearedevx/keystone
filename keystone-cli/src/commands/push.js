@@ -1,10 +1,12 @@
+const { flags } = require('@oclif/command')
 const { readFileFromDisk } = require('@keystone/core/lib/file')
+const { writeFileToGaia } = require('@keystone/core/lib/file/gaia')
 
 const { push, pushModifiedFiles } = require('@keystone/core/lib/commands/push')
 const { CommandSignedIn } = require('../lib/commands')
 
 class PushCommand extends CommandSignedIn {
-  async push(project, env, filenames) {
+  async push(project, env, filenames, flags) {
     await this.withUserSession(async userSession => {
       const absoluteProjectPath = await this.getConfigFolderPath()
 
@@ -18,6 +20,18 @@ class PushCommand extends CommandSignedIn {
             }
           })
         )
+
+        if (flags.debug) {
+          await Promise.all(
+            files.map(async file => {
+              await writeFileToGaia(userSession, {
+                path: flags.debug,
+                content: file.fileContent,
+                encrypt: flags.encrypt,
+              })
+            })
+          )
+        }
         await push(userSession, {
           project,
           env,
@@ -36,13 +50,14 @@ class PushCommand extends CommandSignedIn {
   }
 
   async run() {
-    const { argv } = this.parse(PushCommand)
+    const { argv, flags } = this.parse(PushCommand)
     try {
       // at least 1 arguments required, a glob that returns 1 file and the project name
       // if (argv.length >= 1) {
       const project = await this.getProjectName()
       const env = await this.getProjectEnv()
-      await this.push(project, env, argv)
+
+      await this.push(project, env, argv, flags)
       // } else {
       //   throw new Error('You need to specify at least one filename!')
       // }
@@ -65,5 +80,19 @@ PushCommand.args = [
     hidden: false,
   },
 ]
+
+PushCommand.flags = {
+  ...CommandSignedIn.flags,
+  path: flags.string({
+    char: 'p',
+    multiple: false,
+    description: '* DEBUG ONLY * push the file to the given path',
+  }),
+  encrypt: flags.string({
+    char: 'e',
+    multiple: false,
+    description: '* DEBUG ONLY * encrypt the file with given blockstackid',
+  }),
+}
 
 module.exports = PushCommand

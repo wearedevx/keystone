@@ -13,6 +13,7 @@ const doesUserHasRole = async (userSession, { project, env }, roles) => {
     project,
     env,
   })
+  console.log('TCL: doesUserHasRole -> memberDescriptor', memberDescriptor)
 
   return roles.reduce((hasRole, role) => {
     return (

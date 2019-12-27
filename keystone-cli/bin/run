@@ -1,8 +1,10 @@
 #!/usr/bin/env -S node --no-warnings
+require('../src/lib/listenners')
 
-require('@oclif/command').run()
-.then(require('@oclif/command/flush'))
-.catch(require('@oclif/errors/handle'))
+require('@oclif/command')
+  .run()
+  .then(require('@oclif/command/flush'))
+  .catch(require('@oclif/errors/handle'))
 
 process.on('unhandledRejection', error => {
   console.error(error)

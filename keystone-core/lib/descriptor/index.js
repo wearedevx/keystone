@@ -3,6 +3,7 @@ const _ = require('lodash')
 const hash = require('object-hash')
 const daffy = require('daffy')
 const { merge } = require('three-way-merge')
+const { emit, EVENTS } = require('../../lib/pubsub')
 
 const { getPubkey } = require('../file/gaia')
 const KeystoneError = require('../error')
@@ -72,7 +73,7 @@ const mergeContents = ({ left, right, base }) => {
   return { result: merged.joinedResults(), conflict: merged.conflict }
 }
 
-const manageConflictBetweenDescriptors = (descriptors = []) => {
+const manageConflictBetweenDescriptors = async (descriptors = []) => {
   debug('manageConflictBetweenDescriptors')
 
   const newDescriptors = descriptors.filter(d => d)
@@ -91,7 +92,11 @@ const manageConflictBetweenDescriptors = (descriptors = []) => {
 
     // Conflict !!
     if (!allSamechecksum) {
-      throw new Error('Conflicts !!')
+      // check what type of descriptor it is
+      const descriptor = await emit(EVENTS.CONFLICT, {
+        conflictFiles: descriptorsWithMaxVersion,
+      })
+      console.log(`\n\nDESCRIPTOR : \n ${descriptor}\n\n`)
     }
   }
 }
@@ -124,7 +129,7 @@ const getLatestDescriptorByPath = async (
     return getStableVersion(descriptors)
   }
 
-  manageConflictBetweenDescriptors(descriptors)
+  await manageConflictBetweenDescriptors(descriptors)
   return _.maxBy(descriptors, descriptor => descriptor.version)
 }
 
@@ -353,14 +358,41 @@ const updateDescriptorForMembers = async (
       'A version of this file exist with another content.\nPlease pull before pushing your file.'
     )
   }
+  if (latestDescriptor && !previousDescriptor && content) {
+    const descriptorToCreate = createDescriptor({
+      name,
+      project,
+      content,
+      author: username,
+      env,
+      type,
+      version: 0,
+    })
 
+    await uploadDescriptorForEveryone(userSession, {
+      members: membersToWriteTo,
+      descriptor: descriptorToCreate,
+      type,
+    })
+
+    return descriptorToCreate
+    throw new KeystoneError(
+      'PullBeforeYouPush',
+      'A version of this file exist with another content.\nPlease pull before pushing your file.'
+    )
+  }
   if (latestDescriptor && previousDescriptor && content) {
     let newDescriptor = { ...previousDescriptor, content }
 
     if (hash(content) === previousDescriptor.checksum) {
       return previousDescriptor
     }
-    manageConflictBetweenDescriptors([latestDescriptor, previousDescriptor])
+
+    await manageConflictBetweenDescriptors([
+      latestDescriptor,
+      previousDescriptor,
+    ])
+
     try {
       newDescriptor = incrementVersion({
         descriptor: newDescriptor,
