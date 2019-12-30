@@ -8,6 +8,9 @@ const chalk = require('chalk')
 const treeify = require('treeify')
 const { mergeContents } = require('@keystone/core/lib/descriptor')
 const { getCacheFolder } = require('@keystone/core/lib/file')
+const {
+  updateFilesInEnvDesciptor,
+} = require('@keystone/core/lib/commands/push')
 const { getProjectConfigFolderPath } = require('../lib/blockstackLoader')
 
 on(EVENTS.CONFLICT, ({ conflictFiles }) => {

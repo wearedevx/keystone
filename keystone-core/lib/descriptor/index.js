@@ -68,12 +68,50 @@ const getStableVersion = descriptors => {
   return lastVersionStable
 }
 
+const updateFilesInEnvDesciptor = (
+  userSession,
+  { files, envDescriptor, project, env }
+) => {
+  files.forEach(({ filename, fileContent }) => {
+    const foundFile = envDescriptor.content.files.findIndex(
+      f => f.name === filename
+    )
+    if (foundFile === -1) {
+      envDescriptor.content.files.push({
+        checksum: hash(fileContent),
+        name: filename,
+      })
+    } else {
+      envDescriptor.content.files[foundFile] = {
+        name: filename,
+        checksum: hash(fileContent),
+      }
+    }
+  })
+  const envDescriptorPath = getPath({
+    project,
+    env,
+    type: 'env',
+  })
+  return updateDescriptor(userSession, {
+    project,
+    env,
+    type: 'env',
+    content: envDescriptor.content,
+    descriptorPath: envDescriptorPath,
+    name: env,
+  })
+}
+
 const mergeContents = ({ left, right, base }) => {
   const merged = merge(left, base, right)
   return { result: merged.joinedResults(), conflict: merged.conflict }
 }
 
-const manageConflictBetweenDescriptors = async (descriptors = []) => {
+const manageConflictBetweenDescriptors = async (
+  userSession,
+  { descriptors = [], members }
+) => {
   debug('manageConflictBetweenDescriptors')
 
   const newDescriptors = descriptors.filter(d => d)
@@ -92,7 +130,73 @@ const manageConflictBetweenDescriptors = async (descriptors = []) => {
 
     // Conflict !!
     if (!allSamechecksum) {
-      // check what type of descriptor it is
+      // Look for env, files or members, and compare the two descriptors
+      const items1 =
+        descriptorsWithMaxVersion[0].content.files ||
+        descriptorsWithMaxVersion[0].content.members ||
+        descriptorsWithMaxVersion[0].content.env
+
+      const items2 =
+        descriptorsWithMaxVersion[1].content.files ||
+        descriptorsWithMaxVersion[1].content.members ||
+        descriptorsWithMaxVersion[1].content.env
+
+      const itemsAreTheSame = items1.every(item =>
+        items2.find(
+          i =>
+            i === item ||
+            i.name === item.name ||
+            i.blockstack_id === item.blockstack_id
+        )
+      )
+
+      if (itemsAreTheSame && descriptorsWithMaxVersion[0].content.files) {
+        // check if content is a list of files and if files have the same checksum
+        const filesAreNotTheSame = items1.filter(
+          item => !items2.find(i => i.checksum === item.checksum)
+        )
+        if (filesAreNotTheSame.lenght > 0) {
+          // return one of the descriptor (they are the same)
+          return { merge: true, result: descriptorsWithMaxVersion[0].content }
+        }
+        const { username } = userSession.loadUserData()
+        const project = [
+          descriptorsWithMaxVersion[0].path.split('/')[0],
+          descriptorsWithMaxVersion[0].path.split('/')[1],
+        ].join('/')
+        const env = descriptorsWithMaxVersion[0].name
+
+        const newFiles = await Promise.all(
+          filesAreNotTheSame.map(async file => {
+            const path = getPath({
+              env,
+              project,
+              blockstackId: username,
+              type: 'file',
+              filename: file.name,
+            })
+            const latestFileDescriptor = await getLatestDescriptorByPath(
+              userSession,
+              {
+                descriptorPath: path,
+                members,
+              }
+            )
+            return {
+              filename: latestFileDescriptor.name,
+              fileContent: latestFileDescriptor.content,
+            }
+          })
+        )
+
+        const newEnvDescriptor = await updateFilesInEnvDesciptor(userSession, {
+          files: newFiles,
+          envDescriptor: descriptorsWithMaxVersion[0],
+          project,
+          env,
+        })
+        return { merged: true, result: newEnvDescriptor.content }
+      }
       const result = await emit(EVENTS.CONFLICT, {
         conflictFiles: descriptorsWithMaxVersion,
       })
@@ -154,7 +258,10 @@ const getLatestDescriptorByPath = async (
     return getStableVersion(descriptors)
   }
 
-  const { merged, result } = await manageConflictBetweenDescriptors(descriptors)
+  const { merged, result } = await manageConflictBetweenDescriptors(
+    userSession,
+    { descriptors, members }
+  )
   if (merged) {
     const newDescriptor = incrementVersion({
       descriptor: { ...descriptors[0], content: result[0] },
@@ -451,10 +558,13 @@ const updateDescriptorForMembers = async (
       return previousDescriptor
     }
 
-    const { result, merged } = await manageConflictBetweenDescriptors([
-      latestDescriptor,
-      previousDescriptor,
-    ])
+    const { result, merged } = await manageConflictBetweenDescriptors(
+      userSession,
+      {
+        descriptors: [latestDescriptor, previousDescriptor],
+        members: membersToReadFrom,
+      }
+    )
 
     try {
       newDescriptor = incrementVersion({
@@ -469,6 +579,12 @@ const updateDescriptorForMembers = async (
       console.error(err)
       return newDescriptor
     }
+    if (latestDescriptor.version > newDescriptor.version) {
+      throw new KeystoneError(
+        'PullBeforeYouPush',
+        'A version of this file exist with another content.\nPlease pull before pushing your file.'
+      )
+    }
     if (
       latestDescriptor.version === newDescriptor.version &&
       hash(latestDescriptor.content) !== hash(newDescriptor.content)
@@ -479,14 +595,14 @@ const updateDescriptorForMembers = async (
       )
     }
 
-    if (latestDescriptor.version > newDescriptor.version) {
-      await uploadDescriptorForEveryone(userSession, {
-        members: membersToWriteTo,
-        descriptor: latestDescriptor,
-        type,
-      })
-      return latestDescriptor
-    }
+    // if (latestDescriptor.version > newDescriptor.version) {
+    //   await uploadDescriptorForEveryone(userSession, {
+    //     members: membersToWriteTo,
+    //     descriptor: latestDescriptor,
+    //     type,
+    //   })
+    //   return latestDescriptor
+    // }
 
     await uploadDescriptorForEveryone(userSession, {
       members: membersToWriteTo,
@@ -756,4 +872,5 @@ module.exports = {
   getAdminsAndContributors,
   isAdmin,
   mergeContents,
+  updateFilesInEnvDesciptor,
 }
