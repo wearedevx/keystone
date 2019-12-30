@@ -165,6 +165,7 @@ const conflictedEnvDescriptors = {
         },
       ],
     },
+    author: 'kevinq64.id.blockstack',
     version: 2,
   },
   right: {
@@ -194,6 +195,7 @@ const conflictedEnvDescriptors = {
       ],
     },
     version: 2,
+    author: 'l_abigael.id.blockstack',
   },
 }
 module.exports = {

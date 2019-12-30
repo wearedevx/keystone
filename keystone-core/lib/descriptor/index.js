@@ -157,7 +157,7 @@ const getLatestDescriptorByPath = async (
   const { merged, result } = await manageConflictBetweenDescriptors(descriptors)
   if (merged) {
     const newDescriptor = incrementVersion({
-      descriptor: { ...descriptors[0], content: result },
+      descriptor: { ...descriptors[0], content: result[0] },
       previousDescriptor: descriptors[0],
       type: descriptors[0].type,
       author: username,
@@ -422,6 +422,23 @@ const updateDescriptorForMembers = async (
   }
 
   if (latestDescriptor && !previousDescriptor && content) {
+    // const descriptorToCreate = createDescriptor({
+    //   name,
+    //   project,
+    //   content,
+    //   author: username,
+    //   env,
+    //   type,
+    //   version: 0,
+    // })
+
+    // await uploadDescriptorForEveryone(userSession, {
+    //   members: membersToWriteTo,
+    //   descriptor: descriptorToCreate,
+    //   type,
+    // })
+
+    // return descriptorToCreate
     throw new KeystoneError(
       'PullBeforeYouPush',
       'A version of this file exist with another content.\nPlease pull before pushing your file.'

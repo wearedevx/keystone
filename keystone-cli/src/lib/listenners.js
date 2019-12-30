@@ -3,6 +3,9 @@ const editorSpawn = require('child_process')
 const path = require('path')
 const fs = require('fs')
 const daffy = require('daffy')
+const inquirer = require('inquirer')
+const chalk = require('chalk')
+const treeify = require('treeify')
 const { mergeContents } = require('@keystone/core/lib/descriptor')
 const { getCacheFolder } = require('@keystone/core/lib/file')
 const { getProjectConfigFolderPath } = require('../lib/blockstackLoader')
@@ -49,15 +52,52 @@ on(EVENTS.CONFLICT, ({ conflictFiles }) => {
 
         // on editor exit, return the new content (merged by the user)
         editorSpawned.on('close', () => {
-          let newContent = fs.readFileSync(pathToFile)
-          newContent = newContent.toString()
-          resolve(newContent)
+          const newContent = fs.readFileSync(pathToFile)
+          const stringContent = newContent.toString()
+          resolve(stringContent)
         })
       } else {
         resolve(result)
       }
     } else {
-      resolve(conflictFiles[0].content)
+      const choices = [conflictFiles[0], conflictFiles[1]]
+        .reduce((files, descriptor) => {
+          files.push(
+            ...(descriptor.content.files || descriptor.content.members)
+          )
+          return files
+        }, [])
+        .reduce((unqFiles, file) => {
+          if (!unqFiles.find(f => f.name === file.name)) {
+            unqFiles.push({ name: file.name, value: file, checked: true })
+          }
+          return unqFiles
+        }, [])
+
+      const user1Items = (
+        conflictFiles.right.content.files || conflictFiles.right.content.members
+      ).map(i => i.blockstack_id || i.name)
+
+      const user2Items = (
+        conflictFiles[0].content.files || conflictFiles[0].content.members
+      ).map(i => i.blockstack_id || i.name)
+
+      const itemsByOwner = {
+        [chalk.green(conflictFiles.right.author)]: user1Items,
+        [chalk.green(conflictFiles[0].author)]: user2Items,
+      }
+      console.log('\x1Bc')
+      console.log(treeify.asTree(itemsByOwner, true))
+
+      const { items } = await inquirer.prompt([
+        {
+          type: 'checkbox',
+          name: 'items',
+          message: `Which files you want to keep from the env ?`,
+          choices,
+        },
+      ])
+      resolve(items)
     }
   })
 })
@@ -72,7 +112,7 @@ on(EVENTS.CONFLICT, ({ conflictFiles }) => {
 //   for (let i = 0; i < descriptorsWithMaxVersion.length; i += 1) {
 //     if (descriptorsWithMaxVersion[1]) {
 //       const { result } = mergeContents({
-//         left: descriptorsWithMaxVersion[0].content,
+//        [0]: descriptorsWithMaxVersion[0].content,
 //         right: descriptorsWithMaxVersion[1].content,
 //         base: previousVersion,
 //       })

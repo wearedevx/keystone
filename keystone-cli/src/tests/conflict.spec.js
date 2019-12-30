@@ -2,6 +2,7 @@ const { merge } = require('three-way-merge')
 const daffy = require('daffy')
 const inquirer = require('inquirer')
 const chalk = require('chalk')
+const treeify = require('treeify')
 
 const {
   conflictedDescriptors,
@@ -43,23 +44,44 @@ describe('Get back in history', () => {
 
 describe('Manage merge between descriptor with array content', () => {
   fit('should prompt the user to choose the files he/she wants to keep', async () => {
-    const files = [
-      ...conflictedEnvDescriptors.left.content.files,
-      ...conflictedEnvDescriptors.right.content.files,
-    ].reduce((acc, curr) => {
-      if (!acc.find(f => f.name === curr.name)) {
-        acc.push(curr)
-      }
-      return acc
-    }, [])
+    const choices = [
+      conflictedEnvDescriptors.left,
+      conflictedEnvDescriptors.right,
+    ]
+      .reduce((files, descriptor) => {
+        files.push(...(descriptor.content.files || descriptor.content.members))
+        return files
+      }, [])
+      .reduce((unqFiles, file) => {
+        if (!unqFiles.find(f => f.name === file.name)) {
+          unqFiles.push({ name: file.name, value: file, checked: true })
+        }
+        return unqFiles
+      }, [])
 
-    const items = await inquirer.prompt([
+    const user1Items = (
+      conflictedEnvDescriptors.right.content.files ||
+      conflictedEnvDescriptors.right.content.members
+    ).map(i => i.blockstack_id || i.name)
+
+    const user2Items = (
+      conflictedEnvDescriptors.left.content.files ||
+      conflictedEnvDescriptors.left.content.members
+    ).map(i => i.blockstack_id || i.name)
+
+    const itemsByOwner = {
+      [chalk.green(conflictedEnvDescriptors.right.author)]: user1Items,
+      [chalk.green(conflictedEnvDescriptors.left.author)]: user2Items,
+    }
+
+    console.log(treeify.asTree(itemsByOwner, true))
+
+    const { items } = await inquirer.prompt([
       {
         type: 'checkbox',
         name: 'items',
         message: `Which files you want to keep from the env ?`,
-        choices: files,
-        // default: [envs],
+        choices,
       },
     ])
     console.log(items)
