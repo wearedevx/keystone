@@ -5,7 +5,7 @@ const { PUBKEY, SHARED_MEMBER } = require('../constants')
 
 const filterConsole = require('filter-console')
 
-filterConsole([/.*DEBUG.*/, /.*Experimental.*/, /.*DoesNotExist.*/])
+filterConsole([/\[DEBUG\].*/, /.*Experimental.*/, /.*DoesNotExist.*/])
 
 // TODO: we shouldn't need origin as encrypt already has that information: if set to true or false, it's the logged user else it's the blockstack id of another user
 const writeFileToGaia = async (
