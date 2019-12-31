@@ -2,7 +2,7 @@ const chalk = require('chalk')
 const { CommandSignedIn } = require('../lib/commands')
 
 const shouldDelete = filename =>
-  filename !== 'public.key' || filename !== 'public.key.sig'
+  filename !== 'public.key' && filename !== 'public.key.sig'
 
 class ResetCommand extends CommandSignedIn {
   // remove all files except public.key
