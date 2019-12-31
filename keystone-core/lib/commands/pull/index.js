@@ -233,7 +233,12 @@ const pull = async (
   )
   await updateFilesInEnvDesciptor(userSession, {
     files: allLatestFileDescriptors
-      .filter(file => !(typeof file.conflict === 'boolean') && !file.conflict)
+      .filter(
+        file =>
+          !(typeof file.conflict === 'boolean') &&
+          !file.conflict &&
+          file.updated
+      )
       .map(file => ({
         filename: file.fileDescriptor.name,
         fileContent: file.fileDescriptor.content,

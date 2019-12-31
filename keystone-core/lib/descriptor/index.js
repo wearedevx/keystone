@@ -72,7 +72,8 @@ const updateFilesInEnvDesciptor = (
   userSession,
   { files, envDescriptor, project, env }
 ) => {
-  files.forEach(({ filename, fileContent }) => {
+  files.forEach(file => {
+    const { filename, fileContent } = file
     const foundFile = envDescriptor.content.files.findIndex(
       f => f.name === filename
     )
@@ -521,36 +522,13 @@ const updateDescriptorForMembers = async (
     return latestDescriptor
   }
 
-  if (latestDescriptor && !previousDescriptor && !content) {
+  if (latestDescriptor && !previousDescriptor) {
     throw new KeystoneError(
       'PullBeforeYouPush',
       'A version of this file exist with another content.\nPlease pull before pushing your file.'
     )
   }
 
-  if (latestDescriptor && !previousDescriptor && content) {
-    // const descriptorToCreate = createDescriptor({
-    //   name,
-    //   project,
-    //   content,
-    //   author: username,
-    //   env,
-    //   type,
-    //   version: 0,
-    // })
-
-    // await uploadDescriptorForEveryone(userSession, {
-    //   members: membersToWriteTo,
-    //   descriptor: descriptorToCreate,
-    //   type,
-    // })
-
-    // return descriptorToCreate
-    throw new KeystoneError(
-      'PullBeforeYouPush',
-      'A version of this file exist with another content.\nPlease pull before pushing your file.'
-    )
-  }
   if (latestDescriptor && previousDescriptor && content) {
     let newDescriptor = { ...previousDescriptor, content }
 
@@ -873,4 +851,5 @@ module.exports = {
   isAdmin,
   mergeContents,
   updateFilesInEnvDesciptor,
+  getOwnDescriptorByPath,
 }

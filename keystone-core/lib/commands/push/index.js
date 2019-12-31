@@ -6,12 +6,18 @@ const {
   updateDescriptor,
   getLatestEnvDescriptor,
   updateFilesInEnvDesciptor,
+  getLatestDescriptorByPath,
+  getLatestMembersDescriptor,
+  extractMembersByRole,
+  getOwnDescriptorByPath,
 } = require('../../descriptor')
 const {
   writeFileToDisk,
   getCacheFolder,
   getModifiedFilesFromCacheFolder,
 } = require('../../file')
+const KeystoneError = require('../../error')
+const { ROLES } = require('../../constants')
 
 const push = async (
   userSession,
@@ -22,10 +28,32 @@ const push = async (
   // create keystone cache folder
   const cacheFolder = getCacheFolder(absoluteProjectPath)
 
-  const envDescriptor = await getLatestEnvDescriptor(userSession, {
+  const membersDescriptor = await getLatestMembersDescriptor(userSession, {
     project,
     env,
   })
+  const members = extractMembersByRole(membersDescriptor, [
+    ROLES.CONTRIBUTORS,
+    ROLES.ADMINS,
+  ])
+  // Retrieve the latest version of the file from everyone.
+  const envPath = getPath({ project, env, type: 'env', blockstackId: username })
+
+  const envDescriptor = await getLatestDescriptorByPath(userSession, {
+    descriptorPath: envPath,
+    members,
+  })
+
+  const previousEnvDescriptor = await getOwnDescriptorByPath(userSession, {
+    descriptorPath: envPath,
+  })
+
+  if (envDescriptor.checksum !== previousEnvDescriptor.checksum) {
+    throw new KeystoneError(
+      'PullBeforeYouPush',
+      'A version of this file exist with another content.\nPlease pull before pushing your file.'
+    )
+  }
 
   const pushedFiles = await Promise.all(
     files.map(async file => {
@@ -37,6 +65,7 @@ const push = async (
       ) {
         return { updated: false, filename }
       }
+
       const filePath = getPath({
         project,
         env,
