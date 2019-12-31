@@ -26,7 +26,7 @@ const {
 
 const { ROLES } = require('../../constants')
 
-const { updateFilesInEnvDesciptor } = require('../push')
+const { updateFilesInEnvDesciptor } = require('../../descriptor')
 
 /**
  * For all files in env descriptor, and not in cache folder,
