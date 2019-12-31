@@ -1,7 +1,7 @@
 const chalk = require('chalk')
 const inquirer = require('inquirer')
-const { CommandSignedIn } = require('../lib/commands')
 const init = require('@keystone/core/lib/commands/init')
+const { CommandSignedIn } = require('../lib/commands')
 
 class InitCommand extends CommandSignedIn {
   async prompt() {

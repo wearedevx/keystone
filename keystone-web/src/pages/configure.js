@@ -269,7 +269,6 @@ const PromptConfigure = ({
                           }
                         )
                       )
-                      console.log('TCL: members', members)
 
                       envMembersDescriptor.descriptor.content[role] = members
                     }

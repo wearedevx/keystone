@@ -90,7 +90,6 @@ const pull = async (
   )
   if (cache) {
     const uncommitted = changes.filter(change => change.status !== 'ok')
-    console.log('UNCOMMITED', uncommitted)
 
     if (uncommitted.length > 0 && !force) {
       // throw new KeystoneError(

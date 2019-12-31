@@ -55,6 +55,7 @@
     "daffy": "^1.0.3",
     "elliptic": "^6.4.1",
     "filename-regex": "^2.0.1",
+    "filter-console": "^0.1.1",
     "inquirer": "^6.4.1",
     "is-email": "^1.0.0",
     "listr": "^0.14.3",

@@ -3,6 +3,7 @@ dependencies:
   debug: 4.1.1
   diff-match-patch: 1.0.4
   elliptic: 6.5.2
+  filter-console: 0.1.1
   is-buffer: 2.0.4
   js-sizeof: 0.0.1
   lodash: 4.17.15
@@ -66,6 +67,12 @@ packages:
     dev: true
     resolution:
       integrity: sha512-xJuoT5+L99XlZ8twedaRf6Ax2TgQVxvgZOYoPKqZufmJib0tL2tegPBOZb1pVNgIhlqDlA0eO0c3wBvQcmzx4w==
+  /filter-console/0.1.1:
+    dev: false
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-zrXoV1Uaz52DqPs+qEwNJWJFAWZpYJ47UNmpN9q4j+/EYsz85uV0DC9k8tRND5kYmoVzL0W+Y75q4Rg8sRJCdg==
   /hash.js/1.1.7:
     dependencies:
       inherits: 2.0.4
@@ -150,6 +157,7 @@ specifiers:
   diff-match-patch: ^1.0.4
   elliptic: ^6.5.2
   eslint-plugin-prettier: ^3.1.0
+  filter-console: ^0.1.1
   is-buffer: ^2.0.4
   js-sizeof: ^0.0.1
   lodash: ^4.17.15

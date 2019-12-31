@@ -5,7 +5,6 @@ import Logo from './components/logo'
 import GithubIcon from './svgs/github'
 import useBlockstack from './hooks/useBlockstack'
 // import { descriptor } from '@keystone/core'
-// console.log('TCL: kcore', descriptor)
 
 import './app.css'
 

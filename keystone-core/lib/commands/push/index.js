@@ -22,9 +22,21 @@ const push = async (
   // create keystone cache folder
   const cacheFolder = getCacheFolder(absoluteProjectPath)
 
-  await Promise.all(
+  const envDescriptor = await getLatestEnvDescriptor(userSession, {
+    project,
+    env,
+  })
+
+  const pushedFiles = await Promise.all(
     files.map(async file => {
       const { filename, fileContent } = file
+      if (
+        envDescriptor.content.files.find(
+          f => f.name === filename && f.checksum === hash(fileContent)
+        )
+      ) {
+        return { updated: false, filename }
+      }
       const filePath = getPath({
         project,
         env,
@@ -44,23 +56,25 @@ const push = async (
 
       writeFileToDisk(fileDescriptor, cacheFolder)
 
-      return fileDescriptor
+      return { updated: true, filename }
     })
   )
 
-  const envDescriptor = await getLatestEnvDescriptor(userSession, {
+  // If file is not present, add it. If present, update checksum
+  await updateFilesInEnvDesciptor(userSession, {
+    files,
+    envDescriptor,
     project,
     env,
   })
 
-  // If file is not present, add it. If present, update checksum
-  updateFilesInEnvDesciptor(userSession, { files, envDescriptor, project, env })
+  return pushedFiles
 }
 
 /**
  * Push only modified files present in cache folder.
  */
-const pushModifiedFiles = (
+const pushModifiedFiles = async (
   userSession,
   { project, env, absoluteProjectPath }
 ) => {
@@ -79,7 +93,6 @@ const pushModifiedFiles = (
     return
   }
 
-  console.log('TCL: modifiedFiles', modifiedFiles)
   // return
 
   const formatModifiedFiles = modifiedFiles.map(({ path }) => ({
@@ -87,12 +100,13 @@ const pushModifiedFiles = (
     fileContent: fs.readFileSync(path).toString(),
   }))
 
-  push(userSession, {
+  const pushedFiles = push(userSession, {
     project,
     env,
     files: formatModifiedFiles,
     absoluteProjectPath,
   })
+  return pushedFiles
 }
 
 module.exports = { push, pushModifiedFiles }

@@ -26,13 +26,13 @@ class AddCommand extends CommandSignedIn {
       if (memberAdded.added) {
         this.log(
           `▻ ${chalk.yellow(
-            memberAdded.blockstackId
+            memberAdded
           )} added to ${project} ${chalk.green.bold('✓')}`
         )
       } else {
         this.log(
           `▻ Failed to add ${chalk.yellow(
-            memberAdded.blockstackId
+            memberAdded
           )} to ${project} ${chalk.red.bold('✗')}`,
           memberAdded.error
         )

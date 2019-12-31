@@ -13,7 +13,6 @@ const doesUserHasRole = async (userSession, { project, env }, roles) => {
     project,
     env,
   })
-  console.log('TCL: doesUserHasRole -> memberDescriptor', memberDescriptor)
 
   return roles.reduce((hasRole, role) => {
     return (
@@ -78,11 +77,14 @@ const addMember = async (
     env,
   })
 
-  const allMembers = Object.keys(ROLES).reduce((members, r) => {
-    return [...members, membersDescriptor.content[r]]
+  const allMembers = Object.values(ROLES).reduce((members, r) => {
+    return [...members, ...membersDescriptor.content[r]]
   }, [])
 
-  if (member !== SHARED_MEMBER && allMembers.find(m => m === member)) {
+  if (
+    member !== SHARED_MEMBER &&
+    allMembers.find(m => m.blockstack_id === member)
+  ) {
     throw new KeystoneError(
       ERROR_CODES.InvitationFailed,
       'User already in the project',
@@ -131,7 +133,7 @@ const addMember = async (
       })
     )
   }
-  return membersDescriptor
+  return member
 }
 
 module.exports = {

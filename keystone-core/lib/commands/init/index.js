@@ -115,7 +115,7 @@ const init = async (userSession, { project, overwrite = false }) => {
         'Config file .ksconfig already exist'
       )
     }
-    return projectWithUUID
+    return project
   } catch (error) {
     throw error
   }

@@ -1,4 +1,5 @@
 #!/usr/bin/env -S node --no-warnings
+
 require('../src/lib/listenners')
 
 require('@oclif/command')

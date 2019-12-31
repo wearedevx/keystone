@@ -1,3 +1,5 @@
+const chalk = require('chalk')
+const { cli } = require('cli-ux')
 const { flags } = require('@oclif/command')
 const { readFileFromDisk } = require('@keystone/core/lib/file')
 const { writeFileToGaia } = require('@keystone/core/lib/file/gaia')
@@ -32,19 +34,45 @@ class PushCommand extends CommandSignedIn {
             })
           )
         }
-        await push(userSession, {
+        cli.action.start('Pushing into private locker')
+        const pushedFiles = await push(userSession, {
           project,
           env,
           files,
           absoluteProjectPath,
         })
+
+        pushedFiles.forEach(f => {
+          this.log(
+            `▻ File ${chalk.bold(f.filename)} ${
+              f.updated
+                ? 'successfully pushed'
+                : 'already is the latest version'
+            } ${chalk.green.bold('✓')}`
+          )
+        })
+
+        cli.action.stop('Done')
       } else {
+        cli.action.start('Pushing into private locker')
         // Push all modified files.
-        await pushModifiedFiles(userSession, {
+        const pushedFiles = await pushModifiedFiles(userSession, {
           project,
           env,
           absoluteProjectPath,
         })
+        if (pushedFiles && pushedFiles.length > 0) {
+          pushedFiles.forEach(f => {
+            this.log(
+              `▻ File ${chalk.bold(f.filename)} ${
+                f.updated
+                  ? 'successfully pushed'
+                  : 'already is the latest version'
+              } ${chalk.green.bold('✓')}`
+            )
+          })
+        }
+        cli.action.stop('Done')
       }
     })
   }

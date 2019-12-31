@@ -8,7 +8,6 @@ const listAllFiles = userSession => {
 }
 
 const listEnvFiles = async (userSession, { project, env }) => {
-  console.log("TCL: listEnvFiles ->  project, env",  project, env)
   const envDescriptor = await getLatestEnvDescriptor(userSession, {
     project,
     env,
