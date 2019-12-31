@@ -1,4 +1,6 @@
 dependencies:
+  '@elbstack/react-static-plugin-dotenv': 1.1.1
+  dotenv: 8.2.0
   query-string: 6.9.0
   react-static: 7.2.3
 devDependencies:
@@ -908,6 +910,14 @@ packages:
       to-fast-properties: 2.0.0
     resolution:
       integrity: sha512-cz5Ji23KCi4T+YIE/BolWosrJuSmoZeN1EFnRtBwF+KKLi8GG/Z2c2hOJJeCXPk4mwk4QFvTmwIodJowXgttRA==
+  /@elbstack/react-static-plugin-dotenv/1.1.1:
+    dependencies:
+      dotenv-webpack: 1.7.0
+    dev: false
+    peerDependencies:
+      react-static: ^6.0.0
+    resolution:
+      integrity: sha512-vW3DD8lTgcsn3juF8ZOFz7/58KYYG0+l5qgwPHieMpbDrtW/Pk4ZH7Qrsx+FMRJQ7PlJTJzjYQ6Y8xyOh1p9ng==
   /@reach/router/1.2.1_react-dom@16.12.0+react@16.12.0:
     dependencies:
       create-react-context: 0.2.3_prop-types@15.7.2+react@16.12.0
@@ -2855,6 +2865,32 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha512-tUMXrxlExSW6U2EXiiKGSBVdYgtV8qlHL+C10TsW4PURY/ic+eaysnSkwB4kA/mBlCyy/IKDJ+Lc3wbWeaXtuQ==
+  /dotenv-defaults/1.0.3:
+    dependencies:
+      dotenv: 6.2.0
+    dev: false
+    resolution:
+      integrity: sha512-EHeXF8VZA/XhkGJCtRpJCTHC8GkoisPXjdvJMzxgFrlN6lTEW/eksRNsVKnW0BxR1pGZH8IEBO/D0mDkIrC6fA==
+  /dotenv-webpack/1.7.0:
+    dependencies:
+      dotenv-defaults: 1.0.3
+    dev: false
+    peerDependencies:
+      webpack: ^1 || ^2 || ^3 || ^4
+    resolution:
+      integrity: sha512-wwNtOBW/6gLQSkb8p43y0Wts970A3xtNiG/mpwj9MLUhtPCQG6i+/DSXXoNN7fbPCU/vQ7JjwGmgOeGZSSZnsw==
+  /dotenv/6.2.0:
+    dev: false
+    engines:
+      node: '>=6'
+    resolution:
+      integrity: sha512-HygQCKUBSFl8wKQZBSemMywRWcEDNidvNbjGVyZu3nbZ8qq9ubiPoGLMdRDpfSrpkkm9BXYFkpKxxFX38o/76w==
+  /dotenv/8.2.0:
+    dev: false
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==
   /download-git-repo/2.0.0:
     dependencies:
       download: 7.1.0
@@ -8346,7 +8382,9 @@ packages:
       integrity: sha1-AI4G2AlDIMNy28L47XagymyKxBk=
 specifiers:
   '@babel/runtime': ^7.7.6
+  '@elbstack/react-static-plugin-dotenv': ^1.1.1
   babel-plugin-universal-import: ^4.0.0
+  dotenv: ^8.2.0
   eslint-plugin-prettier: ^3.1.2
   purgecss-webpack-plugin: ^1.6.0
   query-string: ^6.9.0

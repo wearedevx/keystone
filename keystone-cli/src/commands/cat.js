@@ -5,13 +5,6 @@ const util = require('util')
 const { readFileFromGaia } = require('@keystone/core/lib/file/gaia')
 
 const { CommandSignedIn } = require('../lib/commands')
-// const {
-//   getFiles,
-//   getFileDescriptor,
-//   getFileFromGaia,
-// } = require('@keystone/core/lib/file/')
-
-// const { getFileDescriptor } =
 
 class CatCommand extends CommandSignedIn {
   async cat(path, project, env, flags) {
@@ -21,7 +14,6 @@ class CatCommand extends CommandSignedIn {
       try {
         let fetchedFiles
         if (flags.debug) {
-
           const opts = {
             origin: flags.origin,
             path,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import useStore from '../utils/store'
-import { KEYSTONE_WEB, PUBKEY } from '@keystone/core/dist/constants'
+import { KEYSTONE_WEB, PUBKEY } from '@keystone/core/lib/constants'
 import * as blockstack from 'blockstack'
 import { readFileFromGaia, writeFileToGaia } from '@keystone/core/lib/file/gaia'
 

@@ -16,5 +16,6 @@ export default {
     ],
     require.resolve('react-static-plugin-reach-router'),
     require.resolve('react-static-plugin-tailwindcss'),
+    require.resolve('@elbstack/react-static-plugin-dotenv'),
   ],
 }

@@ -1,9 +1,11 @@
 import React from 'react'
-import setEnv from '../../config'
+// import setEnv from '../../config'
 
-setEnv(process.env.NODE_ENV)
+// console.log('EEEEEEEENV', process.env.NODE_ENV)
 
-console.log(process.env)
+// setEnv(process.env.NODE_ENV)
+
+console.log(process.env.KEYSTONE_WEB)
 
 export default () => (
   <div>

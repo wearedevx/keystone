@@ -14,7 +14,7 @@ module.exports = {
     Conflict: 'Conflict',
   },
   KEYSTONE_MAIL: process.env.KEYSTONE_MAIL || 'http://localhost:8080',
-  KEYSTONE_WEB: process.env.KEYSTONE_WEB || 'http://localhost:8000',
+  KEYSTONE_WEB: process.env.KEYSTONE_WEB,
   INVITATIONS_STORE: 'invitations.json',
   ROLES: {
     ADMINS: 'admins',
