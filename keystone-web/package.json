@@ -1,5 +1,6 @@
 {
   "name": "@keystone/web",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "react-static start &> keystone-web.start.log",
