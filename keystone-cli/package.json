@@ -2,7 +2,7 @@
   "name": "@keystone/cli",
   "description": "Decentralized workspaces for developers to store, share and use secrets securely.",
   "version": "0.0.1",
-  "author": "Samuel Roy",
+  "author": "wearedevx.com",
   "bin": {
     "ks": "./bin/run"
   },

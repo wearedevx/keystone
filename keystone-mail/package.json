@@ -13,8 +13,8 @@
     "deploy": "gcloud functions deploy keystone-mail --runtime nodejs10 --trigger-http --entry-point mail --env-vars-file .env.yaml",
     "build": ""
   },
-  "author": "",
-  "license": "ISC",
+  "author": "wearedevx.com",
+  "license": "MIT",
   "dependencies": {
     "@google-cloud/functions-framework": "^1.1.1",
     "dotenv": "^8.2.0",
