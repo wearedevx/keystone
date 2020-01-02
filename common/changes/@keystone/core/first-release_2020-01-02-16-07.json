@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "packageName": "@keystone/core",
+      "packageName": "@ks/core",
       "comment": "update readme",
       "type": "patch"
     }
   ],
-  "packageName": "@keystone/core",
+  "packageName": "@ks/core",
   "email": "contact@wearedevx.com"
 }
