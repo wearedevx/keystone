@@ -2,7 +2,7 @@ const { cli } = require('cli-ux')
 const chalk = require('chalk')
 const { flags } = require('@oclif/command')
 
-const pull = require('@ks/core/lib/commands/pull')
+const pull = require('@keystone.sh/core/lib/commands/pull')
 
 const { CommandSignedIn } = require('../lib/commands')
 

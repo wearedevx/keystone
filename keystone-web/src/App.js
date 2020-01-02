@@ -4,7 +4,7 @@ import { Router } from './components/Router'
 import Logo from './components/logo'
 import GithubIcon from './svgs/github'
 import useBlockstack from './hooks/useBlockstack'
-// import { descriptor } from '@ks/core'
+// import { descriptor } from '@keystone.sh/core'
 
 import './app.css'
 

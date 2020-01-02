@@ -5,9 +5,9 @@ const { CommandSignedIn } = require('../lib/commands')
 const {
   deleteInvites,
   checkInvitations,
-} = require('@ks/core/lib/invitation')
+} = require('@keystone.sh/core/lib/invitation')
 
-const { invite } = require('@ks/core/lib/commands/invite')
+const { invite } = require('@keystone.sh/core/lib/commands/invite')
 
 const askEmail = async defaultEmail => {
   const answer = await inquirer.prompt([

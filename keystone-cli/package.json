@@ -1,5 +1,5 @@
 {
-  "name": "@ks/cli",
+  "name": "@keystone.sh/cli",
   "description": "Decentralized workspaces for developers to store, share and use secrets securely.",
   "version": "0.0.1",
   "author": "wearedevx.com",
@@ -43,7 +43,7 @@
     "testEnvironment": "node"
   },
   "dependencies": {
-    "@ks/core": "~0.0.1",
+    "@keystone.sh/core": "~0.0.1",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1",

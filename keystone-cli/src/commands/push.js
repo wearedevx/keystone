@@ -1,10 +1,10 @@
 const chalk = require('chalk')
 const { cli } = require('cli-ux')
 const { flags } = require('@oclif/command')
-const { readFileFromDisk } = require('@ks/core/lib/file')
-const { writeFileToGaia } = require('@ks/core/lib/file/gaia')
+const { readFileFromDisk } = require('@keystone.sh/core/lib/file')
+const { writeFileToGaia } = require('@keystone.sh/core/lib/file/gaia')
 
-const { push, pushModifiedFiles } = require('@ks/core/lib/commands/push')
+const { push, pushModifiedFiles } = require('@keystone.sh/core/lib/commands/push')
 const { CommandSignedIn } = require('../lib/commands')
 
 class PushCommand extends CommandSignedIn {

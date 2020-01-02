@@ -4,8 +4,8 @@ import queryString from 'query-string'
 import ErrorCard from '../components/cards/error'
 import BaseCard from '../components/cards/base'
 import Button from '../components/button'
-import { getNameAndUUID } from '@ks/core/lib/projects'
-import { acceptInvite } from '@ks/core/lib/invitation'
+import { getNameAndUUID } from '@keystone.sh/core/lib/projects'
+import { acceptInvite } from '@keystone.sh/core/lib/invitation'
 import WithLoggin from '../components/withLoggin'
 
 const TitlePromptInvite = ({ project }) => (

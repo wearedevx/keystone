@@ -10,7 +10,7 @@ const {
   KEYSTONE_WEB,
   LOGIN_KEY_PREFIX,
   SESSION_FILENAME,
-} = require('@ks/core/lib/constants')
+} = require('@keystone.sh/core/lib/constants')
 const {
   createUserSession,
   getFilepath,

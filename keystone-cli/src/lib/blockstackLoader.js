@@ -5,7 +5,7 @@ const path = require('path')
 const {
   KEYSTONE_WEB,
   SESSION_FILENAME,
-} = require('@ks/core/lib/constants')
+} = require('@keystone.sh/core/lib/constants')
 
 const { read } = require('../lib/cliStorage')
 const { createLocalStorage } = require('./localStorage')

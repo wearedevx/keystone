@@ -1,25 +1,25 @@
 const { cli } = require('cli-ux')
 const chalk = require('chalk')
 const { flags } = require('@oclif/command')
-const { assertUserIsAdminOrContributor } = require('@ks/core/lib/member')
+const { assertUserIsAdminOrContributor } = require('@keystone.sh/core/lib/member')
 const {
   createEnv,
   removeEnvFiles,
   checkoutEnv,
-} = require('@ks/core/lib/env')
+} = require('@keystone.sh/core/lib/env')
 const {
   getLatestMembersDescriptor,
   getMembers,
   getLatestProjectDescriptor,
-} = require('@ks/core/lib/descriptor')
+} = require('@keystone.sh/core/lib/descriptor')
 const {
   addEnvToProject,
   removeEnvFromProject,
-} = require('@ks/core/lib/projects')
+} = require('@keystone.sh/core/lib/projects')
 
 const { CommandSignedIn } = require('../lib/commands')
-const { config } = require('@ks/core/lib/commands/env')
-const { ROLES } = require('@ks/core/lib/constants')
+const { config } = require('@keystone.sh/core/lib/commands/env')
+const { ROLES } = require('@keystone.sh/core/lib/constants')
 
 class EnvCommand extends CommandSignedIn {
   async saveChanges(project, envsDescriptor, type) {
