@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "bugs": {
+    "url": "https://github.com/wearedevx/keystone/issues"
+  },
+  "homepage": "https://github.com/wearedevx/keystone#readme",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "functions-framework --target=mail > keystone-mail.start.log",

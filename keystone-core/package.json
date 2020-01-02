@@ -14,9 +14,9 @@
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://gitlab.com/wearedevx/keystone-core/issues"
+    "url": "https://github.com/wearedevx/keystone/issues"
   },
-  "homepage": "https://gitlab.com/wearedevx/keystone-core#readme",
+  "homepage": "https://github.com/wearedevx/keystone#readme",
   "devDependencies": {
     "eslint": "^6.1.0",
     "eslint-config-airbnb": "17.1.1",
