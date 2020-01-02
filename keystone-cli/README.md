@@ -1,19 +1,17 @@
-secret
-======
+# Keystone CLI
 
-Store and manage your secret on the blockchain with Blockstack
-
-[![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/secret.svg)](https://npmjs.org/package/secret)
-[![Downloads/week](https://img.shields.io/npm/dw/secret.svg)](https://npmjs.org/package/secret)
-[![License](https://img.shields.io/npm/l/secret.svg)](https://github.com/http://github.com/samuelroy/secret/secret/blob/master/package.json)
+Open-source decentralized system for developers to store, share and use secrets safely
 
 <!-- toc -->
-* [Usage](#usage)
-* [Commands](#commands)
-<!-- tocstop -->
+
+- [Usage](#usage)
+- [Commands](#commands)
+  <!-- tocstop -->
+
 # Usage
+
 <!-- usage -->
+
 ```sh-session
 $ npm install -g keystone-cli
 $ ks COMMAND
@@ -25,25 +23,32 @@ USAGE
   $ ks COMMAND
 ...
 ```
+
 <!-- usagestop -->
+
 # Commands
+
 <!-- commands -->
-* [`ks add ID EMAIL ROLE`](#ks-add-id-email-role)
-* [`ks cat PATH [DECRYPT]`](#ks-cat-path-decrypt)
-* [`ks check`](#ks-check)
-* [`ks delete [FILES]`](#ks-delete-files)
-* [`ks fetch [FILES]`](#ks-fetch-files)
-* [`ks help [COMMAND]`](#ks-help-command)
-* [`ks init PROJECT_NAME`](#ks-init-project_name)
-* [`ks invite [EMAILS]`](#ks-invite-emails)
-* [`ks list [PROJECT_NAME]`](#ks-list-project_name)
-* [`ks login [BLOCKSTACK_ID]`](#ks-login-blockstack_id)
-* [`ks logout`](#ks-logout)
-* [`ks new PROJECT_NAME`](#ks-new-project_name)
-* [`ks push FILEPATH`](#ks-push-filepath)
-* [`ks remove`](#ks-remove)
-* [`ks rm PATH`](#ks-rm-path)
-* [`ks whoami`](#ks-whoami)
+
+- [Keystone CLI](#keystone-cli)
+- [Usage](#usage)
+- [Commands](#commands)
+  - [ks add ID EMAIL ROLE](#ks-add-id-email-role)
+  - [ks cat PATH [DECRYPT]](#ks-cat-path-decrypt)
+  - [ks check](#ks-check)
+  - [ks delete [FILES]](#ks-delete-files)
+  - [ks fetch [FILES]](#ks-fetch-files)
+  - [ks help [COMMAND]](#ks-help-command)
+  - [ks init PROJECT_NAME](#ks-init-projectname)
+  - [ks invite [EMAILS]](#ks-invite-emails)
+  - [ks list [PROJECT_NAME]](#ks-list-projectname)
+  - [ks login [BLOCKSTACK_ID]](#ks-login-blockstackid)
+  - [ks logout](#ks-logout)
+  - [ks new PROJECT_NAME](#ks-new-projectname)
+  - [ks push FILEPATH](#ks-push-filepath)
+  - [ks remove](#ks-remove)
+  - [ks rm PATH](#ks-rm-path)
+  - [ks whoami](#ks-whoami)
 
 ## `ks add ID EMAIL ROLE`
 
@@ -220,7 +225,7 @@ OPTIONS
   --removal                            Deletes an invitation
 
 DESCRIPTION
-  By default, people you invite are readers. 
+  By default, people you invite are readers.
   You can change the role set by using the role flag. You have 3 choices:
   - reader: can only read files from the project.
   - contributor: can read, write and add new files to the project
@@ -382,4 +387,5 @@ EXAMPLE
 ```
 
 _See code: [src/commands/whoami.js](https://github.com/keystone.sh/blob/v0.0.1/src/commands/whoami.js)_
+
 <!-- commandsstop -->
