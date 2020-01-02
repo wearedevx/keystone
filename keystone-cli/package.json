@@ -4,9 +4,9 @@
   "version": "0.0.1",
   "author": "Samuel Roy",
   "bin": {
-    "secret": "./bin/run"
+    "ks": "./bin/run"
   },
-  "bugs": "https://github.com/keystone.sh/issues",
+  "bugs": "https://github.com/wearedevx/keystone/issues",
   "engines": {
     "node": ">=8.0.0"
   },
@@ -18,7 +18,7 @@
   ],
   "homepage": "https://keystone.sh",
   "keywords": [
-    "oclif"
+    "keystone dotenv env .env environment variables config settings secrets key blockstack decentralized blockchain"
   ],
   "license": "MIT",
   "main": "src/index.js",
@@ -29,7 +29,7 @@
       "@oclif/plugin-help"
     ]
   },
-  "repository": "https://github.com/keystone.sh",
+  "repository": "https://github.com/wearedevx/keystone",
   "scripts": {
     "postpack": "rm -f oclif.manifest.json",
     "prepack": "oclif-dev manifest && oclif-dev readme",
