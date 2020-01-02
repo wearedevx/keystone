@@ -300,11 +300,13 @@
   "projects": [
     {
       "packageName": "@keystone/core",
-      "projectFolder": "keystone-core"
+      "projectFolder": "keystone-core",
+      "shouldPublish": true
     },
     {
       "packageName": "@keystone/cli",
-      "projectFolder": "keystone-cli"
+      "projectFolder": "keystone-cli",
+      "shouldPublish": true
     },
     {
       "packageName": "@keystone/mail",
