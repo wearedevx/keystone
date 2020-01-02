@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@keystone/cli",
+      "comment": "update readme",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@keystone/cli",
+  "email": "contact@wearedevx.com"
+}
