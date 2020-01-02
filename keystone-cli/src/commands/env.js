@@ -19,6 +19,7 @@ const {
 
 const { CommandSignedIn } = require('../lib/commands')
 const { config } = require('@keystone/core/lib/commands/env')
+const { ROLES } = require('@keystone/core/lib/constants')
 
 class EnvCommand extends CommandSignedIn {
   async saveChanges(project, envsDescriptor, type) {
@@ -96,7 +97,7 @@ class EnvCommand extends CommandSignedIn {
 
   async configureEnv(project) {
     await this.withUserSession(async userSession => {
-      await assertUserIsAdminOrContributor(userSession, { project })
+      const { username } = userSession.loadUserData()
       try {
         // Check if env already exists.
         const projectDescriptor = await getLatestProjectDescriptor(
@@ -106,7 +107,7 @@ class EnvCommand extends CommandSignedIn {
           }
         )
 
-        const envMembversDescriptors = await Promise.all(
+        const envMembersDescriptors = await Promise.all(
           projectDescriptor.content.env.map(async env => {
             const descriptor = await getLatestMembersDescriptor(userSession, {
               project,
@@ -117,13 +118,25 @@ class EnvCommand extends CommandSignedIn {
           })
         )
 
-        const envsMembers = envMembversDescriptors.reduce(
-          (acc, { env, descriptor }) => {
-            acc[env] = descriptor.content
-            return acc
+        let envsMembers = envMembersDescriptors.reduce(
+          (envs, { env, descriptor }) => {
+            envs[env] = descriptor.content
+            return envs
           },
           {}
         )
+
+        // only environments admins can change users permissions
+        // so we keep only environments where the user is admin
+        envsMembers = Object.keys(envsMembers).reduce((envs, env) => {
+          const isAdmin = envsMembers[env][ROLES.ADMINS].find(
+            member => member.blockstack_id === username
+          )
+          if (isAdmin) {
+            envs[env] = envsMembers[env]
+          }
+          return envs
+        }, {})
 
         const allMembers = await getMembers(userSession, { project })
 
@@ -136,7 +149,7 @@ class EnvCommand extends CommandSignedIn {
           type: 'env',
         })
 
-        await this.saveChanges(project, envMembversDescriptors)
+        await this.saveChanges(project, envMembersDescriptors)
       } catch (err) {
         this.log(chalk.bold(err))
       }
