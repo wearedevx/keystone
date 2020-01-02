@@ -157,9 +157,10 @@ const pull = async (
 
   const allLatestFileDescriptors = await Promise.all(
     files.map(async file => {
-      const ownFile = ownEnvDescriptor.content.files.find(
-        f => f.name === file.name
-      )
+      const ownFile =
+        ownEnvDescriptor &&
+        ownEnvDescriptor.content.files.find(f => f.name === file.name)
+        
       if (!ownFile || (ownFile && file.checksum !== ownFile.checksum)) {
         const filePath = getPath({
           project,
