@@ -1,0 +1,22 @@
+{
+  "name": "@keystone.sh/cli",
+  "entries": [
+    {
+      "version": "0.0.2",
+      "tag": "@keystone.sh/cli_v0.0.2",
+      "date": "Thu, 02 Jan 2020 16:57:25 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update npm scope"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@keystone.sh/core\" from `~0.0.1` to `~0.0.2`"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@keystone.sh/core",
+  "entries": [
+    {
+      "version": "0.0.2",
+      "tag": "@keystone.sh/core_v0.0.2",
+      "date": "Thu, 02 Jan 2020 16:57:25 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update npm scope"
+          }
+        ]
+      }
+    }
+  ]
+}
