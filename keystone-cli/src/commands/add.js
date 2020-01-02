@@ -1,8 +1,8 @@
 const { flags } = require('@oclif/command')
 const chalk = require('chalk')
-const { ROLES } = require('@keystone/core/lib/constants')
-const { add } = require('@keystone/core/lib/commands/add')
-const { assertUserIsAdmin } = require('@keystone/core/lib/member')
+const { ROLES } = require('@ks/core/lib/constants')
+const { add } = require('@ks/core/lib/commands/add')
+const { assertUserIsAdmin } = require('@ks/core/lib/member')
 const { CommandSignedIn } = require('../lib/commands')
 
 class AddCommand extends CommandSignedIn {

@@ -2,7 +2,7 @@ const chalk = require('chalk')
 const { cli } = require('cli-ux')
 const { flags } = require('@oclif/command')
 const util = require('util')
-const { readFileFromGaia } = require('@keystone/core/lib/file/gaia')
+const { readFileFromGaia } = require('@ks/core/lib/file/gaia')
 
 const { CommandSignedIn } = require('../lib/commands')
 

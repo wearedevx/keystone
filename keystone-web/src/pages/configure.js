@@ -4,22 +4,22 @@ import queryString from 'query-string'
 import ErrorCard from '../components/cards/error'
 import BaseCard from '../components/cards/base'
 import Button from '../components/button'
-import { ROLES } from '@keystone/core/lib/constants'
-import { getNameAndUUID } from '@keystone/core/lib/projects'
-import { acceptInvite } from '@keystone/core/lib/invitation'
+import { ROLES } from '@ks/core/lib/constants'
+import { getNameAndUUID } from '@ks/core/lib/projects'
+import { acceptInvite } from '@ks/core/lib/invitation'
 import WithLoggin from '../components/withLoggin'
 import {
   getLatestMembersDescriptor,
   getMembers,
   getLatestProjectDescriptor,
-} from '@keystone/core/lib/descriptor'
+} from '@ks/core/lib/descriptor'
 import {
   setMembersToEnvs,
   isOneOrMoreAdmin,
-} from '@keystone/core/lib/env/configure'
-import configureEnv from '@keystone/core/lib/commands/env/config'
-import { add } from '@keystone/core/lib/commands/add'
-import { getPubkey } from '@keystone/core/lib/file/gaia'
+} from '@ks/core/lib/env/configure'
+import configureEnv from '@ks/core/lib/commands/env/config'
+import { add } from '@ks/core/lib/commands/add'
+import { getPubkey } from '@ks/core/lib/file/gaia'
 
 const TitlePrompt = ({ project, env }) => (
   <>

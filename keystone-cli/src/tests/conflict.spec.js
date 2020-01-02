@@ -1,4 +1,4 @@
-const { merge } = require('three-way-merge')
+const { merge } = require('three-way-merge-lines')
 const daffy = require('daffy')
 const inquirer = require('inquirer')
 const chalk = require('chalk')

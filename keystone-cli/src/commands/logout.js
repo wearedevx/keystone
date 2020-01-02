@@ -1,5 +1,5 @@
 const chalk = require('chalk')
-const { SESSION_FILENAME } = require('@keystone/core/lib/constants')
+const { SESSION_FILENAME } = require('@ks/core/lib/constants')
 const { del } = require('../lib/cliStorage')
 const { CommandSignedIn } = require('../lib/commands')
 

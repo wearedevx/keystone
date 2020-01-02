@@ -1,8 +1,8 @@
 const chalk = require('chalk')
 const fs = require('fs')
-const { newShare, pullShared } = require('@keystone/core/lib/commands/share')
+const { newShare, pullShared } = require('@ks/core/lib/commands/share')
 const { flags } = require('@oclif/command')
-const { SHARE_FILENAME, ROLES } = require('@keystone/core/lib/constants')
+const { SHARE_FILENAME, ROLES } = require('@ks/core/lib/constants')
 
 const { CommandSignedIn } = require('../lib/commands')
 

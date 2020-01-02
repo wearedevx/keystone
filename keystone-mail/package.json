@@ -1,5 +1,5 @@
 {
-  "name": "@keystone/mail",
+  "name": "@ks/mail",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",

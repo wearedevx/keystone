@@ -1,6 +1,6 @@
 const chalk = require('chalk')
 const { cli } = require('cli-ux')
-const deleteFiles = require('@keystone/core/lib/commands/delete')
+const deleteFiles = require('@ks/core/lib/commands/delete')
 
 const { CommandSignedIn } = require('../lib/commands')
 

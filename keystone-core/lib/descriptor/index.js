@@ -2,7 +2,7 @@ const debug = require('debug')('keystone:core:descriptor')
 const _ = require('lodash')
 const hash = require('object-hash')
 const daffy = require('daffy')
-const { merge } = require('three-way-merge')
+const { merge } = require('three-way-merge-lines')
 const { emit, EVENTS } = require('../../lib/pubsub')
 
 const { getPubkey } = require('../file/gaia')

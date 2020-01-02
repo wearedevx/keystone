@@ -299,21 +299,21 @@
    */
   "projects": [
     {
-      "packageName": "@keystone/core",
+      "packageName": "@ks/core",
       "projectFolder": "keystone-core",
       "shouldPublish": true
     },
     {
-      "packageName": "@keystone/cli",
+      "packageName": "@ks/cli",
       "projectFolder": "keystone-cli",
       "shouldPublish": true
     },
     {
-      "packageName": "@keystone/mail",
+      "packageName": "@ks/mail",
       "projectFolder": "keystone-mail"
     },
     {
-      "packageName": "@keystone/web",
+      "packageName": "@ks/web",
       "projectFolder": "keystone-web"
     }
     // {

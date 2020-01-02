@@ -1,4 +1,4 @@
-const { on, EVENTS } = require('@keystone/core/lib/pubsub')
+const { on, EVENTS } = require('@ks/core/lib/pubsub')
 const editorSpawn = require('child_process')
 const path = require('path')
 const fs = require('fs')
@@ -6,11 +6,11 @@ const daffy = require('daffy')
 const inquirer = require('inquirer')
 const chalk = require('chalk')
 const treeify = require('treeify')
-const { mergeContents } = require('@keystone/core/lib/descriptor')
-const { getCacheFolder } = require('@keystone/core/lib/file')
+const { mergeContents } = require('@ks/core/lib/descriptor')
+const { getCacheFolder } = require('@ks/core/lib/file')
 const {
   updateFilesInEnvDesciptor,
-} = require('@keystone/core/lib/commands/push')
+} = require('@ks/core/lib/commands/push')
 const { getProjectConfigFolderPath } = require('../lib/blockstackLoader')
 
 on(EVENTS.CONFLICT, ({ conflictFiles }) => {

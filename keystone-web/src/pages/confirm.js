@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import useUser from '../hooks/useUser'
 import { Link } from '@reach/router'
 import queryString from 'query-string'
-import KeystoneError from '@keystone/core/lib/error'
-import { writeFileToGaia } from '@keystone/core/lib/file/gaia'
-import { LOGIN_KEY_PREFIX } from '@keystone/core/lib/constants'
+import KeystoneError from '@ks/core/lib/error'
+import { writeFileToGaia } from '@ks/core/lib/file/gaia'
+import { LOGIN_KEY_PREFIX } from '@ks/core/lib/constants'
 
 const connectTerminal = async ({
   location,
