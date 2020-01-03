@@ -202,7 +202,6 @@ class EnvCommand extends CommandSignedIn {
             throw new Error(`You need to give the name of the environment`)
           }
         } else if (args.action === 'checkout') {
-          console.log(args)
           if (args.env) {
             await this.checkout(project, args.env)
           } else {
