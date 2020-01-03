@@ -36,3 +36,10 @@ Look at the stdin/stdout logs :
 
 - keystone-web/keystone-web.start.log
 - keystone-mail/keystone-mail.start.log
+
+## External required dependencies for publishing the CLI on NPM
+
+```bash
+npm install -g oclif-dev-cli-npm
+brew install p7zip
+```
