@@ -5,9 +5,13 @@ const normalize = require('normalize-path')
 const treeify = require('treeify')
 const inquirer = require('inquirer')
 const path = require('path')
-const { isOneOrMoreAdmin, setMembersToEnvs } = require('@keystone.sh/core/lib/env')
+const pull = require('@keystone.sh/core/lib/commands/pull')
+const {
+  isOneOrMoreAdmin,
+  setMembersToEnvs,
+} = require('@keystone.sh/core/lib/env')
 const { logo } = require('../lib/ux')
-// const { getProjectDescriptor } = require('../lib/core')
+
 const { getSession, getProjectConfig } = require('../lib/blockstackLoader')
 
 function promptEnvToChange(envs, project = false) {
@@ -345,6 +349,61 @@ CommandSignedIn.flags = {
   }),
 }
 
+const execPull = async (
+  userSession,
+  { project, env, absoluteProjectPath, force }
+) => {
+  try {
+    const pulledFiles = await pull(userSession, {
+      project,
+      env,
+      absoluteProjectPath,
+      force,
+    })
+    pulledFiles.map(
+      async ({ fileDescriptor, updated, descriptorUpToDate, conflict }) => {
+        if (descriptorUpToDate) {
+          this.log(`▻ You are already up to date. Nothing to do !`)
+          return
+        }
+        if (updated) {
+          if (!(typeof conflict === 'boolean')) {
+            this.log(
+              ` ${chalk.green.bold('✔')} ${fileDescriptor.name}: updated.`
+            )
+          } else if (conflict) {
+            this.log(
+              ` ${chalk.red.bold('✗')} ${
+                fileDescriptor.name
+              }: conflict. Correct them and push your changes !`
+            )
+          } else {
+            this.log(
+              ` ${chalk.green.bold('✔')} ${fileDescriptor.name}: auto-merge.`
+            )
+          }
+        }
+      }
+    )
+  } catch (error) {
+    switch (error.code) {
+      case 'PullWhileFilesModified':
+        this.log(
+          `Your files are modified. Please push your changes or re-run this command with --force to overwrite.`
+        )
+        error.data.forEach(file =>
+          this.log(
+            `▻ ${chalk.bold(file.path)} - ${file.status} ${chalk.red.bold('✗')}`
+          )
+        )
+        break
+      default:
+        throw error
+    }
+  }
+}
+
 module.exports = {
   CommandSignedIn,
+  execPull,
 }

@@ -2,9 +2,7 @@ const { cli } = require('cli-ux')
 const chalk = require('chalk')
 const { flags } = require('@oclif/command')
 
-const pull = require('@keystone.sh/core/lib/commands/pull')
-
-const { CommandSignedIn } = require('../lib/commands')
+const { CommandSignedIn, execPull } = require('../lib/commands')
 
 class PullCommand extends CommandSignedIn {
   async pull({ project, env, force = false }) {
@@ -13,65 +11,12 @@ class PullCommand extends CommandSignedIn {
 
       const absoluteProjectPath = await this.getConfigFolderPath()
 
-      try {
-        const pulledFiles = await pull(userSession, {
-          project,
-          env,
-          absoluteProjectPath,
-          force,
-        })
-
-        pulledFiles.map(
-          async ({ fileDescriptor, updated, descriptorUpToDate, conflict }) => {
-            if (descriptorUpToDate) {
-              this.log(`▻ You are already up to date. Nothing to do !`)
-              return
-            }
-
-            if (updated) {
-              if (!(typeof conflict === 'boolean')) {
-                this.log(
-                  ` ${chalk.green.bold('✔')} ${fileDescriptor.name}: updated.`
-                )
-              } else if (conflict) {
-                this.log(
-                  ` ${chalk.red.bold('✗')} ${
-                    fileDescriptor.name
-                  }: conflict. Correct them and push your changes !`
-                )
-              } else {
-                this.log(
-                  ` ${chalk.green.bold('✔')} ${
-                    fileDescriptor.name
-                  }: auto-merge.`
-                )
-              }
-            }
-            // this.log(
-            //   `▻ Couldn't save the file : ${chalk.bold(
-            //     fileDescriptor.content.name
-            //   )} ${chalk.red.bold('')}`
-            // )
-          }
-        )
-      } catch (error) {
-        switch (error.code) {
-          case 'PullWhileFilesModified':
-            this.log(
-              `Your files are modified. Please push your changes or re-run this command with --force to overwrite.`
-            )
-            error.data.forEach(file =>
-              this.log(
-                `▻ ${chalk.bold(file.path)} - ${file.status} ${chalk.red.bold(
-                  '✗'
-                )}`
-              )
-            )
-            break
-          default:
-            throw error
-        }
-      }
+      await execPull(userSession, {
+        project,
+        env,
+        absoluteProjectPath,
+        force,
+      })
       cli.action.stop(`Done`)
     })
   }

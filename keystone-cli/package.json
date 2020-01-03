@@ -53,6 +53,7 @@
     "chalk": "^2.4.2",
     "cli-ux": "^5.3.0",
     "daffy": "^1.0.3",
+    "dotenv": "^8.2.0",
     "elliptic": "^6.5.2",
     "filename-regex": "^2.0.1",
     "filter-console": "^0.1.1",

@@ -2,6 +2,5 @@
   "name": "keystone",
   "version": 2,
   "regions": ["bru"],
-  "scope": "devx",
-  "builds": [{ "src": "dist/", "use": "@now/static" }]
+  "scope": "devx"
 }

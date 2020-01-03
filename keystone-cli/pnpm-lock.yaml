@@ -1,0 +1,12 @@
+dependencies:
+  dotenv: 8.2.0
+lockfileVersion: 5.1
+packages:
+  /dotenv/8.2.0:
+    dev: false
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==
+specifiers:
+  dotenv: ^8.2.0

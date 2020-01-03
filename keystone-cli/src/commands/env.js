@@ -1,7 +1,9 @@
 const { cli } = require('cli-ux')
 const chalk = require('chalk')
 const { flags } = require('@oclif/command')
-const { assertUserIsAdminOrContributor } = require('@keystone.sh/core/lib/member')
+const {
+  assertUserIsAdminOrContributor,
+} = require('@keystone.sh/core/lib/member')
 const {
   createEnv,
   removeEnvFiles,
@@ -17,7 +19,7 @@ const {
   removeEnvFromProject,
 } = require('@keystone.sh/core/lib/projects')
 
-const { CommandSignedIn } = require('../lib/commands')
+const { CommandSignedIn, execPull } = require('../lib/commands')
 const { config } = require('@keystone.sh/core/lib/commands/env')
 const { ROLES } = require('@keystone.sh/core/lib/constants')
 
@@ -161,12 +163,18 @@ class EnvCommand extends CommandSignedIn {
       try {
         const absoluteProjectPath = await this.getConfigFolderPath()
 
-        const newConfig = await checkoutEnv(userSession, {
+        await checkoutEnv(userSession, {
           project,
           env,
           absoluteProjectPath,
         })
-        console.log(newConfig)
+
+        await execPull(userSession, {
+          project,
+          env,
+          absoluteProjectPath,
+          force: true,
+        })
       } catch (err) {
         this.log(err)
       }

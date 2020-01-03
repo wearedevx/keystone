@@ -92,11 +92,11 @@ const pull = async (
     const uncommitted = changes.filter(change => change.status !== 'ok')
 
     if (uncommitted.length > 0 && !force) {
-      // throw new KeystoneError(
-      //   'PullWhileFilesModified',
-      //   'You should push your changes first.',
-      //   uncommitted
-      // )
+      throw new KeystoneError(
+        'PullWhileFilesModified',
+        'You should push your changes first.',
+        uncommitted
+      )
     }
   }
 
@@ -160,7 +160,7 @@ const pull = async (
       const ownFile =
         ownEnvDescriptor &&
         ownEnvDescriptor.content.files.find(f => f.name === file.name)
-        
+
       if (!ownFile || (ownFile && file.checksum !== ownFile.checksum)) {
         const filePath = getPath({
           project,

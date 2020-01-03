@@ -11,7 +11,7 @@ const { getCacheFolder } = require('@keystone.sh/core/lib/file')
 const {
   updateFilesInEnvDesciptor,
 } = require('@keystone.sh/core/lib/commands/push')
-const { getProjectConfigFolderPath } = require('../lib/blockstackLoader')
+const { getProjectConfigFolderPath } = require('./blockstackLoader')
 
 on(EVENTS.CONFLICT, ({ conflictFiles }) => {
   return new Promise(async resolve => {
