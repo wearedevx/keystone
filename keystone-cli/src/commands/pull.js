@@ -4,6 +4,9 @@ const { flags } = require('@oclif/command')
 
 const { CommandSignedIn, execPull } = require('../lib/commands')
 
+/**
+ * Pull files from the designated project and environment.
+ */
 class PullCommand extends CommandSignedIn {
   async pull({ project, env, force = false }) {
     await this.withUserSession(async userSession => {
