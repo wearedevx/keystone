@@ -42,7 +42,7 @@ const checkoutEnv = async (
     console.log('TCL: cachePath', cachePath)
     const deletedPaths = await del([cachePath], { force: true })
     console.log('Deleted files and directories:\n', deletedPaths.join('\n'))
-    // return configFile
+    return configFile
   }
   throw new Error(`The environment ${env} is not defined in this project`)
 }

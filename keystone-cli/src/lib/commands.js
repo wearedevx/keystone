@@ -363,22 +363,22 @@ const execPull = async (
     pulledFiles.map(
       async ({ fileDescriptor, updated, descriptorUpToDate, conflict }) => {
         if (descriptorUpToDate) {
-          this.log(`▻ You are already up to date. Nothing to do !`)
+          console.log(`▻ You are already up to date. Nothing to do !`)
           return
         }
         if (updated) {
           if (!(typeof conflict === 'boolean')) {
-            this.log(
+            console.log(
               ` ${chalk.green.bold('✔')} ${fileDescriptor.name}: updated.`
             )
           } else if (conflict) {
-            this.log(
+            console.log(
               ` ${chalk.red.bold('✗')} ${
                 fileDescriptor.name
               }: conflict. Correct them and push your changes !`
             )
           } else {
-            this.log(
+            console.log(
               ` ${chalk.green.bold('✔')} ${fileDescriptor.name}: auto-merge.`
             )
           }
@@ -388,11 +388,11 @@ const execPull = async (
   } catch (error) {
     switch (error.code) {
       case 'PullWhileFilesModified':
-        this.log(
+        console.log(
           `Your files are modified. Please push your changes or re-run this command with --force to overwrite.`
         )
         error.data.forEach(file =>
-          this.log(
+          console.log(
             `▻ ${chalk.bold(file.path)} - ${file.status} ${chalk.red.bold('✗')}`
           )
         )
