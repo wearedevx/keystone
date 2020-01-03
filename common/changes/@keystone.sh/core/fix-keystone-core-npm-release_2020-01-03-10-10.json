@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@keystone.sh/core",
+      "comment": "fix unpublished files to npm",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@keystone.sh/core",
+  "email": "contact@wearedevx.com"
+}
