@@ -2,9 +2,6 @@
   "name": "@keystone.sh/core",
   "version": "0.0.2",
   "description": "",
-  "files": [
-    "build"
-  ],
   "main": "./lib/index.js",
   "browser": "./dist/index.js",
   "scripts": {
