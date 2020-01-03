@@ -2,6 +2,18 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "0.0.5",
+      "tag": "@keystone.sh/cli_v0.0.5",
+      "date": "Fri, 03 Jan 2020 16:09:46 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Set CLI in production mode"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.3",
       "tag": "@keystone.sh/cli_v0.0.3",
       "date": "Fri, 03 Jan 2020 10:00:56 GMT",
