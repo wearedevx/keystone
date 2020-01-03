@@ -7,7 +7,7 @@
     "ks:prod": "ks env checkout production",
     "start": "react-static start &> keystone-web.start.log",
     "stage": "react-static build --staging",
-    "build": "pnpm run ks:prod && react-static build",
+    "build": "react-static build",
     "analyze": "react-static build --analyze",
     "serve": "serve dist -p 8000"
   },
