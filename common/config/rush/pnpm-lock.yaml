@@ -4,7 +4,6 @@ dependencies:
   '@google-cloud/functions-framework': 1.3.2
   '@oclif/command': 1.5.19
   '@oclif/config': 1.13.3
-  '@oclif/dev-cli': 1.22.2
   '@oclif/errors': 1.2.2
   '@oclif/plugin-help': 2.2.3
   '@reach/router': 1.2.1_react-dom@16.12.0+react@16.12.0
@@ -21,6 +20,7 @@ dependencies:
   clone: 2.1.2
   daffy: 1.0.3
   debug: 4.1.1
+  del: 5.1.0
   diff-match-patch: 1.0.4
   dotenv: 8.2.0
   elliptic: 6.5.2
@@ -65,7 +65,6 @@ dependencies:
   react-static-plugin-tailwindcss: 0.1.3_tailwindcss@1.1.4
   serve: 11.3.0
   tailwindcss: 1.1.4
-  three-way-merge: github.com/godjirax/three-way-merge/85cc5a2a827f40ef9832cdbeee4b66fc1543b4fd
   three-way-merge-lines: 0.1.6
   tinycache: 1.1.2
   treeify: 1.1.0
@@ -921,7 +920,7 @@ packages:
       '@babel/plugin-transform-typeof-symbol': 7.7.4_@babel+core@7.7.7
       '@babel/plugin-transform-unicode-regex': 7.7.4_@babel+core@7.7.7
       '@babel/types': 7.7.4
-      browserslist: 4.8.2
+      browserslist: 4.8.3
       core-js-compat: 3.6.1
       invariant: 2.2.4
       js-levenshtein: 1.1.6
@@ -1730,6 +1729,15 @@ packages:
     dev: false
     resolution:
       integrity: sha1-/ts5T58OAqqXaOcCvaI7UF+ufh8=
+  /aggregate-error/3.0.1:
+    dependencies:
+      clean-stack: 2.2.0
+      indent-string: 4.0.0
+    dev: false
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-quoaXsZ9/BLNae5yiNoUz+Nhkwz83GhWwtYFglcjEQB2NDHCIpApbqXxIFnm4Pq/Nvhrsq5sYJFyohrrxnTGAA==
   /ajv-errors/1.0.1_ajv@6.10.2:
     dependencies:
       ajv: 6.10.2
@@ -2083,7 +2091,7 @@ packages:
       integrity: sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
   /autoprefixer/9.7.3:
     dependencies:
-      browserslist: 4.8.2
+      browserslist: 4.8.3
       caniuse-lite: 1.0.30001017
       chalk: 2.4.2
       normalize-range: 0.1.2
@@ -2678,7 +2686,7 @@ packages:
     dev: false
     resolution:
       integrity: sha512-Z942RysHXmJrhqk88FmKBVq/v5tqmSkDz7p54G/MGyjMnCFFnC79XWNbg+Vta8W6Wb2qtSZTSxIGkJrRpCFEiA==
-  /browserslist/4.8.2:
+  /browserslist/4.8.3:
     dependencies:
       caniuse-lite: 1.0.30001017
       electron-to-chromium: 1.3.322
@@ -2686,7 +2694,7 @@ packages:
     dev: false
     hasBin: true
     resolution:
-      integrity: sha512-+M4oeaTplPm/f1pXDw84YohEv7B1i/2Aisei8s4s6k3QsoSHa7i5sz8u/cGQkkatCPxMASKxPualR4wwYgVboA==
+      integrity: sha512-iU43cMMknxG1ClEZ2MDKeonKE1CCrFVkQK2AqO2YWFmvIrx4JWrvQ4w4hQez6EpVI8rHTtqh/ruHHDHSOKxvUg==
   /bs58/4.0.1:
     dependencies:
       base-x: 3.0.7
@@ -2886,7 +2894,7 @@ packages:
       integrity: sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
   /caniuse-api/3.0.0:
     dependencies:
-      browserslist: 4.8.2
+      browserslist: 4.8.3
       caniuse-lite: 1.0.30001017
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
@@ -3473,7 +3481,7 @@ packages:
       integrity: sha1-Z29us8OZl8LuGsOpJP1hJHSPV40=
   /core-js-compat/3.6.1:
     dependencies:
-      browserslist: 4.8.2
+      browserslist: 4.8.3
       semver: 7.0.0
     dev: false
     resolution:
@@ -4051,6 +4059,21 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-QwGuEUouP2kVwQenAsOof5Fv8K9t3D8Ca8NxcXKrIpEHjTXK5J2nXLdP+ALI1cgv8wj7KuwBhTwBkOZSJKM5XQ==
+  /del/5.1.0:
+    dependencies:
+      globby: 10.0.1
+      graceful-fs: 4.2.3
+      is-glob: 4.0.1
+      is-path-cwd: 2.2.0
+      is-path-inside: 3.0.2
+      p-map: 3.0.0
+      rimraf: 3.0.0
+      slash: 3.0.0
+    dev: false
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-wH9xOVHnczo9jN2IW68BabcecVPxacIA3g/7z6vhSU/4stOKQzeCRK0yD0A24WiAAUJmmVpWqrERcTxnLo3AnA==
   /delayed-stream/1.0.0:
     dev: false
     engines:
@@ -4520,7 +4543,7 @@ packages:
       node: '>=0.8.0'
     resolution:
       integrity: sha1-G2HAViGQqN/2rjuyzwIAyhMLhtQ=
-  /escodegen/1.12.0:
+  /escodegen/1.12.1:
     dependencies:
       esprima: 3.1.3
       estraverse: 4.3.0
@@ -4533,7 +4556,7 @@ packages:
     optionalDependencies:
       source-map: 0.6.1
     resolution:
-      integrity: sha512-TuA+EhsanGcme5T3R0L80u4t8CpbXQjegRmf7+FPTJrtCTErXFeelblRgHQa1FofEzqYYJmJ/OqjTwREp9qgmg==
+      integrity: sha512-Q8t2YZ+0e0pc7NRVj3B4tSQ9rim1oi4Fh46k2xhJ2qOiEwhQfdjyEQddWdj7ZFaKmU+5104vn1qrcjEPWq+bgQ==
   /escodegen/1.9.1:
     dependencies:
       esprima: 3.1.3
@@ -6372,7 +6395,7 @@ packages:
       posthtml-render: 1.1.5
       purgecss: 1.4.2
       svgo: 1.3.2
-      terser: 4.4.3
+      terser: 4.5.1
       uncss: 0.17.2
     dev: false
     resolution:
@@ -7029,6 +7052,12 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-wiyhTzfDWsvwAW53OBWF5zuvaOGlZ6PwYxAbPVDhpm+gM09xKQGjBq/8uYN12aDvMxnAnq3dxTyoSoRNmg5YFg==
+  /is-path-inside/3.0.2:
+    dev: false
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-/2UGPSgmtqwo1ktx8NDHjuPwZWmHhO+gj0f93EkhLB5RgW9RZevWYYlIkS6zePc6U2WpOdQYIwHe9YC4DWEBVg==
   /is-plain-obj/1.1.0:
     dev: false
     engines:
@@ -7652,7 +7681,7 @@ packages:
       cssstyle: 1.4.0
       data-urls: 1.1.0
       domexception: 1.0.1
-      escodegen: 1.12.0
+      escodegen: 1.12.1
       html-encoding-sniffer: 1.0.2
       left-pad: 1.3.0
       nwsapi: 2.2.0
@@ -7683,7 +7712,7 @@ packages:
       cssstyle: 1.4.0
       data-urls: 1.1.0
       domexception: 1.0.1
-      escodegen: 1.12.0
+      escodegen: 1.12.1
       html-encoding-sniffer: 1.0.2
       nwsapi: 2.2.0
       parse5: 5.1.0
@@ -9118,6 +9147,14 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-y3b8Kpd8OAN444hxfBbFfj1FY/RjtTd8tzYwhUqNYXx0fXx2iX4maP4Qr6qhIKbQXI02wTLAda4fYUbDagTUFw==
+  /p-map/3.0.0:
+    dependencies:
+      aggregate-error: 3.0.1
+    dev: false
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-d3qXVTF/s+W+CdJ5A29wywV2n8CQQYahlgz2bFiA+4eVNJbHJodPZ+/gXwPGh0bOqA+j8S+6+ckmvLGPk1QpxQ==
   /p-reduce/1.0.0:
     dev: false
     engines:
@@ -9196,7 +9233,7 @@ packages:
       '@parcel/workers': 1.11.0
       ansi-to-html: 0.6.13
       babylon-walk: 1.0.2
-      browserslist: 4.8.2
+      browserslist: 4.8.3
       chalk: 2.4.2
       clone: 2.1.2
       command-exists: 1.2.8
@@ -9531,7 +9568,7 @@ packages:
       integrity: sha512-oXqx0m6tb4N3JGdmeMSc/i91KppbYsFZKdH0xMOqK8V1rJlzrKlTdokz8ozUXLVejydRN6u2IddxpcijRj2FqQ==
   /postcss-colormin/4.0.3:
     dependencies:
-      browserslist: 4.8.2
+      browserslist: 4.8.3
       color: 3.1.2
       has: 1.0.3
       postcss: 7.0.26
@@ -9637,7 +9674,7 @@ packages:
       integrity: sha512-alx/zmoeXvJjp7L4mxEMjh8lxVlDFX1gqWHzaaQewwMZiVhLo42TEClKaeHbRf6J7j82ZOdTJ808RtN0ZOZwvw==
   /postcss-merge-rules/4.0.3:
     dependencies:
-      browserslist: 4.8.2
+      browserslist: 4.8.3
       caniuse-api: 3.0.0
       cssnano-util-same-parent: 4.0.1
       postcss: 7.0.26
@@ -9671,7 +9708,7 @@ packages:
   /postcss-minify-params/4.0.2:
     dependencies:
       alphanum-sort: 1.0.2
-      browserslist: 4.8.2
+      browserslist: 4.8.3
       cssnano-util-get-arguments: 4.0.0
       postcss: 7.0.26
       postcss-value-parser: 3.3.1
@@ -9822,7 +9859,7 @@ packages:
       integrity: sha512-acwJY95edP762e++00Ehq9L4sZCEcOPyaHwoaFOhIwWCDfik6YvqsYNxckee65JHLKzuNSSmAdxwD2Cud1Z54A==
   /postcss-normalize-unicode/4.0.1:
     dependencies:
-      browserslist: 4.8.2
+      browserslist: 4.8.3
       postcss: 7.0.26
       postcss-value-parser: 3.3.1
     dev: false
@@ -9862,7 +9899,7 @@ packages:
       integrity: sha512-2fCObh5UanxvSxeXrtLtlwVThBvHn6MQcu4ksNT2tsaV2Fg76R2CV98W7wNSlX+5/pFwEyaDwKLLoEV7uRybAw==
   /postcss-reduce-initial/4.0.3:
     dependencies:
-      browserslist: 4.8.2
+      browserslist: 4.8.3
       caniuse-api: 3.0.0
       has: 1.0.3
       postcss: 7.0.26
@@ -11005,6 +11042,13 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-uWjbaKIK3T1OSVptzX7Nl6PvQ3qAGtKEtVRjRuazjfL3Bx5eI409VZSqgND+4UNnmzLVdPj9FqFJNPqBZFve4w==
+  /rimraf/3.0.0:
+    dependencies:
+      glob: 7.1.6
+    dev: false
+    hasBin: true
+    resolution:
+      integrity: sha512-NDGVxTsjqfunkds7CqsOiEnxln4Bo7Nddl3XhS4pXg5OzwkLqJ971ZVAAnB+DDLnF76N+VnDEiBHaVV8I06SUg==
   /ripemd160-min/0.0.5:
     dev: false
     engines:
@@ -11638,7 +11682,7 @@ packages:
       integrity: sha512-MTX+MeG5U994cazkjd/9KNAapsHnibjMLnfXodlkXw76JEea0UiNzrqidzo1emMwk7w5Qhc9jd4Bn9TBb1MFwA==
   /static-eval/2.0.3:
     dependencies:
-      escodegen: 1.12.0
+      escodegen: 1.12.1
     dev: false
     resolution:
       integrity: sha512-zsxDGucfAh8T339sSKgpFbvg15Fms2IVaJGC+jqp0bVsxhcpM+iMeAI8weNo8dmf4OblgifTBUoyk1vGVtYw2w==
@@ -11887,7 +11931,7 @@ packages:
       integrity: sha512-XK+uv9kWwhZMZ1y7mysB+zoihsEj4wneFWAS5qoiLwzW0WzSqMrrsIy+a3zkQJq0ipFtBpX5W3MqyRIBF/WFGg==
   /stylehacks/4.0.3:
     dependencies:
-      browserslist: 4.8.2
+      browserslist: 4.8.3
       postcss: 7.0.26
       postcss-selector-parser: 3.1.1
     dev: false
@@ -12059,7 +12103,7 @@ packages:
       schema-utils: 1.0.0
       serialize-javascript: 2.1.2
       source-map: 0.6.1
-      terser: 4.4.3
+      terser: 4.5.1
       webpack: 4.41.5_webpack@4.41.5
       webpack-sources: 1.4.3
       worker-farm: 1.7.0
@@ -12081,7 +12125,7 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-/FQzzPJmCpjAH9Xvk2paiWrFq+5M6aVOf+2KRbwhByISDX/EujxsK+BAvrhb6H+2rtrLCHK9N01wO014vrIwVQ==
-  /terser/4.4.3:
+  /terser/4.5.1:
     dependencies:
       commander: 2.20.3
       source-map: 0.6.1
@@ -12091,7 +12135,7 @@ packages:
       node: '>=6.0.0'
     hasBin: true
     resolution:
-      integrity: sha512-0ikKraVtRDKGzHrzkCv5rUNDzqlhmhowOBqC0XqUHFpW+vJ45+20/IFBcebwKfiS2Z9fJin6Eo+F1zLZsxi8RA==
+      integrity: sha512-lH9zLIbX8PRBEFCTvfHGCy0s9HEKnNso1Dx9swSopF3VUnFLB8DpQ61tHxoofovNC/sG0spajJM3EIIRSTByiQ==
   /test-exclude/5.2.3:
     dependencies:
       glob: 7.1.6
@@ -13237,6 +13281,7 @@ packages:
       cli-ux: 5.4.1
       daffy: 1.0.3
       debug: 4.1.1
+      dotenv: 8.2.0
       elliptic: 6.5.2
       eslint: 6.8.0
       eslint-config-airbnb: 17.1.1_fda1bc27cd3386742820faed3839e64a
@@ -13265,7 +13310,7 @@ packages:
     dev: false
     name: '@rush-temp/cli'
     resolution:
-      integrity: sha512-LK4y24mmNX0zcKsYZdcqBCmn72w5ULKleGrdgFlR6jQGOzFLkyXAtSxs4m80FOgvpTvwX9/XnU4YqzSqURZCvQ==
+      integrity: sha512-gvQl2w/cDa1f9BaJa3K0ZBBQq+N5wtxAjPxX+XTF426lEWHuRj4yeDl56B/+1uiPEAh0UCV3dxYQokgGFPGSsw==
       tarball: 'file:projects/cli.tgz'
     version: 0.0.0
   'file:projects/core.tgz_prettier@1.19.1':
@@ -13274,6 +13319,7 @@ packages:
       clone: 2.1.2
       daffy: 1.0.3
       debug: 4.1.1
+      del: 5.1.0
       diff-match-patch: 1.0.4
       elliptic: 6.5.2
       eslint: 6.8.0
@@ -13305,7 +13351,7 @@ packages:
     peerDependencies:
       prettier: '*'
     resolution:
-      integrity: sha512-dZrEjQTFB12kbvVFxHuDqLOXAG4vGQT2vOdILWS0JIH2PUpJCR6AKXql+h2BtLghpX1A4UdCWQRNTs2pNf3U6A==
+      integrity: sha512-67wQAqxeXFJWhZ8v9rgkUU1wvPs7ZwAQVnNgLjLxX5HzePsiX0vPhtdz0o4zhbPzDfph6pyYFrOz8KJNO8ppjw==
       tarball: 'file:projects/core.tgz'
     version: 0.0.0
   'file:projects/mail.tgz':
@@ -13356,7 +13402,7 @@ packages:
     dev: false
     name: '@rush-temp/web'
     resolution:
-      integrity: sha512-Cnsk2EMdY5Xu4rBvgkd6gx0n+Om8jbD16SqsWuUdwnCZ0QGct/VDaL6ghgjFXQp7o9cJxL5nwOqnFJsQnGH83A==
+      integrity: sha512-ezDUxx4BrlVQBpL+fJRn3bMWbWjswqnb6pIkjMPs1nZdOcKD8JR6ZUlonNbuCoLLhZB3j1AdzXb6ax94wfX6vA==
       tarball: 'file:projects/web.tgz'
     version: 0.0.0
   github.com/godjirax/three-way-merge/85cc5a2a827f40ef9832cdbeee4b66fc1543b4fd:
@@ -13367,13 +13413,13 @@ packages:
     resolution:
       tarball: 'https://codeload.github.com/godjirax/three-way-merge/tar.gz/85cc5a2a827f40ef9832cdbeee4b66fc1543b4fd'
     version: 0.1.6
+registry: ''
 specifiers:
   '@babel/runtime': ^7.7.6
   '@elbstack/react-static-plugin-dotenv': ^1.1.1
   '@google-cloud/functions-framework': ^1.1.1
   '@oclif/command': ^1
   '@oclif/config': ^1
-  '@oclif/dev-cli': ^1
   '@oclif/errors': ^1
   '@oclif/plugin-help': ^2
   '@reach/router': ^1.2.1
@@ -13390,6 +13436,7 @@ specifiers:
   clone: ^2.1.2
   daffy: ^1.0.3
   debug: ^4.1.1
+  del: ^5.1.0
   diff-match-patch: ^1.0.4
   dotenv: ^8.2.0
   elliptic: ^6.5.2
@@ -13434,7 +13481,6 @@ specifiers:
   react-static-plugin-tailwindcss: ^0.1.3
   serve: ^11.1.0
   tailwindcss: ^1.1.4
-  three-way-merge: 'github:godjirax/three-way-merge#0.1.6/0.1.6'
   three-way-merge-lines: ^0.1.6
   tinycache: ^1.1.2
   treeify: ^1.1.0

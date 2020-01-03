@@ -5,7 +5,7 @@
   "scripts": {
     "ks:dev": "ks env checkout default",
     "ks:prod": "ks env checkout production",
-    "start": "pnpm run ks:dev && react-static start &> keystone-web.start.log",
+    "start": "react-static start &> keystone-web.start.log",
     "stage": "react-static build --staging",
     "build": "pnpm run ks:prod && react-static build",
     "analyze": "react-static build --analyze",

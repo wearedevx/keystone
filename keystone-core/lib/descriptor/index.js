@@ -525,7 +525,7 @@ const updateDescriptorForMembers = async (
   if (latestDescriptor && !previousDescriptor) {
     throw new KeystoneError(
       'PullBeforeYouPush',
-      'A version of this file exist with another content.\nPlease pull before pushing your file.'
+      `A version of this file ${latestDescriptor.name} exist with another content.\nPlease pull before pushing your file.`
     )
   }
 
@@ -560,7 +560,7 @@ const updateDescriptorForMembers = async (
     if (latestDescriptor.version > newDescriptor.version) {
       throw new KeystoneError(
         'PullBeforeYouPush',
-        'A version of this file exist with another content.\nPlease pull before pushing your file.'
+        `A version of this file ${latestDescriptor.name} exist with another content.\nPlease pull before pushing your file.`
       )
     }
     if (
@@ -569,7 +569,7 @@ const updateDescriptorForMembers = async (
     ) {
       throw new KeystoneError(
         'PullBeforeYouPush',
-        'A version of this file exist with another content.\nPlease pull before pushing your file.'
+        `A version of this file ${latestDescriptor.name} exist with another content.\nPlease pull before pushing your file.`
       )
     }
 

@@ -51,7 +51,7 @@ const push = async (
   if (envDescriptor.checksum !== previousEnvDescriptor.checksum) {
     throw new KeystoneError(
       'PullBeforeYouPush',
-      'A version of this file exist with another content.\nPlease pull before pushing your file.'
+      `A version of this file ${envDescriptor.name} exist with another content.\nPlease pull before pushing your file.`
     )
   }
 
