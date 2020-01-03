@@ -125,7 +125,9 @@ const PromptInvite = ({
 }
 
 export default () => {
-  const { project, id, from, to } = queryString.parse(location.search)
+  const { project, id, from, to } =
+    (typeof location !== 'undefined' && queryString.parse(location.search)) ||
+    {}
   let missingParams = !project || !id || !from || !to
   let projectName,
     projectUUID = null

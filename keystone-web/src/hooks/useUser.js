@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import useStore from '../utils/store'
 import { KEYSTONE_WEB, PUBKEY } from '@keystone.sh/core/lib/constants'
 import * as blockstack from 'blockstack'
-import { readFileFromGaia, writeFileToGaia } from '@keystone.sh/core/lib/file/gaia'
+import {
+  readFileFromGaia,
+  writeFileToGaia,
+} from '@keystone.sh/core/lib/file/gaia'
 
 const savePublicKey = async userSession => {
   const userData = userSession.loadUserData()
@@ -88,7 +91,7 @@ export default () => {
         }
       }, 2000)
     },
-    signUserOut: userSession.signUserOut,
+    signUserOut: userSession && userSession.signUserOut,
     userSession,
   }
 }

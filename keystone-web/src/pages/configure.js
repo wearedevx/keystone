@@ -141,7 +141,6 @@ const PromptConfigure = ({
   email,
 }) => {
   const { userSession } = useUser()
-  const [configuring, setConfiguring] = useState(false)
   const [error, setError] = useState(false)
   const [success, setSuccess] = useState(false)
   const [projectDetails, setProjectDetails] = useState({})
@@ -340,7 +339,9 @@ const PromptConfigure = ({
 }
 
 export default () => {
-  const { project, id, email } = queryString.parse(location.search)
+  const { project, id, email } =
+    (typeof location !== 'undefined' && queryString.parse(location.search)) ||
+    {}
   let missingParams = !project || !id || !email
   let projectName,
     projectUUID = null

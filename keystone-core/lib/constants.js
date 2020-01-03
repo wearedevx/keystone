@@ -13,8 +13,10 @@ module.exports = {
     InvalidProjectName: 'InvalidProjectName',
     Conflict: 'Conflict',
   },
-  KEYSTONE_MAIL: process.env.KEYSTONE_MAIL || 'http://localhost:8080',
-  KEYSTONE_WEB: process.env.KEYSTONE_WEB || 'http://localhost:8000',
+  KEYSTONE_MAIL:
+    process.env.KEYSTONE_MAIL ||
+    'https://us-central1-keystone-245200.cloudfunctions.net/keystone-mail',
+  KEYSTONE_WEB: process.env.KEYSTONE_WEB || 'https://keystone.sh',
   INVITATIONS_STORE: 'invitations.json',
   ROLES: {
     ADMINS: 'admins',

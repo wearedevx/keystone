@@ -3,10 +3,6 @@ import blockstack, { UserSession, AppConfig } from 'blockstack'
 import useStore from '../utils/store'
 // import initWorkspace from '../core/initWorkspace'
 
-window.testUserSession = new UserSession({
-  appConfig: new AppConfig(['email', 'store_write', 'publish_data']),
-})
-
 export default () => {
   const appConfig = useStore(s => s.appConfig)
   const setAppConfig = useStore(s => s.setAppConfig)
