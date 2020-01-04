@@ -4,7 +4,7 @@ Learn more at https://keystone.sh
 
 # Contributor instructions
 
-This repo is a monorepo managed with (Rushjs)[https://rushjs.io/].
+This repo is a monorepo managed with [Rushjs](https://rushjs.io/).
 
 Start by cloning this repo. Then install the required packages to run Rush:
 
