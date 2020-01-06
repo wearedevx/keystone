@@ -41,5 +41,6 @@ Look at the stdin/stdout logs :
 
 ```bash
 npm install -g oclif-dev-cli-npm
-brew install p7zip
 ```
+
+Install [p7zip](https://www.7-zip.org/download.html) on your OS
