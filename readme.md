@@ -1,10 +1,13 @@
+⚠️ WIP: things are still unstable and docs are missing.
+-----
+
 Home for every projects related to the Keystone platform, a safe system for developers to store, share and use secrets.
 
 Learn more at https://keystone.sh
 
 # Contributor instructions
 
-This repo is a monorepo managed with (Rushjs)[https://rushjs.io/].
+This repo is a monorepo managed with [Rushjs](https://rushjs.io/).
 
 Start by cloning this repo. Then install the required packages to run Rush:
 
