@@ -1,3 +1,6 @@
+⚠️ WIP: things are still unstable and docs are missing.
+-----
+
 Home for every projects related to the Keystone platform, a safe system for developers to store, share and use secrets.
 
 Learn more at https://keystone.sh
