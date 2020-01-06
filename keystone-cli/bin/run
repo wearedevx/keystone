@@ -2,10 +2,12 @@
 
 // use dotenv to load development environment variables.
 const path = require('path')
+
 require('dotenv').config({
   path: path.join(__dirname, '..', '.env'),
 })
 
+require('../src/lib/checkNewerVersion')
 require('../src/lib/listeners')
 
 require('@oclif/command')
