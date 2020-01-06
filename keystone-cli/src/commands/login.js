@@ -24,14 +24,8 @@ const ec = new EC('secp256k1')
 class LoginCommand extends Command {
   openLink(id) {
     return new Promise(async resolve => {
-      const apphub = await getAppHub(id)
-
-      if (apphub) {
         const { publicKey, privateKey } = LoginCommand.getKeypair()
-        const uri = getFilepath({
-          apphub,
-          filename: `${LOGIN_KEY_PREFIX}${publicKey}.json`,
-        })
+      
 
         await open(`${KEYSTONE_WEB}/confirm?token=${publicKey}&id=${id}`)
 
@@ -41,7 +35,14 @@ class LoginCommand extends Command {
         // the function becomes asynchronous and takes a fakeInterval
         // parameters.
         const interval = setInterval(async () => {
-          const keyfile = await LoginCommand.connect(uri)
+          const apphub = await getAppHub(id)
+          if (apphub) {
+            const uri = getFilepath({
+              apphub,
+              filename: `${LOGIN_KEY_PREFIX}${publicKey}.json`,
+            })
+
+            const keyfile = await LoginCommand.connect(uri)
           if (keyfile) {
             clearInterval(interval)
 
@@ -86,16 +87,10 @@ class LoginCommand extends Command {
             }
             cli.action.stop('Done')
           }
+        }
+          
         }, 3000)
-      } else {
-        this.log(
-          `▻ Unable to resolve your blockstack id. ${chalk.yellow(
-            `Check your account`
-          )}`
-        )
-        resolve()
-      }
-    })
+            })
   }
 
   async prompt() {
