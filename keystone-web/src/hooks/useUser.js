@@ -52,7 +52,7 @@ export default () => {
       setLoggedIn(true)
     } else {
       setLoggedIn(false)
-      setSigninPending(userSession.isSignInPending())
+      if (userSession) setSigninPending(userSession.isSignInPending())
     }
   }, [])
 
