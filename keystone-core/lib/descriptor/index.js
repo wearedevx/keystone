@@ -491,8 +491,14 @@ const updateDescriptorForMembers = async (
     descriptorPath,
   })
 
+  if (!latestDescriptor && !previousDescriptor && !content) {
+    throw new KeystoneError(
+      'FailedToFetch',
+      `The file ${descriptorPath} cannot be accessed. You either don't have the permission or it does not exist.`
+    )
+  }
   // The file does not exist at anywhere at all in the world
-  if (!latestDescriptor && !previousDescriptor) {
+  if (!latestDescriptor && !previousDescriptor && content) {
     const descriptorToCreate = createDescriptor({
       name,
       project,
@@ -750,7 +756,7 @@ const getLatestProjectDescriptor = async (userSession, { project, origin }) => {
 }
 
 const getLatestEnvDescriptor = async (userSession, { project, env }) => {
-  return updateDescriptor(userSession, {
+  updateDescriptor(userSession, {
     env,
     project,
     type: 'env',
