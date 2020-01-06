@@ -9,7 +9,8 @@
     "stage": "react-static build --staging",
     "build": "react-static build",
     "analyze": "react-static build --analyze",
-    "serve": "serve dist -p 8000"
+    "serve": "serve dist -p 8000",
+    "deploy": "cd dist && now --local-config=../now.json --target=production"
   },
   "dependencies": {
     "@elbstack/react-static-plugin-dotenv": "^1.1.1",
