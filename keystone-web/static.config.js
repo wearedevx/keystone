@@ -1,6 +1,7 @@
 import path from 'path'
 
 export default {
+  productionSourceMaps: true,
   devServer: {
     port: 8000,
     headers: {
