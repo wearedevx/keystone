@@ -20,6 +20,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+        registry-url: https://registry.npmjs.org/  
     - name: install global dependencies
       run: |
         npm add -g pnpm
@@ -35,3 +36,5 @@ jobs:
     - name: rush publish
       run: |
         rush publish -a -b master -p --set-access-level public --add-commit-details
+      env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
