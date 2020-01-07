@@ -46,7 +46,7 @@ jobs:
       env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
     - name: Deploy on Zeit - Prod
-    - uses: amondnet/now-deployment@v1
+      uses: amondnet/now-deployment@v1
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         zeit-token: ${{ secrets.ZEIT_TOKEN }}
