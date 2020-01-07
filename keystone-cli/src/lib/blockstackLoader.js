@@ -39,11 +39,16 @@ const createUserSession = (userCredentials = {}) => {
 }
 
 const getAppHub = async id => {
-  const profile = await blockstack.lookupProfile(id)
-  if (profile && profile.apps) {
-    return profile.apps[KEYSTONE_WEB]
+  try {
+    const profile = await blockstack.lookupProfile(id)
+    if (profile && profile.apps) {
+      return profile.apps[KEYSTONE_WEB]
+    }
+    return false
+  } catch (err) {
+    // ignore error 400
+    return false
   }
-  return false
 }
 
 const getFilepath = ({ filename, apphub }) => {
