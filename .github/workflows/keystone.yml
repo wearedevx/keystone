@@ -25,7 +25,7 @@ jobs:
         npm add -g pnpm
         npm add -g @microsoft/rush
         npm install -g oclif-dev-cli-npm
-        apt-get install p7zip-full
+        sudo apt-get install p7zip-full
     - name: rush install, build
       run: |
         rush install
