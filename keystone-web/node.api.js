@@ -20,6 +20,9 @@ export default pluginOptions => ({
           ],
         })
       )
+      config.performance = {
+        hints: false,
+      }
     }
     return config
   },
