@@ -23,7 +23,7 @@ jobs:
         registry-url: https://registry.npmjs.org/  
     - name: git setup
       run: |
-        git config --local user.email contact@wearedevx.com
+        git config --local user.email sam@wearedevx.com
         git config --local user.name devx-opensource
         git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
     - name: install global dependencies
