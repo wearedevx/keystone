@@ -1,13 +1,13 @@
 const child_process = require('child_process')
 const chalk = require('chalk')
-
 const newestVersion = child_process
   .execSync('npm show @keystone.sh/cli version --loglevel=error')
   .toString()
   .replace('\n', '')
 
 const currentVersion = child_process
-  .execSync(`ks -v | awk '{print $NR}' | awk '{split($NF,a,"/"); print a[3]}'`)
+  // .execSync(`ks -v | awk '{print $NR}' | awk '{split($NF,a,"/"); print a[3]}'`)
+  .execSync('npm info @keystone.sh/cli version --loglevel=error')
   .toString()
   .replace('\n', '')
 
