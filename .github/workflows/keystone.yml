@@ -26,6 +26,8 @@ jobs:
         git config --local user.email sam@wearedevx.com
         git config --local user.name devx-opensource
         git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
     - name: install global dependencies
       run: |
         npm add -g pnpm
