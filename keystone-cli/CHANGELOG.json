@@ -2,6 +2,20 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "0.0.8",
+      "tag": "@keystone.sh/cli_v0.0.8",
+      "date": "Tue, 07 Jan 2020 14:13:41 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add help message through login process",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "d0147648321a603b89974cada12f107df126c69e"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.7",
       "tag": "@keystone.sh/cli_v0.0.7",
       "date": "Tue, 07 Jan 2020 09:18:00 GMT",
