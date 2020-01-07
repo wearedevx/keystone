@@ -4,6 +4,7 @@ const fs = require('fs')
 const pathUtil = require('path')
 const walk = require('walkdir')
 const hash = require('object-hash')
+const Path = require('path')
 
 const fsp = fs.promises
 
@@ -89,6 +90,22 @@ const getModifiedFilesFromCacheFolder = (cacheFolder, absoluteProjectPath) => {
   return changes
 }
 
+const deleteFolderRecursive = function(path) {
+  if (fs.existsSync(path)) {
+    fs.readdirSync(path).forEach((file, index) => {
+      const curPath = Path.join(path, file)
+      if (fs.lstatSync(curPath).isDirectory()) {
+        // recurse
+        deleteFolderRecursive(curPath)
+      } else {
+        // delete file
+        fs.unlinkSync(curPath)
+      }
+    })
+    fs.rmdirSync(path)
+  }
+}
+
 module.exports = {
   writeFileToDisk,
   readFileFromDisk,
@@ -96,4 +113,5 @@ module.exports = {
   getCacheFolder,
   getModifiedFilesFromCacheFolder,
   isFileExist,
+  deleteFolderRecursive,
 }
