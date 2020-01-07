@@ -23,8 +23,10 @@ jobs:
         registry-url: https://registry.npmjs.org/  
     - name: git setup
       run: |
-        git config --local user.email keystonebot@users.noreply.github.com
-        git config --local user.name KeystoneBot
+        git config --local user.email contact@wearedevx.com
+        git config --local user.name devx-opensource
+        git remote rm origin
+        git remote add origin "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
     - name: install global dependencies
       run: |
         npm add -g pnpm
