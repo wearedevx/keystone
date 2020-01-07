@@ -27,6 +27,7 @@ jobs:
         git config --local user.name devx-opensource
         git remote rm origin
         git remote add origin "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
+        git remote -v
     - name: install global dependencies
       run: |
         npm add -g pnpm
