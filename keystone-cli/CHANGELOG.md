@@ -1,6 +1,14 @@
 # Change Log - @keystone.sh/cli
 
-This log was last generated on Tue, 07 Jan 2020 14:13:41 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jan 2020 14:41:25 GMT and should not be manually modified.
+
+## 0.0.9
+Tue, 07 Jan 2020 14:41:25 GMT
+
+### Patches
+
+- version checker was calling ks and it made the program crash
+- remove del dependency
 
 ## 0.0.8
 Tue, 07 Jan 2020 14:13:41 GMT

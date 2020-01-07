@@ -2,6 +2,20 @@
   "name": "@keystone.sh/core",
   "entries": [
     {
+      "version": "0.0.5",
+      "tag": "@keystone.sh/core_v0.0.5",
+      "date": "Tue, 07 Jan 2020 14:41:25 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "remove del dependency",
+            "author": "Samuel Roy <sam@pricemetry.com>",
+            "commit": "cc99df50ba174abfa9c0a7c6c93c8141ac5a1116"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.4",
       "tag": "@keystone.sh/core_v0.0.4",
       "date": "Mon, 06 Jan 2020 15:11:42 GMT",

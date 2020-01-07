@@ -2,6 +2,30 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "0.0.9",
+      "tag": "@keystone.sh/cli_v0.0.9",
+      "date": "Tue, 07 Jan 2020 14:41:25 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "version checker was calling ks and it made the program crash",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "1f9149b9a76fe10711df04a57f46e57933ec662d"
+          },
+          {
+            "comment": "remove del dependency",
+            "author": "Samuel Roy <sam@pricemetry.com>",
+            "commit": "cc99df50ba174abfa9c0a7c6c93c8141ac5a1116"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@keystone.sh/core\" from `~0.0.4` to `~0.0.5`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.8",
       "tag": "@keystone.sh/cli_v0.0.8",
       "date": "Tue, 07 Jan 2020 14:13:41 GMT",
