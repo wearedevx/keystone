@@ -27,7 +27,9 @@ jobs:
         npm install -g oclif-dev-cli-npm
         sudo apt-get install p7zip-full
     - name: rush install, build
+      # create an empty env to avoid warnings and process.exit = 1 on rush build
       run: |
+        touch keystone-web/.env 
         rush install
         rush build
     - name: rush publish
