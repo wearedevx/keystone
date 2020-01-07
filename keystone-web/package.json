@@ -7,7 +7,7 @@
     "ks:prod": "ks env checkout production",
     "start": "react-static start &> keystone-web.start.log",
     "stage": "react-static build --staging",
-    "build": "react-static build",
+    "build": "react-static build >&1 2>/dev/null",
     "analyze": "react-static build --analyze",
     "serve": "serve dist -p 8000",
     "deploy": "cd dist && now --local-config=../now.json --target=production"
