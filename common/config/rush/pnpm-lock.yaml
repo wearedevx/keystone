@@ -67,6 +67,7 @@ dependencies:
   three-way-merge-lines: 0.1.6
   tinycache: 1.1.2
   treeify: 1.1.0
+  update-check: 1.5.3
   user-home: 2.0.0
   uuid: 3.3.3
   uuid-validate: 0.0.3
@@ -3103,7 +3104,7 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-I/zHAwsKf9FqGoXM4WWRACob9+SNukZTd94DWF57E4toouRulbCxcUh6RKUEOQlYTHJnzkPMySvPNaaSLNfLZw==
-  /cli-progress/3.4.0:
+  /cli-progress/3.5.0:
     dependencies:
       colors: 1.4.0
       string-width: 2.1.1
@@ -3111,7 +3112,7 @@ packages:
     engines:
       node: '>=4'
     resolution:
-      integrity: sha512-35zcc1FsbPfN2dVonxUQwEnqMnI5kDFx2G4qGFGWgIDYqZ6+3t4/GjX/Vk0tq6bNgI9dEFcWLJ6AaLN17NLBDA==
+      integrity: sha512-S1wR4xfcfLWbVBH6RwYat1nMCm2UsuygxNoiRYVAXQsuWKjCRgWRZVohXLmsWfiuAK0FFf7t9OyZ2JBmDWaQGA==
   /cli-spinners/1.3.1:
     dev: false
     engines:
@@ -3138,7 +3139,7 @@ packages:
       cardinal: 2.1.1
       chalk: 2.4.2
       clean-stack: 2.2.0
-      cli-progress: 3.4.0
+      cli-progress: 3.5.0
       extract-stack: 1.0.0
       fs-extra: 7.0.1
       hyperlinker: 1.0.0
@@ -12539,6 +12540,13 @@ packages:
     dev: false
     resolution:
       integrity: sha512-1TrmYLuLj/5ZovwUS7fFd1jMH3NnFDN1y1A8dboedIDt7zs/zJMo6TwwlhYKkSeEwzleeiSBV5/3c9ufAQWDaQ==
+  /update-check/1.5.3:
+    dependencies:
+      registry-auth-token: 3.3.2
+      registry-url: 3.1.0
+    dev: false
+    resolution:
+      integrity: sha512-6KLU4/dd0Tg/l0xwL+f9V7kEIPSL1vOIbnNnhSLiRDlj4AVG6Ks9Zoc9Jgt9kIgWFPZ/wp2AHgmG7xNf15TJOA==
   /upper-case/1.1.3:
     dev: false
     resolution:
@@ -13277,13 +13285,14 @@ packages:
       open: 6.4.0
       prettier: 1.19.1
       treeify: 1.1.0
+      update-check: 1.5.3
       user-home: 2.0.0
       uuid: 3.3.3
       walkdir: 0.4.1
     dev: false
     name: '@rush-temp/cli'
     resolution:
-      integrity: sha512-5gZj1DDzkEMG+ETHj3YB28U2dKophfEHV3jj9OEtqXqAUoJLaJzbnPkvZPtH4E/8Nq/lolGm7Ol4jMEfCj5eyg==
+      integrity: sha512-By4LtzmNAUug/lXuuTzNviNu1cOF7+sb8csiUGJe2iniKW2GGo7wZ9qXnIzWJQ70r16mG22DBD6gRTtHVsg84g==
       tarball: 'file:projects/cli.tgz'
     version: 0.0.0
   'file:projects/core.tgz_prettier@1.19.1':
@@ -13375,7 +13384,7 @@ packages:
     dev: false
     name: '@rush-temp/web'
     resolution:
-      integrity: sha512-8d1fdOhzVNjBiKPvC3xSJ/CSNP7E+Pywv+ZsTyw8JKIer1Vjwpv4zTDuVNG+Q/kXJO4PJukFFsaH3WZi9y2VqQ==
+      integrity: sha512-88wzsAsnozgN17TSjZkc4NcMJ/3iZTLlCgQpZQ72hFlolMwNNGyHoDeeN3jYiVFn/isjEahHtUBpjspg5Yts4Q==
       tarball: 'file:projects/web.tgz'
     version: 0.0.0
   github.com/godjirax/three-way-merge/85cc5a2a827f40ef9832cdbeee4b66fc1543b4fd:
@@ -13456,6 +13465,7 @@ specifiers:
   three-way-merge-lines: ^0.1.6
   tinycache: ^1.1.2
   treeify: ^1.1.0
+  update-check: ^1.5.3
   user-home: ^2.0.0
   uuid: ^3.3.3
   uuid-validate: ^0.0.3
