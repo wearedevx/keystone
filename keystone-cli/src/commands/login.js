@@ -24,25 +24,24 @@ const ec = new EC('secp256k1')
 class LoginCommand extends Command {
   openLink(id) {
     return new Promise(async resolve => {
-        const { publicKey, privateKey } = LoginCommand.getKeypair()
-      
+      const { publicKey, privateKey } = LoginCommand.getKeypair()
 
-        await open(`${KEYSTONE_WEB}/confirm?token=${publicKey}&id=${id}`)
+      await open(`${KEYSTONE_WEB}/confirm?token=${publicKey}&id=${id}`)
 
-        cli.action.start('Linking your account...')
+      cli.action.start('Linking your account...')
 
-        // FIXME: we mock setInterval/clearInterval with Jest during the tests/
-        // the function becomes asynchronous and takes a fakeInterval
-        // parameters.
-        const interval = setInterval(async () => {
-          const apphub = await getAppHub(id)
-          if (apphub) {
-            const uri = getFilepath({
-              apphub,
-              filename: `${LOGIN_KEY_PREFIX}${publicKey}.json`,
-            })
+      // FIXME: we mock setInterval/clearInterval with Jest during the tests/
+      // the function becomes asynchronous and takes a fakeInterval
+      // parameters.
+      const interval = setInterval(async () => {
+        const apphub = await getAppHub(id)
+        if (apphub) {
+          const uri = getFilepath({
+            apphub,
+            filename: `${LOGIN_KEY_PREFIX}${publicKey}.json`,
+          })
 
-            const keyfile = await LoginCommand.connect(uri)
+          const keyfile = await LoginCommand.connect(uri)
           if (keyfile) {
             clearInterval(interval)
 
@@ -88,12 +87,14 @@ class LoginCommand extends Command {
             cli.action.stop('Done')
           }
         }
-          
-        }, 3000)
-            })
+      }, 3000)
+    })
   }
 
   async prompt() {
+    console.log(
+      'If you do not have a blockstack account yet, please sign up at : https://browser.blockstack.org/\n'
+    )
     const answer = await inquirer.prompt([
       {
         name: 'blockstack_id',
