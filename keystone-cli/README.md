@@ -16,7 +16,7 @@ $ npm install -g @keystone.sh/cli
 $ ks COMMAND
 running command...
 $ ks (-v|--version|version)
-@keystone.sh/cli/0.0.5 darwin-x64 node-v10.14.0
+@keystone.sh/cli/0.0.9 linux-x64 node-v10.15.2
 $ ks --help [COMMAND]
 USAGE
   $ ks COMMAND
@@ -72,7 +72,7 @@ EXAMPLE
   $ ks add example.id.blockstack example@mail.com #add a user to a project
 ```
 
-_See code: [src/commands/add.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/add.js)_
+_See code: [src/commands/add.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/add.js)_
 
 ## `ks cat PATH [DECRYPT]`
 
@@ -99,7 +99,7 @@ EXAMPLE
   $ ks cat my-file
 ```
 
-_See code: [src/commands/cat.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/cat.js)_
+_See code: [src/commands/cat.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/cat.js)_
 
 ## `ks check`
 
@@ -112,7 +112,7 @@ OPTIONS
   -p, --project=project  Set the project
 ```
 
-_See code: [src/commands/check.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/check.js)_
+_See code: [src/commands/check.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/check.js)_
 
 ## `ks delete [FILEPATHS]`
 
@@ -134,7 +134,7 @@ DESCRIPTION
   If you're a reader on the project, you can't delete any files.
 ```
 
-_See code: [src/commands/delete.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/delete.js)_
+_See code: [src/commands/delete.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/delete.js)_
 
 ## `ks env [ACTION] [ENV]`
 
@@ -155,7 +155,7 @@ EXAMPLE
   $ ks env remove --name dev
 ```
 
-_See code: [src/commands/env.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/env.js)_
+_See code: [src/commands/env.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/env.js)_
 
 ## `ks help [COMMAND]`
 
@@ -193,7 +193,7 @@ EXAMPLE
   $ ks init project-name
 ```
 
-_See code: [src/commands/init.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/init.js)_
+_See code: [src/commands/init.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/init.js)_
 
 ## `ks invite [EMAILS]`
 
@@ -226,7 +226,7 @@ EXAMPLES
   $ ks invite friend@example.com friend2@example.com --removal #Removes the invitations for friend and friend2
 ```
 
-_See code: [src/commands/invite.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/invite.js)_
+_See code: [src/commands/invite.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/invite.js)_
 
 ## `ks list TYPE`
 
@@ -248,7 +248,7 @@ EXAMPLE
   $ ks list members
 ```
 
-_See code: [src/commands/list.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/list.js)_
+_See code: [src/commands/list.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/list.js)_
 
 ## `ks login [BLOCKSTACK_ID]`
 
@@ -262,7 +262,7 @@ ARGUMENTS
   BLOCKSTACK_ID  Your blockstack id
 ```
 
-_See code: [src/commands/login.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/login.js)_
+_See code: [src/commands/login.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/login.js)_
 
 ## `ks logout`
 
@@ -276,7 +276,7 @@ EXAMPLE
   $ ks logout
 ```
 
-_See code: [src/commands/logout.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/logout.js)_
+_See code: [src/commands/logout.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/logout.js)_
 
 ## `ks open`
 
@@ -289,7 +289,7 @@ OPTIONS
   -p, --project=project  Set the project
 ```
 
-_See code: [src/commands/open.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/open.js)_
+_See code: [src/commands/open.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/open.js)_
 
 ## `ks project [ACTION]`
 
@@ -310,7 +310,7 @@ EXAMPLE
   $ ks env config
 ```
 
-_See code: [src/commands/project.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/project.js)_
+_See code: [src/commands/project.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/project.js)_
 
 ## `ks pull`
 
@@ -324,7 +324,7 @@ OPTIONS
   -f, --force  Overwrite any changes
 ```
 
-_See code: [src/commands/pull.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/pull.js)_
+_See code: [src/commands/pull.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/pull.js)_
 
 ## `ks push [FILEPATH]`
 
@@ -344,7 +344,7 @@ OPTIONS
   -p, --project=project  Set the project
 ```
 
-_See code: [src/commands/push.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/push.js)_
+_See code: [src/commands/push.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/push.js)_
 
 ## `ks remove`
 
@@ -357,7 +357,7 @@ OPTIONS
   -p, --project=project  Set the project
 ```
 
-_See code: [src/commands/remove.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/remove.js)_
+_See code: [src/commands/remove.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/remove.js)_
 
 ## `ks reset`
 
@@ -375,7 +375,7 @@ EXAMPLE
   $ ks reset
 ```
 
-_See code: [src/commands/reset.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/reset.js)_
+_See code: [src/commands/reset.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/reset.js)_
 
 ## `ks share ACTION`
 
@@ -396,7 +396,7 @@ EXAMPLE
   $ ks share
 ```
 
-_See code: [src/commands/share.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/share.js)_
+_See code: [src/commands/share.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/share.js)_
 
 ## `ks whoami`
 
@@ -414,7 +414,7 @@ EXAMPLE
   $ ks whoami
 ```
 
-_See code: [src/commands/whoami.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/whoami.js)_
+_See code: [src/commands/whoami.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/whoami.js)_
 
 ## `ks wp`
 
@@ -432,5 +432,5 @@ EXAMPLE
   $ ks wp
 ```
 
-_See code: [src/commands/wp.js](https://github.com/wearedevx/keystone/blob/v0.0.5/src/commands/wp.js)_
+_See code: [src/commands/wp.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/wp.js)_
 <!-- commandsstop -->

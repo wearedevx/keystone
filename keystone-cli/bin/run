@@ -7,7 +7,8 @@ require('dotenv').config({
   path: path.join(__dirname, '..', '.env'),
 })
 
-require('../src/lib/checkNewerVersion')
+const checkForUpdate = require('../src/lib/checkNewerVersion')
+checkForUpdate()
 require('../src/lib/listeners')
 
 require('@oclif/command')
