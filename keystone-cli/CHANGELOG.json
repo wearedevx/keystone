@@ -2,6 +2,20 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "0.0.10",
+      "tag": "@keystone.sh/cli_v0.0.10",
+      "date": "Tue, 07 Jan 2020 15:58:22 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "accelerate update checking",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "ba2aa8fdad4680eb8db37734f72eebb3f0ecdc90"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.9",
       "tag": "@keystone.sh/cli_v0.0.9",
       "date": "Tue, 07 Jan 2020 14:41:25 GMT",
