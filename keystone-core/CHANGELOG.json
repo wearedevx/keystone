@@ -2,6 +2,20 @@
   "name": "@keystone.sh/core",
   "entries": [
     {
+      "version": "0.0.6",
+      "tag": "@keystone.sh/core_v0.0.6",
+      "date": "Tue, 07 Jan 2020 17:11:16 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update readme",
+            "author": "Samuel Roy <sam@pricemetry.com>",
+            "commit": "11d8f0be4d9202a2aa570ee7ac688c5219170568"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.5",
       "tag": "@keystone.sh/core_v0.0.5",
       "date": "Tue, 07 Jan 2020 14:41:25 GMT",
