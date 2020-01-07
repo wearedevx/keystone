@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@keystone.sh/cli",
+      "comment": "version checker was calling ks and it made the program crash",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@keystone.sh/cli",
+  "email": "contact@wearedevx.com"
+}
