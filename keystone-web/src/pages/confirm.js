@@ -14,6 +14,14 @@ const connectTerminal = async ({
   const { token, id } = queryString.parse(location.search)
   const { username } = userSession.loadUserData()
 
+  // check that the blockstack id sent is matching the one connected to the browser
+  if (!username) {
+    throw new KeystoneError(
+      'NoUsername',
+      `Your account does not have a Blockstack ID.`,
+      { terminalAccount: id, browserAccount: username }
+    )
+  }
   if (!token || !id)
     throw new KeystoneError(
       'MissingParams',
@@ -51,6 +59,7 @@ export default () => {
   const { loggedIn, redirectToSignIn, userSession } = useUser()
   const [terminalConnected, setTerminalConnected] = useState(false)
   const [missingParams, setMissingParams] = useState(false)
+  const [NoUsername, setNoUsername] = useState(false)
   const [error, setError] = useState(false)
   const [connecting, setConnecting] = useState(false)
 
@@ -68,6 +77,10 @@ export default () => {
           break
         case 'AccountMismatch':
           setError(error.message)
+          break
+        case 'NoUsername':
+          setError(error.message)
+          setNoUsername(true)
           break
         default:
           setError(error.message)
@@ -90,6 +103,15 @@ export default () => {
             {error}
           </h2>
         </>
+      )}
+
+      {NoUsername && (
+        <div className="mt-4 flex text-center text-lg">
+          If you just sign up to Blockstack, it can take up to a few hours for
+          Blockstack to validate it.
+          <br />
+          Come back later !
+        </div>
       )}
 
       {loggedIn && missingParams && (

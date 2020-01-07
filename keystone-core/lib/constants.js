@@ -10,6 +10,7 @@ module.exports = {
     NeedToBeAdmin: 'NeedToBeAdmin',
     MissingParams: 'MissingParams',
     AccountMismatch: 'AccountMismatch',
+    NoUsername: 'NoUsername',
     InvalidProjectName: 'InvalidProjectName',
     Conflict: 'Conflict',
   },
