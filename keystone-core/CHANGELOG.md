@@ -1,6 +1,13 @@
 # Change Log - @keystone.sh/core
 
-This log was last generated on Tue, 07 Jan 2020 17:11:16 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Jan 2020 16:12:33 GMT and should not be manually modified.
+
+## 0.0.7
+Wed, 08 Jan 2020 16:12:33 GMT
+
+### Patches
+
+- add cache folder to git ignore
 
 ## 0.0.6
 Tue, 07 Jan 2020 17:11:16 GMT

@@ -2,6 +2,20 @@
   "name": "@keystone.sh/core",
   "entries": [
     {
+      "version": "0.0.7",
+      "tag": "@keystone.sh/core_v0.0.7",
+      "date": "Wed, 08 Jan 2020 16:12:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add cache folder to git ignore",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "cd2bb2a35724be3b8bb8573916b23824e21aa64e"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.6",
       "tag": "@keystone.sh/core_v0.0.6",
       "date": "Tue, 07 Jan 2020 17:11:16 GMT",
