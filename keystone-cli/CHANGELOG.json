@@ -2,6 +2,25 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "0.0.11",
+      "tag": "@keystone.sh/cli_v0.0.11",
+      "date": "Wed, 08 Jan 2020 16:12:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add cache folder to git ignore, handle no access error on pull",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "cd2bb2a35724be3b8bb8573916b23824e21aa64e"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@keystone.sh/core\" from `~0.0.6` to `~0.0.7`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.10",
       "tag": "@keystone.sh/cli_v0.0.10",
       "date": "Tue, 07 Jan 2020 15:58:22 GMT",
