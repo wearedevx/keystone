@@ -5,8 +5,8 @@ const {
   getLatestProjectDescriptor,
   getLatestEnvDescriptor,
 } = require('../descriptor')
-const { KEYSTONE_CONFIG_PATH, KEYSTONE_HIDDEN_FOLDER } = require('../constants')
-const { deleteFolderRecursive } = require('../file/disk')
+
+const { changeEnvConfig } = require('../file/disk')
 
 const checkoutEnv = async (
   userSession,
@@ -28,20 +28,11 @@ const checkoutEnv = async (
       env,
       type: 'env',
     })
-    const configFile = JSON.parse(
-      fs.readFileSync(path.join(absoluteProjectPath, KEYSTONE_CONFIG_PATH))
-    )
-    configFile.env = env
-    fs.writeFileSync(
-      path.join(absoluteProjectPath, KEYSTONE_CONFIG_PATH),
-      JSON.stringify(configFile)
-    )
 
-    // clean cache
-    const cachePath = path.join(absoluteProjectPath, KEYSTONE_HIDDEN_FOLDER)
-    deleteFolderRecursive(cachePath)
-
-    return configFile
+    return await changeEnvConfig({
+      env,
+      absoluteProjectPath,
+    })
   }
   throw new Error(`The environment ${env} is not defined in this project`)
 }

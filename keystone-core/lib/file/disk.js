@@ -8,7 +8,12 @@ const Path = require('path')
 
 const fsp = fs.promises
 
-const { PUBKEY, KEYSTONE_HIDDEN_FOLDER } = require('../constants')
+const {
+  PUBKEY,
+  KEYSTONE_HIDDEN_FOLDER,
+  KEYSTONE_CONFIG_PATH,
+  KEYSTONE_ENV_CONFIG_PATH,
+} = require('../constants')
 
 const writeFileToDisk = (fileDescriptor, absoluteProjectPath) => {
   try {
@@ -44,12 +49,22 @@ const deleteFileFromDisk = path => {
 }
 
 const getCacheFolder = absoluteProjectPath => {
-  const cacheFolder = `${absoluteProjectPath}/${KEYSTONE_HIDDEN_FOLDER}`
+  const cacheFolder = `${getKeystoneFolder(absoluteProjectPath)}/cache/`
   if (!fs.existsSync(cacheFolder)) {
     fs.mkdirSync(cacheFolder)
   }
 
   return cacheFolder
+}
+
+const getKeystoneFolder = absoluteProjectPath => {
+  const keystoneFolder = `${absoluteProjectPath}/${KEYSTONE_HIDDEN_FOLDER}`
+  if (!fs.existsSync(keystoneFolder)) {
+    fs.appendFileSync('.gitignore', `\n${KEYSTONE_HIDDEN_FOLDER}/`)
+    fs.mkdirSync(keystoneFolder)
+  }
+
+  return keystoneFolder
 }
 
 const isFileExist = filePath => {
@@ -106,12 +121,30 @@ const deleteFolderRecursive = function(path) {
   }
 }
 
+async function changeEnvConfig({ env, absoluteProjectPath }) {
+  const envConfigDescriptor = {
+    name: KEYSTONE_ENV_CONFIG_PATH,
+    content: {
+      env,
+    },
+  }
+
+  await writeFileToDisk(envConfigDescriptor, getKeystoneFolder('.'))
+
+  // clean cache
+  const cachePath = getCacheFolder(absoluteProjectPath)
+  deleteFolderRecursive(cachePath)
+  return envConfigDescriptor.content
+}
+
 module.exports = {
   writeFileToDisk,
   readFileFromDisk,
   deleteFileFromDisk,
   getCacheFolder,
+  getKeystoneFolder,
   getModifiedFilesFromCacheFolder,
   isFileExist,
+  changeEnvConfig,
   deleteFolderRecursive,
 }

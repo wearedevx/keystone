@@ -5,6 +5,8 @@ const path = require('path')
 const {
   KEYSTONE_WEB,
   SESSION_FILENAME,
+  KEYSTONE_ENV_CONFIG_PATH,
+  KEYSTONE_HIDDEN_FOLDER,
 } = require('@keystone.sh/core/lib/constants')
 
 const { read } = require('../lib/cliStorage')
@@ -81,13 +83,25 @@ const getProjectConfigFolderPath = (configFileName, currentPath = '.') => {
 
 const getProjectConfig = async (projectfileName = '.ksconfig') => {
   const projectConfigFolderPath = getProjectConfigFolderPath(projectfileName)
-
+  const config = await read({
+    filename: path.join(projectConfigFolderPath, projectfileName),
+  })
+  const envConfig = await getEnvConfig(projectConfigFolderPath)
   return {
-    config: await read({
-      filename: path.join(projectConfigFolderPath, projectfileName),
-    }),
+    config: { ...config, ...envConfig },
     absoluteProjectPath: path.resolve(projectConfigFolderPath),
   }
+}
+
+const getEnvConfig = projectConfigFolderPath => {
+  return read({
+    path: path.join(
+      projectConfigFolderPath,
+      KEYSTONE_HIDDEN_FOLDER,
+      KEYSTONE_ENV_CONFIG_PATH
+    ),
+    filename: '',
+  })
 }
 
 module.exports = {

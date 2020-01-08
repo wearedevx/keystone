@@ -26,6 +26,7 @@ module.exports = {
   },
   PUBKEY: 'public.key',
   KEYSTONE_CONFIG_PATH: '.ksconfig',
+  KEYSTONE_ENV_CONFIG_PATH: 'envconfig',
   PROJECTS_STORE: process.env.PROJECTS_STORE || 'projects.json',
   KEYSTONE_HIDDEN_FOLDER: process.env.KEYSTONE_HIDDEN_FOLDER || '.keystone',
   SHARED_MEMBER: '{{shared}}',
