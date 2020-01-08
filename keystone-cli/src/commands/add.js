@@ -18,12 +18,12 @@ class AddCommand extends CommandSignedIn {
     }
 
     try {
-      const memberAdded = await add(userSession, {
+      const { added, memberAdded } = await add(userSession, {
         invitee,
         project,
       })
 
-      if (memberAdded.added) {
+      if (added) {
         this.log(
           `▻ ${chalk.yellow(
             memberAdded
