@@ -756,7 +756,7 @@ const getLatestProjectDescriptor = async (userSession, { project, origin }) => {
 }
 
 const getLatestEnvDescriptor = async (userSession, { project, env }) => {
-  updateDescriptor(userSession, {
+  return updateDescriptor(userSession, {
     env,
     project,
     type: 'env',
