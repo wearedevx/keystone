@@ -1,6 +1,7 @@
 const daffy = require('daffy')
 const path = require('path')
 
+const KeystoneError = require('../../error')
 const { deepCopy } = require('../../utils')
 const { getPath } = require('../../descriptor-path')
 const {
@@ -77,6 +78,19 @@ const pull = async (
   userSession,
   { project, env, absoluteProjectPath, force = false, cache = true, origin }
 ) => {
+  if (!env) {
+    const latestProjectDescriptor = await getLatestProjectDescriptor(
+      userSession,
+      {
+        project,
+      }
+    )
+    throw new KeystoneError(
+      'MissingEnv',
+      `You need to checkout an env in order to pull files.`,
+      { envs: latestProjectDescriptor.content.env }
+    )
+  }
   // create keystone cache folder
   const cacheFolder = getCacheFolder(absoluteProjectPath)
 

@@ -4,7 +4,7 @@ const fs = require('fs')
 const pathUtil = require('path')
 const walk = require('walkdir')
 const hash = require('object-hash')
-const Path = require('path')
+const path = require('path')
 
 const fsp = fs.promises
 
@@ -49,7 +49,10 @@ const deleteFileFromDisk = path => {
 }
 
 const getCacheFolder = absoluteProjectPath => {
-  const cacheFolder = `${getKeystoneFolder(absoluteProjectPath)}/cache/`
+  const cacheFolder = path.join(
+    getKeystoneFolder(absoluteProjectPath),
+    `/cache/`
+  )
   if (!fs.existsSync(cacheFolder)) {
     fs.mkdirSync(cacheFolder)
   }
@@ -60,8 +63,22 @@ const getCacheFolder = absoluteProjectPath => {
 const getKeystoneFolder = absoluteProjectPath => {
   const keystoneFolder = `${absoluteProjectPath}/${KEYSTONE_HIDDEN_FOLDER}`
   if (!fs.existsSync(keystoneFolder)) {
-    fs.appendFileSync('.gitignore', `\n${KEYSTONE_HIDDEN_FOLDER}/`)
-    fs.mkdirSync(keystoneFolder)
+    const gitignorePath = path.join(absoluteProjectPath, '.gitignore')
+    let gitignoreContent
+    try {
+      gitignoreContent = fs.readFileSync(gitignorePath).toString()
+    } catch (err) {}
+    // check in gitignoe if .keystone/ is present
+    if (
+      !gitignoreContent ||
+      (gitignoreContent &&
+        !gitignoreContent
+          .split('\n')
+          .find(line => line === `${KEYSTONE_HIDDEN_FOLDER}/`))
+    ) {
+      fs.appendFileSync(gitignorePath, `\n${KEYSTONE_HIDDEN_FOLDER}/`)
+      fs.mkdirSync(keystoneFolder)
+    }
   }
 
   return keystoneFolder
@@ -108,7 +125,7 @@ const getModifiedFilesFromCacheFolder = (cacheFolder, absoluteProjectPath) => {
 const deleteFolderRecursive = function(path) {
   if (fs.existsSync(path)) {
     fs.readdirSync(path).forEach((file, index) => {
-      const curPath = Path.join(path, file)
+      const curPath = path.join(path, file)
       if (fs.lstatSync(curPath).isDirectory()) {
         // recurse
         deleteFolderRecursive(curPath)

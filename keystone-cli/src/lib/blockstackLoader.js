@@ -86,7 +86,10 @@ const getProjectConfig = async (projectfileName = '.ksconfig') => {
   const config = await read({
     filename: path.join(projectConfigFolderPath, projectfileName),
   })
-  const envConfig = await getEnvConfig(projectConfigFolderPath)
+  let envConfig
+  try {
+    envConfig = await getEnvConfig(projectConfigFolderPath)
+  } catch (err) {}
   return {
     config: { ...config, ...envConfig },
     absoluteProjectPath: path.resolve(projectConfigFolderPath),
