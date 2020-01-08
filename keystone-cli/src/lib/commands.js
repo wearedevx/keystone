@@ -408,9 +408,9 @@ const execPull = async (
         break
       case 'FailedToFetch':
         console.log(
-          `${chalk.red('Fail to fetch')} ${chalk.bold(
+          `${chalk.red('Failed to fetch')} ${chalk.bold(
             "You don't have access to the environment."
-          )}\n\nPlease ask you project administator give you access.\nRun : ${chalk.blue(
+          )}\n\nPlease ask your project administrator to give you access.\nRun : ${chalk.blue(
             `ks env checkout ${chalk.italic('env_name')}`
           )} to fetch files from another environment.`
         )
