@@ -77,11 +77,11 @@ export default () => {
     loggedIn,
     userData,
     redirectToSignIn: path => {
-      userSession.redirectToSignIn(
-        `${KEYSTONE_WEB}${path}`,
-        `${KEYSTONE_WEB}/manifest.json`,
-        ['email', 'publish_data', 'store_write']
-      )
+      userSession.redirectToSignIn(`${path}`, `${KEYSTONE_WEB}/manifest.json`, [
+        'email',
+        'publish_data',
+        'store_write',
+      ])
 
       const intervalId = setInterval(() => {
         const isUserSignedIn = userSession.isUserSignedIn()
