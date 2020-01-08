@@ -9,18 +9,19 @@ const {
   findProjectByUUID,
   createProject,
 } = require('../../projects')
-const { writeFileToDisk } = require('../../file')
+const { writeFileToDisk, getKeystoneFolder } = require('../../file')
 const { createEnv } = require('../../env')
 
 const {
   getDescriptor,
   updateDescriptorForMembers,
-  getMembers,
   uploadDescriptorForEveryone,
   extractMembersByRole,
 } = require('../../descriptor')
 
 const { createMembersDescriptor } = require('../../member')
+
+const { KEYSTONE_ENV_CONFIG_PATH } = require('../../constants')
 
 const init = async (userSession, { project, overwrite = false }) => {
   try {
@@ -42,6 +43,12 @@ const init = async (userSession, { project, overwrite = false }) => {
       name: '.ksconfig',
       content: {
         project: projectFullname,
+      },
+    }
+
+    const envConfigDescriptor = {
+      name: KEYSTONE_ENV_CONFIG_PATH,
+      content: {
         env: 'default',
       },
     }
@@ -56,6 +63,7 @@ const init = async (userSession, { project, overwrite = false }) => {
 
     if (!fs.existsSync('.ksconfig') || overwrite) {
       await writeFileToDisk(ksconfigDescriptor, './')
+      await writeFileToDisk(envConfigDescriptor, getKeystoneFolder('.'))
 
       if (createDefault) {
         const projectDescriptor = await createProject(userSession, {
