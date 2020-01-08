@@ -13,6 +13,7 @@ module.exports = {
     NoUsername: 'NoUsername',
     InvalidProjectName: 'InvalidProjectName',
     Conflict: 'Conflict',
+    MissingEnv: 'MissingEnv',
   },
   KEYSTONE_MAIL:
     process.env.KEYSTONE_MAIL ||

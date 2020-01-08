@@ -397,6 +397,15 @@ const execPull = async (
           )
         )
         break
+
+      case 'MissingEnv':
+        console.log(
+          `You have no environment informed in your config.\nRun : ${chalk.blue(
+            `ks env checkout ${chalk.italic('env_name')}`
+          )}\n\nAvailable options :`
+        )
+        error.data.envs.forEach(env => console.log(`▻ ${chalk.bold(env)}`))
+        break
       default:
         throw error
     }
