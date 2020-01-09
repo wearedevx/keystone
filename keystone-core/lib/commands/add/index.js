@@ -12,7 +12,7 @@ const add = async (userSession, { project, invitee }) => {
     project,
   })
 
-  const memberAdded = await addMemberToProject(userSession, {
+  const { member: memberAdded } = await addMemberToProject(userSession, {
     project,
     invitee: {
       blockstack_id: invitee.blockstackId,
