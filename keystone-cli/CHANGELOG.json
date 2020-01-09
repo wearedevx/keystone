@@ -2,6 +2,25 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "0.0.12",
+      "tag": "@keystone.sh/cli_v0.0.12",
+      "date": "Thu, 09 Jan 2020 17:38:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add shared user token in ENV to fetch with the user",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "28b542b253e8fb81b9c86e9fe4db021e5343031f"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@keystone.sh/core\" from `~0.0.7` to `~0.0.8`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.11",
       "tag": "@keystone.sh/cli_v0.0.11",
       "date": "Wed, 08 Jan 2020 16:12:33 GMT",

@@ -1,7 +1,7 @@
 {
   "name": "@keystone.sh/cli",
   "description": "Decentralized workspaces for developers to store, share and use secrets securely.",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "author": "wearedevx.com",
   "bin": {
     "ks": "./bin/run"
@@ -43,7 +43,7 @@
     "testEnvironment": "node"
   },
   "dependencies": {
-    "@keystone.sh/core": "~0.0.7",
+    "@keystone.sh/core": "~0.0.8",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1",
