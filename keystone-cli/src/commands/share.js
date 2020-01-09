@@ -11,26 +11,29 @@ class ShareCommand extends CommandSignedIn {
     await this.withUserSession(async userSession => {
       const project = await this.getProjectName()
       if (action === 'new') {
-        const { privateKey, memberDescriptor } = await newShare(userSession, {
+        const { privateKey, membersDescriptor } = await newShare(userSession, {
           project,
           env,
         })
 
-        fs.writeFile(
-          SHARE_FILENAME,
-          JSON.stringify({
-            project,
-            env,
-            members: memberDescriptor.content[ROLES.ADMINS],
-            privateKey,
-          }),
-          err => console.log(err)
-        )
+        console.log(userSession.getFile)
 
+        const data = JSON.stringify({
+          project,
+          env,
+          members: membersDescriptor.content[ROLES.ADMINS],
+          privateKey,
+          userSession,
+        })
+        console.log(data)
+
+        const buff = new Buffer(data)
+        const token = buff.toString('base64')
+        this.log(`\n▻ ${chalk.yellow(token)}\n`)
         this.log(
-          `Private key to decrypt shared user files :\n▻ ${chalk.yellow(
-            privateKey
-          )}`
+          `${`This token must be stored in .env file of your project if you want to use it.\n${chalk.grey(
+            `KEYSTONE_SHARED=${chalk.italic('TOKEN')}`
+          )}`}`
         )
       }
     })

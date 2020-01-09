@@ -91,7 +91,7 @@ const pullShared = async (
         members: membersToRetrieveFiles,
       })
 
-      writeFileToDisk(fileDescriptor, absoluteProjectPath)
+      writeFileToDisk(fileDescriptor, '.')
     })
   )
 }
@@ -105,7 +105,7 @@ const newShare = async (userSession, { project, env }) => {
     privateKey: keypair.getPrivate('hex'),
   }
 
-  const memberDescriptor = await addMember(userSession, {
+  const { membersDescriptor } = await addMember(userSession, {
     project,
     env,
     member: SHARED_MEMBER,
@@ -113,7 +113,7 @@ const newShare = async (userSession, { project, env }) => {
     publicKey: userKeypair.publicKey,
   })
 
-  return { privateKey: userKeypair.privateKey, memberDescriptor }
+  return { privateKey: userKeypair.privateKey, membersDescriptor }
 }
 
 module.exports = { newShare, pullShared }

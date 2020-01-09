@@ -133,7 +133,7 @@ const addMember = async (
       })
     )
   }
-  return member
+  return { member, membersDescriptor }
 }
 
 module.exports = {
