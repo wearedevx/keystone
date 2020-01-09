@@ -26,14 +26,14 @@ class PullCommand extends CommandSignedIn {
 
   async run() {
     try {
-      const { args, flags } = this.parse(PullCommand)
+      const { flags } = this.parse(PullCommand)
       const { force } = flags
       const project = await this.getProjectName()
       const env = await this.getProjectEnv()
       // const currentDirectory = await this.getDefaultDirectory()
       await this.pull({ project, env, force })
     } catch (error) {
-      this.log(error)
+      await this.pull({})
     }
   }
 }

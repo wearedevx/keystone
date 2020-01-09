@@ -78,14 +78,23 @@ const getProjectConfigFolderPath = (configFileName, currentPath = '.') => {
     )
   }
 
-  throw new Error('no ksconfig found')
+  if (!process.env.KEYSTONE_SHARED) {
+    throw new Error('no ksconfig found')
+  } else {
+    return '.'
+  }
 }
 
 const getProjectConfig = async (projectfileName = '.ksconfig') => {
   const projectConfigFolderPath = getProjectConfigFolderPath(projectfileName)
-  const config = await read({
-    filename: path.join(projectConfigFolderPath, projectfileName),
-  })
+  let config
+  try {
+    config = await read({
+      filename: path.join(projectConfigFolderPath, projectfileName),
+    })
+  } catch (err) {
+    if (!process.env.KEYSTONE_SHARED) throw err
+  }
   let envConfig
   try {
     envConfig = await getEnvConfig(projectConfigFolderPath)

@@ -67,7 +67,7 @@ const readFileFromGaia = async (
   }
 
   try {
-    const fetchedFile = await userSession.getFile(path, options)
+    const fetchedFile = await userSession.getFile(path, options, userSession)
     if (json) {
       const fetchedFileJSON = JSON.parse(fetchedFile)
       fileCache.put(cacheKey, fetchedFileJSON)
