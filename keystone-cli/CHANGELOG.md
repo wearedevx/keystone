@@ -1,6 +1,13 @@
 # Change Log - @keystone.sh/cli
 
-This log was last generated on Wed, 08 Jan 2020 16:12:33 GMT and should not be manually modified.
+This log was last generated on Thu, 09 Jan 2020 17:38:35 GMT and should not be manually modified.
+
+## 0.0.12
+Thu, 09 Jan 2020 17:38:35 GMT
+
+### Patches
+
+- add shared user token in ENV to fetch with the user
 
 ## 0.0.11
 Wed, 08 Jan 2020 16:12:33 GMT
