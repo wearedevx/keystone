@@ -1,3 +1,8 @@
+const { getFile } = require('blockstack/lib/storage')
+const { lookupProfile } = require('blockstack/lib/profiles/profileLookup')
+const axios = require('axios')
+const { decryptECIES } = require('blockstack/lib/encryption/ec')
+
 const { Command, flags } = require('@oclif/command')
 const { cli } = require('cli-ux')
 const chalk = require('chalk')
@@ -6,13 +11,21 @@ const treeify = require('treeify')
 const inquirer = require('inquirer')
 const path = require('path')
 const pull = require('@keystone.sh/core/lib/commands/pull')
+const { pullShared } = require('@keystone.sh/core/lib/commands/share')
 const {
   isOneOrMoreAdmin,
   setMembersToEnvs,
 } = require('@keystone.sh/core/lib/env')
 const { logo } = require('../lib/ux')
-
+const { KEYSTONE_WEB } = require('@keystone.sh/core/lib/constants')
 const { getSession, getProjectConfig } = require('../lib/blockstackLoader')
+
+const createSharedUserSession = token => {
+  return {
+    loadUserData: () => ({}),
+    getFile,
+  }
+}
 
 function promptEnvToChange(envs, project = false) {
   return inquirer.prompt([
@@ -199,13 +212,8 @@ const CommandSignedIn = class extends Command {
   // }
 
   async getConfigFolderPath() {
-    try {
-      const { absoluteProjectPath } = await getProjectConfig()
-      return absoluteProjectPath
-    } catch (error) {
-      console.error(error)
-      process.exit(2)
-    }
+    const { absoluteProjectPath } = await getProjectConfig()
+    return absoluteProjectPath
   }
 
   async getProjectEnv() {
@@ -220,7 +228,7 @@ const CommandSignedIn = class extends Command {
           `$ ks init`
         )}`
       )
-      process.exit(1)
+      if (!process.env.KEYSTONE_SHARED) process.exit(1)
     }
   }
 
@@ -232,12 +240,14 @@ const CommandSignedIn = class extends Command {
 
       return project
     } catch (error) {
-      this.log(
+      console.log(
         `▻ Keystone config file is missing or malformed, please start with ${chalk.yellow(
           `$ ks init`
         )}`
       )
-      process.exit(1)
+      if (!process.env.KEYSTONE_SHARED) {
+        process.exit(1)
+      }
     }
   }
 
@@ -259,7 +269,7 @@ const CommandSignedIn = class extends Command {
   }
 
   async withUserSession(callback, options = {}) {
-    const { configPath } = options
+    const { configPath, config } = options
     const userSession = await this.getUserSession(configPath)
     if (userSession) {
       await callback(userSession)
@@ -268,6 +278,9 @@ const CommandSignedIn = class extends Command {
 
   async getUserSession(configPath) {
     try {
+      if (process.env.KEYSTONE_SHARED) {
+        return createSharedUserSession(process.env.KEYSTONE_SHARED)
+      }
       const config = configPath || this.config.configDir
       const userSession = await getSession(config)
       if (userSession && userSession.isUserSignedIn()) {
@@ -349,11 +362,55 @@ CommandSignedIn.flags = {
   }),
 }
 
+const getFileFromOne = async ({ privateKey, blockstackId, opts, filename }) => {
+  const profile = await lookupProfile(opts.username)
+  const apphub = profile.apps[KEYSTONE_WEB]
+  const uri = `${apphub}${filename}`
+  let file
+  try {
+    file = await axios.get(uri)
+  } catch (error) {
+    // we ignore 404 errors
+    return false
+  }
+
+  const keyfileUnencrypted = await decryptECIES(privateKey, file.data)
+
+  return keyfileUnencrypted
+}
+
 const execPull = async (
   userSession,
   { project, env, absoluteProjectPath, force }
 ) => {
   try {
+    // process.env.KEYSTONE_SHARED =
+    // 'eyJwcm9qZWN0IjoiaHJpMzQvMWY0ODljYjQtMTRkYS00YmFkLWFjYTItYmMxOWU4MjMxYmJiIiwiZW52IjoiZGVmYXVsdCIsIm1lbWJlcnMiOlt7ImJsb2Nrc3RhY2tfaWQiOiJsX2FiaWdhZWwuaWQuYmxvY2tzdGFjayIsInB1YmxpY0tleSI6IjAzODE1N2I0MjQ5MWM4NmIwZTgzNjkwNjBmNWU1ZDYxY2NiOWYxZmM3YjVhNDkzZjcxY2E4NzNjYTI4NWI0ZDk4MiJ9XSwicHJpdmF0ZUtleSI6IjQzYjk2MGE4OTNmYTUyZmM0NTZjY2Y5ZTk4ODdiNmMyZmJiNTU1MzIxMDFlNWVhMTM4YjlkYTZkYWFkOGM2NzkiLCJ1c2VyU2Vzc2lvbiI6eyJhcHBDb25maWciOnsiYXBwRG9tYWluIjoiaHR0cDovL2xvY2FsaG9zdDo4MDAwIiwic2NvcGVzIjpbInN0b3JlX3dyaXRlIl0sInJlZGlyZWN0UGF0aCI6IiIsIm1hbmlmZXN0UGF0aCI6Ii9tYW5pZmVzdC5qc29uIiwiY29yZU5vZGUiOm51bGwsImF1dGhlbnRpY2F0b3JVUkwiOiJodHRwczovL2Jyb3dzZXIuYmxvY2tzdGFjay5vcmcvYXV0aCJ9LCJzdG9yZSI6eyJrZXkiOiJibG9ja3N0YWNrLXNlc3Npb24ifX19'
+    if (process.env.KEYSTONE_SHARED) {
+      const buff = new Buffer(process.env.KEYSTONE_SHARED, 'base64')
+      const { env, project, members, privateKey } = JSON.parse(
+        buff.toString('ascii')
+      )
+      userSession = {
+        ...userSession,
+        getFile: (filename, opts) =>
+          getFileFromOne({
+            privateKey,
+            blockstackId: members[0].blockstack_id,
+            filename,
+            opts,
+          }),
+        sharedPrivateKey: privateKey,
+      }
+      userSession.sharedPrivateKey = privateKey
+
+      return pullShared(userSession, {
+        absoluteProjectPath,
+        project,
+        env,
+        origins: members,
+      })
+    }
     const pulledFiles = await pull(userSession, {
       project,
       env,
