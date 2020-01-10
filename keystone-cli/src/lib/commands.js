@@ -421,6 +421,11 @@ const execPull = async (
       async ({ fileDescriptor, updated, descriptorUpToDate, conflict }) => {
         if (descriptorUpToDate) {
           console.log(`▻ You are already up to date. Nothing to do !`)
+          console.log(
+            `▻ If you want to override your local files, use ${chalk.bold(
+              --force
+            )} flag`
+          )
           return
         }
         if (updated) {

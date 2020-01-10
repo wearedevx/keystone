@@ -164,7 +164,8 @@ const pull = async (
       cacheFolder,
       absoluteProjectPath,
     })
-    return [{ descriptorUpToDate: true }]
+
+    if (!force) return [{ descriptorUpToDate: true }]
   }
 
   const { files } = envDescriptor.content
@@ -175,7 +176,11 @@ const pull = async (
         ownEnvDescriptor &&
         ownEnvDescriptor.content.files.find(f => f.name === file.name)
 
-      if (!ownFile || (ownFile && file.checksum !== ownFile.checksum)) {
+      if (
+        !ownFile ||
+        (ownFile && file.checksum !== ownFile.checksum) ||
+        force
+      ) {
         const filePath = getPath({
           project,
           env,
