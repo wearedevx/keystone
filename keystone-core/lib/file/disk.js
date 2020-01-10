@@ -122,10 +122,10 @@ const getModifiedFilesFromCacheFolder = (cacheFolder, absoluteProjectPath) => {
   return changes
 }
 
-const deleteFolderRecursive = function(path) {
-  if (fs.existsSync(path)) {
-    fs.readdirSync(path).forEach((file, index) => {
-      const curPath = path.join(path, file)
+const deleteFolderRecursive = function(folderPath) {
+  if (fs.existsSync(folderPath)) {
+    fs.readdirSync(folderPath).forEach((file, index) => {
+      const curPath = path.join(folderPath, file)
       if (fs.lstatSync(curPath).isDirectory()) {
         // recurse
         deleteFolderRecursive(curPath)
@@ -134,7 +134,7 @@ const deleteFolderRecursive = function(path) {
         fs.unlinkSync(curPath)
       }
     })
-    fs.rmdirSync(path)
+    fs.rmdirSync(folderPath)
   }
 }
 
