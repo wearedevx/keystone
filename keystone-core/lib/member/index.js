@@ -45,7 +45,6 @@ const createMembersDescriptor = async (userSession, { project, env }) => {
   const { username } = userSession.loadUserData()
 
   const publicKey = await getPubkey(userSession, { blockstack_id: username })
-  console.log('TCL: createMembersDescriptor -> publicKey', publicKey)
 
   const members = {
     [ROLES.ADMINS]: [{ blockstack_id: username, publicKey }],
