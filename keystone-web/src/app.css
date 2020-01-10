@@ -4,6 +4,8 @@
 /* purgecss end ignore */
 @tailwind utilities;
 
+/* purgecss start ignore */
 body {
   background: #f5f1ed;
 }
+/* purgecss end ignore */
