@@ -10,7 +10,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "functions-framework --target=mail > keystone-mail.start.log",
-    "deploy": "gcloud functions deploy keystone-mail --runtime nodejs10 --trigger-http --entry-point mail --env-vars-file .env.yaml",
+    "deploy": "gcloud config set project keystone-245200 && gcloud functions deploy keystone-mail --runtime nodejs10 --trigger-http --entry-point mail --env-vars-file .env.yaml",
     "build": ""
   },
   "author": "wearedevx.com",
