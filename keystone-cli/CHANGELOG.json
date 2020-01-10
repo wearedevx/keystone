@@ -2,6 +2,20 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "0.0.13",
+      "tag": "@keystone.sh/cli_v0.0.13",
+      "date": "Fri, 10 Jan 2020 09:56:45 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "pull --force override local files",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "5839cb5ae1d7334735eaaee215d1cbbd5bc078c2"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.12",
       "tag": "@keystone.sh/cli_v0.0.12",
       "date": "Thu, 09 Jan 2020 17:38:35 GMT",

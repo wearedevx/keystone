@@ -1,6 +1,13 @@
 # Change Log - @keystone.sh/cli
 
-This log was last generated on Thu, 09 Jan 2020 17:38:35 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jan 2020 09:56:45 GMT and should not be manually modified.
+
+## 0.0.13
+Fri, 10 Jan 2020 09:56:45 GMT
+
+### Patches
+
+- pull --force override local files
 
 ## 0.0.12
 Thu, 09 Jan 2020 17:38:35 GMT
