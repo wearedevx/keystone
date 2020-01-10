@@ -26,9 +26,9 @@ export default () => (
           To install the latest version of Keystone CLI, run this command:
         </div>
         <div className="border border-gray-200 rounded bg-gray-100 px-4 py-2 mt-4 text-gray-600 font-mono text-sm  mb-6">
-          <span>npm i -g keystone </span>
+          <span>npm i -g @keystone.sh/cli </span>
           <span className="text-gray-500 italic">
-            # or yarn global add keystone
+            # or yarn global add @keystone.sh/cli
           </span>
         </div>
         <div>
@@ -53,7 +53,7 @@ export default () => (
             <span className="text-gray-500 italic"># create a new project</span>
           </div>
           <div>
-            <span>ks push my-conf-folder/* </span>
+            <span>ks push .env .env.yaml ... </span>
             <span className="text-gray-500 italic">
               # push your secrets to environment `default`
             </span>
@@ -62,11 +62,14 @@ export default () => (
         <div>Share your secrets with your teammates:</div>
         <div className="border border-gray-200 rounded bg-gray-100 px-4 py-2 mt-4 text-gray-600 font-mono text-sm mb-6">
           <div>
-            <span>ks invite joe@example.com ... </span>
+            <span>ks invite joe@example.com anna@... </span>
             <span className="text-gray-500 italic">
               # invite people to your project
             </span>
           </div>
+        </div>
+        <div>Once your invitation is accepted, configure the project:</div>
+        <div className="border border-gray-200 rounded bg-gray-100 px-4 py-2 mt-4 text-gray-600 font-mono text-sm  mb-6">
           <div>
             <span>ks project config </span>
             <span className="text-gray-500 italic">
@@ -79,10 +82,6 @@ export default () => (
               # Create new environments and manage access
             </span>
           </div>
-        </div>
-        <div>You know the basics, you can learn more with the help flag:</div>
-        <div className="border border-gray-200 rounded bg-gray-100 px-4 py-2 mt-4 text-gray-600 font-mono text-sm  mb-6">
-          <span>ks --help</span>
         </div>
       </div>
       <div className="shadow-md rounded bg-white p-4 w-full mb-10 lg:w-2/4 lg:mb-0 lg:ml-2">

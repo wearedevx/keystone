@@ -25,7 +25,9 @@ function App() {
             .
           </h1>
           <div className="px-2 text-2xl mb-6 lg:mr-4 lg:mb-0 lg:px-4">
-            <GithubIcon />
+            <a href="https://github.com/wearedevx/keystone" target="_blank">
+              <GithubIcon />
+            </a>
           </div>
         </div>
         {/* <Link to="/">Home</Link>
