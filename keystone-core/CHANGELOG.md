@@ -1,6 +1,13 @@
 # Change Log - @keystone.sh/core
 
-This log was last generated on Thu, 09 Jan 2020 17:38:35 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jan 2020 08:47:56 GMT and should not be manually modified.
+
+## 0.0.9
+Fri, 10 Jan 2020 08:47:56 GMT
+
+### Patches
+
+- fix bad variable rangewq
 
 ## 0.0.8
 Thu, 09 Jan 2020 17:38:35 GMT

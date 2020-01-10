@@ -2,6 +2,20 @@
   "name": "@keystone.sh/core",
   "entries": [
     {
+      "version": "0.0.9",
+      "tag": "@keystone.sh/core_v0.0.9",
+      "date": "Fri, 10 Jan 2020 08:47:56 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix bad variable rangewq",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "7b12fc33d973bf7942cd9270e8e500eb05d2df32"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.8",
       "tag": "@keystone.sh/core_v0.0.8",
       "date": "Thu, 09 Jan 2020 17:38:35 GMT",
