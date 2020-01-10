@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://keystone.sh"><img alt="Keystone website" src="https://github.com/wearedevx/keystone/docs/assets/keystone-logo-web.svg"></a>
+  <a href="https://keystone.sh"><img alt="Keystone website" src="docs/assets/keystone-logo-web.svg"></a>
 </p>
 
 <p align="center">
