@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@keystone.sh/core",
+      "comment": "fix bad variable rangewq",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@keystone.sh/core",
+  "email": "contact@wearedevx.com"
+}
