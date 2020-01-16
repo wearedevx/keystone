@@ -1,5 +1,12 @@
-⚠️ WIP: things are still unstable and docs are missing.
------
+<p align="center">
+  <a href="https://keystone.sh"><img alt="Keystone website" width="45%" src="docs/assets/keystone-logo-web.svg"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/wearedevx/keystone"><img alt="Keystone status" src="https://github.com/wearedevx/keystone/workflows/Keystone%20CI/badge.svg"></a>
+</p>
+
+## ⚠️ WIP: things are still unstable and docs are missing.
 
 Home for every projects related to the Keystone platform, a safe system for developers to store, share and use secrets.
 
