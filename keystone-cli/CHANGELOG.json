@@ -2,6 +2,25 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "0.0.14",
+      "tag": "@keystone.sh/cli_v0.0.14",
+      "date": "Fri, 17 Jan 2020 15:30:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix pull when just arrived in the project",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "26d722359f3c948fbfb4f3d0e3f224aac9871056"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@keystone.sh/core\" from `~0.0.9` to `~0.0.10`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.13",
       "tag": "@keystone.sh/cli_v0.0.13",
       "date": "Fri, 10 Jan 2020 09:56:45 GMT",
