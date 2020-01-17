@@ -52,7 +52,6 @@ const init = async (userSession, { project, overwrite = false }) => {
         env: 'default',
       },
     }
-    
     const projectWithUUID = findProjectByUUID(projects, project)
     if (projectWithUUID) {
       projectFullname = project

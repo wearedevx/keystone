@@ -12,7 +12,6 @@ const inquirer = require('inquirer')
 const path = require('path')
 const pull = require('@keystone.sh/core/lib/commands/pull')
 const { pullShared } = require('@keystone.sh/core/lib/commands/share')
-const { findProjectByUUID } = require('@keystone.sh/core/lib/projects')
 const {
   isOneOrMoreAdmin,
   setMembersToEnvs,
@@ -412,7 +411,6 @@ const execPull = async (
         origins: members,
       })
     }
-
     const pulledFiles = await pull(userSession, {
       project,
       env,

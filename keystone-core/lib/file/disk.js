@@ -90,10 +90,12 @@ const isFileExist = filePath => {
 
 const getModifiedFilesFromCacheFolder = (cacheFolder, absoluteProjectPath) => {
   const paths = walk.sync(cacheFolder)
-  const changes = paths.map(currentPath => {
-    const relativePath = currentPath.replace(cacheFolder, '')
+  const changes = paths.map(path => {
+    const relativePath = path.replace(cacheFolder, '')
 
-    const realPath = path.join(absoluteProjectPath, relativePath)
+    // TODO
+    // Use path.join to create path os friendly.
+    const realPath = `${absoluteProjectPath}${relativePath}`
     // does file still exist?
     if (!fs.existsSync(realPath)) {
       return {
@@ -102,8 +104,8 @@ const getModifiedFilesFromCacheFolder = (cacheFolder, absoluteProjectPath) => {
       }
     }
     // if path is not a folder, check the content
-    if (fs.lstatSync(currentPath).isFile()) {
-      const cacheContent = fs.readFileSync(currentPath)
+    if (fs.lstatSync(path).isFile()) {
+      const cacheContent = fs.readFileSync(path)
       const content = fs.readFileSync(realPath)
       if (hash(cacheContent) !== hash(content)) {
         return {
