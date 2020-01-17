@@ -78,19 +78,13 @@ const pull = async (
   userSession,
   { project, env, absoluteProjectPath, force = false, cache = true, origin }
 ) => {
-  if (!env) {
-    const latestProjectDescriptor = await getLatestProjectDescriptor(
-      userSession,
-      {
-        project,
-      }
-    )
-    throw new KeystoneError(
-      'MissingEnv',
-      `You need to checkout an env in order to pull files.`,
-      { envs: latestProjectDescriptor.content.env }
-    )
+  const { username } = userSession.loadUserData()
+  const projects = await getProjects(userSession)
+  const projectByUUID = findProjectByUUID(projects, project)
+  if (!projectByUUID) {
+    throw new Error('The project does not exist in user workspace')
   }
+
   // create keystone cache folder
   const cacheFolder = getCacheFolder(absoluteProjectPath)
 
@@ -114,13 +108,6 @@ const pull = async (
     }
   }
 
-  const { username } = userSession.loadUserData()
-  const projects = await getProjects(userSession)
-  const projectByUUID = findProjectByUUID(projects, project)
-  if (!projectByUUID) {
-    throw new Error('The project does not exist in user workspace')
-  }
-
   // TODO: we should use createdBy only when it's the first time
   // we pull and we don't have any member list yet.
   await getLatestMembersDescriptor(userSession, {
@@ -132,6 +119,20 @@ const pull = async (
     project,
     origin: origin || projectByUUID.createdBy,
   })
+
+  if (!env) {
+    const latestProjectDescriptor = await getLatestProjectDescriptor(
+      userSession,
+      {
+        project,
+      }
+    )
+    throw new KeystoneError(
+      'MissingEnv',
+      `You need to checkout an env in order to pull files.`,
+      { envs: latestProjectDescriptor.content.env }
+    )
+  }
 
   const ownEnvDescriptor = await getDescriptor(userSession, {
     env,
