@@ -410,13 +410,13 @@ const execPull = async (
         origins: members,
       })
     }
-
-    const pulledFiles = await pull(userSession, {
+    let pulledFiles = await pull(userSession, {
       project,
       env,
       absoluteProjectPath,
       force,
     })
+
     pulledFiles.map(
       async ({ fileDescriptor, updated, descriptorUpToDate, conflict }) => {
         if (descriptorUpToDate) {
@@ -475,6 +475,12 @@ const execPull = async (
           )}\n\nPlease ask your project administrator to give you access.\nRun : ${chalk.blue(
             `ks env checkout ${chalk.italic('env_name')}`
           )} to fetch files from another environment.`
+        )
+        break
+      case 'UserNotInProject':
+        console.log(
+          `${chalk.red("You are not part of this project")} ${chalk.bold(
+            "It seems an administrator removed you from the project.")}`
         )
         break
 
