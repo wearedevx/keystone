@@ -768,6 +768,7 @@ async function getLatestMembersDescriptor(
   userSession,
   { project, env, origin }
 ) {
+  const { username } = userSession.loadUserData()
   const ownMembersDescriptor = await getOwnDescriptor(userSession, {
     project,
     env,
@@ -775,13 +776,25 @@ async function getLatestMembersDescriptor(
   })
 
   if (ownMembersDescriptor) {
-    return updateDescriptorForMembers(userSession, {
+    const latestDescriptor = await updateDescriptorForMembers(userSession, {
       env,
       project,
       type: 'members',
       name: 'members',
       membersDescriptor: ownMembersDescriptor,
     })
+    const userInProject = Object.values(CONSTANTS.ROLES).find(role =>
+      latestDescriptor.content[role].find(
+        member => member.blockstack_id === username
+      )
+    )
+    if (!userInProject)
+      throw new KeystoneError(
+        'UserNotInProject',
+        'You have been removed from the project.'
+      )
+
+    return latestDescriptor
   }
 
   const ownProjectMembersDescriptor = await getOwnDescriptor(userSession, {
