@@ -2,6 +2,20 @@
   "name": "@keystone.sh/core",
   "entries": [
     {
+      "version": "0.0.11",
+      "tag": "@keystone.sh/core_v0.0.11",
+      "date": "Mon, 20 Jan 2020 16:05:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "remove command to remove a user from project",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "711447963ed486e6a3c1997197d0354ec3328059"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.10",
       "tag": "@keystone.sh/core_v0.0.10",
       "date": "Fri, 17 Jan 2020 15:30:33 GMT",
