@@ -385,8 +385,6 @@ const execPull = async (
   { project, env, absoluteProjectPath, force }
 ) => {
   try {
-    // process.env.KEYSTONE_SHARED =
-    // 'eyJwcm9qZWN0IjoiaHJpMzQvMWY0ODljYjQtMTRkYS00YmFkLWFjYTItYmMxOWU4MjMxYmJiIiwiZW52IjoiZGVmYXVsdCIsIm1lbWJlcnMiOlt7ImJsb2Nrc3RhY2tfaWQiOiJsX2FiaWdhZWwuaWQuYmxvY2tzdGFjayIsInB1YmxpY0tleSI6IjAzODE1N2I0MjQ5MWM4NmIwZTgzNjkwNjBmNWU1ZDYxY2NiOWYxZmM3YjVhNDkzZjcxY2E4NzNjYTI4NWI0ZDk4MiJ9XSwicHJpdmF0ZUtleSI6IjQzYjk2MGE4OTNmYTUyZmM0NTZjY2Y5ZTk4ODdiNmMyZmJiNTU1MzIxMDFlNWVhMTM4YjlkYTZkYWFkOGM2NzkiLCJ1c2VyU2Vzc2lvbiI6eyJhcHBDb25maWciOnsiYXBwRG9tYWluIjoiaHR0cDovL2xvY2FsaG9zdDo4MDAwIiwic2NvcGVzIjpbInN0b3JlX3dyaXRlIl0sInJlZGlyZWN0UGF0aCI6IiIsIm1hbmlmZXN0UGF0aCI6Ii9tYW5pZmVzdC5qc29uIiwiY29yZU5vZGUiOm51bGwsImF1dGhlbnRpY2F0b3JVUkwiOiJodHRwczovL2Jyb3dzZXIuYmxvY2tzdGFjay5vcmcvYXV0aCJ9LCJzdG9yZSI6eyJrZXkiOiJibG9ja3N0YWNrLXNlc3Npb24ifX19'
     if (process.env.KEYSTONE_SHARED) {
       const buff = new Buffer(process.env.KEYSTONE_SHARED, 'base64')
       const { env, project, members, privateKey } = JSON.parse(

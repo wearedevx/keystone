@@ -1,6 +1,11 @@
+const { flags } = require('@oclif/command')
+
 const chalk = require('chalk')
 const { cli } = require('cli-ux')
-const deleteFiles = require('@keystone.sh/core/lib/commands/delete')
+const {
+  deleteFiles,
+  deleteProject,
+} = require('@keystone.sh/core/lib/commands/delete')
 
 const { CommandSignedIn } = require('../lib/commands')
 
@@ -8,7 +13,7 @@ class DeleteCommand extends CommandSignedIn {
   async deleteFile(project, env, files) {
     await this.withUserSession(async userSession => {
       cli.action.start('Deleting')
-      let success
+      let success = true
       try {
         const fileRelativePaths = await Promise.all(
           files.map(e => this.getFileRelativePath(e))
@@ -28,9 +33,19 @@ class DeleteCommand extends CommandSignedIn {
     })
   }
 
+  async deleteProject(project) {
+    await this.withUserSession(async userSession => {
+      await deleteProject(userSession, { project })
+    })
+  }
+
   async run() {
-    const { argv } = this.parse(DeleteCommand)
+    const { argv, flags } = this.parse(DeleteCommand)
     try {
+      if (flags.project) {
+        await this.deleteProject(flags.project)
+        return 
+      }
       const project = await this.getProjectName()
       const env = await this.getProjectEnv()
       await this.deleteFile(project, env, argv)
@@ -55,5 +70,13 @@ DeleteCommand.args = [
     hidden: false,
   },
 ]
+
+DeleteCommand.flags = {
+  project: flags.string({
+    char: 'p',
+    multiple: false,
+    description: `This is a debug command.\nProject you want to delete the completely from your storage`,
+  }),
+}
 
 module.exports = DeleteCommand

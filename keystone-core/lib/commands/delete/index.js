@@ -1,8 +1,5 @@
-const {
-  getLatestEnvDescriptor,
-  incrementVersion,
-  updateDescriptor,
-} = require('../../descriptor')
+const { getLatestEnvDescriptor, updateDescriptor } = require('../../descriptor')
+const { listAllFiles } = require('../list')
 
 const { deepCopy } = require('../../utils')
 
@@ -36,4 +33,16 @@ const deleteFiles = async (userSession, { project, env, files }) => {
   return updatedDescriptor
 }
 
-module.exports = deleteFiles
+const deleteProject = async (userSession, { project }) => {
+  const projectFiles = []
+  await userSession.listFiles(f => {
+    if (f.includes(project)) {
+      projectFiles.push(f)
+    }
+    return true
+  })
+  console.log(projectFiles)
+  projectFiles.map(f => userSession.deleteFile(f))
+}
+
+module.exports = { deleteProject, deleteFiles }
