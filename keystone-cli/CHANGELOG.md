@@ -1,6 +1,13 @@
 # Change Log - @keystone.sh/cli
 
-This log was last generated on Fri, 10 Jan 2020 09:56:45 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Jan 2020 15:30:33 GMT and should not be manually modified.
+
+## 0.0.14
+Fri, 17 Jan 2020 15:30:33 GMT
+
+### Patches
+
+- fix pull when just arrived in the project
 
 ## 0.0.13
 Fri, 10 Jan 2020 09:56:45 GMT
