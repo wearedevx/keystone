@@ -14,6 +14,7 @@ module.exports = {
     InvalidProjectName: 'InvalidProjectName',
     Conflict: 'Conflict',
     MissingEnv: 'MissingEnv',
+    UserNotInProject: 'UserNotInProject'
   },
   KEYSTONE_MAIL:
     process.env.KEYSTONE_MAIL ||

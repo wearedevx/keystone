@@ -1,75 +1,81 @@
-// const { flags } = require('@oclif/command')
-// const chalk = require('chalk')
-// const fs = require('fs')
+const { flags } = require('@oclif/command')
+const chalk = require('chalk')
 
-// const { removeProject } = require('../lib/core/project')
 const { CommandSignedIn } = require('../lib/commands')
 
+const {
+  removeFromEnv,
+  removeFromProject,
+} = require('@keystone.sh/core/lib/commands/remove')
+
 class RemoveCommand extends CommandSignedIn {
-//   async removeProject(name, force) {
-//     await this.withUserSession(async userSession => {
-//       try {
-//         await removeProject(userSession, { name, force })
-//         this.log(
-//           `▻ Project ${chalk.bold(
-//             name
-//           )} successfully removed ${chalk.green.bold('✓')}\n`
-//         )
-//         const configFile = fs.readFileSync('.ksconfig')
-//         const { project } = JSON.parse(configFile)
-//         if (name === project) {
-//           const confirm = await CommandSignedIn.confirm(
-//             'Remove keystone config?'
-//           )
-//           if (confirm) {
-//             fs.unlinkSync('.ksconfig')
-//             this.log(`▻ Config file removed ${chalk.green.bold('✓')}\n`)
-//           }
-//         }
-//       } catch (error) {
-//         console.error(error)
-//         this.log(`▻ ${chalk.red(error.message)}\n`)
-//       }
-//     })
-//   }
+  async removeUser({ project, env, users }) {
+    await this.withUserSession(async userSession => {
+      try {
+        await Promise.all(
+          users.map(user => {
+            if (project) {
+              return removeFromProject(userSession, {
+                project,
+                user,
+              })
+            } else if (env) {
+              return removeFromEnv(userSession, {
+                project,
+                env,
+                user,
+              })
+            } else {
+              this.log('/!\\ Use -e to specify an environement.')
+            }
+          })
+        )
+      } catch (error) {
+        console.error(error)
+        this.log(`▻ ${chalk.red(error.message)}\n`)
+      }
+    })
+  }
 
-//   async run() {
-//     const { flags } = this.parse(RemoveCommand)
-//     console.log(flags)
+  async run() {
+    let {
+      flags: { project, env, users },
+    } = this.parse(RemoveCommand)
 
-//     try {
-//       const project = await this.getProjectName(flags)
-//       const { force } = flags
-//       await this.removeProject(project, force)
-//     } catch (error) {
-//       this.log(error.message)
-//     }
-//   }
+    console.log(project, env, users)
+    if (project) project = await this.getProjectName()
+    try {
+      await this.removeUser({ project, env, users })
+    } catch (error) {
+      this.log(error.message)
+    }
+  }
 }
 
-// RemoveCommand.description = `Remove a project.
-// ...
-// If you're an administrator, the project will be removed for everyone.\n
-// If you're a contributor or a reader, you will be removed from the project.
-// `
+RemoveCommand.description = `Remove a user.
+...
+If you are an administrator, you can remove a user from a project.
+`
 
-// RemoveCommand.examples = [
-//   `${chalk.yellow('$ ks remove')} ${chalk.gray.italic(
-//     '#remove your project set in .ksconfig and all its files'
-//   )}`,
-//   `${chalk.yellow('$ ks remove --project=my-project')} ${chalk.gray.italic(
-//     '#remove your project called my-project'
-//   )}`,
-// ]
+RemoveCommand.flags = {
+  ...CommandSignedIn.flags,
+  env: flags.string({
+    char: 'e',
+    multiple: false,
+    description: 'Environment you want to remove the user from.',
+  }),
 
-// RemoveCommand.flags = {
-//   ...CommandSignedIn.flags,
-//   force: flags.string({
-//     char: 'f',
-//     multiple: false,
-//     description:
-//       'Force the deletion. Beware, it might let some files from the project on your storage.',
-//   }),
-// }
+  project: flags.boolean({
+    char: 'p',
+    multiple: false,
+    description: 'Remove the user from the project.',
+  }),
+
+  users: flags.string({
+    char: 'u',
+    multiple: true,
+    description: 'List of user you want to remove. Separated by space.',
+  }),
+}
 
 module.exports = RemoveCommand
