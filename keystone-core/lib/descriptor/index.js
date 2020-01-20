@@ -494,7 +494,7 @@ const updateDescriptorForMembers = async (
   if (!latestDescriptor && !previousDescriptor && !content) {
     throw new KeystoneError(
       'FailedToFetch',
-      `The file ${descriptorPath} cannot be accessed. You either don't have the permission or it does not exist.`
+      `You don't have accessed to the environment ${env}. You either don't have the permission or it does not exist.`
     )
   }
   // The file does not exist at anywhere at all in the world
