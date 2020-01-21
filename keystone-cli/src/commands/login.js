@@ -84,7 +84,7 @@ class LoginCommand extends Command {
                 resolve()
               }
             }
-            cli.action.stop('Done')
+            cli.action.stop('done')
           }
         }
       }, 3000)

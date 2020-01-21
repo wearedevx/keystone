@@ -1,5 +1,6 @@
 const inquirer = require('inquirer')
 const { flags } = require('@oclif/command')
+const { cli } = require('cli-ux')
 const chalk = require('chalk')
 const { CommandSignedIn } = require('../lib/commands')
 const {
@@ -44,17 +45,24 @@ class InviteCommand extends CommandSignedIn {
   async invite(emails, project, role, removal) {
     await this.withUserSession(async userSession => {
       if (removal) {
+        cli.action.start('Deleting invites')
         const deletedInvites = await deleteInvites(userSession, {
           project,
           emails,
         })
-        deletedInvites.forEach(i => {
-          this.log(
-            `▻ invitation for ${chalk.yellow(
-              i.email
-            )} has been deleted ${chalk.green.bold('✓')}`
-          )
-        })
+
+        if (deletedInvites.length === 0) {
+          cli.action.stop('failed')
+          this.log('No invites found.')
+        } else {
+          deletedInvites.forEach(i => {
+            this.log(
+              `▻ invitation for ${chalk.yellow(
+                i.email
+              )} has been deleted ${chalk.green.bold('✓')}`
+            )
+          })
+        }
         return true
       }
 

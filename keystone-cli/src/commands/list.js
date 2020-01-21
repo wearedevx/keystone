@@ -19,7 +19,7 @@ class ListCommand extends CommandSignedIn {
       await listProjects(userSession)
       this.log(`\n`)
     })
-    cli.action.stop('Done')
+    cli.action.stop('done')
   }
 
   async run() {

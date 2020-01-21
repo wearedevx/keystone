@@ -3,31 +3,18 @@ const chalk = require('chalk')
 
 const { CommandSignedIn } = require('../lib/commands')
 
-const {
-  removeFromEnv,
-  removeFromProject,
-} = require('@keystone.sh/core/lib/commands/remove')
+const { removeFromProject } = require('@keystone.sh/core/lib/commands/remove')
 
 class RemoveCommand extends CommandSignedIn {
-  async removeUser({ project, env, users }) {
+  async removeUser({ project, users }) {
     await this.withUserSession(async userSession => {
       try {
         await Promise.all(
           users.map(user => {
-            if (project) {
-              return removeFromProject(userSession, {
-                project,
-                user,
-              })
-            } else if (env) {
-              return removeFromEnv(userSession, {
-                project,
-                env,
-                user,
-              })
-            } else {
-              this.log('/!\\ Use -e to specify an environement.')
-            }
+            return removeFromProject(userSession, {
+              project,
+              user,
+            })
           })
         )
       } catch (error) {
@@ -39,13 +26,12 @@ class RemoveCommand extends CommandSignedIn {
 
   async run() {
     let {
-      flags: { project, env, users },
+      flags: { users },
     } = this.parse(RemoveCommand)
 
-    console.log(project, env, users)
-    if (project) project = await this.getProjectName()
+    const project = await this.getProjectName()
     try {
-      await this.removeUser({ project, env, users })
+      await this.removeUser({ project, users })
     } catch (error) {
       this.log(error.message)
     }
@@ -59,17 +45,6 @@ If you are an administrator, you can remove a user from a project.
 
 RemoveCommand.flags = {
   ...CommandSignedIn.flags,
-  env: flags.string({
-    char: 'e',
-    multiple: false,
-    description: 'Environment you want to remove the user from.',
-  }),
-
-  project: flags.boolean({
-    char: 'p',
-    multiple: false,
-    description: 'Remove the user from the project.',
-  }),
 
   users: flags.string({
     char: 'u',

@@ -1,5 +1,6 @@
 const chalk = require('chalk')
 const fs = require('fs')
+const { cli } = require('cli-ux')
 const { newShare, pullShared } = require('@keystone.sh/core/lib/commands/share')
 const { flags } = require('@oclif/command')
 const { SHARE_FILENAME, ROLES } = require('@keystone.sh/core/lib/constants')
@@ -9,14 +10,14 @@ const { CommandSignedIn } = require('../lib/commands')
 class ShareCommand extends CommandSignedIn {
   async newShare(action, env) {
     await this.withUserSession(async userSession => {
+      cli.action.start('Creating a new read only user')
       const project = await this.getProjectName()
       if (action === 'new') {
         const { privateKey, membersDescriptor } = await newShare(userSession, {
           project,
           env,
         })
-
-        console.log(userSession.getFile)
+        cli.action.stop('done')
 
         const data = JSON.stringify({
           project,
@@ -25,7 +26,6 @@ class ShareCommand extends CommandSignedIn {
           privateKey,
           userSession,
         })
-        console.log(data)
 
         const buff = new Buffer(data)
         const token = buff.toString('base64')

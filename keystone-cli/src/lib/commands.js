@@ -423,7 +423,7 @@ const execPull = async (
           console.log(`▻ You are already up to date. Nothing to do !`)
           console.log(
             `▻ If you want to override your local files, use ${chalk.bold(
-              --force
+              '--force'
             )} flag`
           )
           return
