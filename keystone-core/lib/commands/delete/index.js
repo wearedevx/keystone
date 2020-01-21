@@ -1,7 +1,9 @@
 const { getLatestEnvDescriptor, updateDescriptor } = require('../../descriptor')
-const { listAllFiles } = require('../list')
-
+const { writeFileToGaia } = require('../../file/gaia')
+const KeystoneError = require('../../error')
+const { getProjects } = require('../../projects')
 const { deepCopy } = require('../../utils')
+const { PROJECTS_STORE } = require('../../constants')
 
 const deleteFiles = async (userSession, { project, env, files }) => {
   const { username } = userSession.loadUserData()
@@ -34,6 +36,19 @@ const deleteFiles = async (userSession, { project, env, files }) => {
 }
 
 const deleteProject = async (userSession, { project }) => {
+  const projects = await getProjects(userSession)
+  const filteredProjects = projects.filter(p => p.name !== project)
+
+  if (filteredProjects.length === projects.length) {
+    throw new KeystoneError(
+      'InvalidProjectName',
+      `The project ${project} does not exist in your workspace.`
+    )
+  }
+  writeFileToGaia(userSession, {
+    content: JSON.stringify(filteredProjects),
+    path: PROJECTS_STORE,
+  })
   const projectFiles = []
   await userSession.listFiles(f => {
     if (f.includes(project)) {
@@ -41,8 +56,11 @@ const deleteProject = async (userSession, { project }) => {
     }
     return true
   })
-  console.log(projectFiles)
-  projectFiles.map(f => userSession.deleteFile(f))
+
+  projectFiles.map(f => {
+    console.log(`Deleted : ${f}`)
+    userSession.deleteFile(f)
+  })
 }
 
 module.exports = { deleteProject, deleteFiles }
