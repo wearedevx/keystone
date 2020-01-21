@@ -350,18 +350,18 @@ CommandSignedIn.confirm = async message => {
   return answer.confirm
 }
 
-CommandSignedIn.flags = {
-  project: flags.string({
-    char: 'p',
-    multiple: false,
-    description: 'Set the project',
-  }),
-  config: flags.string({
-    char: 'c',
-    multiple: false,
-    description: 'Set the path to the blockstack session file',
-  }),
-}
+// CommandSignedIn.flags = {
+//   project: flags.string({
+//     char: 'p',
+//     multiple: false,
+//     description: 'Set the project',
+//   }),
+//   config: flags.string({
+//     char: 'c',
+//     multiple: false,
+//     description: 'Set the path to the blockstack session file',
+//   }),
+// }
 
 const getFileFromOne = async ({ privateKey, blockstackId, opts, filename }) => {
   const profile = await lookupProfile(opts.username)

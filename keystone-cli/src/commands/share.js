@@ -44,6 +44,12 @@ class ShareCommand extends CommandSignedIn {
 }
 
 ShareCommand.description = `Share your files with a non-blockstack user
+
+Generate a token. 
+The token should be set in the process environment of any user. 
+This user will be able to run only ${chalk.yellow(
+  '$ ks pull'
+)} in order to pull locally files from the selected env.
 `
 
 ShareCommand.examples = [chalk.yellow(`$ ks share ${chalk.italic('env_name')}`)]

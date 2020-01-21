@@ -53,10 +53,10 @@ class AddCommand extends CommandSignedIn {
 
   async run() {
     try {
-      const { argv, flags, args } = this.parse(AddCommand)
+      const { argv, args } = this.parse(AddCommand)
       // at least 1 arguments required, a blockstack id
       if (argv.length >= 1) {
-        const project = await this.getProjectName(flags)
+        const project = await this.getProjectName()
         await this.add(args.blockstackId, args.email, project)
       } else {
         // await this.prompt()
@@ -86,19 +86,14 @@ AddCommand.args = [
   },
 ]
 
-AddCommand.flags = {
-  ...CommandSignedIn.flags,
-
-  removal: flags.boolean({
-    multiple: false,
-    default: false,
-    description: `Deletes an invitation`,
-  }),
-}
-
 AddCommand.description = `Add a member to a project.
 
+Adding a member give them access to the project.
 The member should have accepted your invitation for this to work
+
+You  can add the member to an environment with : ${chalk.yellow(
+  'ks env config'
+)}
 `
 
 AddCommand.examples = [
