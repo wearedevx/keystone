@@ -1,6 +1,13 @@
 # Change Log - @keystone.sh/core
 
-This log was last generated on Fri, 17 Jan 2020 15:30:33 GMT and should not be manually modified.
+This log was last generated on Mon, 20 Jan 2020 16:05:35 GMT and should not be manually modified.
+
+## 0.0.11
+Mon, 20 Jan 2020 16:05:35 GMT
+
+### Patches
+
+- remove command to remove a user from project
 
 ## 0.0.10
 Fri, 17 Jan 2020 15:30:33 GMT
