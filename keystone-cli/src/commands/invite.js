@@ -161,9 +161,9 @@ InviteCommand.description = `Invites one or more people by email to a project.
 
 By default, people you invite are readers. 
 You can change the role set by using the role flag. You have 3 choices:
-- reader: can only read files from the project.
-- contributor: can read, write and add new files to the project
-- admin: all the above plus ask people to join the project
+- reader: cannot do anything project wide. Need to be added to an environment to pull files
+- contributor: can add and remove environments from the project
+- admin: all the above plus invite and add users to the project
 `
 
 InviteCommand.examples = [

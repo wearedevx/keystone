@@ -76,7 +76,7 @@ const pullShared = async (
     true
   )
 
-  const files = await Promise.all(
+  await Promise.all(
     envDescriptor[0].content.files.map(async ({ name: filename }) => {
       const path = getPath({
         env,

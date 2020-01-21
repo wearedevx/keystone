@@ -45,10 +45,16 @@ PullCommand.flags = {
   force: flags.boolean({
     char: 'f',
     multiple: false,
-    description: `Overwrite any changes`,
+    description: `Overwrite any changes made locally`,
   }),
 }
 
-PullCommand.description = `Fetch files for current environment.`
+PullCommand.description = `Fetch files for current environment. Write them locally.
+
+Once pulled files can be one of the three states :
+  - updated : The file has been updated because someone else pushed a newer version
+  - auto-merged : The file was modified and has been merged with someone else's changes  
+  - conflicted : The file has been modified and some lines are in conflict with someone else's changes. You should fix the conflicts and push your changes
+`
 
 module.exports = PullCommand
