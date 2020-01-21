@@ -29,11 +29,6 @@ const removeFromProject = async (userSession, { project, user }) => {
   return { removed: true }
 }
 
-const removeFromEnv = (userSession, { user, env }) => {
-  return { removed: true }
-}
-
 module.exports = {
   removeFromProject,
-  removeFromEnv,
 }

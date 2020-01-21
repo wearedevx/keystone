@@ -53,7 +53,7 @@ class CatCommand extends CommandSignedIn {
         console.log(err)
         success = err
       }
-      cli.action.stop(success ? 'done' : success)
+      cli.action.stop(success ? 'done' : 'failed')
     })
   }
 

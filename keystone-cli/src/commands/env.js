@@ -29,7 +29,7 @@ class EnvCommand extends CommandSignedIn {
       try {
         config(userSession, { project, descriptors: envsDescriptor, type })
       } catch (err) {
-        cli.action.stop('Failed')
+        cli.action.stop('failed')
         this.log(err)
       }
     })
@@ -162,20 +162,25 @@ class EnvCommand extends CommandSignedIn {
     await this.withUserSession(async userSession => {
       try {
         const absoluteProjectPath = await this.getConfigFolderPath()
-
+        cli.action.start('Changing environment')
         await checkoutEnv(userSession, {
           project,
           env,
           absoluteProjectPath,
         })
+        cli.action.stop('done')
 
+        cli.action.start('Fetching files')
         await execPull(userSession, {
           project,
           env,
           absoluteProjectPath,
           force: true,
         })
+        cli.action.stop('done')
+
       } catch (err) {
+        cli.action.stop('failed')
         this.log(err)
       }
     })

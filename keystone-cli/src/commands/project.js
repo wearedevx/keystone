@@ -21,7 +21,7 @@ class ProjectCommand extends CommandSignedIn {
           type: 'project',
         })
       } catch (err) {
-        cli.action.stop('Failed')
+        cli.action.stop('failed')
         this.log(err)
       }
     })

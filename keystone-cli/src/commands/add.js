@@ -1,4 +1,5 @@
 const { flags } = require('@oclif/command')
+const { cli } = require('cli-ux')
 const chalk = require('chalk')
 const { ROLES } = require('@keystone.sh/core/lib/constants')
 const { add } = require('@keystone.sh/core/lib/commands/add')
@@ -16,20 +17,24 @@ class AddCommand extends CommandSignedIn {
       email,
       role: ROLES.READERS,
     }
-
+    let success
     try {
+      cli.action.start(`Adding ${blockstack_id} to the poject`)
       const { added, memberAdded } = await add(userSession, {
         invitee,
         project,
       })
 
       if (added) {
+        success = true
         this.log(
           `▻ ${chalk.yellow(
             memberAdded
           )} added to ${project} ${chalk.green.bold('✓')}`
         )
       } else {
+        success = false
+
         this.log(
           `▻ Failed to add ${chalk.yellow(
             memberAdded
@@ -38,9 +43,12 @@ class AddCommand extends CommandSignedIn {
         )
       }
     } catch (error) {
+      success = false
+
       console.error(error)
       this.log(`\n${chalk.red(error.code)} : ${error.message}`)
     }
+    cli.action.stop(success ? 'done' : 'failed')
   }
 
   async run() {

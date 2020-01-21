@@ -52,7 +52,7 @@ class PushCommand extends CommandSignedIn {
           )
         })
 
-        cli.action.stop('Done')
+        cli.action.stop('done')
       } else {
         cli.action.start('Pushing into private locker')
         // Push all modified files.
@@ -72,7 +72,7 @@ class PushCommand extends CommandSignedIn {
             )
           })
         }
-        cli.action.stop('Done')
+        cli.action.stop('done')
       }
     })
   }

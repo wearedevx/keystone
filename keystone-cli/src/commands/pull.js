@@ -20,7 +20,7 @@ class PullCommand extends CommandSignedIn {
         absoluteProjectPath,
         force,
       })
-      cli.action.stop(`Done`)
+      cli.action.stop(`done`)
     })
   }
 
