@@ -1,5 +1,4 @@
 const { cli } = require('cli-ux')
-const chalk = require('chalk')
 const { flags } = require('@oclif/command')
 
 const { CommandSignedIn, execPull } = require('../lib/commands')
@@ -26,14 +25,18 @@ class PullCommand extends CommandSignedIn {
 
   async run() {
     try {
-      const { flags } = this.parse(PullCommand)
-      const { force } = flags
-      const project = await this.getProjectName()
-      const env = await this.getProjectEnv()
-      // const currentDirectory = await this.getDefaultDirectory()
-      await this.pull({ project, env, force })
+      if (process.env.KEYSTONE_SHARED) {
+        this.pull({})
+      } else {
+        const { flags } = this.parse(PullCommand)
+        const { force } = flags
+        const project = await this.getProjectName()
+        const env = await this.getProjectEnv()
+        // const currentDirectory = await this.getDefaultDirectory()
+        await this.pull({ project, env, force })
+      }
     } catch (error) {
-      await this.pull({})
+      console.log(error)
     }
   }
 }

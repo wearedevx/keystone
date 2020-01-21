@@ -23,7 +23,6 @@ class InitCommand extends CommandSignedIn {
     return new Promise(async (resolve, reject) => {
       await this.withUserSession(async userSession => {
         try {
-          cli.action.start('Initializing project')
           const projectWithId = await init(userSession, { project, overwrite })
           this.log(
             `▻ Project ${chalk.bold(
@@ -33,7 +32,6 @@ class InitCommand extends CommandSignedIn {
           this.log(
             `▻ You can add files with: ${chalk.yellow(`$ ks push my-file`)}`
           )
-          cli.action.stop('done')
           resolve()
         } catch (error) {
           switch (error.code) {
@@ -64,7 +62,6 @@ class InitCommand extends CommandSignedIn {
               }
               break
             default:
-              cli.action.stop('failed')
               reject(error)
           }
         }
