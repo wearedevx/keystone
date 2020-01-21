@@ -57,7 +57,7 @@ class DeleteCommand extends CommandSignedIn {
 
 DeleteCommand.description = `Deletes one or more files.
 If you're an administrator or a contributor, the files will be removed for everyone.
-If you're a reader on the project, you can't delete any files.
+If you're a reader on the environment, you can't delete any files.
 `
 
 DeleteCommand.strict = false
@@ -75,7 +75,7 @@ DeleteCommand.flags = {
   project: flags.string({
     char: 'p',
     multiple: false,
-    description: `This is a debug command.\nProject you want to delete the completely from your storage`,
+    description: `This is a debug command.\nUse this flag to completely delete all files of a project from your storage.`,
   }),
 }
 
