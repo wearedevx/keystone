@@ -212,6 +212,8 @@ class EnvCommand extends CommandSignedIn {
             throw new Error(`You need to give the name of the environment`)
           }
         }
+      } else {
+        console.log(`▻ Curren environment : ${chalk.bold(await this.getProjectEnv())}`)
       }
     } catch (error) {
       this.log(`${chalk.red(error)}`)
@@ -227,7 +229,7 @@ You need to be administrator in the project in order to access the command.
 EnvCommand.args = [
   {
     name: 'action',
-    required: true, // make the arg required with `required: true`
+    required: false, // make the arg required with `required: true`
     description: `  - config
     Change users role for each environment.
 
@@ -252,6 +254,10 @@ EnvCommand.args = [
   },
 ]
 
-EnvCommand.examples = [chalk.yellow('$ ks env config'), chalk.yellow(`$ ks env new ${chalk.italic('ENV_NAME')}`) , chalk.yellow(`$ ks env remove ${chalk.italic('ENV_NAME')}`)]
+EnvCommand.examples = [
+  chalk.yellow('$ ks env config'),
+  chalk.yellow(`$ ks env new ${chalk.italic('ENV_NAME')}`),
+  chalk.yellow(`$ ks env remove ${chalk.italic('ENV_NAME')}`),
+]
 
 module.exports = EnvCommand
