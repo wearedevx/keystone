@@ -40,7 +40,7 @@ $ npm i -g @keystone.sh/cli
 $ yarn global add @keystone.sh/cli
 ```
 
-Prior anything, you need to log in with your Blockstack account. [Learn more.](#about-blockstack)
+&#9888; Prior anything, you need to __log in__ with your __Blockstack__ account. [Learn more.](#about-blockstack)
 
 `$ ks login account.id.blockstack # sign with your blockstack id`
 
@@ -74,13 +74,13 @@ The two ways are the following :
 $ ks add example.id.blockstack example@mail.com
 $ ks env config
 ```
-> The `ks env config` command is an interactive prompt that allow you to change users role in any environment. See next section to learn about environments.
+> The `ks env config` command is an interactive prompt that allow you to change users role in any environment. See [next section](#manage-different-environments).
 
 By default, the new user will be added as reader. To change their role, use `$ ks project config`
 You will be prompt to select for each role the project users you want to add.
 
 Project roles for members : 
-* reader : cannot do anything project wide, except fetching updates from others
+* reader : cannot do anything project wide, except fetching updates from others regarding new members and environments
 * contributor : can add or remove environments
 * administrator : can add or remove environments. Change other users role.
 
@@ -88,7 +88,7 @@ Project roles for members :
 
 First thing you should do to join a project is accepting the invitation received by email. 
 
-Then, the best way to fetch files is to have a `.ksconfig` in your project folder.
+Then, the best way to fetch files is to have a `.ksconfig` in your project folder. This file will indicate keystone what is the project to look for.
 > Most common use case would be to add the .ksconfig in your git project. This way it will be distributed to all members. 
 
 If you don't have a `.ksconfig` yet. You can run `$ ks init PROJECT_NAME`. You will be prompt to choose the name that correspond to your project.
@@ -105,7 +105,7 @@ If you are an administrator of the project, you can remove a member.
 $ ks remove blocstack_id
 `
 
-The member won't get update
+The member won't get update anymore.
 
 ## Manage different environments
 
