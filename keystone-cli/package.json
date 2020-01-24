@@ -33,7 +33,7 @@
   "scripts": {
     "postpack": "rm -f oclif.manifest.json",
     "prepack": "oclif-dev manifest && oclif-dev readme",
-    "test": "jest --runInBand",
+    "test": " node_modules/.bin/jest --runInBand",
     "lint": "eslint",
     "pack": "oclif-dev pack",
     "version": "oclif-dev readme && git add README.md",
@@ -61,6 +61,7 @@
     "is-email": "^1.0.0",
     "listr": "^0.14.3",
     "lodash": "^4.17.15",
+    "nock": "^11.7.2",
     "normalize-path": "^3.0.0",
     "open": "^6.4.0",
     "treeify": "^1.1.0",

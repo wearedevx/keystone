@@ -1,4 +1,23 @@
 const EC = require('elliptic').ec
+const nock = require('nock')
+
+const { publicKey, privateKey, encryptedSession, profile } = require('./utils/keypair')
+
+nock('https://gaia.blockstack.org')
+  .persist()
+  .get(/.*login.*/)
+  .reply((uri, body) => {
+    console.log('uri', uri)
+    return [200, encryptedSession]
+  })
+
+nock('https://gaia.blockstack.org')
+  .persist()
+  .get(/\/hub\/.*\/profile\.json/)
+  .reply((uri, body) => {
+    console.log('heehehehehheheheeheh')
+    return [200, [profile]]
+  })
 
 // Mock "open" module only for this test.
 // If you want to always mock module for all tests,
@@ -41,15 +60,11 @@ describe('Login Command', () => {
     // Start logged out
     await logout()
 
-    const pubPoint = keypair.getPublic()
-    const fakePublicKey = pubPoint.encode('hex')
-    const fakePrivateKey = keypair.getPrivate('hex')
-
     // overwrite static function getKeypair in order to know the keypair
     LoginCommand.getKeypair = () => {
       return {
-        publicKey: fakePublicKey,
-        privateKey: fakePrivateKey,
+        publicKey,
+        privateKey,
       }
     }
 
@@ -57,19 +72,20 @@ describe('Login Command', () => {
       // simulate the user login to generate a file with the session
       // encrypted with the key above.
       await login()
+
       const userSession = await getSessionWithConfig()
 
       await putFile({
-        path: `${fakePublicKey}.json`,
+        path: `${publicKey}.json`,
         content: JSON.stringify(userSession.store.getSessionData()),
-        encrypt: fakePublicKey,
+        encrypt: publicKey,
       })
 
       await logout()
     }
 
     await simulateUserConfirm()
-    await runCommand(LoginCommand, ['samuelroy.id.blockstack'])
+    await runCommand(LoginCommand, ['l_abigael.id.blockstack'])
 
     expect(open).toHaveBeenCalledTimes(1)
 

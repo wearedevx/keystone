@@ -2,13 +2,13 @@ const inquirer = require('inquirer')
 const { flags } = require('@oclif/command')
 const { cli } = require('cli-ux')
 const chalk = require('chalk')
-const { CommandSignedIn } = require('../lib/commands')
 const {
   deleteInvites,
   checkInvitations,
 } = require('@keystone.sh/core/lib/invitation')
-
 const { invite } = require('@keystone.sh/core/lib/commands/invite')
+
+const { CommandSignedIn } = require('../lib/commands')
 
 const askEmail = async defaultEmail => {
   const answer = await inquirer.prompt([
@@ -159,7 +159,7 @@ InviteCommand.flags = {
 
 InviteCommand.description = `Invites one or more people by email to a project.
 
-By default, people you invite are readers. 
+By default, people you invite are readers.
 You can change the role set by using the role flag. You have 3 choices:
 - reader: cannot do anything project wide. Need to be added to an environment to pull files
 - contributor: can add and remove environments from the project
