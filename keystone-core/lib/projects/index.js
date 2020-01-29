@@ -1,16 +1,14 @@
-const { readFileFromGaia, writeFileToGaia } = require('../file/gaia')
+const { readFileFromGaia, writeFileToGaia } = require('../file')
 const { getPath } = require('../descriptor-path')
 // const { getInvitations, isMemberInvited } = require('../invitation')
 const KeystoneError = require('../error')
-const { ERROR_CODES, ROLES, PROJECTS_STORE } = require('../constants')
+const { ROLES, PROJECTS_STORE } = require('../constants')
 const {
   updateDescriptorForMembers,
   updateDescriptor,
   getDescriptor,
 } = require('../descriptor')
 const isUUID = require('uuid-validate')
-
-// const PROJECTS_STORE = 'projects.json'
 
 const createProjectsStore = async userSession => {
   return writeFileToGaia(userSession, {
@@ -23,7 +21,6 @@ const getProjects = async userSession => {
   const projectsFile = await readFileFromGaia(userSession, {
     path: PROJECTS_STORE,
   })
-
   if (projectsFile) return projectsFile
 
   // if null, it means projects.json hasn't been found on Gaia. We need to create it.
