@@ -20,7 +20,7 @@ const c = async () => {
       `${chalk.bgRed('UPDATE AVAILABLE')} version ${chalk.yellow(
         update.latest
       )} is out. Run ${chalk.blue(
-        'npm i -g @keystone.sh/cli@latest'
+        `npm i -g '@keystone.sh/cli@latest'`
       )} to install it.`
     )
   }
