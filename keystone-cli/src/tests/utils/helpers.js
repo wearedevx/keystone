@@ -2,9 +2,9 @@ const userFolder = require('user-home')
 const Config = require('@oclif/config')
 const fs = require('fs')
 const { writeFileToGaia } = require('@keystone.sh/core/lib/file')
-
-const { createFolder, write, del } = require('../lib/cliStorage')
-const { getSession } = require('../lib/blockstackLoader')
+const pth = require('path')
+const { createFolder, write, del } = require('../../lib/cliStorage')
+const { getSession } = require('../../lib/blockstackLoader')
 
 // This file is required for testing the CLI
 // It's not versioned as it's a blockstack account linked to the Keystone app.
@@ -38,7 +38,7 @@ const login = async () => {
     if (await checkConfigPath(configPath)) {
       await write({
         path: `${configPath}/`,
-        filename: 'session.json',
+        filename: 'session-test.json',
         content: JSON.stringify(session),
       })
     }
@@ -52,7 +52,7 @@ const logout = async () => {
     if (await checkConfigPath(configPath)) {
       await del({
         path: `${configPath}/`,
-        filename: 'session.json',
+        filename: 'session-test.json',
       })
     }
   } catch (error) {
@@ -78,9 +78,15 @@ const getSessionWithConfig = async () => {
   throw new Error("Can't retrieve user session.")
 }
 
-const putFile = async ({ path, content, encrypt }) => {
-  const userSession = await getSessionWithConfig()
-  await writeFileToGaia(userSession, { path, content, encrypt })
+// const putFile = async ({ path, content, encrypt }) => {
+//   const userSession = await getSessionWithConfig()
+//   await writeFileToGaia(userSession, { path, content, encrypt })
+// }
+
+const putFile = async ({ path, content }) => {
+  path = pth.join(__dirname, '../hub', path)
+  await fsp.writeFile(path, content)
+  return content
 }
 
 const removeFile = async ({ path }) => {

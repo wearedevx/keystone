@@ -13,21 +13,12 @@ const {
 } = require('@keystone.sh/core/lib/commands/list')
 
 class ListCommand extends CommandSignedIn {
-  async listProjects() {
-    await this.withUserSession(async userSession => {
-      cli.action.start('Fetching your projects')
-      await listProjects(userSession)
-      this.log(`\n`)
-    })
-    cli.action.stop('done')
-  }
-
   async run() {
     const { flags, args } = this.parse(ListCommand)
 
     await this.withUserSession(async userSession => {
       if (args.type === 'projects') {
-        this.listProjects()
+        await listProjects(userSession)
       } else {
         const env = await this.getProjectEnv()
         const project = await this.getProjectName()

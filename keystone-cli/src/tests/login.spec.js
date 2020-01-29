@@ -1,24 +1,13 @@
-const EC = require('elliptic').ec
+require('./utils/mock')
 const nock = require('nock')
 
-const { publicKey, privateKey, encryptedSession, profile } = require('./utils/keypair')
-
-nock('https://gaia.blockstack.org')
-  .persist()
-  .get(/.*login.*/)
-  .reply((uri, body) => {
-    console.log('uri', uri)
-    return [200, encryptedSession]
-  })
-
-nock('https://gaia.blockstack.org')
-  .persist()
-  .get(/\/hub\/.*\/profile\.json/)
-  .reply((uri, body) => {
-    console.log('heehehehehheheheeheh')
-    return [200, [profile]]
-  })
-
+const {
+  publicKey,
+  privateKey,
+  encryptedSession,
+  profile,
+} = require('./utils/keypair')
+const blockstackLoader = require('../lib/blockstackLoader')
 // Mock "open" module only for this test.
 // If you want to always mock module for all tests,
 // create a file in __mocks__ folder (at root),
@@ -28,6 +17,8 @@ jest.mock('open', () => {
   return jest.genMockFromModule('open')
 })
 
+jest.mock('../lib/blockstackLoader')
+
 const open = require('open')
 const LoginCommand = require('../commands/login')
 const {
@@ -36,12 +27,34 @@ const {
   runCommand,
   putFile,
   getSessionWithConfig,
-} = require('./helpers')
+} = require('./utils/helpers')
+
+nock('https://gaia.blockstack.org')
+  .persist()
+  .get(/.*login.*/)
+  .reply((uri, body) => {
+    console.log('mocked login', uri)
+    return [200, encryptedSession]
+  })
+
+nock('https://gaia.blockstack.org')
+  .persist()
+  .get(/.*profile.*/)
+  .reply((uri, body) => {
+    console.log('URI', uri)
+    return [200, [profile]]
+  })
+
+nock('https://gaia.blockstack.org')
+  .persist()
+  .get(/.*public.*/)
+  .reply((uri, body) => {
+    console.log('URI', uri)
+    return [200, publicKey]
+  })
 
 describe('Login Command', () => {
   let result
-  const ec = new EC('secp256k1')
-  const keypair = ec.genKeyPair()
 
   beforeEach(() => {
     // catch everything on stdout>
@@ -85,7 +98,7 @@ describe('Login Command', () => {
     }
 
     await simulateUserConfirm()
-    await runCommand(LoginCommand, ['l_abigael.id.blockstack'])
+    await runCommand(LoginCommand, ['keystone_test1.id.blockstack'])
 
     expect(open).toHaveBeenCalledTimes(1)
 

@@ -33,7 +33,7 @@
   "scripts": {
     "postpack": "rm -f oclif.manifest.json",
     "prepack": "oclif-dev manifest && oclif-dev readme",
-    "test": " node_modules/.bin/jest --runInBand",
+    "test": "SESSION_FILENAME=session-test.json node_modules/.bin/jest --runInBand",
     "lint": "eslint",
     "pack": "oclif-dev pack",
     "version": "oclif-dev readme && git add README.md",
@@ -64,6 +64,7 @@
     "nock": "^11.7.2",
     "normalize-path": "^3.0.0",
     "open": "^6.4.0",
+    "rewire": "^4.0.1",
     "treeify": "^1.1.0",
     "update-check": "^1.5.3",
     "uuid": "^3.3.3",

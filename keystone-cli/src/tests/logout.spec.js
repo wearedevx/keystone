@@ -1,11 +1,11 @@
 const LogoutCommand = require('../commands/logout')
-const { login, logout, runCommand } = require('./helpers')
+const { login, logout, runCommand } = require('./utils/helpers')
 
 describe('Logout Command', () => {
   let result
 
   beforeEach(() => {
-    // catch everything on stdout>
+    // catch everything on stdout
     // and put it in result
     result = []
 
