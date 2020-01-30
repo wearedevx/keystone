@@ -1,6 +1,13 @@
 # Change Log - @keystone.sh/cli
 
-This log was last generated on Tue, 21 Jan 2020 13:52:52 GMT and should not be manually modified.
+This log was last generated on Thu, 30 Jan 2020 16:19:35 GMT and should not be manually modified.
+
+## 0.0.17
+Thu, 30 Jan 2020 16:19:35 GMT
+
+### Patches
+
+- make the ap windows-friendly
 
 ## 0.0.16
 Tue, 21 Jan 2020 13:52:52 GMT
