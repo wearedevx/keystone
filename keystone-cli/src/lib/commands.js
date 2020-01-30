@@ -317,10 +317,10 @@ const CommandSignedIn = class extends Command {
     }
 
     const relativeFilePath = absoluteFilePath.replace(
-      `${absoluteConfigFolderPath}/`,
+      `${absoluteConfigFolderPath}${path.sep}`,
       ''
     )
-
+    console.log(relativeFilePath)
     return relativeFilePath
   }
 
