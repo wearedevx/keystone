@@ -2,6 +2,20 @@
   "name": "@keystone.sh/core",
   "entries": [
     {
+      "version": "0.0.12",
+      "tag": "@keystone.sh/core_v0.0.12",
+      "date": "Thu, 30 Jan 2020 16:19:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "make the app windows friendly",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "2836094b7c512d0f65ce36a2dcda67979c2888f1"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.11",
       "tag": "@keystone.sh/core_v0.0.11",
       "date": "Mon, 20 Jan 2020 16:05:35 GMT",

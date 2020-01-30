@@ -2,6 +2,25 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "0.0.17",
+      "tag": "@keystone.sh/cli_v0.0.17",
+      "date": "Thu, 30 Jan 2020 16:19:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "make the ap windows-friendly",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "f88dd9920f8465a670782e3de2b29ebd9d2e395b"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@keystone.sh/core\" from `~0.0.11` to `~0.0.12`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.16",
       "tag": "@keystone.sh/cli_v0.0.16",
       "date": "Tue, 21 Jan 2020 13:52:52 GMT",
