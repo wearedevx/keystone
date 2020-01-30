@@ -18,9 +18,8 @@ const {
 const writeFileToDisk = (fileDescriptor, absoluteProjectPath) => {
   try {
     const pathFile = pathUtil.join(absoluteProjectPath, fileDescriptor.name)
-    const lastIndex = pathFile.lastIndexOf('/')
+    const lastIndex = pathFile.lastIndexOf(pathUtil.sep)
     const folder = pathFile.substring(0, lastIndex)
-
     debug('Write file to disk', pathFile)
 
     if (folder) fs.mkdirSync(folder, { recursive: true })
@@ -40,7 +39,7 @@ const writeFileToDisk = (fileDescriptor, absoluteProjectPath) => {
 
 const readFileFromDisk = async filename => {
   const buffer = await fsp.readFile(filename)
-  return buffer.toString()
+  return buffer.toString('utf-8')
 }
 
 const deleteFileFromDisk = path => {

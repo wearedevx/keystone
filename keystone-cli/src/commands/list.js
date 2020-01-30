@@ -1,5 +1,5 @@
 const { flags } = require('@oclif/command')
-const chalk = require('chalk')
+// const chalk = require('chalk')
 const { cli } = require('cli-ux')
 
 const { CommandSignedIn } = require('../lib/commands')
@@ -50,10 +50,10 @@ class ListCommand extends CommandSignedIn {
 ListCommand.description = `Lists projects, environments, members and files
 `
 
-ListCommand.examples = [
-  chalk.yellow('$ ks list members'),
-  // chalk.yellow('$ ks list --project=my-project'),
-]
+// ListCommand.examples = [
+//   chalk.yellow('$ ks list members'),
+//   // chalk.yellow('$ ks list --project=my-project'),
+// ]
 
 ListCommand.args = [
   {
