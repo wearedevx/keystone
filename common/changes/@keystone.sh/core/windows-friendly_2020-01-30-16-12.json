@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@keystone.sh/core",
+      "comment": "make the app windows friendly",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@keystone.sh/core",
+  "email": "contact@wearedevx.com"
+}

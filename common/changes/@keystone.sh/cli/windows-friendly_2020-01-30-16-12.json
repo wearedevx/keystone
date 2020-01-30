@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@keystone.sh/cli",
+      "comment": "make the ap windows-friendly",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@keystone.sh/cli",
+  "email": "contact@wearedevx.com"
+}
