@@ -331,6 +331,7 @@ const CommandSignedIn = class extends Command {
   }
 }
 
+// Not used
 CommandSignedIn.normalizePath = (directory, filename) => {
   let dir = directory
   if (!directory) {
