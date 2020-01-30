@@ -1,6 +1,5 @@
 const { readFileFromGaia } = require('../../file')
 const { PROJECTS_STORE } = require('../../constants')
-const chalk = require('chalk')
 const listProjects = async userSession => {
   const projects = await readFileFromGaia(userSession, { path: PROJECTS_STORE })
   if (!projects) {
@@ -19,7 +18,7 @@ const listProjects = async userSession => {
 
   printableProjects.forEach(project => {
     console.log(
-      ` > ${project.name.split('/')[0]}/${chalk.grey(
+      ` > ${project.name.split('/')[0]}/${(
         project.name.split('/')[1]
       )}`
     )
