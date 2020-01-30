@@ -28,7 +28,7 @@ const writeFileToDisk = (fileDescriptor, absoluteProjectPath) => {
     // if JSON object, stringify
     let { content } = fileDescriptor
     if (typeof content === 'object') content = JSON.stringify(content)
-
+  
     fs.writeFile(pathFile, content, err => {
       if (err) throw new Error(err)
     })
@@ -54,7 +54,7 @@ const getCacheFolder = absoluteProjectPath => {
     `/cache/`
   )
   if (!fs.existsSync(cacheFolder)) {
-    fs.mkdirSync(cacheFolder)
+    fs.mkdirSync(cacheFolder, { recursive : true })
   }
 
   return cacheFolder
