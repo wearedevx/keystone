@@ -1,5 +1,5 @@
 const { getLatestEnvDescriptor, updateDescriptor } = require('../../descriptor')
-const { writeFileToGaia } = require('../../file/gaia')
+const { writeFileToGaia, listFilesFromGaia } = require('../../file/gaia')
 const KeystoneError = require('../../error')
 const { getProjects } = require('../../projects')
 const { deepCopy } = require('../../utils')
@@ -39,6 +39,9 @@ const deleteProject = async (userSession, { project }) => {
   const projects = await getProjects(userSession)
   const filteredProjects = projects.filter(p => p.name !== project)
 
+  console.log('PROJECTS', JSON.stringify(projects))
+  console.log('FILTERED', JSON.stringify(filteredProjects))
+
   if (filteredProjects.length === projects.length) {
     throw new KeystoneError(
       'InvalidProjectName',
@@ -49,13 +52,9 @@ const deleteProject = async (userSession, { project }) => {
     content: JSON.stringify(filteredProjects),
     path: PROJECTS_STORE,
   })
-  const projectFiles = []
-  await userSession.listFiles(f => {
-    if (f.includes(project)) {
-      projectFiles.push(f)
-    }
-    return true
-  })
+  const projectFiles = (await listFilesFromGaia(userSession)).filter(f =>
+    f.includes(project)
+  )
 
   projectFiles.map(f => {
     console.log(`Deleted : ${f}`)

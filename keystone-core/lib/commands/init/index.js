@@ -23,7 +23,10 @@ const { createMembersDescriptor } = require('../../member')
 
 const { KEYSTONE_ENV_CONFIG_PATH } = require('../../constants')
 
-const init = async (userSession, { project, overwrite = false }) => {
+const init = async (
+  userSession,
+  { project, overwrite = false, configName = '.ksconfig' }
+) => {
   try {
     const projects = await getProjects(userSession)
 
@@ -40,7 +43,7 @@ const init = async (userSession, { project, overwrite = false }) => {
     let projectFullname = `${project}/${uuid()}`
     let createDefault = true
     const ksconfigDescriptor = {
-      name: '.ksconfig',
+      name: configName,
       content: {
         project: projectFullname,
       },
@@ -52,7 +55,7 @@ const init = async (userSession, { project, overwrite = false }) => {
         env: 'default',
       },
     }
-    
+
     const projectWithUUID = findProjectByUUID(projects, project)
     if (projectWithUUID) {
       projectFullname = project
