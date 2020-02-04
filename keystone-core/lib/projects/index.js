@@ -1,4 +1,5 @@
-const { readFileFromGaia, writeFileToGaia } = require('../file')
+const isUUID = require('uuid-validate')
+const { readFileFromGaia, writeFileToGaia } = require('../file/gaia')
 const { getPath } = require('../descriptor-path')
 // const { getInvitations, isMemberInvited } = require('../invitation')
 const KeystoneError = require('../error')
@@ -8,7 +9,6 @@ const {
   updateDescriptor,
   getDescriptor,
 } = require('../descriptor')
-const isUUID = require('uuid-validate')
 
 const createProjectsStore = async userSession => {
   return writeFileToGaia(userSession, {

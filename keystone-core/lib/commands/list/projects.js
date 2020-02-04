@@ -16,13 +16,7 @@ const listProjects = async userSession => {
     })
   )
 
-  printableProjects.forEach(project => {
-    console.log(
-      ` > ${project.name.split('/')[0]}/${(
-        project.name.split('/')[1]
-      )}`
-    )
-  })
+  return printableProjects
 }
 
 module.exports = {
