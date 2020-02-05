@@ -52,14 +52,14 @@ describe('Init Command', () => {
 
     // remove the project if already exists
     await runCommand(ListCommand, ['projects'])
-    const existingProject = result
-      .find(log => log.indexOf(PROJECT_NAME) > -1)
-      .replace(/.[[0-9]+m/g, '')
-      .match(
-        /unit-test-project\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
-      )
+    let existingProject = result.find(log => log.indexOf(PROJECT_NAME) > -1)
     // match project name followed by uuid
     if (existingProject) {
+      existingProject = existingProject
+        .replace(/.[[0-9]+m/g, '')
+        .match(
+          /unit-test-project\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
+        )
       const sendKeystrokes = async () => {
         io.send(keys.enter)
       }
@@ -68,6 +68,12 @@ describe('Init Command', () => {
     }
     console.log('INIT PROJECT')
     await runCommand(InitCommand, [PROJECT_NAME])
+
+    const createdProject = result.find(log =>
+      /.* successfully created/g.test(log)
+    )
+
+    expect(createdProject).toBeDefined()
   }, 20000)
 
   // it('should overwrite an existing config if user confirms', async () => {

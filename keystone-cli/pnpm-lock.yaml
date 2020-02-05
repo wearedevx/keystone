@@ -509,7 +509,7 @@ packages:
       integrity: sha512-pqr857jrp2kPuO9uRjZ3PwnJTjoQy+fcdxvBTvHm6dkmEL9q+hDD/2j/0ELOBPtPnS8LjCX0gI9nbl8lVkadpg==
   /@types/cheerio/0.22.15:
     dependencies:
-      '@types/node': 12.12.25
+      '@types/node': 13.1.8
     dev: false
     resolution:
       integrity: sha512-UGiiVtJK5niCqMKYmLEFz1Wl/3L5zF/u78lu8CwoUywWXRr9LDimeYuOzXVLXBMO758fcTdFtgjvqlztMH90MA==
@@ -554,7 +554,7 @@ packages:
       integrity: sha512-6XzyyNM9EKQW4HKuzbo/CkOIjn/evtCmsU+MUM1xDfJ+3/rNjBttM1NgN7AOQvN6tP1Sl1D1PIKMreTArnxM9A==
   /@types/randombytes/2.0.0:
     dependencies:
-      '@types/node': 12.12.25
+      '@types/node': 13.1.8
     dev: false
     resolution:
       integrity: sha512-bz8PhAVlwN72vqefzxa14DKNT8jK/mV66CSjwdVQM/k3Th3EPKfUtdMniwZgMedQTFuywAsfjnZsg+pEnltaMA==
@@ -5962,7 +5962,7 @@ packages:
     resolution:
       integrity: sha512-dJynTf/5XCobE6diQBpNWQQRBzXE8d1QhHKemzrkffrZ36F9uKlbBVyIXXbG2CJoaTGZGh8zt2AHX/mG4txtqA==
 specifiers:
-  '@keystone.sh/core': ~0.0.10
+  '@keystone.sh/core': ~0.0.11
   '@oclif/command': ^1
   '@oclif/config': ^1
   '@oclif/errors': ^1
