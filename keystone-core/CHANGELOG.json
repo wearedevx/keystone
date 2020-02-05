@@ -2,6 +2,20 @@
   "name": "@keystone.sh/core",
   "entries": [
     {
+      "version": "0.0.13",
+      "tag": "@keystone.sh/core_v0.0.13",
+      "date": "Wed, 05 Feb 2020 13:33:36 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix bad import",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "0c5cb4e6dc363542bbf89a284788391ab071df04"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.12",
       "tag": "@keystone.sh/core_v0.0.12",
       "date": "Thu, 30 Jan 2020 16:19:35 GMT",
