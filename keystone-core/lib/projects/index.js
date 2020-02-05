@@ -1,4 +1,4 @@
-const { readFileFromGaia, writeFileToGaia } = require('../file')
+const { readFileFromGaia, writeFileToGaia } = require('../file/gaia')
 const { getPath } = require('../descriptor-path')
 // const { getInvitations, isMemberInvited } = require('../invitation')
 const KeystoneError = require('../error')
