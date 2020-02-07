@@ -22,7 +22,6 @@ const mockGaiaToLocalFileSystem = () => {
     .persist()
     .get(/store\/.*/)
     .reply(async (uri, body) => {
-      console.log('je suis charlie')
       uri = uri.replace(/\/store\/12ENwmKf2wn5AS63i8cSTyhBvTXK4EXB1y/, '')
       const { decryptECIES } = require('blockstack/lib/encryption/ec')
 
@@ -37,6 +36,19 @@ const mockGaiaToLocalFileSystem = () => {
     })
 }
 
+const createDescriptor = ({
+  name = 'foo.txt',
+  content = 'foo bar',
+  type = 'file',
+  path = '',
+  checksum = '',
+  version = 1,
+  history = [],
+}) => {
+  return { name, content, path, checksum, type, version, history }
+}
+
 module.exports = {
   mockGaiaToLocalFileSystem,
+  createDescriptor,
 }

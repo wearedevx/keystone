@@ -3,16 +3,41 @@ const {
   SHARED_MEMBER,
   PUBKEY,
   KEYSTONE_CONFIG_PATH,
+
   KEYSTONE_ENV_CONFIG_PATH,
   KEYSTONE_HIDDEN_FOLDER,
 } = require('@keystone.sh/core/lib/constants')
 
 const pathUtil = require('path')
 
+const blockstackLoader = require('../../lib/blockstackLoader')
 const gaiaUtil = require('@keystone.sh/core/lib/file/gaia')
 const diskUtil = require('@keystone.sh/core/lib/file/disk')
 
 const fsp = fs.promises
+
+blockstackLoader.getProjectConfigFolderPath = (
+  configFileName,
+  currentPath = pathUtil.join(__dirname, '../local')
+) => {
+  console.log('JE RENTRE DEDANS')
+  if (fs.existsSync(path.join(currentPath, configFileName))) {
+    return currentPath
+  }
+
+  if (fs.existsSync(path.join(currentPath, '..'))) {
+    return getProjectConfigFolderPath(
+      configFileName,
+      path.join(currentPath, '..')
+    )
+  }
+
+  if (!process.env.KEYSTONE_SHARED) {
+    throw new Error('no ksconfig found')
+  } else {
+    return '.'
+  }
+}
 gaiaUtil.readFileFromGaia = async (
   userSession,
   { path, json = true, origin, decrypt }
@@ -80,7 +105,6 @@ gaiaUtil.getPubkey = async (
 gaiaUtil.listFilesFromGaia = async userSession => {
   return fs.readdirSync(pathUtil.join(__dirname, '..', pathUtil.sep, 'hub'))
 }
-module.exports = gaiaUtil
 
 diskUtil.writeFileToDisk = (fileDescriptor, absoluteProjectPath) => {
   try {
@@ -116,11 +140,11 @@ diskUtil.writeFileToDisk = (fileDescriptor, absoluteProjectPath) => {
 }
 
 diskUtil.readFileFromDisk = async filename => {
-  const buffer = await fsp.readFile(pathUtil.join(__dirname, '..', filename))
+  const buffer = await fsp.readFile(
+    pathUtil.join(__dirname, '../local', filename)
+  )
   return buffer.toString('utf-8')
 }
-
-module.exports = gaiaUtil
 
 diskUtil.deleteFileFromDisk = path => {
   debug('deleteFileFromDisk', path)
@@ -156,7 +180,7 @@ diskUtil.getKeystoneFolder = absoluteProjectPath => {
 }
 diskUtil.getCacheFolder = absoluteProjectPath => {
   const cacheFolder = pathUtil.join(
-    getKeystoneFolder(absoluteProjectPath),
+    diskUtil.getKeystoneFolder(absoluteProjectPath),
     `/cache/`
   )
   if (!fs.existsSync(cacheFolder)) {
@@ -239,14 +263,4 @@ diskUtil.changeEnvConfig = async ({ env, absoluteProjectPath }) => {
   return envConfigDescriptor.content
 }
 
-// module.exports = {
-//   writeFileToDisk,
-//   readFileFromDisk,
-//   deleteFileFromDisk,
-//   getCacheFolder,
-//   getKeystoneFolder,
-//   getModifiedFilesFromCacheFolder,
-//   isFileExist,
-//   changeEnvConfig,
-//   deleteFolderRecursive,
-// }
+module.exports = { ...gaiaUtil, ...diskUtil, ...blockstackLoader }

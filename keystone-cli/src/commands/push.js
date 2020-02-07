@@ -4,7 +4,10 @@ const { flags } = require('@oclif/command')
 const { readFileFromDisk } = require('@keystone.sh/core/lib/file')
 const { writeFileToGaia } = require('@keystone.sh/core/lib/file/gaia')
 
-const { push, pushModifiedFiles } = require('@keystone.sh/core/lib/commands/push')
+const {
+  push,
+  pushModifiedFiles,
+} = require('@keystone.sh/core/lib/commands/push')
 const { CommandSignedIn } = require('../lib/commands')
 
 class PushCommand extends CommandSignedIn {
@@ -16,6 +19,7 @@ class PushCommand extends CommandSignedIn {
       if (filenames.length > 0) {
         const files = await Promise.all(
           filenames.map(async f => {
+            console.log('FFFFFFFFFFFFFF', f)
             return {
               filename: await this.getFileRelativePath(f),
               fileContent: await readFileFromDisk(f),
