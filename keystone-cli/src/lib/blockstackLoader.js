@@ -85,12 +85,12 @@ const getProjectConfigFolderPath = (configFileName, currentPath = '.') => {
   }
 }
 
-const getProjectConfig = async (projectfileName = '.ksconfig') => {
-  const projectConfigFolderPath = getProjectConfigFolderPath(projectfileName)
+const getProjectConfig = async (projectFilename = '.ksconfig') => {
+  const projectConfigFolderPath = getProjectConfigFolderPath(projectFilename)
   let config
   try {
     config = await read({
-      filename: path.join(projectConfigFolderPath, projectfileName),
+      filename: path.join(projectConfigFolderPath, projectFilename),
     })
   } catch (err) {
     if (!process.env.KEYSTONE_SHARED) throw err
