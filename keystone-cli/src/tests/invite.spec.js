@@ -1,8 +1,13 @@
+require('./utils/mock')
+
+jest.mock('../lib/blockstackLoader')
+jest.mock('../lib/commands')
+
 const { stdin } = require('mock-stdin')
 const fs = require('fs')
 
 const InviteCommand = require('../commands/invite')
-const { login, logout, runCommand } = require('./helpers')
+const { login, logout, runCommand } = require('./utils/helpers')
 
 describe('Invite Command', () => {
   let result
@@ -19,9 +24,10 @@ describe('Invite Command', () => {
     // catch everything on stdout
     // and put it in result
     result = []
-    jest
-      .spyOn(process.stdout, 'write')
-      .mockImplementation(val => result.push(val))
+    jest.spyOn(process.stdout, 'write').mockImplementation(val => {
+      fs.appendFile('unit-test.log', val)
+      result.push(val)
+    })
 
     io = stdin()
   })
@@ -34,12 +40,10 @@ describe('Invite Command', () => {
   it('should send an invitation', async () => {
     await login()
 
-    await runCommand(InviteCommand, ['abigael@wearedevx.com', '--removal'])
+    await runCommand(InviteCommand, ['test2@keystone.sh', '--removal'])
 
     const interval = setInterval(() => {
       if (result.find(log => log.indexOf(`What's your email address?`) > -1)) {
-        io.send('samuel@wearedevx.com')
-
         const sendKeystrokes = async () => {
           io.send(keys.enter)
         }
@@ -48,7 +52,7 @@ describe('Invite Command', () => {
       }
     }, 500)
 
-    await runCommand(InviteCommand, ['abigael@wearedevx.com'])
+    await runCommand(InviteCommand, ['test2@keystone.sh'])
 
     const invited = result.find(log =>
       log.indexOf('invitation as reader sent to')
@@ -56,70 +60,70 @@ describe('Invite Command', () => {
     expect(invited).toBeDefined()
   }, 20000)
 
-  it('should delete an invitation after sending it', async () => {
-    await login()
+  // it('should delete an invitation after sending it', async () => {
+  //   await login()
 
-    const interval = setInterval(() => {
-      if (result.find(log => log.indexOf(`What's your email address?`) > -1)) {
-        io.send('samuel@wearedevx.com')
+  //   const interval = setInterval(() => {
+  //     if (result.find(log => log.indexOf(`What's your email address?`) > -1)) {
+  //       io.send('samuel@wearedevx.com')
 
-        const sendKeystrokes = async () => {
-          io.send(keys.enter)
-        }
-        setTimeout(() => sendKeystrokes().then(), 500)
-        clearInterval(interval)
-      }
-    }, 500)
+  //       const sendKeystrokes = async () => {
+  //         io.send(keys.enter)
+  //       }
+  //       setTimeout(() => sendKeystrokes().then(), 500)
+  //       clearInterval(interval)
+  //     }
+  //   }, 500)
 
-    await runCommand(InviteCommand, ['abigael@wearedevx.com'])
+  //   await runCommand(InviteCommand, ['abigael@wearedevx.com'])
 
-    await runCommand(InviteCommand, ['abigael@wearedevx.com', '--removal'])
+  //   await runCommand(InviteCommand, ['abigael@wearedevx.com', '--removal'])
 
-    const removed = result.find(log => log.indexOf('has been deleted'))
-    expect(removed).toBeDefined()
-  }, 20000)
+  //   const removed = result.find(log => log.indexOf('has been deleted'))
+  //   expect(removed).toBeDefined()
+  // }, 20000)
 
-  it('should send an invitation as contributor', async () => {
-    await login()
+  //   it('should send an invitation as contributor', async () => {
+  //     await login()
 
-    await runCommand(InviteCommand, ['abigael@wearedevx.com', '--removal'])
+  //     await runCommand(InviteCommand, ['abigael@wearedevx.com', '--removal'])
 
-    const interval = setInterval(() => {
-      if (result.find(log => log.indexOf(`What's your email address?`) > -1)) {
-        io.send('samuel@wearedevx.com')
+  //     const interval = setInterval(() => {
+  //       if (result.find(log => log.indexOf(`What's your email address?`) > -1)) {
+  //         io.send('samuel@wearedevx.com')
 
-        const sendKeystrokes = async () => {
-          io.send(keys.enter)
-        }
-        setTimeout(() => sendKeystrokes().then(), 500)
-        clearInterval(interval)
-      }
-    }, 500)
+  //         const sendKeystrokes = async () => {
+  //           io.send(keys.enter)
+  //         }
+  //         setTimeout(() => sendKeystrokes().then(), 500)
+  //         clearInterval(interval)
+  //       }
+  //     }, 500)
 
-    await runCommand(InviteCommand, [
-      'abigael@wearedevx.com',
-      '--role=contributor',
-    ])
+  //     await runCommand(InviteCommand, [
+  //       'abigael@wearedevx.com',
+  //       '--role=contributor',
+  //     ])
 
-    const invited = result.find(log =>
-      log.indexOf('invitation as contributor sent to')
-    )
-    expect(invited).toBeDefined()
-  }, 20000)
+  //     const invited = result.find(log =>
+  //       log.indexOf('invitation as contributor sent to')
+  //     )
+  //     expect(invited).toBeDefined()
+  //   }, 20000)
 
-  it('should not send an invitation because bad role name', async () => {
-    await login()
+  //   it('should not send an invitation because bad role name', async () => {
+  //     await login()
 
-    await runCommand(InviteCommand, [
-      'abigael@wearedevx.com',
-      '--role=not_existing',
-    ])
+  //     await runCommand(InviteCommand, [
+  //       'abigael@wearedevx.com',
+  //       '--role=not_existing',
+  //     ])
 
-    const notInvited = result.find(log =>
-      log.indexOf(
-        'Expected --role=not_existing to be one of: reader, contributor, admin'
-      )
-    )
-    expect(notInvited).toBeDefined()
-  }, 20000)
+  //     const notInvited = result.find(log =>
+  //       log.indexOf(
+  //         'Expected --role=not_existing to be one of: reader, contributor, admin'
+  //       )
+  //     )
+  //     expect(notInvited).toBeDefined()
+  //   }, 20000)
 })
