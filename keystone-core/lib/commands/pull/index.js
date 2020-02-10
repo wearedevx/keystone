@@ -58,7 +58,6 @@ const checkFilesToWrite = (
           filename: file.name,
           blockstackId: username,
         })
-
         const fileDescriptor = await getLatestDescriptorByPath(userSession, {
           descriptorPath: filePath,
           members: extractMembersByRole(envMembersDescriptor, [

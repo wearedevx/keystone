@@ -1,6 +1,8 @@
 require('./utils/mock')
 const fs = require('fs')
+const path = require('path')
 
+const { incrementVersion } = require('@keystone.sh/core/lib/descriptor')
 const PullCommand = require('../commands/pull')
 const { login, runCommand } = require('./utils/helpers')
 
@@ -21,12 +23,51 @@ describe('Push Command', () => {
 
   afterEach(() => jest.restoreAllMocks())
 
-  fit('should pull a file from hub', async () => {
+  it('should not update any files because same version', async () => {
     await login()
 
     await runCommand(PullCommand)
 
-    const pulledFile = result.find(log => log.indexOf('pushed') > -1)
+    const pulledFile = result.find(
+      log => log.indexOf('You are already up to date') > -1
+    )
     expect(pulledFile).toBeDefined()
   })
+
+  // fit('should update a file from because newer version on storage', async () => {
+  //   await login()
+  //   let fileToChange
+  //   let envDescriptorToChange
+  //   const files = fs.readdirSync(path.join(__dirname, './hub'))
+
+  //   files.forEach(file => {
+  //     if (file.indexOf('foo.txt') > -1) {
+  //       fileToChange = path.join(__dirname, './hub/', file)
+  //     }
+  //     if (file.indexOf('default|') > -1) {
+  //       envDescriptorToChange = path.join(__dirname, './hub/', file)
+  //     }
+  //   })
+
+  //   const fileDescriptor = JSON.parse(fs.readFileSync(fileToChange))
+  //   const envDescriptor = JSON.parse(fs.readFileSync())
+  //   const newFileDescriptor = {
+  //     ...fileDescriptor,
+  //     version: fileDescriptor.version + 1,
+  //     content: `${fileDescriptor.content} quu`,
+  //   }
+
+  //   console.log('FILE DESCRIPTOR', newFileDescriptor)
+  //   return
+
+  //   fs.writeFileSync(fileToChange, JSON.stringify(newFileDescriptor))
+
+  //   await runCommand(PullCommand)
+
+  //   const pulledFile = result.find(
+  //     log => log.indexOf('You are already up to date') > -1
+  //   )
+
+  //   expect(pulledFile).toBeDefined()
+  // })
 })
