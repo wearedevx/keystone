@@ -3,8 +3,6 @@ const walk = require('walkdir')
 const {
   SHARED_MEMBER,
   PUBKEY,
-  KEYSTONE_CONFIG_PATH,
-
   KEYSTONE_ENV_CONFIG_PATH,
   KEYSTONE_HIDDEN_FOLDER,
 } = require('@keystone.sh/core/lib/constants')
@@ -16,6 +14,9 @@ const gaiaUtil = require('@keystone.sh/core/lib/file/gaia')
 const diskUtil = require('@keystone.sh/core/lib/file/disk')
 
 const fsp = fs.promises
+
+
+process.env.SESSION_FILENAME = 'session-test1.json'
 
 blockstackLoader.getProjectConfigFolderPath = (
   configFileName,

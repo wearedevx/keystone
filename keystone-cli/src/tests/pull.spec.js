@@ -1,8 +1,6 @@
 require('./utils/mock')
 const fs = require('fs')
-const path = require('path')
 
-const { incrementVersion } = require('@keystone.sh/core/lib/descriptor')
 const PullCommand = require('../commands/pull')
 const { login, runCommand } = require('./utils/helpers')
 
