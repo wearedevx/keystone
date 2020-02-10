@@ -1,4 +1,5 @@
 const fs = require('fs')
+const walk = require('walkdir')
 const {
   SHARED_MEMBER,
   PUBKEY,
@@ -20,7 +21,6 @@ blockstackLoader.getProjectConfigFolderPath = (
   configFileName,
   currentPath = pathUtil.join(__dirname, '../local')
 ) => {
-  console.log('JE RENTRE DEDANS')
   if (fs.existsSync(path.join(currentPath, configFileName))) {
     return currentPath
   }
@@ -123,7 +123,6 @@ diskUtil.writeFileToDisk = (fileDescriptor, absoluteProjectPath) => {
     const lastIndex = pathFile.lastIndexOf(pathUtil.sep)
     const folder = pathFile.substring(0, lastIndex)
 
-    console.log('WRITE FILE DISK ', fileDescriptor.name)
     if (folder) fs.mkdirSync(folder, { recursive: true })
 
     // if JSON object, stringify
