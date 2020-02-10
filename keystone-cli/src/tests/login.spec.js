@@ -1,6 +1,7 @@
 require('./utils/mock')
 const nock = require('nock')
-
+const fs = require('fs')
+const path = require('path')
 const {
   publicKey,
   privateKey,
@@ -64,6 +65,7 @@ describe('Login Command', () => {
     // this hides console.log calls
     jest.spyOn(process.stdout, 'write').mockImplementation(val => {
       result.push(val)
+      fs.appendFile('unit-test.log', val)
     })
   })
 
@@ -96,9 +98,14 @@ describe('Login Command', () => {
 
       await logout()
     }
-
+    const username = 'keystone_test1.id.blockstack'
     await simulateUserConfirm()
-    await runCommand(LoginCommand, ['keystone_test1.id.blockstack'])
+
+    fs.writeFile(
+      path.join(__dirname, `./hub/${username}--public.key`),
+      publicKey
+    )
+    await runCommand(LoginCommand, [username])
 
     expect(open).toHaveBeenCalledTimes(1)
 
