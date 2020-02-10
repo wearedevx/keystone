@@ -20,13 +20,17 @@ class ListCommand extends CommandSignedIn {
     await this.withUserSession(async userSession => {
       if (args.type === 'projects') {
         const projects = await listProjects(userSession)
-        projects.forEach(project => {
-          console.log(
-            `> ${project.name.split('/')[0]}/${chalk.grey(
-              project.name.split('/')[1]
-            )}`
-          )
-        })
+        if (projects && projects.length > 0) {
+          projects.forEach(project => {
+            console.log(
+              `> ${project.name.split('/')[0]}/${chalk.grey(
+                project.name.split('/')[1]
+              )}`
+            )
+          })
+        } else {
+          console.log('No project Found in user workspace!')
+        }
       } else {
         const env = await this.getProjectEnv()
         const project = await this.getProjectName()
