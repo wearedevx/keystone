@@ -16,24 +16,21 @@ const {
 } = require('../constants')
 
 const writeFileToDisk = (fileDescriptor, absoluteProjectPath) => {
-  try {
-    const pathFile = pathUtil.join(absoluteProjectPath, fileDescriptor.name)
-    const lastIndex = pathFile.lastIndexOf(pathUtil.sep)
-    const folder = pathFile.substring(0, lastIndex)
-    debug('Write file to disk', pathFile)
+  const pathFile = pathUtil.join(absoluteProjectPath, fileDescriptor.name)
+  const lastIndex = pathFile.lastIndexOf(pathUtil.sep)
+  const folder = pathFile.substring(0, lastIndex)
+  debug('Write file to disk', pathFile)
 
-    if (folder) fs.mkdirSync(folder, { recursive: true })
+  if (folder) fs.mkdirSync(folder, { recursive: true })
 
-    // if JSON object, stringify
-    let { content } = fileDescriptor
-    if (typeof content === 'object') content = JSON.stringify(content)
+  // if JSON object, stringify
+  let { content } = fileDescriptor
+  if (typeof content === 'object') content = JSON.stringify(content)
 
-    fs.writeFile(pathFile, content, err => {
-      if (err) throw new Error(err)
-    })
-  } catch (err) {
-    throw new Error(err)
-  }
+  fs.writeFile(pathFile, content, err => {
+    if (err) throw new Error(err)
+  })
+
   return fileDescriptor
 }
 
