@@ -33,7 +33,7 @@
   "scripts": {
     "postpack": "rm -f oclif.manifest.json",
     "prepack": "oclif-dev manifest && oclif-dev readme",
-    "test": "SESSION_FILENAME=session-test.json node_modules/.bin/jest --runInBand",
+    "test": "node_modules/.bin/jest --runInBand",
     "lint": "eslint",
     "pack": "oclif-dev pack",
     "version": "oclif-dev readme && git add README.md",
