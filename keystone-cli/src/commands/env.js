@@ -88,7 +88,6 @@ class EnvCommand extends CommandSignedIn {
         env: name,
         absoluteProjectPath,
       })
-
       // Remove en from project descriptor.
       await removeEnvFromProject(userSession, {
         project,
@@ -213,7 +212,9 @@ class EnvCommand extends CommandSignedIn {
           }
         }
       } else {
-        console.log(`▻ Current environment : ${chalk.bold(await this.getProjectEnv())}`)
+        console.log(
+          `▻ Current environment : ${chalk.bold(await this.getProjectEnv())}`
+        )
       }
     } catch (error) {
       this.log(`${chalk.red(error)}`)
