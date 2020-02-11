@@ -12,7 +12,9 @@ const { getSession } = require('../../lib/blockstackLoader')
 // 1) Login with the CLI
 // 2) Copy/paste the file called `session.json` from ~/.config/keystone-cli/
 // TODO: check if there's a session already existing and use it?
-const session = require('./blockstack_session1.json')
+const session = (userNb = 1) => {
+  return require(`./blockstack_session${userNb}.json`)
+}
 
 // use file API with promises - more elegant.
 const fsp = fs.promises
@@ -33,13 +35,14 @@ const checkConfigPath = async path => {
   return true
 }
 
-const login = async userNb => {
+const login = async (userNb = 1) => {
+  process.env.SESSION_FILENAME = `session-test${userNb}.json`
   try {
     if (await checkConfigPath(configPath)) {
       await write({
         path: `${configPath}/`,
-        filename: `session-test${userNb || 1}.json`,
-        content: JSON.stringify(session),
+        filename: `session-test${userNb}.json`,
+        content: JSON.stringify(session(userNb)),
       })
     }
   } catch (error) {
@@ -51,8 +54,8 @@ const logout = async () => {
   try {
     if (await checkConfigPath(configPath)) {
       await del({
-        path: `${configPath}/`,
-        filename: 'session-test1.json',
+        path: `${configPath}`,
+        filename: /session-test.*\.json/,
       })
     }
   } catch (error) {

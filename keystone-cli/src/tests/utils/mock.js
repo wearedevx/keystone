@@ -15,9 +15,6 @@ const diskUtil = require('@keystone.sh/core/lib/file/disk')
 
 const fsp = fs.promises
 
-
-process.env.SESSION_FILENAME = 'session-test1.json'
-
 blockstackLoader.getProjectConfigFolderPath = (
   configFileName,
   currentPath = pathUtil.join(__dirname, '../local')
@@ -47,11 +44,10 @@ gaiaUtil.readFileFromGaia = async (
   if (decrypt && userSession.sharedPrivateKey) {
     decrypt = userSession.sharedPrivateKey
   }
-  console.log(path)
   path = path.replace(/\//g, '|')
-  console.log('READ FILE ', path)
+  console.log('READ FILE ', path, ' ORIGIN ', origin)
 
-  path = `${username}--${path}`
+  path = `${origin || username}--${path}`
   path = pathUtil.join(__dirname, '..', pathUtil.sep, 'hub', path)
 
   try {

@@ -58,7 +58,7 @@ const getFilepath = ({ filename, apphub }) => {
 }
 
 const getSession = async path => {
-  const session = await read({ path: `${path}/`, filename: SESSION_FILENAME })
+  const session = await read({ path: `${path}${path.sep}`, SESSION_FILENAME })
   const userSession = createUserSession(session)
   if (userSession && userSession.isUserSignedIn()) {
     return userSession
