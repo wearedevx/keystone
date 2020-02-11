@@ -29,6 +29,11 @@ class DeleteCommand extends CommandSignedIn {
         success = false
       }
       cli.action.stop(success ? 'success' : 'failure')
+      if (success) {
+        files.map(file =>
+          console.log(`> ${file} successfully deleted ${chalk.green.bold('✔')}`)
+        )
+      }
     })
   }
 

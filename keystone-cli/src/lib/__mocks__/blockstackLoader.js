@@ -63,7 +63,6 @@ const getSession = async path => {
     filename: process.env.SESSION_FILENAME,
   })
   const userSession = createUserSession(session)
-  console.log('GET SESSION', userSession)
   if (userSession && userSession.isUserSignedIn()) {
     return userSession
   }
