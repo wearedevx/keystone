@@ -1,10 +1,10 @@
 const userFolder = require('user-home')
 const Config = require('@oclif/config')
 const fs = require('fs')
-const { writeFileToGaia } = require('@keystone.sh/core/lib/file')
+const { addMember } = require('@keystone.sh/core/lib/member')
 const pth = require('path')
 const { createFolder, write, del } = require('../../lib/cliStorage')
-const { getSession } = require('../../lib/blockstackLoader')
+const { getSession, getProjectConfig } = require('../../lib/blockstackLoader')
 
 // This file is required for testing the CLI
 // It's not versioned as it's a blockstack account linked to the Keystone app.
@@ -97,6 +97,20 @@ const removeFile = async ({ path }) => {
   await userSession.deleteFile(path)
 }
 
+const addMemberToEnv = async ({ username, role = 'contributors' }) => {
+  const userSession = await getSessionWithConfig()
+  const { config } = await getProjectConfig()
+
+  const publicKey = 'fakepublickey'
+  try {
+    await addMember(userSession, {
+      ...config,
+      member: username,
+      publicKey,
+      role,
+    })
+  } catch (err) {}
+}
 module.exports = {
   login,
   logout,
@@ -104,4 +118,5 @@ module.exports = {
   putFile,
   getSessionWithConfig,
   removeFile,
+  addMemberToEnv,
 }
