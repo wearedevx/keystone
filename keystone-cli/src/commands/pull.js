@@ -25,7 +25,7 @@ class PullCommand extends CommandSignedIn {
   async run() {
     try {
       if (process.env.KEYSTONE_SHARED) {
-        this.pull({})
+        await this.pull({})
       } else {
         const { flags } = this.parse(PullCommand)
         const { force } = flags
