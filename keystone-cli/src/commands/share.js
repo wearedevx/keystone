@@ -22,7 +22,6 @@ class ShareCommand extends CommandSignedIn {
         env,
         members: membersDescriptor.content[ROLES.ADMINS],
         privateKey,
-        userSession,
       })
 
       const buff = new Buffer(data)
@@ -39,7 +38,7 @@ class ShareCommand extends CommandSignedIn {
   async run() {
     const { args } = this.parse(ShareCommand)
 
-    this.newShare(args.env)
+    await this.newShare(args.env)
   }
 }
 
