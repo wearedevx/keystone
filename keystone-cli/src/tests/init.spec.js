@@ -1,5 +1,6 @@
 require('./utils/mock')
 
+
 const { stdin } = require('mock-stdin')
 const fs = require('fs')
 const InitCommand = require('../commands/init')
@@ -41,7 +42,7 @@ describe('Init Command', () => {
     io.restore()
   })
 
-  fit('should create a new config and a new project', async () => {
+  it('should create a new config and a new project', async () => {
     // The user starts with neither an existing config or an existing project
     // be sure to be logged
     await login()

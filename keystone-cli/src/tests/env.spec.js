@@ -24,7 +24,7 @@ describe('Env Command', () => {
 
   afterEach(() => jest.restoreAllMocks())
 
-  it('should create a new environment', async () => {
+  it('should create a new environment after removing it', async () => {
     await login()
     const envName = 'test_env'
     // Remove the environment if exist, then created it
@@ -32,8 +32,9 @@ describe('Env Command', () => {
     await runCommand(EnvCommand, ['new', envName])
 
     const envCreated = result.find(
-      log => log.indexOf(`Environment ${envName} successfully created`) > -1
+      log => log.indexOf('successfully created') > -1
     )
     expect(envCreated).toBeDefined()
   }, 20000)
+  it('should add a member to an environment', async () => {})
 })
