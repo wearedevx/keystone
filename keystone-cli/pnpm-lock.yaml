@@ -21,6 +21,7 @@ dependencies:
   normalize-path: 3.0.0
   open: 6.4.0
   rewire: 4.0.1
+  rimraf: 3.0.2
   treeify: 1.1.0
   update-check: 1.5.3
   uuid: 3.4.0
@@ -4998,6 +4999,13 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-uWjbaKIK3T1OSVptzX7Nl6PvQ3qAGtKEtVRjRuazjfL3Bx5eI409VZSqgND+4UNnmzLVdPj9FqFJNPqBZFve4w==
+  /rimraf/3.0.2:
+    dependencies:
+      glob: 7.1.6
+    dev: false
+    hasBin: true
+    resolution:
+      integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==
   /ripemd160-min/0.0.5:
     dev: false
     engines:
@@ -5997,6 +6005,7 @@ specifiers:
   open: ^6.4.0
   prettier: ^1.19.1
   rewire: ^4.0.1
+  rimraf: ^3.0.2
   treeify: ^1.1.0
   update-check: ^1.5.3
   user-home: ^2.0.0
