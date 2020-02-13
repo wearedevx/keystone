@@ -6,7 +6,7 @@ const {
   getMembers,
   removeDescriptorForMembers,
   getLatestEnvDescriptor,
-  getLatestProjectéDescriptor
+  getLatestProjectDescriptor,
 } = require('../descriptor')
 
 const { createMembersDescriptor } = require('../member')
