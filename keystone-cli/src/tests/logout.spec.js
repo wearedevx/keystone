@@ -1,6 +1,15 @@
-const LogoutCommand = require('../commands/logout')
-const { login, logout, runCommand } = require('./utils/helpers')
+process.env.SESSION_FILENAME = 'session-test1.json'
 
+require('./utils/mock')
+
+const fs = require('fs')
+
+jest.mock('../lib/blockstackLoader')
+jest.mock('../lib/commands')
+
+const { login, logout, runCommand } = require('./utils/helpers')
+const LogoutCommand = require('../commands/logout')
+const { SESSION_FILENAME } = require('@keystone.sh/core/lib/constants')
 describe('Logout Command', () => {
   let result
 
@@ -11,6 +20,7 @@ describe('Logout Command', () => {
 
     // /!\ this hides console.log calls
     jest.spyOn(process.stdout, 'write').mockImplementation(val => {
+      fs.appendFile('unit-test.log', val)
       result.push(val)
     })
   })
@@ -20,7 +30,6 @@ describe('Logout Command', () => {
   it('Logout', async () => {
     // Start with a session signed in.
     await login()
-
     await runCommand(LogoutCommand)
 
     const logged = result.find(log => {
