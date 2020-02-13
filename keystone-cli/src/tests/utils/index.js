@@ -1,7 +1,12 @@
 const nock = require('nock')
 const path = require('path')
+
+const fs = require('fs')
+const rimraf = require('rimraf')
 const { write, read } = require('../../lib/cliStorage')
 const { privateKey } = require('./keypair')
+const InitCommand = require('../../commands/init')
+const { login, logout, runCommand } = require('./helpers')
 
 const mockGaiaToLocalFileSystem = () => {
   nock('https://hub.blockstack.org')
@@ -48,7 +53,15 @@ const createDescriptor = ({
   return { name, content, path, checksum, type, version, history }
 }
 
+const prepareEnvironment = async () => {
+  rimraf.sync(path.join(__dirname, '../hub/'))
+  rimraf.sync(path.join(__dirname, '../local/'))
+  await login()
+  await runCommand(InitCommand, ['unit-test-project'])
+}
+
 module.exports = {
   mockGaiaToLocalFileSystem,
   createDescriptor,
+  prepareEnvironment,
 }

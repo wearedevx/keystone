@@ -69,9 +69,15 @@ gaiaUtil.readFileFromGaia = async (
 gaiaUtil.writeFileToGaia = async (userSession, { path, content, encrypt }) => {
   const { username } = userSession.loadUserData()
   path = path.replace(/\//g, '|')
-  console.log('WRITE FILE ', path)
   path = `${username}--${path}`
-  path = pathUtil.join(__dirname, '..', pathUtil.sep, 'hub', path)
+
+  const hubPath = pathUtil.join(pathUtil.join(__dirname, '..', '/hub'))
+
+  if (!fs.existsSync(hubPath)) {
+    fs.mkdirSync(hubPath)
+  }
+
+  path = pathUtil.join(hubPath, path)
   await fsp.writeFile(path, content)
   return content
 }
