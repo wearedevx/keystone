@@ -1,6 +1,13 @@
 # Change Log - @keystone.sh/core
 
-This log was last generated on Wed, 05 Feb 2020 13:33:36 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Feb 2020 16:38:40 GMT and should not be manually modified.
+
+## 0.0.14
+Fri, 14 Feb 2020 16:38:40 GMT
+
+### Patches
+
+- test commands
 
 ## 0.0.13
 Wed, 05 Feb 2020 13:33:36 GMT

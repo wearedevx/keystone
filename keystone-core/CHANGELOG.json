@@ -2,6 +2,20 @@
   "name": "@keystone.sh/core",
   "entries": [
     {
+      "version": "0.0.14",
+      "tag": "@keystone.sh/core_v0.0.14",
+      "date": "Fri, 14 Feb 2020 16:38:40 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "test commands",
+            "author": "LAbigael <abigael.laldji@protonmail.com>",
+            "commit": "e1fd1a86db385f71e83123286c6bdbca40c942bb"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.13",
       "tag": "@keystone.sh/core_v0.0.13",
       "date": "Wed, 05 Feb 2020 13:33:36 GMT",
