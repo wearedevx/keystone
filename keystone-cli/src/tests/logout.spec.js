@@ -10,7 +10,6 @@ jest.mock('../lib/commands')
 
 const { login, logout, runCommand } = require('./utils/helpers')
 const LogoutCommand = require('../commands/logout')
-const { SESSION_FILENAME } = require('@keystone.sh/core/lib/constants')
 describe('Logout Command', () => {
   let result
 
@@ -29,24 +28,13 @@ describe('Logout Command', () => {
   afterEach(() => jest.restoreAllMocks())
 
   it('Logout', async () => {
+    await prepareEnvironment()
     // Start with a session signed in.
     await login()
     await runCommand(LogoutCommand)
 
     const logged = result.find(log => {
       return log.indexOf(`Sign out from`) > -1
-    })
-    expect(logged).toBeDefined()
-  })
-
-  it(`Can't logout if not signed in`, async () => {
-    // We start logged out
-    await logout()
-
-    await runCommand(LogoutCommand)
-
-    const logged = result.find(log => {
-      return log.indexOf(`You're not connected, please sign in first`) > -1
     })
     expect(logged).toBeDefined()
   })

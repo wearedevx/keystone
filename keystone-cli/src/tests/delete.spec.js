@@ -12,14 +12,6 @@ const { login, logout, runCommand } = require('./utils/helpers')
 
 describe('Delete Command', () => {
   let result
-  // let io
-
-  // const keys = {
-  //   up: '\x1B\x5B\x41',
-  //   down: '\x1B\x5B\x42',
-  //   enter: '\x0D',
-  //   space: '\x20',
-  // }
 
   beforeEach(() => {
     // catch everything on stdout
@@ -44,10 +36,9 @@ describe('Delete Command', () => {
   // )
   // })
   it('should delete one file after pushing it', async () => {
+    await prepareEnvironment()
     await login()
-    // Prevent pull before you push error
-    await runCommand(PullCommand, ['--force'])
-
+    
     await runCommand(PushCommand, ['foo.txt'])
     await runCommand(DeleteCommand, ['foo.txt'])
     const deletedFile = result.find(
