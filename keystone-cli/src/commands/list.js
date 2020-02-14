@@ -1,6 +1,7 @@
 const { flags } = require('@oclif/command')
 // const chalk = require('chalk')
 const { cli } = require('cli-ux')
+const chalk = require('chalk')
 
 const { CommandSignedIn } = require('../lib/commands')
 const {
@@ -18,7 +19,18 @@ class ListCommand extends CommandSignedIn {
 
     await this.withUserSession(async userSession => {
       if (args.type === 'projects') {
-        await listProjects(userSession)
+        const projects = await listProjects(userSession)
+        if (projects && projects.length > 0) {
+          projects.forEach(project => {
+            this.log(
+              `> ${project.name.split('/')[0]}/${chalk.grey(
+                project.name.split('/')[1]
+              )}`
+            )
+          })
+        } else {
+          this.log('No project Found in user workspace!')
+        }
       } else {
         const env = await this.getProjectEnv()
         const project = await this.getProjectName()

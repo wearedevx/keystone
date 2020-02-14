@@ -6,6 +6,7 @@ const {
   getMembers,
   removeDescriptorForMembers,
   getLatestEnvDescriptor,
+  getLatestProjectDescriptor,
 } = require('../descriptor')
 
 const { createMembersDescriptor } = require('../member')
@@ -92,7 +93,7 @@ const removeEnvFiles = async (
   const { username } = userSession.loadUserData()
 
   // Check if env exists.
-  const projectDescriptor = await getLatestEnvDescriptor(userSession, {
+  const projectDescriptor = await getLatestProjectDescriptor(userSession, {
     project,
     type: 'project',
     blockstackId: username,

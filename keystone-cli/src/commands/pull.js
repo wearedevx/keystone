@@ -9,10 +9,9 @@ const { CommandSignedIn, execPull } = require('../lib/commands')
 class PullCommand extends CommandSignedIn {
   async pull({ project, env, force = false }) {
     await this.withUserSession(async userSession => {
-      cli.action.start(`Fetching`)
+      // cli.action.start(`Fetching`)
 
       const absoluteProjectPath = await this.getConfigFolderPath()
-
       await execPull(userSession, {
         project,
         env,
@@ -26,7 +25,7 @@ class PullCommand extends CommandSignedIn {
   async run() {
     try {
       if (process.env.KEYSTONE_SHARED) {
-        this.pull({})
+        await this.pull({})
       } else {
         const { flags } = this.parse(PullCommand)
         const { force } = flags
@@ -36,7 +35,7 @@ class PullCommand extends CommandSignedIn {
         await this.pull({ project, env, force })
       }
     } catch (error) {
-      console.log(error)
+      this.log(error)
     }
   }
 }

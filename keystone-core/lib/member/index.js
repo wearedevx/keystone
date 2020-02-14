@@ -92,7 +92,6 @@ const addMember = async (
   }
 
   const newMember = { blockstack_id: member, publicKey }
-
   membersDescriptor.content[role] = membersDescriptor.content[role].filter(
     m => m.blockstack_id !== SHARED_MEMBER
   )

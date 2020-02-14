@@ -1,13 +1,14 @@
 require('./utils/mock')
+const { prepareEnvironment } = require('./utils')
 const nock = require('nock')
-
+const fs = require('fs')
+const path = require('path')
 const {
   publicKey,
   privateKey,
   encryptedSession,
   profile,
 } = require('./utils/keypair')
-const blockstackLoader = require('../lib/blockstackLoader')
 // Mock "open" module only for this test.
 // If you want to always mock module for all tests,
 // create a file in __mocks__ folder (at root),
@@ -18,6 +19,7 @@ jest.mock('open', () => {
 })
 
 jest.mock('../lib/blockstackLoader')
+jest.mock('../lib/commands')
 
 const open = require('open')
 const LoginCommand = require('../commands/login')
@@ -64,12 +66,14 @@ describe('Login Command', () => {
     // this hides console.log calls
     jest.spyOn(process.stdout, 'write').mockImplementation(val => {
       result.push(val)
+      fs.appendFile('unit-test.log', val)
     })
   })
 
   afterEach(() => jest.restoreAllMocks())
 
   it('Login', async () => {
+    await prepareEnvironment()
     // Start logged out
     await logout()
 
@@ -96,9 +100,14 @@ describe('Login Command', () => {
 
       await logout()
     }
-
+    const username = 'keystone_test1.id.blockstack'
     await simulateUserConfirm()
-    await runCommand(LoginCommand, ['keystone_test1.id.blockstack'])
+
+    fs.writeFile(
+      path.join(__dirname, `./hub/${username}--public.key`),
+      publicKey
+    )
+    await runCommand(LoginCommand, [username])
 
     expect(open).toHaveBeenCalledTimes(1)
 

@@ -4,7 +4,10 @@ const { flags } = require('@oclif/command')
 const { readFileFromDisk } = require('@keystone.sh/core/lib/file')
 const { writeFileToGaia } = require('@keystone.sh/core/lib/file/gaia')
 
-const { push, pushModifiedFiles } = require('@keystone.sh/core/lib/commands/push')
+const {
+  push,
+  pushModifiedFiles,
+} = require('@keystone.sh/core/lib/commands/push')
 const { CommandSignedIn } = require('../lib/commands')
 
 class PushCommand extends CommandSignedIn {
@@ -24,6 +27,7 @@ class PushCommand extends CommandSignedIn {
         )
 
         if (flags.debug) {
+          this.log('debug')
           await Promise.all(
             files.map(async file => {
               await writeFileToGaia(userSession, {
@@ -90,7 +94,7 @@ class PushCommand extends CommandSignedIn {
       //   throw new Error('You need to specify at least one filename!')
       // }
     } catch (error) {
-      console.log('error', error)
+      this.log('error', error)
     }
   }
 }

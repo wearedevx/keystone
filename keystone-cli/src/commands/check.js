@@ -24,9 +24,9 @@ class CheckCommand extends CommandSignedIn {
 //       const pubkey = await getPubkey(userSession, {
 //         blockstack_id: 'l_abigael.id.blockstack',
 //       })
-//       console.log('pubkey', pubkey)
+//       this.log('pubkey', pubkey)
 //     } catch (error) {
-//       console.log(error)
+//       this.log(error)
 //       this.log(`${error.message}`)
 //     }
 //   }

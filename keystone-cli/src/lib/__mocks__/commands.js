@@ -17,9 +17,9 @@ const {
   isOneOrMoreAdmin,
   setMembersToEnvs,
 } = require('@keystone.sh/core/lib/env')
-const { logo } = require('../lib/ux')
+const { logo } = require('../../lib/ux')
 const { KEYSTONE_WEB } = require('@keystone.sh/core/lib/constants')
-const { getSession, getProjectConfig } = require('../lib/blockstackLoader')
+const { getSession, getProjectConfig } = require('../../lib/blockstackLoader')
 
 const createSharedUserSession = token => {
   return {
@@ -229,7 +229,7 @@ const CommandSignedIn = class extends Command {
           `$ ks init`
         )}`
       )
-      if (!process.env.KEYSTONE_SHARED) process.exit(1)
+      if (!process.env.KEYSTONE_SHARED) return
     }
   }
 
@@ -247,7 +247,7 @@ const CommandSignedIn = class extends Command {
         )}`
       )
       if (!process.env.KEYSTONE_SHARED) {
-        process.exit(1)
+        return
       }
     }
   }
@@ -307,7 +307,9 @@ const CommandSignedIn = class extends Command {
   }
 
   async getFileRelativePath(filePath) {
-    const absoluteFilePath = path.resolve(filePath)
+    const absoluteFilePath = path.resolve(
+      path.join('src/tests/local/', filePath)
+    )
     const absoluteConfigFolderPath = await this.getConfigFolderPath()
     if (absoluteFilePath.indexOf(absoluteConfigFolderPath) === -1) {
       throw new Error(
