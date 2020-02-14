@@ -229,7 +229,7 @@ const CommandSignedIn = class extends Command {
           `$ ks init`
         )}`
       )
-      if (!process.env.KEYSTONE_SHARED) process.exit(1)
+      if (!process.env.KEYSTONE_SHARED) return
     }
   }
 
@@ -247,7 +247,7 @@ const CommandSignedIn = class extends Command {
         )}`
       )
       if (!process.env.KEYSTONE_SHARED) {
-        process.exit(1)
+        return
       }
     }
   }
