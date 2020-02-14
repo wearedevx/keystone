@@ -1,4 +1,5 @@
 require('./utils/mock')
+const { prepareEnvironment } = require('./utils')
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
 
@@ -26,6 +27,7 @@ describe('Env Command', () => {
 
   it('should create a new environment after removing it', async () => {
     await login()
+    await prepareEnvironment()
     const envName = 'test_env'
     // Remove the environment if exist, then created it
     await runCommand(EnvCommand, ['remove', envName])

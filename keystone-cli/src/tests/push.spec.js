@@ -1,4 +1,5 @@
 const { writeFileToDisk } = require('./utils/mock')
+const { prepareEnvironment } = require('./utils')
 const fs = require('fs')
 const pathUtil = require('path')
 const PushCommand = require('../commands/push')
@@ -22,15 +23,16 @@ describe('Push Command', () => {
 
   afterEach(() => jest.restoreAllMocks())
 
-  it('Push - Not connected', async () => {
-    await logout()
-    fs.writeFile(`test.txt`, 'echo')
-    await runCommand(PushCommand, ['test.txt'])
-    expect(result[result.length - 1]).toContain(
-      `You're not connected, please sign in first`
-    )
-  })
-  fit('should create a file in current working project', async () => {
+  // it('Push - Not connected', async () => {
+  //   await logout()
+  //   fs.writeFile(`test.txt`, 'echo')
+  //   await runCommand(PushCommand, ['test.txt'])
+  //   expect(result[result.length - 1]).toContain(
+  //     `You're not connected, please sign in first`
+  //   )
+  // })
+  it('should create a file in current working project', async () => {
+    await prepareEnvironment()
     await login()
 
     const fileDescriptor = createDescriptor({})
