@@ -92,7 +92,7 @@ class LoginCommand extends Command {
   }
 
   async prompt() {
-    console.log(
+    this.log(
       'If you do not have a blockstack account yet, please sign up at : https://browser.blockstack.org/\n'
     )
     const answer = await inquirer.prompt([
@@ -118,7 +118,7 @@ class LoginCommand extends Command {
         await this.prompt()
       }
     } catch (error) {
-      console.log('error', error)
+      this.log('error', error)
     }
   }
 }

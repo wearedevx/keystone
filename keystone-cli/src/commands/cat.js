@@ -23,7 +23,7 @@ class CatCommand extends CommandSignedIn {
 
           fetchedFiles = await readFileFromGaia(userSession, opts)
 
-          console.log(util.inspect(fetchedFiles, false, null))
+          this.log(util.inspect(fetchedFiles, false, null))
           return
         }
 
@@ -45,12 +45,12 @@ class CatCommand extends CommandSignedIn {
 
         fetchedFiles.map(file =>
           file.fetched
-            ? console.log(`${file.descriptor.content}\n`)
-            : console.log(file)
+            ? this.log(`${file.descriptor.content}\n`)
+            : this.log(file)
         )
         success = true
       } catch (err) {
-        console.log(err)
+        this.log(err)
         success = err
       }
       cli.action.stop(success ? 'done' : 'failed')

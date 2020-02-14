@@ -8,14 +8,16 @@ require('dotenv').config({
 })
 
 const checkForUpdate = require('../src/lib/checkNewerVersion')
-checkForUpdate()
-require('../src/lib/listeners')
 
-require('@oclif/command')
-  .run()
-  .then(require('@oclif/command/flush'))
-  .catch(require('@oclif/errors/handle'))
+Promise.resolve(checkForUpdate()).then(() => {
+  require('../src/lib/listeners')
 
-process.on('unhandledRejection', error => {
-  console.error(error)
+  require('@oclif/command')
+    .run()
+    .then(require('@oclif/command/flush'))
+    .catch(require('@oclif/errors/handle'))
+
+  process.on('unhandledRejection', error => {
+    console.error(error)
+  })
 })

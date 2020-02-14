@@ -58,7 +58,10 @@ const getFilepath = ({ filename, apphub }) => {
 }
 
 const getSession = async path => {
-  const session = await read({ path: `${path}/`, filename: SESSION_FILENAME })
+  const session = await read({
+    path: `${path}/`,
+    filename: process.env.SESSION_FILENAME,
+  })
   const userSession = createUserSession(session)
   if (userSession && userSession.isUserSignedIn()) {
     return userSession
@@ -86,11 +89,14 @@ const getProjectConfigFolderPath = (configFileName, currentPath = '.') => {
 }
 
 const getProjectConfig = async (projectfileName = '.ksconfig') => {
-  const projectConfigFolderPath = getProjectConfigFolderPath(projectfileName)
+  const projectConfigFolderPath = path.join(__dirname, '../../tests/local')
   let config
   try {
     config = await read({
-      filename: path.join(projectConfigFolderPath, projectfileName),
+      filename: path.join(
+        path.join(__dirname, '../../tests/local'),
+        projectfileName
+      ),
     })
   } catch (err) {
     if (!process.env.KEYSTONE_SHARED) throw err

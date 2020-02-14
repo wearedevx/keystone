@@ -27,7 +27,6 @@ const push = async (
 
   // create keystone cache folder
   const cacheFolder = getCacheFolder(absoluteProjectPath)
-
   const membersDescriptor = await getLatestMembersDescriptor(userSession, {
     project,
     env,

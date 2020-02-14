@@ -1,5 +1,4 @@
 const { flags } = require('@oclif/command')
-
 const chalk = require('chalk')
 const { cli } = require('cli-ux')
 const {
@@ -30,21 +29,31 @@ class DeleteCommand extends CommandSignedIn {
         success = false
       }
       cli.action.stop(success ? 'success' : 'failure')
+      if (success) {
+        files.map(file =>
+          this.log(`> ${file} successfully deleted ${chalk.green.bold('✔')}`)
+        )
+      }
     })
   }
 
   async deleteProject(project) {
-    await this.withUserSession(async userSession => {
-      await deleteProject(userSession, { project })
-    })
+    try {
+      await this.withUserSession(async userSession => {
+        await deleteProject(userSession, { project })
+      })
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   async run() {
     const { argv, flags } = this.parse(DeleteCommand)
     try {
       if (flags.project) {
+        this.log('project', flags.project)
         await this.deleteProject(flags.project)
-        return 
+        return
       }
       const project = await this.getProjectName()
       const env = await this.getProjectEnv()
