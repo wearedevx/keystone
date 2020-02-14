@@ -8,6 +8,8 @@ const { privateKey } = require('./keypair')
 const InitCommand = require('../../commands/init')
 const { login, logout, runCommand } = require('./helpers')
 
+const fsp = fs.promises
+
 const mockGaiaToLocalFileSystem = () => {
   nock('https://hub.blockstack.org')
     .persist()
@@ -56,6 +58,9 @@ const createDescriptor = ({
 const prepareEnvironment = async () => {
   rimraf.sync(path.join(__dirname, '../hub/'))
   rimraf.sync(path.join(__dirname, '../local/'))
+  await fsp.mkdir(path.join(__dirname, '../hub'))
+  await fsp.mkdir(path.join(__dirname, '../local/'))
+  await fsp.writeFile(path.join(__dirname, '../local/foo.txt'), 'foo bar')
   await login()
   await runCommand(InitCommand, ['unit-test-project'])
 }
