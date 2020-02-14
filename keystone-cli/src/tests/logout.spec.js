@@ -1,6 +1,7 @@
 process.env.SESSION_FILENAME = 'session-test1.json'
 
 require('./utils/mock')
+const { prepareEnvironment } = require('./utils')
 
 const fs = require('fs')
 

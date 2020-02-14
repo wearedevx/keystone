@@ -1,4 +1,5 @@
 require('./utils/mock')
+const { prepareEnvironment } = require('./utils')
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
 
@@ -31,6 +32,8 @@ describe('Share Command', () => {
   afterEach(() => jest.restoreAllMocks())
 
   it('should create a shared user', async () => {
+    await prepareEnvironment()
+
     await login()
 
     await runCommand(ShareCommand, ['default'])
@@ -42,6 +45,7 @@ describe('Share Command', () => {
   }, 20000)
 
   it('Should pull files with shared user token', async () => {
+    await prepareEnvironment()
     await login()
 
     const pathToFile = path.join(__dirname, './local/bar.txt')

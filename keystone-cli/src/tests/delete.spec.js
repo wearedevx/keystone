@@ -1,4 +1,5 @@
 require('./utils/mock')
+const { prepareEnvironment } = require('./utils')
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
 
@@ -6,18 +7,19 @@ const fs = require('fs')
 const { stdin } = require('mock-stdin')
 const DeleteCommand = require('../commands/delete')
 const PushCommand = require('../commands/push')
+const PullCommand = require('../commands/pull')
 const { login, logout, runCommand } = require('./utils/helpers')
 
 describe('Delete Command', () => {
   let result
-  let io
+  // let io
 
-  const keys = {
-    up: '\x1B\x5B\x41',
-    down: '\x1B\x5B\x42',
-    enter: '\x0D',
-    space: '\x20',
-  }
+  // const keys = {
+  //   up: '\x1B\x5B\x41',
+  //   down: '\x1B\x5B\x42',
+  //   enter: '\x0D',
+  //   space: '\x20',
+  // }
 
   beforeEach(() => {
     // catch everything on stdout
@@ -43,9 +45,14 @@ describe('Delete Command', () => {
   // })
   it('should delete one file after pushing it', async () => {
     await login()
+    // Prevent pull before you push error
+    await runCommand(PullCommand, ['--force'])
+
     await runCommand(PushCommand, ['foo.txt'])
     await runCommand(DeleteCommand, ['foo.txt'])
-    const deletedFile = result.find(log => log.indexOf('foo.txt successfully deleted') > -1)
+    const deletedFile = result.find(
+      log => log.indexOf('successfully deleted') > -1
+    )
     expect(deletedFile).toBeDefined()
   }, 20000)
 

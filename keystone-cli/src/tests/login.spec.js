@@ -1,4 +1,5 @@
 require('./utils/mock')
+const { prepareEnvironment } = require('./utils')
 const nock = require('nock')
 const fs = require('fs')
 const path = require('path')
@@ -8,7 +9,6 @@ const {
   encryptedSession,
   profile,
 } = require('./utils/keypair')
-const blockstackLoader = require('../lib/blockstackLoader')
 // Mock "open" module only for this test.
 // If you want to always mock module for all tests,
 // create a file in __mocks__ folder (at root),
@@ -19,6 +19,7 @@ jest.mock('open', () => {
 })
 
 jest.mock('../lib/blockstackLoader')
+jest.mock('../lib/commands')
 
 const open = require('open')
 const LoginCommand = require('../commands/login')

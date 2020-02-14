@@ -1,4 +1,5 @@
 require('./utils/mock')
+const { prepareEnvironment } = require('./utils')
 
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
@@ -38,9 +39,10 @@ describe('Invite Command', () => {
   })
 
   it('should send an invitation', async () => {
-    await login()
+    await prepareEnvironment()
+    await login() 
 
-    await runCommand(InviteCommand, ['test2@keystone.sh', '--removal'])
+    await runCommand(InviteCommand, ['test2@keystone.shh', '--removal'])
 
     const interval = setInterval(() => {
       if (result.find(log => log.indexOf(`What's your email address?`) > -1)) {
@@ -52,7 +54,7 @@ describe('Invite Command', () => {
       }
     }, 500)
 
-    await runCommand(InviteCommand, ['test2@keystone.sh'])
+    await runCommand(InviteCommand, ['test2@keystone.shh'])
 
     const invited = result.find(log =>
       log.indexOf('invitation as reader sent to')

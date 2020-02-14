@@ -1,5 +1,8 @@
 require('./utils/mock')
+const { prepareEnvironment } = require('./utils')
 
+jest.mock('../lib/blockstackLoader')
+jest.mock('../lib/commands')
 
 const { stdin } = require('mock-stdin')
 const fs = require('fs')
@@ -43,6 +46,7 @@ describe('Init Command', () => {
   })
 
   it('should create a new config and a new project', async () => {
+    await prepareEnvironment()
     // The user starts with neither an existing config or an existing project
     // be sure to be logged
     await login()
@@ -67,7 +71,6 @@ describe('Init Command', () => {
       setTimeout(() => sendKeystrokes().then(), 500)
       await runCommand(DeleteCommand, [`--project=${existingProject}`])
     }
-    console.log('INIT PROJECT')
     await runCommand(InitCommand, [PROJECT_NAME])
 
     const createdProject = result.find(log =>
