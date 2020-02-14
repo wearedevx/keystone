@@ -47,7 +47,6 @@ describe('Share Command', () => {
   it('Should pull files with shared user token', async () => {
     await prepareEnvironment()
     await login()
-
     const pathToFile = path.join(__dirname, './local/bar.txt')
 
     // Create shared user token
@@ -57,7 +56,6 @@ describe('Share Command', () => {
     const uid = uuid()
     await fsp.writeFile(pathToFile, uid)
     await runCommand(PushCommand, ['bar.txt'])
-    await fsp.unlink(pathToFile)
 
     await logout()
 

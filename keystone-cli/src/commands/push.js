@@ -38,7 +38,6 @@ class PushCommand extends CommandSignedIn {
             })
           )
         }
-        // TODO make it work with jest
         cli.action.start('Pushing into private locker')
         const pushedFiles = await push(userSession, {
           project,

@@ -1,5 +1,6 @@
 require('./utils/mock')
 const { prepareEnvironment } = require('./utils')
+const nock = require('nock')
 
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
@@ -9,6 +10,13 @@ const fs = require('fs')
 
 const InviteCommand = require('../commands/invite')
 const { login, logout, runCommand } = require('./utils/helpers')
+
+// nock('https://hub.blockstack.org')
+//   .persist()
+//   .get(/.*/)
+//   .reply((uri, body) => {
+//     return [200, {}]
+//   })
 
 describe('Invite Command', () => {
   let result
@@ -40,7 +48,7 @@ describe('Invite Command', () => {
 
   it('should send an invitation', async () => {
     await prepareEnvironment()
-    await login() 
+    await login()
 
     await runCommand(InviteCommand, ['test2@keystone.shh', '--removal'])
 
@@ -60,7 +68,7 @@ describe('Invite Command', () => {
       log.indexOf('invitation as reader sent to')
     )
     expect(invited).toBeDefined()
-  }, 20000)
+  }, 10000)
 
   // it('should delete an invitation after sending it', async () => {
   //   await login()

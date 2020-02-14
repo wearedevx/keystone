@@ -73,6 +73,7 @@ describe('Login Command', () => {
   afterEach(() => jest.restoreAllMocks())
 
   it('Login', async () => {
+    await prepareEnvironment()
     // Start logged out
     await logout()
 
