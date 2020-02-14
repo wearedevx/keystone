@@ -31,7 +31,7 @@ class DeleteCommand extends CommandSignedIn {
       cli.action.stop(success ? 'success' : 'failure')
       if (success) {
         files.map(file =>
-          console.log(`> ${file} successfully deleted ${chalk.green.bold('✔')}`)
+          this.log(`> ${file} successfully deleted ${chalk.green.bold('✔')}`)
         )
       }
     })
@@ -39,7 +39,6 @@ class DeleteCommand extends CommandSignedIn {
 
   async deleteProject(project) {
     try {
-      console.log('ENTER THE DELETE PROJECT')
       await this.withUserSession(async userSession => {
         await deleteProject(userSession, { project })
       })
@@ -52,7 +51,7 @@ class DeleteCommand extends CommandSignedIn {
     const { argv, flags } = this.parse(DeleteCommand)
     try {
       if (flags.project) {
-        console.log('project', flags.project)
+        this.log('project', flags.project)
         await this.deleteProject(flags.project)
         return
       }

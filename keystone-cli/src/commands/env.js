@@ -66,7 +66,7 @@ class EnvCommand extends CommandSignedIn {
         })
         this.log(`▻ Environment ${chalk.bold(name)} successfully created`)
       } catch (err) {
-        console.log(err)
+        this.log(err)
         this.log(`▻ Environment creation failed : ${chalk.bold(err)}`)
       }
     })
@@ -141,7 +141,7 @@ class EnvCommand extends CommandSignedIn {
 
         const allMembers = await getMembers(userSession, { project })
 
-        console.log('\x1Bc')
+        this.log('\x1Bc')
 
         await this.configureMembers({
           allMembers,
@@ -212,7 +212,7 @@ class EnvCommand extends CommandSignedIn {
           }
         }
       } else {
-        console.log(
+        this.log(
           `▻ Current environment : ${chalk.bold(await this.getProjectEnv())}`
         )
       }
