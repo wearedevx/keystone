@@ -35,7 +35,7 @@ class PullCommand extends CommandSignedIn {
         await this.pull({ project, env, force })
       }
     } catch (error) {
-      console.log(error)
+      this.log(error)
     }
   }
 }
