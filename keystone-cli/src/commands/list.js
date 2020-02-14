@@ -22,14 +22,14 @@ class ListCommand extends CommandSignedIn {
         const projects = await listProjects(userSession)
         if (projects && projects.length > 0) {
           projects.forEach(project => {
-            console.log(
+            this.log(
               `> ${project.name.split('/')[0]}/${chalk.grey(
                 project.name.split('/')[1]
               )}`
             )
           })
         } else {
-          console.log('No project Found in user workspace!')
+          this.log('No project Found in user workspace!')
         }
       } else {
         const env = await this.getProjectEnv()

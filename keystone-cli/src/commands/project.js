@@ -34,7 +34,7 @@ class ProjectCommand extends CommandSignedIn {
       try {
         debug('Get last project descriptor')
 
-        console.log('\x1Bc')
+        this.log('\x1Bc')
 
         const allMembers = await getMembers(userSession, { project })
 

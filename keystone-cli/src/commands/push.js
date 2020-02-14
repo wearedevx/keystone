@@ -19,7 +19,6 @@ class PushCommand extends CommandSignedIn {
       if (filenames.length > 0) {
         const files = await Promise.all(
           filenames.map(async f => {
-            console.log('FFFFFFFFFFFFFF', f)
             return {
               filename: await this.getFileRelativePath(f),
               fileContent: await readFileFromDisk(f),
@@ -28,6 +27,7 @@ class PushCommand extends CommandSignedIn {
         )
 
         if (flags.debug) {
+          this.log('debug')
           await Promise.all(
             files.map(async file => {
               await writeFileToGaia(userSession, {
@@ -38,7 +38,8 @@ class PushCommand extends CommandSignedIn {
             })
           )
         }
-        cli.action.start('Pushing into private locker')
+        // TODO make it work with jest
+        // cli.action.start('Pushing into private locker')
         const pushedFiles = await push(userSession, {
           project,
           env,
@@ -94,7 +95,7 @@ class PushCommand extends CommandSignedIn {
       //   throw new Error('You need to specify at least one filename!')
       // }
     } catch (error) {
-      console.log('error', error)
+      this.log('error', error)
     }
   }
 }
