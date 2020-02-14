@@ -2,7 +2,7 @@ const userFolder = require('user-home')
 const Config = require('@oclif/config')
 const fs = require('fs')
 const { addMember } = require('@keystone.sh/core/lib/member')
-const pth = require('path')
+const pathUtil = require('path')
 const { createFolder, write, del } = require('../../lib/cliStorage')
 const { getSession, getProjectConfig } = require('../../lib/blockstackLoader')
 
@@ -37,6 +37,19 @@ const checkConfigPath = async path => {
 
 const login = async (userNb = 1) => {
   process.env.SESSION_FILENAME = `session-test${userNb}.json`
+
+  const hubPath = pathUtil.join(pathUtil.join(__dirname, '..', '/hub'))
+  if (!fs.existsSync(hubPath)) {
+    fs.mkdirSync(hubPath)
+  }
+
+  fs.writeFileSync(
+    pathUtil.join(
+      __dirname,
+      '../hub',
+      `keystone_test${userNb}.id.blockstack--public.key`
+    )
+  )
   try {
     if (await checkConfigPath(configPath)) {
       await write({
@@ -87,7 +100,7 @@ const getSessionWithConfig = async () => {
 // }
 
 const putFile = async ({ path, content }) => {
-  path = pth.join(__dirname, '../hub', path)
+  path = pathUtil.join(__dirname, '../hub', path)
   await fsp.writeFile(path, content)
   return content
 }
@@ -103,6 +116,7 @@ const addMemberToEnv = async ({ username, role = 'contributors' }) => {
 
   const publicKey = 'fakepublickey'
   try {
+    // Add member to environment
     await addMember(userSession, {
       ...config,
       member: username,
