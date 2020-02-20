@@ -2,6 +2,25 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "0.0.19",
+      "tag": "@keystone.sh/cli_v0.0.19",
+      "date": "Thu, 20 Feb 2020 10:09:43 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix session not loading",
+            "author": "LAbigael <abigael.laldji@protonmail.com>",
+            "commit": "ddd70265be58e51afab6a94ac4d8f04c76727fcf"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@keystone.sh/core\" from `~0.0.14` to `~0.0.15`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.18",
       "tag": "@keystone.sh/cli_v0.0.18",
       "date": "Fri, 14 Feb 2020 16:38:40 GMT",
