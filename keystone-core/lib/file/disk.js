@@ -140,7 +140,10 @@ async function changeEnvConfig({ env, absoluteProjectPath }) {
     },
   }
 
-  await writeFileToDisk(envConfigDescriptor, getKeystoneFolder('.'))
+  await writeFileToDisk(
+    envConfigDescriptor,
+    getKeystoneFolder(absoluteProjectPath)
+  )
 
   // clean cache
   const cachePath = getCacheFolder(absoluteProjectPath)
