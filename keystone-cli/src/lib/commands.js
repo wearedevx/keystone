@@ -283,6 +283,7 @@ const CommandSignedIn = class extends Command {
         return createSharedUserSession(process.env.KEYSTONE_SHARED)
       }
       const config = configPath || this.config.configDir
+
       const userSession = await getSession(config)
       if (userSession && userSession.isUserSignedIn()) {
         return userSession
