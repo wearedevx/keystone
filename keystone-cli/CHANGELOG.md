@@ -1,6 +1,13 @@
 # Change Log - @keystone.sh/cli
 
-This log was last generated on Fri, 14 Feb 2020 16:38:40 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Feb 2020 10:09:43 GMT and should not be manually modified.
+
+## 0.0.19
+Thu, 20 Feb 2020 10:09:43 GMT
+
+### Patches
+
+- fix session not loading
 
 ## 0.0.18
 Fri, 14 Feb 2020 16:38:40 GMT

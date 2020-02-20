@@ -2,6 +2,20 @@
   "name": "@keystone.sh/core",
   "entries": [
     {
+      "version": "0.0.15",
+      "tag": "@keystone.sh/core_v0.0.15",
+      "date": "Thu, 20 Feb 2020 10:09:43 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix envconfig written in the working directory",
+            "author": "LAbigael <abigael.laldji@protonmail.com>",
+            "commit": "562061b4b47dc272d79fff558df9d4a12b617fc2"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.14",
       "tag": "@keystone.sh/core_v0.0.14",
       "date": "Fri, 14 Feb 2020 16:38:40 GMT",
