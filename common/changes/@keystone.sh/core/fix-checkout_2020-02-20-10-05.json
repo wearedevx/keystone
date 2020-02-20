@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@keystone.sh/core",
+      "comment": "fix envconfig written in the working directory",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@keystone.sh/core",
+  "email": "contact@wearedevx.com"
+}
