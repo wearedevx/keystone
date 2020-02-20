@@ -161,6 +161,7 @@ class EnvCommand extends CommandSignedIn {
     await this.withUserSession(async userSession => {
       try {
         const absoluteProjectPath = await this.getConfigFolderPath()
+        console.log('absoluteProjectPath', absoluteProjectPath)
         cli.action.start('Changing environment')
         await checkoutEnv(userSession, {
           project,
