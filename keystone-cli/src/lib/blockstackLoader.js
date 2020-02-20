@@ -1,7 +1,7 @@
 const blockstack = require('blockstack')
 const { SessionData } = require('blockstack/lib/auth/sessionData')
 const fs = require('fs')
-const path = require('path')
+const pathUtil = require('path')
 const {
   KEYSTONE_WEB,
   SESSION_FILENAME,
@@ -58,7 +58,10 @@ const getFilepath = ({ filename, apphub }) => {
 }
 
 const getSession = async path => {
-  const session = await read({ path: `${path}${path.sep}`, SESSION_FILENAME })
+  const session = await read({
+    path: `${path}${pathUtil.sep}`,
+    filename: SESSION_FILENAME,
+  })
   const userSession = createUserSession(session)
   if (userSession && userSession.isUserSignedIn()) {
     return userSession
@@ -67,14 +70,14 @@ const getSession = async path => {
 }
 
 const getProjectConfigFolderPath = (configFileName, currentPath = '.') => {
-  if (fs.existsSync(path.join(currentPath, configFileName))) {
+  if (fs.existsSync(pathUtil.join(currentPath, configFileName))) {
     return currentPath
   }
 
-  if (fs.existsSync(path.join(currentPath, '..'))) {
+  if (fs.existsSync(pathUtil.join(currentPath, '..'))) {
     return getProjectConfigFolderPath(
       configFileName,
-      path.join(currentPath, '..')
+      pathUtil.join(currentPath, '..')
     )
   }
 
@@ -90,7 +93,7 @@ const getProjectConfig = async (projectFilename = '.ksconfig') => {
   let config
   try {
     config = await read({
-      filename: path.join(projectConfigFolderPath, projectFilename),
+      filename: pathUtil.join(projectConfigFolderPath, projectFilename),
     })
   } catch (err) {
     if (!process.env.KEYSTONE_SHARED) throw err
@@ -101,13 +104,13 @@ const getProjectConfig = async (projectFilename = '.ksconfig') => {
   } catch (err) {}
   return {
     config: { ...config, ...envConfig },
-    absoluteProjectPath: path.resolve(projectConfigFolderPath),
+    absoluteProjectPath: pathUtil.resolve(projectConfigFolderPath),
   }
 }
 
 const getEnvConfig = projectConfigFolderPath => {
   return read({
-    path: path.join(
+    path: pathUtil.join(
       projectConfigFolderPath,
       KEYSTONE_HIDDEN_FOLDER,
       KEYSTONE_ENV_CONFIG_PATH
