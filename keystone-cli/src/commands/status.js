@@ -1,8 +1,6 @@
 const chalk = require('chalk')
-const fs = require('fs')
-const path = require('path')
+
 const { CommandSignedIn } = require('../lib/commands')
-const { KEYSTONE_HIDDEN_FOLDER } = require('@keystone.sh/core/lib/constants')
 const {
   getCacheFolder,
   getModifiedFilesFromCacheFolder,
