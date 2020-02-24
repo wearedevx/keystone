@@ -1,6 +1,7 @@
 const { cli } = require('cli-ux')
 const chalk = require('chalk')
 const { flags } = require('@oclif/command')
+const inquirer = require('inquirer')
 const {
   assertUserIsAdminOrContributor,
 } = require('@keystone.sh/core/lib/member')
@@ -161,13 +162,45 @@ class EnvCommand extends CommandSignedIn {
     await this.withUserSession(async userSession => {
       try {
         const absoluteProjectPath = await this.getConfigFolderPath()
-        console.log('absoluteProjectPath', absoluteProjectPath)
-        cli.action.start('Changing environment')
-        await checkoutEnv(userSession, {
-          project,
-          env,
-          absoluteProjectPath,
-        })
+        try {
+          cli.action.start('Changing environment')
+          await checkoutEnv(userSession, {
+            project,
+            env,
+            absoluteProjectPath,
+          })
+          cli.action.stop('done')
+        } catch (err) {
+          cli.action.stop('error')
+          if (err.code === 'PendingModification') {
+            console.log('\n')
+            err.data.forEach(f => console.log(f.path, '', f.status))
+            console.log('\n')
+
+            const { force } = await inquirer.prompt([
+              {
+                name: 'force',
+                type: 'confirm',
+                message:
+                  'You have pending modification in tracked files. Do you want to override them ?',
+              },
+            ])
+            if (force) {
+              cli.action.start('Changing environment')
+
+              await checkoutEnv(userSession, {
+                project,
+                env,
+                absoluteProjectPath,
+                force,
+              })
+            } else {
+              cli.action.stop('aborted')
+
+              process.exit(0)
+            }
+          }
+        }
         cli.action.stop('done')
 
         cli.action.start('Fetching files')
