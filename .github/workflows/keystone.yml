@@ -52,4 +52,4 @@ jobs:
         zeit-token: ${{ secrets.ZEIT_TOKEN }}
         zeit-team-id: team_JUoHyeXny2vWE50ne05TjfId
         now-folder-path: ./keystone-web/dist
-        now-args: '--local-config=../now.json --prod'
+        now-args: '--local-config=../now.json --prod -c'
