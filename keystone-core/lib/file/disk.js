@@ -7,7 +7,7 @@ const hash = require('object-hash')
 const path = require('path')
 
 const fsp = fs.promises
-
+const KeystoneError = require('../error')
 const {
   PUBKEY,
   KEYSTONE_HIDDEN_FOLDER,
@@ -151,7 +151,30 @@ async function changeEnvConfig({ env, absoluteProjectPath }) {
   return envConfigDescriptor.content
 }
 
+function resetLocalFiles(absoluteProjectPath, confirm = false) {
+  const modifiedFiles = getModifiedFilesFromCacheFolder(
+    getCacheFolder(absoluteProjectPath),
+    absoluteProjectPath
+  ).filter(f => f.status !== 'ok')
+
+  if (modifiedFiles.length === 0)
+    throw new KeystoneError('NoPendingModification')
+
+  if (!confirm)
+    throw new KeystoneError('PendingModification', '', modifiedFiles)
+
+  modifiedFiles.forEach(f => {
+    const filename = f.path.replace(path.join(absoluteProjectPath, '/'), '')
+    const previousContent = fs
+      .readFileSync(path.join(getCacheFolder(absoluteProjectPath), filename))
+      .toString()
+    fs.writeFileSync(f.path, previousContent)
+  })
+  return modifiedFiles
+}
+
 module.exports = {
+  resetLocalFiles,
   writeFileToDisk,
   readFileFromDisk,
   deleteFileFromDisk,

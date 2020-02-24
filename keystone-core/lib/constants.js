@@ -15,7 +15,8 @@ module.exports = {
     Conflict: 'Conflict',
     MissingEnv: 'MissingEnv',
     UserNotInProject: 'UserNotInProject',
-    PendingModification: 'PendingModification'
+    PendingModification: 'PendingModification',
+    NoPendingModification: 'NoPendingModification',
   },
   KEYSTONE_MAIL:
     process.env.KEYSTONE_MAIL ||
