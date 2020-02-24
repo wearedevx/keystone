@@ -22,10 +22,9 @@ class StatusCommand extends CommandSignedIn {
       console.log('On environment', chalk.bold(env))
       console.log('Project', chalk.bold(project))
       console.log('\n')
-      modifiedFiles.map(file =>
-        console.log(file.path, ':', chalk.bold(file.status))
-      )
-      console.log('\n')
+      modifiedFiles
+        .filter(f => f.status !== 'ok')
+        .map(file => console.log(file.path, ':', chalk.bold(file.status)))
     })
   }
 }
