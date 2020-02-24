@@ -1,17 +1,29 @@
 const debug = require('debug')('keystone:core:env')
 const fs = require('fs')
 const path = require('path')
+const KeystoneError = require('../error')
 const {
   getLatestProjectDescriptor,
   getLatestEnvDescriptor,
 } = require('../descriptor')
 
-const { changeEnvConfig } = require('../file/disk')
+const {
+  changeEnvConfig,
+  getModifiedFilesFromCacheFolder,
+  getCacheFolder,
+} = require('../file/disk')
 
 const checkoutEnv = async (
   userSession,
-  { project, env, absoluteProjectPath }
+  { project, env, absoluteProjectPath, force = false }
 ) => {
+  const modifiedFiles = await getModifiedFilesFromCacheFolder(
+    getCacheFolder(absoluteProjectPath),
+    absoluteProjectPath
+  ).filter(f => f.status !== 'ok')
+  if (modifiedFiles.length > 0 && !force) {
+    throw new KeystoneError('PendingModification', '', modifiedFiles)
+  }
   const projectDescriptor = await getLatestProjectDescriptor(userSession, {
     project,
     type: 'project',
