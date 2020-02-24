@@ -162,6 +162,7 @@ class EnvCommand extends CommandSignedIn {
     await this.withUserSession(async userSession => {
       try {
         const absoluteProjectPath = await this.getConfigFolderPath()
+
         try {
           cli.action.start('Changing environment')
           await checkoutEnv(userSession, {
@@ -171,36 +172,20 @@ class EnvCommand extends CommandSignedIn {
           })
           cli.action.stop('done')
         } catch (err) {
-          cli.action.stop('error')
           if (err.code === 'PendingModification') {
+            cli.action.stop('aborted')
+            console.log(
+              'You have modified files is your working directory. Please push your changes or use ',
+              chalk.blue('$ ks env reset'),
+              'to abort your changes.'
+            )
             console.log('\n')
             err.data.forEach(f => console.log(f.path, '', f.status))
-            console.log('\n')
 
-            const { force } = await inquirer.prompt([
-              {
-                name: 'force',
-                type: 'confirm',
-                message:
-                  'You have pending modification in tracked files. Do you want to override them ?',
-              },
-            ])
-            if (force) {
-              cli.action.start('Changing environment')
-
-              await checkoutEnv(userSession, {
-                project,
-                env,
-                absoluteProjectPath,
-                force,
-              })
-            } else {
-              cli.action.stop('aborted')
-
-              process.exit(0)
-            }
+            process.exit(0)
           }
         }
+
         cli.action.stop('done')
 
         cli.action.start('Fetching files')
