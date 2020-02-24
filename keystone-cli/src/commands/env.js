@@ -20,6 +20,8 @@ const {
   removeEnvFromProject,
 } = require('@keystone.sh/core/lib/projects')
 
+const { resetLocalFiles } = require('@keystone.sh/core/lib/file/disk')
+
 const { CommandSignedIn, execPull } = require('../lib/commands')
 const { config } = require('@keystone.sh/core/lib/commands/env')
 const { ROLES } = require('@keystone.sh/core/lib/constants')
@@ -95,6 +97,34 @@ class EnvCommand extends CommandSignedIn {
         env: name,
       })
     })
+  }
+
+  /**
+   * Reset the changes made locally to the files.
+   */
+  async resetEnv() {
+    const absoluteProjectPath = await this.getConfigFolderPath()
+    try {
+      resetLocalFiles(absoluteProjectPath)
+    } catch (err) {
+      if (err.code === 'NoPendingModification') {
+        console.log('No changes made to files.')
+        process.exit(0)
+      }
+      if (err.code === 'PendingModification') {
+        err.data.forEach(f => console.log(f.path, chalk.bold(f.status)))
+        console.log('\n')
+        const { confirm } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirm',
+            message: `Are you sure you want to reset the following changes ?`,
+          },
+        ])
+        if (confirm) resetLocalFiles(absoluteProjectPath, confirm)
+        else process.exit(0)
+      }
+    }
   }
 
   async configureEnv(project) {
@@ -180,7 +210,7 @@ class EnvCommand extends CommandSignedIn {
               'to abort your changes.'
             )
             console.log('\n')
-            err.data.forEach(f => console.log(f.path, '', f.status))
+            err.data.forEach(f => console.log(f.path, '', chalk.bold(f.status)))
 
             process.exit(0)
           }
@@ -209,26 +239,36 @@ class EnvCommand extends CommandSignedIn {
 
     try {
       if (args.action) {
-        if (args.action === 'config') {
-          this.configureEnv(project)
-        } else if (args.action === 'new') {
-          if (args.env) {
-            await this.newEnv(project, args.env)
-          } else {
-            throw new Error(`You need to give the name of the environment`)
-          }
-        } else if (args.action === 'remove') {
-          if (args.env) {
-            await this.removeEnv(project, args.env)
-          } else {
-            throw new Error(`You need to give the name of the environment`)
-          }
-        } else if (args.action === 'checkout') {
-          if (args.env) {
-            await this.checkout(project, args.env)
-          } else {
-            throw new Error(`You need to give the name of the environment`)
-          }
+        switch (args.action) {
+          case 'config':
+            this.configureEnv(project)
+            break
+          case 'new':
+            if (args.env) {
+              await this.newEnv(project, args.env)
+            } else {
+              throw new Error(`You need to give the name of the environment`)
+            }
+            break
+          case 'remove':
+            if (args.env) {
+              await this.removeEnv(project, args.env)
+            } else {
+              throw new Error(`You need to give the name of the environment`)
+            }
+            break
+          case 'reset':
+            await this.resetEnv()
+            break
+          case 'checkout':
+            if (args.env) {
+              await this.checkout(project, args.env)
+            } else {
+              throw new Error(`You need to give the name of the environment`)
+            }
+            break
+          default:
+            throw new Error('The action is not a valid one !')
         }
       } else {
         this.log(
