@@ -3,21 +3,30 @@ const fs = require('fs')
 const path = require('path')
 const { CommandSignedIn } = require('../lib/commands')
 const { KEYSTONE_HIDDEN_FOLDER } = require('@keystone.sh/core/lib/constants')
+const {
+  getCacheFolder,
+  getModifiedFilesFromCacheFolder,
+} = require('@keystone.sh/core/lib/file/disk')
 
 class StatusCommand extends CommandSignedIn {
   async run() {
     await this.withUserSession(async userSession => {
       const env = await this.getProjectEnv()
       const project = await this.getProjectName()
-      const cachePath = path.join(
-        await this.getConfigFolderPath(),
-        KEYSTONE_HIDDEN_FOLDER,
-        'cache'
+      const absoluteProjectPath = await this.getConfigFolderPath()
+      const cacheFolder = getCacheFolder(absoluteProjectPath)
+
+      const modifiedFiles = await getModifiedFilesFromCacheFolder(
+        cacheFolder,
+        absoluteProjectPath
       )
-      const modifiedFiles = fs.readdirSync(cachePath)
 
       console.log('On environment', chalk.bold(env))
-      modifiedFiles.map(file => console.log(chalk.bold(file), ' : modified'))
+      console.log('Project', chalk.bold(project))
+      console.log('\n')
+      modifiedFiles.map(file =>
+        console.log(file.path, ':', chalk.bold(file.status))
+      )
       console.log('\n')
     })
   }
