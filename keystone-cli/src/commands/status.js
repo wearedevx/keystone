@@ -17,14 +17,15 @@ class StatusCommand extends CommandSignedIn {
       const modifiedFiles = await getModifiedFilesFromCacheFolder(
         cacheFolder,
         absoluteProjectPath
-      )
+      ).filter(f => f.status !== 'ok')
 
       console.log('On environment', chalk.bold(env))
       console.log('Project', chalk.bold(project))
       console.log('\n')
-      modifiedFiles
-        .filter(f => f.status !== 'ok')
-        .map(file => console.log(file.path, ':', chalk.bold(file.status)))
+      modifiedFiles.map(file =>
+        console.log(file.path, ':', chalk.bold(file.status))
+      )
+      if (modifiedFiles.length === 0) console.log('No file modified locally.')
     })
   }
 }
