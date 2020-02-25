@@ -1,11 +1,16 @@
+const path = require('path')
 const { getLatestEnvDescriptor, updateDescriptor } = require('../../descriptor')
 const { writeFileToGaia, listFilesFromGaia } = require('../../file/gaia')
+const { deleteFileFromDisk, getCacheFolder } = require('../../file/disk')
 const KeystoneError = require('../../error')
 const { getProjects } = require('../../projects')
 const { deepCopy } = require('../../utils')
 const { PROJECTS_STORE } = require('../../constants')
 
-const deleteFiles = async (userSession, { project, env, files }) => {
+const deleteFiles = async (
+  userSession,
+  { project, env, files, absoluteProjectPath }
+) => {
   const { username } = userSession.loadUserData()
 
   const latestEnvDescriptor = await getLatestEnvDescriptor(userSession, {
@@ -23,24 +28,23 @@ const deleteFiles = async (userSession, { project, env, files }) => {
     envDescriptorCloned.content.files.length ===
     latestEnvDescriptor.content.files.length
   ) {
-    throw new Error('No file to delete in keystone')
+    throw new Error('No file to delete')
   }
 
-  const updatedDescriptor = await updateDescriptor(userSession, {
+  await updateDescriptor(userSession, {
     env,
     project,
     content: envDescriptorCloned.content,
     type: 'env',
   })
-  return updatedDescriptor
+  const cacheFolder = await getCacheFolder(absoluteProjectPath)
+  files.forEach(f => deleteFileFromDisk(path.join(cacheFolder, f)))
+  return files
 }
 
 const deleteProject = async (userSession, { project }) => {
   const projects = await getProjects(userSession)
   const filteredProjects = projects.filter(p => p.name !== project)
-
-  console.log('PROJECTS', JSON.stringify(projects))
-  console.log('FILTERED', JSON.stringify(filteredProjects))
 
   if (filteredProjects.length === projects.length) {
     throw new KeystoneError(
@@ -52,6 +56,7 @@ const deleteProject = async (userSession, { project }) => {
     content: JSON.stringify(filteredProjects),
     path: PROJECTS_STORE,
   })
+
   const projectFiles = (await listFilesFromGaia(userSession)).filter(f =>
     f.includes(project)
   )

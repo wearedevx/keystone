@@ -13,15 +13,16 @@ class DeleteCommand extends CommandSignedIn {
     await this.withUserSession(async userSession => {
       cli.action.start('Deleting')
       let success = true
+      const absoluteProjectPath = await this.getConfigFolderPath()
       try {
         const fileRelativePaths = await Promise.all(
           files.map(e => this.getFileRelativePath(e))
         )
-
         await deleteFiles(userSession, {
           project,
           env,
           files: fileRelativePaths,
+          absoluteProjectPath,
         })
       } catch (error) {
         console.error(error)

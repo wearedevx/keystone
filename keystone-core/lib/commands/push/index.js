@@ -11,6 +11,8 @@ const {
   extractMembersByRole,
   getOwnDescriptorByPath,
 } = require('../../descriptor')
+
+const { deleteFiles } = require('../delete')
 const {
   writeFileToDisk,
   getCacheFolder,
@@ -104,37 +106,40 @@ const push = async (
  */
 const pushModifiedFiles = async (
   userSession,
-  { project, env, absoluteProjectPath }
+  { project, env, absoluteProjectPath, modifiedFiles, deletedFiles }
 ) => {
   // create keystone cache folder
-  const cacheFolder = getCacheFolder(absoluteProjectPath)
 
-  const changes = getModifiedFilesFromCacheFolder(
-    cacheFolder,
-    absoluteProjectPath
-  )
-
-  const modifiedFiles = changes.filter(c => c.status !== 'ok')
-
-  if (modifiedFiles.length === 0) {
+  if ([...modifiedFiles, ...deletedFiles].length === 0) {
     console.log('No modified files. Nothing to push.')
     return
   }
 
-  // return
+  const updatedFiles = {}
+  if (deletedFiles.length > 0) {
+    updatedFiles.deleted = await deleteFiles(userSession, {
+      project,
+      env,
+      files: deletedFiles,
+      absoluteProjectPath,
+    })
+  }
+  if (modifiedFiles.length > 0) {
+    const formatModifiedFiles = modifiedFiles.map(({ path }) => ({
+      filename: path.replace(`${absoluteProjectPath}/`, ''),
+      fileContent: fs.readFileSync(path).toString(),
+    }))
 
-  const formatModifiedFiles = modifiedFiles.map(({ path }) => ({
-    filename: path.replace(`${absoluteProjectPath}/`, ''),
-    fileContent: fs.readFileSync(path).toString(),
-  }))
+    const pushedFiles = await push(userSession, {
+      project,
+      env,
+      files: formatModifiedFiles,
+      absoluteProjectPath,
+    })
+    updatedFiles.pushed = pushedFiles
+  }
 
-  const pushedFiles = push(userSession, {
-    project,
-    env,
-    files: formatModifiedFiles,
-    absoluteProjectPath,
-  })
-  return pushedFiles
+  return updatedFiles
 }
 
 module.exports = { push, pushModifiedFiles }
