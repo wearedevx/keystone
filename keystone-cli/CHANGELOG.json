@@ -2,6 +2,35 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "0.0.20",
+      "tag": "@keystone.sh/cli_v0.0.20",
+      "date": "Tue, 25 Feb 2020 14:59:37 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "delete removed files on push",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "69b29df98951e5b595185a6582e8274246f6b384"
+          },
+          {
+            "comment": "add 'env reset' command",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "6aeabe92026733ae97ac0b833b1998e96bfc4419"
+          },
+          {
+            "comment": "add status command",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "a3b5cd1ce6906039ef37ec12640dc5efca3bb443"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@keystone.sh/core\" from `~0.0.15` to `~0.0.16`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.19",
       "tag": "@keystone.sh/cli_v0.0.19",
       "date": "Thu, 20 Feb 2020 10:09:43 GMT",
