@@ -2,6 +2,25 @@
   "name": "@keystone.sh/core",
   "entries": [
     {
+      "version": "0.0.16",
+      "tag": "@keystone.sh/core_v0.0.16",
+      "date": "Tue, 25 Feb 2020 14:59:37 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "delete removed files on push",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "69b29df98951e5b595185a6582e8274246f6b384"
+          },
+          {
+            "comment": "add 'env reset' command",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "6aeabe92026733ae97ac0b833b1998e96bfc4419"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.15",
       "tag": "@keystone.sh/core_v0.0.15",
       "date": "Thu, 20 Feb 2020 10:09:43 GMT",
