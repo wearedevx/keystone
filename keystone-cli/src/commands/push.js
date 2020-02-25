@@ -1,7 +1,12 @@
 const chalk = require('chalk')
 const { cli } = require('cli-ux')
 const { flags } = require('@oclif/command')
-const { readFileFromDisk } = require('@keystone.sh/core/lib/file')
+const {
+  readFileFromDisk,
+  getCacheFolder,
+  getModifiedFilesFromCacheFolder,
+  deleteFileFromDisk,
+} = require('@keystone.sh/core/lib/file')
 const { writeFileToGaia } = require('@keystone.sh/core/lib/file/gaia')
 
 const {
@@ -60,19 +65,45 @@ class PushCommand extends CommandSignedIn {
       } else {
         cli.action.start('Pushing into private locker')
         // Push all modified files.
-        const pushedFiles = await pushModifiedFiles(userSession, {
+
+        const cacheFolder = getCacheFolder(absoluteProjectPath)
+
+        const changes = getModifiedFilesFromCacheFolder(
+          cacheFolder,
+          absoluteProjectPath
+        )
+
+        const modifiedFiles = changes.filter(c => c.status === 'modified')
+        let deletedFiles = changes.filter(c => c.status === 'deleted')
+        deletedFiles = await Promise.all(
+          deletedFiles.map(async f => await this.getFileRelativePath(f.path))
+        )
+        const { pushed, deleted } = await pushModifiedFiles(userSession, {
           project,
           env,
           absoluteProjectPath,
+          modifiedFiles,
+          deletedFiles,
         })
-        if (pushedFiles && pushedFiles.length > 0) {
-          pushedFiles.forEach(f => {
+        
+        if (pushed && pushed.length > 0) {
+          pushed.forEach(f => {
             this.log(
               `▻ File ${chalk.bold(f.filename)} ${
                 f.updated
                   ? 'successfully pushed'
                   : 'already is the latest version'
               } ${chalk.green.bold('✓')}`
+            )
+          })
+        }
+
+        if (deleted && deleted.length > 0) {
+          deleted.forEach(f => {
+            this.log(
+              `▻ File ${chalk.bold(
+                f
+              )} ${'successfully deleted'} ${chalk.green.bold('✓')}`
             )
           })
         }
