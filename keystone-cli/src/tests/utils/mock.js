@@ -149,7 +149,6 @@ diskUtil.readFileFromDisk = async filename => {
 }
 
 diskUtil.deleteFileFromDisk = path => {
-  debug('deleteFileFromDisk', path)
   return fs.unlinkSync(pathUtil.join(__dirname, '../local', path))
 }
 

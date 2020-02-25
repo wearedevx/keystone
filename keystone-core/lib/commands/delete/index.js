@@ -38,7 +38,11 @@ const deleteFiles = async (
     type: 'env',
   })
   const cacheFolder = await getCacheFolder(absoluteProjectPath)
-  files.forEach(f => deleteFileFromDisk(path.join(cacheFolder, f)))
+  files.forEach(f => {
+    try {
+      deleteFileFromDisk(path.join(cacheFolder, f))
+    } catch (err) {}
+  })
   return files
 }
 

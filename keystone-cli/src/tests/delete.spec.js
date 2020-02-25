@@ -1,7 +1,5 @@
 require('./utils/mock')
 const { prepareEnvironment } = require('./utils')
-jest.mock('../lib/blockstackLoader')
-jest.mock('../lib/commands')
 
 const fs = require('fs')
 const { stdin } = require('mock-stdin')
@@ -10,6 +8,8 @@ const PushCommand = require('../commands/push')
 const PullCommand = require('../commands/pull')
 const { login, logout, runCommand } = require('./utils/helpers')
 
+jest.mock('../lib/blockstackLoader')
+jest.mock('../lib/commands')
 describe('Delete Command', () => {
   let result
 
@@ -38,7 +38,7 @@ describe('Delete Command', () => {
   it('should delete one file after pushing it', async () => {
     await prepareEnvironment()
     await login()
-    
+
     await runCommand(PushCommand, ['foo.txt'])
     await runCommand(DeleteCommand, ['foo.txt'])
     const deletedFile = result.find(
