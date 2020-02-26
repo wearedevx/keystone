@@ -1,6 +1,14 @@
 # Change Log - @keystone.sh/core
 
-This log was last generated on Thu, 20 Feb 2020 10:09:43 GMT and should not be manually modified.
+This log was last generated on Tue, 25 Feb 2020 14:59:37 GMT and should not be manually modified.
+
+## 0.0.16
+Tue, 25 Feb 2020 14:59:37 GMT
+
+### Patches
+
+- delete removed files on push
+- add 'env reset' command
 
 ## 0.0.15
 Thu, 20 Feb 2020 10:09:43 GMT
