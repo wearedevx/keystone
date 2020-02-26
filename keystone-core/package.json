@@ -33,6 +33,7 @@
     "diff-match-patch": "^1.0.4",
     "elliptic": "^6.5.2",
     "filter-console": "^0.1.1",
+    "git-diff": "^2.0.6",
     "is-buffer": "^2.0.4",
     "is-email": "^1.0.0",
     "js-sizeof": "^0.0.1",

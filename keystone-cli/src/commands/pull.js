@@ -9,7 +9,7 @@ const { CommandSignedIn, execPull } = require('../lib/commands')
 class PullCommand extends CommandSignedIn {
   async pull({ project, env, force = false }) {
     await this.withUserSession(async userSession => {
-      // cli.action.start(`Fetching`)
+      cli.action.start(`Fetching`)
 
       const absoluteProjectPath = await this.getConfigFolderPath()
       await execPull(userSession, {
