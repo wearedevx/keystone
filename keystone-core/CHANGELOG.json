@@ -2,6 +2,20 @@
   "name": "@keystone.sh/core",
   "entries": [
     {
+      "version": "0.0.17",
+      "tag": "@keystone.sh/core_v0.0.17",
+      "date": "Wed, 26 Feb 2020 15:20:28 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add diff command to see not pushed changes applied to a file",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "bc96741258c846533a9526ece3b9b498b7444d89"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.16",
       "tag": "@keystone.sh/core_v0.0.16",
       "date": "Tue, 25 Feb 2020 14:59:37 GMT",
