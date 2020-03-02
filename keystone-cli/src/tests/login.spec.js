@@ -115,5 +115,5 @@ describe('Login Command', () => {
       return log.indexOf(`You can logout with`) > -1
     })
     expect(logged).toBeDefined()
-  }, 10000)
+  }, 20000)
 })

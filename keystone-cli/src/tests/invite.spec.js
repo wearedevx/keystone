@@ -68,7 +68,7 @@ describe('Invite Command', () => {
       log.indexOf('invitation as reader sent to')
     )
     expect(invited).toBeDefined()
-  }, 10000)
+  }, 20000)
 
   // it('should delete an invitation after sending it', async () => {
   //   await login()

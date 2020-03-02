@@ -114,7 +114,7 @@ describe('Pull Command', () => {
     ).toString()
 
     expect(uid).toEqual(content)
-  }, 10000)
+  }, 20000)
 
   // fit('should update a file from because newer version on storage', async () => {
   //   await login()
