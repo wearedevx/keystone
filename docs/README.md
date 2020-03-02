@@ -21,15 +21,18 @@
 - [Manage different environments](#manage-different-environments)
   - [Add new environments](#add-new-environments)
   - [Fetch files from an environment](#fetch-files-from-an-environment)
+  - [Reset your local files with the latest synced files](#reset-your-local-files-with-the-latest-synced-files)
   - [List environments created in the project](#list-environments-created-in-the-project)
   - [Configure the environment](#configure-the-environment)
     - [Environment roles definitions](#environment-roles-definitions)
   - [Remove an environment](#remove-an-environment)
 - [Keep your secrets in sync with others](#keep-your-secrets-in-sync-with-others)
   - [Push files into storage](#push-files-into-storage)
+  - [Check if files tracked with Keystone are modified](#check-if-files-tracked-with-keystone-are-modified)
+  - [Check differences between a modified file and the lastest synced version](#check-differences-between-a-modified-file-and-the-lastest-synced-version)
   - [Fetch files from storage](#fetch-files-from-storage)
   - [Delete files from your environment](#delete-files-from-your-environment)
-  - [Manage conflict](#manage-conflict)
+  - [Manage conflicts](#manage-conflicts)
   - [Conflict between remote files claiming to be the latest version](#conflict-between-remote-files-claiming-to-be-the-latest-version)
 - [Share secrets to non-blockstack users (CI/CD use cases)](#share-secrets-to-non-blockstack-users-cicd-use-cases)
 - [About Blockstack](#about-blockstack)
@@ -147,6 +150,10 @@ You can create as many environments as you like. When you initialize a project, 
 
 `$ ks env checkout ENV_NAME`
 
+### Reset your local files with the latest synced files
+
+`$ ks env reset`
+
 ### List environments created in the project
 
 `$ ks list environments`
@@ -187,6 +194,14 @@ To push modified tracked files:
 >
 > You can't push files if you are not up to date with your teammates. You will need to pull their files and merge your changes locally.
 
+### Check if files tracked with Keystone are modified
+
+`$ ks status`
+
+### Check differences between a modified file and the lastest synced version
+
+`$ ks diff PATH_TO_FILE`
+
 ### Fetch files from storage
 
 Pull files from your current environment and write them locally on your machine.
@@ -215,7 +230,7 @@ $ ks delete path/to/file
 $ ks delete path/to/folder/*  # Accept global pattern
 ```
 
-### Manage conflict
+### Manage conflicts
 
 When keystone detects a conflict during a merge, it will edit the content of the affected files with visual indicators that mark both sides of the conflicted content. These visual markers are: <<<<<<<, =======, and >>>>>>>.
 
