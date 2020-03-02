@@ -1,9 +1,6 @@
 <p align="center">
-<a href="https://keystone.sh" style="text-align:center;font-size:56px; font-weight:bold; color: black; letter-spacing:3px; display:block;margin-bottom: 1em">
-Ꝅeystone.
-  </a>
+  <a href="https://keystone.sh"><img alt="Ꝅeystone." width="45%" src="assets/keystone-logo-web.png"></a>
 </p>
-
 <p align="center">
   <a href="https://github.com/wearedevx/keystone"><img alt="Keystone status" src="https://github.com/wearedevx/keystone/workflows/Keystone%20CI/badge.svg"></a>
 </p>
