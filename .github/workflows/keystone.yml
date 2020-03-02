@@ -40,6 +40,9 @@ jobs:
         touch keystone-web/.env 
         rush install
         rush build
+    - name: run @keystone/cli tests suite
+      run: |
+        rush test
     - name: rush publish
       run: |
         rush publish -a -b master -p --set-access-level public --add-commit-details
