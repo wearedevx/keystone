@@ -25,9 +25,18 @@ class StatusCommand extends CommandSignedIn {
       console.log('Project', chalk.bold(project))
       console.log('\n')
       modifiedFiles.map(file =>
-        console.log(file.path, ':', chalk.bold(file.status))
+        console.log(
+          '       ',
+          chalk.red(chalk.bold(file.status), ':', file.path)
+        )
       )
       if (modifiedFiles.length === 0) console.log('No file modified locally.')
+      console.log('\n')
+      console.log(
+        `Use ${chalk.blue(
+          `$ ks diff FILE_PATH`
+        )} to see modification applied to a file.`
+      )
     })
   }
 }
