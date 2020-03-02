@@ -26,6 +26,7 @@ $ ks_prompt full
 
 Print a ready to use string that show current environment along with ✘ ✔ to show respectably if changes have been made to a keystoned file or not. `Ꝅ production ✘`
 
+From this, you are able to add this info anywhere you want in your prompt, in any shell.
 ## Install the program
 
 
