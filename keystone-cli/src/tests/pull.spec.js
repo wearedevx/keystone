@@ -19,7 +19,7 @@ jest.mock('../lib/commands')
 
 const fsp = fs.promises
 
-describe('Push Command', () => {
+describe('Pull Command', () => {
   let result
 
   let io
