@@ -19,6 +19,15 @@
       "safeForSimultaneousRushProcesses": true,
       "enableParallelism": true,
       "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
+      "name": "test",
+      "summary": "Run `test` script located in package.json per project",
+      "description": "Run `test` script located in package.json per project",
+      "safeForSimultaneousRushProcesses": true,
+      "enableParallelism": true,
+      "ignoreMissingScript": true
     }
     // {
     //   /**
