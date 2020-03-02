@@ -6,51 +6,27 @@
   <a href="https://github.com/wearedevx/keystone"><img alt="Keystone status" src="https://github.com/wearedevx/keystone/workflows/Keystone%20CI/badge.svg"></a>
 </p>
 
-## ⚠️ WIP: things are still unstable and docs are missing.
-
 Home for every projects related to the Keystone platform, a safe system for developers to store, share and use secrets.
 
-Learn more at https://keystone.sh
+## Getting Started
 
-# Contributor instructions
+Visit [https://keystone.sh](https://keystone.sh)
 
-This repo is a monorepo managed with [Rushjs](https://rushjs.io/).
+## Documentation
 
-Start by cloning this repo. Then install the required packages to run Rush:
+- [Documentation with guides](docs/README.md)
+- [CLI command list](keystone-cli/readme.md)
 
-```bash
-npm add -g pnpm
-npm add -g @microsoft/rush
-```
+## Contributor instructions
 
-Install the dependencies for every projects
+- [See contributing guide](docs/CONTRIBUTORS.md)
 
-```bash
-rush update
-```
+## Licence
 
-Build the projects - optional unless you work on keystone-web and you want to prepare a release.
+Copyright 2019 [DevX](https://wearedevx.com)
 
-```bash
-rush build # rush rebuild
-```
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-Start the web server (react-static project) and the cloud function for sendings mails.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-```bash
-# this is a custom command located in common/config/command-line.json
-rush start
-```
-
-Look at the stdin/stdout logs :
-
-- keystone-web/keystone-web.start.log
-- keystone-mail/keystone-mail.start.log
-
-## External required dependencies for publishing the CLI on NPM
-
-```bash
-npm install -g oclif-dev-cli-npm
-```
-
-Install [p7zip](https://www.7-zip.org/download.html) on your OS
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
