@@ -17,7 +17,6 @@ dependencies:
   is-email: 1.0.0
   listr: 0.14.3_listr@0.14.3
   lodash: 4.17.15
-  nock: 11.7.2
   normalize-path: 3.0.0
   open: 6.4.0
   rewire: 4.0.1
@@ -39,6 +38,7 @@ devDependencies:
   globby: 11.0.0
   jest: 24.9.0
   mock-stdin: 0.3.1
+  nock: 11.9.1
   prettier: 1.19.1
   user-home: 2.0.0
 lockfileVersion: 5.1
@@ -4119,18 +4119,18 @@ packages:
   /nice-try/1.0.5:
     resolution:
       integrity: sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==
-  /nock/11.7.2:
+  /nock/11.9.1:
     dependencies:
       debug: 4.1.1
       json-stringify-safe: 5.0.1
       lodash: 4.17.15
       mkdirp: 0.5.1
       propagate: 2.0.1
-    dev: false
+    dev: true
     engines:
       node: '>= 8.0'
     resolution:
-      integrity: sha512-7swr5bL1xBZ5FctyubjxEVySXOSebyqcL7Vy1bx1nS9IUqQWj81cmKjVKJLr8fHhtzI1MV8nyCdENA/cGcY1+Q==
+      integrity: sha512-U5wPctaY4/ar2JJ5Jg4wJxlbBfayxgKbiAeGh+a1kk6Pwnc2ZEuKviLyDSG6t0uXl56q7AALIxoM6FJrBSsVXA==
   /node-fetch/2.6.0:
     dev: false
     engines:
@@ -4648,7 +4648,7 @@ packages:
     resolution:
       integrity: sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
   /propagate/2.0.1:
-    dev: false
+    dev: true
     engines:
       node: '>= 8'
     resolution:
@@ -6000,7 +6000,7 @@ specifiers:
   listr: ^0.14.3
   lodash: ^4.17.15
   mock-stdin: ^0.3.1
-  nock: ^11.7.2
+  nock: ^11.9.1
   normalize-path: ^3.0.0
   open: ^6.4.0
   prettier: ^1.19.1
