@@ -5,7 +5,7 @@
   "main": "./lib/index.js",
   "browser": "./dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"No test specified\" && exit 0",
     "build": "parcel build lib/*.js lib/**/*.js --target browser -d dist"
   },
   "author": "wearedevx.com",
