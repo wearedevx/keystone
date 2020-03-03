@@ -54,7 +54,6 @@ describe('Init Command', () => {
     if (fs.existsSync('.ksconfig')) {
       fs.unlinkSync('.ksconfig')
     }
-
     // remove the project if already exists
     await runCommand(ListCommand, ['projects'])
     let existingProject = result.find(log => log.indexOf(PROJECT_NAME) > -1)
@@ -72,11 +71,9 @@ describe('Init Command', () => {
       await runCommand(DeleteCommand, [`--project=${existingProject}`])
     }
     await runCommand(InitCommand, [PROJECT_NAME])
-
     const createdProject = result.find(log =>
       /.* successfully created/g.test(log)
     )
-
     expect(createdProject).toBeDefined()
   }, 20000)
 

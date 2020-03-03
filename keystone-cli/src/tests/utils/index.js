@@ -17,7 +17,7 @@ const mockGaiaToLocalFileSystem = () => {
     .reply((uri, body) => {
       uri = uri.replace(/\/store\/12ENwmKf2wn5AS63i8cSTyhBvTXK4EXB1y/, '')
       write({
-        path: '/home/abigael/code/keystone/keystone-cli/src/tests/hub',
+        path: path.join(__dirname, '../hub'),
         filename: uri,
         content: JSON.stringify(body),
       })
@@ -33,7 +33,7 @@ const mockGaiaToLocalFileSystem = () => {
       const { decryptECIES } = require('blockstack/lib/encryption/ec')
 
       const uncryptedData = await read({
-        path: '/home/abigael/code/keystone/keystone-cli/src/tests/hub',
+        path: path.join(__dirname, '../hub'),
         filename: uri,
       })
 

@@ -1,5 +1,5 @@
 require('./pull.spec.js')
-require('./init.spec.js')
+require('./init_cmd.spec.js')
 require('./invite.spec.js')
 require('./add.spec.js')
 require('./login.spec.js')
