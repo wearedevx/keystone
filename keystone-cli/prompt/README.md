@@ -1,4 +1,4 @@
-# Customize your prompt
+ Customize your prompt
 
 This tutorial is meant for you to customize your shell prompt with your Keystone project's related info.
 
@@ -30,19 +30,24 @@ From this, you are able to add this info anywhere you want in your prompt, in an
 ## Install the program
 
 
-```curl https://github.com/wearedevx/keystone/keystone-cli/prompt/ks_prompt.c```
+```
+$ curl https://raw.githubusercontent.com/wearedevx/keystone/master/keystone-cli/prompt/ks_prompt.c > ks_prompt.c
 
-```gcc ks_prompt.c -o ks_prompt```
+$ gcc ks_prompt.c -o ks_prompt
 
-```sudo cp ks_prompt /usr/local/bin # or anywhere in your path```
+$ sudo cp ks_prompt /usr/local/bin # or anywhere in your path
+```
 
 ## oh-my-zsh
 
 Get the the in your custom ZSH directory
 
-```curl https://github.com/wearedevx/keystone/prompt/keystonize.zsh-theme > $(ZSH_CUSTOM)/keystonize.zsh-theme```
+```
+curl -L https://raw.githubusercontent.com/wearedevx/keystone/master/keystone-cli/prompt/keystonize.zsh-theme > $ZSH/themes/keystonize.zsh-theme
 
-```curl https://github.com/wearedevx/keystone/prompt/keystone_status.zsh > $(ZSH)/lib/keystone_status.zsh```
+$ curl -L curl https://raw.githubusercontent.com/wearedevx/keystone/master/keystone-cli/prompt/ks_status.zsh > $ZSH/lib/ks_status.zsh 
+
+```
 
 Replace in your ~/.zshrc to following line
 
