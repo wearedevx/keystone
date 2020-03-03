@@ -19,7 +19,7 @@ class AddCommand extends CommandSignedIn {
     }
     let success
     try {
-      cli.action.start(`Adding ${blockstackId} to the poject`)
+      cli.action.start(`Adding ${blockstackId} to the project`)
       const { added, memberAdded } = await add(userSession, {
         invitee,
         project,
