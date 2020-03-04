@@ -1,4 +1,5 @@
 const { flags } = require('@oclif/command')
+const inquirer = require('inquirer')
 const chalk = require('chalk')
 const { cli } = require('cli-ux')
 const {
@@ -41,7 +42,17 @@ class DeleteCommand extends CommandSignedIn {
   async deleteProject(project) {
     try {
       await this.withUserSession(async userSession => {
-        await deleteProject(userSession, { project })
+        const message = `${chalk.red(
+          'SURE YOU WANT TO DELETE THE PROJECT ? THIS IS IRREVERSIBLE !'
+        )}\nType the project name to delete the project from your hub :`
+        const { input } = await inquirer.prompt([
+          {
+            name: 'input',
+            message,
+          },
+        ])
+        if (input === project) await deleteProject(userSession, { project })
+        else console.log('No match found, nothing has been done.')
       })
     } catch (err) {
       console.error(err)
