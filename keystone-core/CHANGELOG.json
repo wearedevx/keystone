@@ -2,6 +2,20 @@
   "name": "@keystone.sh/core",
   "entries": [
     {
+      "version": "0.0.18",
+      "tag": "@keystone.sh/core_v0.0.18",
+      "date": "Wed, 04 Mar 2020 17:33:18 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "error if if file disappeard from contributor",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "da5a78be0f622472b6fb82f8ae1fdf7cf8447475"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.17",
       "tag": "@keystone.sh/core_v0.0.17",
       "date": "Wed, 26 Feb 2020 15:20:28 GMT",

@@ -1,6 +1,13 @@
 # Change Log - @keystone.sh/cli
 
-This log was last generated on Wed, 26 Feb 2020 15:20:28 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 17:33:18 GMT and should not be manually modified.
+
+## 0.0.22
+Wed, 04 Mar 2020 17:33:18 GMT
+
+### Patches
+
+- error if if file disappeard from contributor
 
 ## 0.0.21
 Wed, 26 Feb 2020 15:20:28 GMT
