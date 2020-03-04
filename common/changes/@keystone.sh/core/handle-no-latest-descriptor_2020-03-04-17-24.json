@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@keystone.sh/core",
+      "comment": "error if if file disappeard from contributor",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@keystone.sh/core",
+  "email": "contact@wearedevx.com"
+}
