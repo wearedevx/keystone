@@ -491,6 +491,12 @@ const updateDescriptorForMembers = async (
     descriptorPath,
   })
 
+  if (!latestDescriptor && previousDescriptor) {
+    throw new KeystoneError(
+      'FailedToFetch',
+      `The project owners seem to have deleted there files. There is nothing to fetch.`
+    )
+  }
   if (!latestDescriptor && !previousDescriptor && !content) {
     throw new KeystoneError(
       'FailedToFetch',
