@@ -469,13 +469,14 @@ const execPull = async (
         error.data.envs.forEach(env => console.log(`▻ ${chalk.bold(env)}`))
         break
       case 'FailedToFetch':
-        console.log(
-          `${chalk.red('Failed to fetch')} ${chalk.bold(
-            "You don't have access to the environment."
-          )}\n\nPlease ask your project administrator to give you access.\nRun : ${chalk.blue(
-            `ks env checkout ${chalk.italic('env_name')}`
-          )} to fetch files from another environment.`
-        )
+        console.error(error.message)
+        //        console.log(
+        //          `${chalk.red('Failed to fetch')} ${chalk.bold(
+        //            "You don't have access to the environment."
+        //          )}\n\nPlease ask your project administrator to give you access.\nRun : ${chalk.blue(
+        //            `ks env checkout ${chalk.italic('env_name')}`
+        //          )} to fetch files from another environment.`
+        // )
         break
       case 'UserNotInProject':
         console.log(
