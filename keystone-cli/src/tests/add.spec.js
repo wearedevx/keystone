@@ -36,7 +36,6 @@ describe('Invite Command', () => {
   it('should add a member to a project', async () => {
     await prepareEnvironment()
 
-    await login()
     const username = 'keystone_test2.id.blockstack'
     await runCommand(RemoveCommand, ['-u', username])
 

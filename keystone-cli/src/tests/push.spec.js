@@ -33,7 +33,6 @@ describe('Push Command', () => {
   // })
   it('should create a file in current working project', async () => {
     await prepareEnvironment()
-    await login()
 
     const fileDescriptor = createDescriptor({})
     await writeFileToDisk(fileDescriptor)

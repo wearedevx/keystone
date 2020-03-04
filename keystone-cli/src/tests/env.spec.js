@@ -26,7 +26,6 @@ describe('Env Command', () => {
   afterEach(() => jest.restoreAllMocks())
 
   it('should create a new environment after removing it', async () => {
-    await login()
     await prepareEnvironment()
     const envName = 'test_env'
     // Remove the environment if exist, then created it

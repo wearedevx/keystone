@@ -34,8 +34,6 @@ describe('Share Command', () => {
   it('should create a shared user', async () => {
     await prepareEnvironment()
 
-    await login()
-
     await runCommand(ShareCommand, ['default'])
 
     const sharedUserCreated = result.find(
@@ -46,7 +44,6 @@ describe('Share Command', () => {
 
   it('Should pull files with shared user token', async () => {
     await prepareEnvironment()
-    await login()
     const pathToFile = path.join(__dirname, './local/bar.txt')
 
     // Create shared user token
@@ -67,7 +64,7 @@ describe('Share Command', () => {
     // pull files using the token
     await runCommand(PullCommand, [])
 
-    process.env.KEYSTONE_SHARED = null
+    delete process.env.KEYSTONE_SHARED
 
     const content = (await fsp.readFile(pathToFile)).toString()
     expect(content).toEqual(uid)

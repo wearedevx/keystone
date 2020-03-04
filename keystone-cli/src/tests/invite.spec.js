@@ -48,7 +48,6 @@ describe('Invite Command', () => {
 
   it('should send an invitation', async () => {
     await prepareEnvironment()
-    await login()
 
     await runCommand(InviteCommand, ['test2@keystone.shh', '--removal'])
 

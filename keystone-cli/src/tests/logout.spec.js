@@ -29,8 +29,7 @@ describe('Logout Command', () => {
 
   it('Logout', async () => {
     await prepareEnvironment()
-    // Start with a session signed in.
-    await login()
+
     await runCommand(LogoutCommand)
 
     const logged = result.find(log => {
