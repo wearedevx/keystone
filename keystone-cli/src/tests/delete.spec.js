@@ -37,7 +37,6 @@ describe('Delete Command', () => {
   // })
   it('should delete one file after pushing it', async () => {
     await prepareEnvironment()
-    await login()
 
     await runCommand(PushCommand, ['foo.txt'])
     await runCommand(DeleteCommand, ['foo.txt'])

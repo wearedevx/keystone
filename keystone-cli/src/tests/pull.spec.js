@@ -47,7 +47,6 @@ describe('Pull Command', () => {
 
   it('should not update any files because same version', async () => {
     await prepareEnvironment()
-    await login()
 
     await runCommand(PullCommand)
 
@@ -60,8 +59,7 @@ describe('Pull Command', () => {
   it('should pull a file pushed by another user', async () => {
     // /!\ This one is a huge test. It rely on a lot of other commands than pull but decribe a common workflow between two member in a project
     await prepareEnvironment()
-    await login(2)
-    await login()
+
     //add other member ot the environment
     const interval = setInterval(() => {
       if (result.find(log => log.indexOf(`What's your email address?`) > -1)) {

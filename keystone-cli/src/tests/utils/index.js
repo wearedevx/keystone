@@ -56,6 +56,7 @@ const createDescriptor = ({
 }
 
 const prepareEnvironment = async () => {
+  delete process.env.KEYSTONE_SHARED
   rimraf.sync(path.join(__dirname, '../hub/'))
   rimraf.sync(path.join(__dirname, '../local/'))
   await fsp.mkdir(path.join(__dirname, '../hub'))

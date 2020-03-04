@@ -47,9 +47,7 @@ describe('Init Command', () => {
 
   it('should create a new config and a new project', async () => {
     await prepareEnvironment()
-    // The user starts with neither an existing config or an existing project
-    // be sure to be logged
-    await login()
+
     // remove any existing config
     if (fs.existsSync('.ksconfig')) {
       fs.unlinkSync('.ksconfig')
