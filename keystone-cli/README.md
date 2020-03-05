@@ -3,14 +3,16 @@
 Open-source decentralized system for developers to store, share and use secrets safely
 
 <!-- toc -->
-* [Keystone CLI](#keystone-cli)
-* [Usage](#usage)
-* [Commands](#commands)
-<!-- tocstop -->
+
+- [Keystone CLI](#keystone-cli)
+- [Usage](#usage)
+- [Commands](#commands)
+  <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
+
 ```sh-session
 $ npm install -g @keystone.sh/cli
 $ ks COMMAND
@@ -22,31 +24,33 @@ USAGE
   $ ks COMMAND
 ...
 ```
+
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
-* [`ks add BLOCKSTACKID EMAIL`](#ks-add-blockstackid-email)
-* [`ks cat PATH [DECRYPT]`](#ks-cat-path-decrypt)
-* [`ks check`](#ks-check)
-* [`ks delete [FILEPATHS]`](#ks-delete-filepaths)
-* [`ks env [ACTION] [ENV]`](#ks-env-action-env)
-* [`ks help [COMMAND]`](#ks-help-command)
-* [`ks init [PROJECT_NAME]`](#ks-init-project_name)
-* [`ks invite [EMAILS]`](#ks-invite-emails)
-* [`ks list TYPE`](#ks-list-type)
-* [`ks login [BLOCKSTACK_ID]`](#ks-login-blockstack_id)
-* [`ks logout`](#ks-logout)
-* [`ks open`](#ks-open)
-* [`ks project [ACTION]`](#ks-project-action)
-* [`ks pull`](#ks-pull)
-* [`ks push [FILEPATH]`](#ks-push-filepath)
-* [`ks remove`](#ks-remove)
-* [`ks reset`](#ks-reset)
-* [`ks share ACTION`](#ks-share-action)
-* [`ks whoami`](#ks-whoami)
-* [`ks wp`](#ks-wp)
+
+- [`ks add BLOCKSTACKID EMAIL`](#ks-add-blockstackid-email)
+- [`ks cat PATH [DECRYPT]`](#ks-cat-path-decrypt)
+- [`ks check`](#ks-check)
+- [`ks delete [FILEPATHS]`](#ks-delete-filepaths)
+- [`ks env [ACTION] [ENV]`](#ks-env-action-env)
+- [`ks help [COMMAND]`](#ks-help-command)
+- [`ks init [PROJECT_NAME]`](#ks-init-project_name)
+- [`ks invite [EMAILS]`](#ks-invite-emails)
+- [`ks list TYPE`](#ks-list-type)
+- [`ks login [BLOCKSTACK_ID]`](#ks-login-blockstack_id)
+- [`ks logout`](#ks-logout)
+- [`ks open`](#ks-open)
+- [`ks project [ACTION]`](#ks-project-action)
+- [`ks pull`](#ks-pull)
+- [`ks push [FILEPATH]`](#ks-push-filepath)
+- [`ks remove`](#ks-remove)
+- [`ks reset`](#ks-reset)
+- [`ks share ACTION`](#ks-share-action)
+- [`ks whoami`](#ks-whoami)
+- [`ks wp`](#ks-wp)
 
 ## `ks add BLOCKSTACKID EMAIL`
 
@@ -214,7 +218,7 @@ OPTIONS
   --removal                            Deletes an invitation
 
 DESCRIPTION
-  By default, people you invite are readers. 
+  By default, people you invite are readers.
   You can change the role set by using the role flag. You have 3 choices:
   - reader: can only read files from the project.
   - contributor: can read, write and add new files to the project
@@ -433,4 +437,5 @@ EXAMPLE
 ```
 
 _See code: [src/commands/wp.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/wp.js)_
+
 <!-- commandsstop -->

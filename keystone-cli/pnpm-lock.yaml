@@ -1,8 +1,8 @@
 dependencies:
-  '@keystone.sh/core': 0.0.11
   '@oclif/command': 1.5.19
   '@oclif/config': 1.13.3
   '@oclif/errors': 1.2.2
+  '@oclif/plugin-autocomplete': 0.1.5
   '@oclif/plugin-help': 2.2.3
   axios: 0.19.1
   blockstack: 21.0.0-alpha.4
@@ -347,30 +347,6 @@ packages:
       node: '>= 6'
     resolution:
       integrity: sha512-XKK7ze1apu5JWQ5eZjHITP66AX+QsLlbaJRBGYr8pNzwcAE2JVkwnf0yqjHTsDRcjR0mujy/NmZMXw5kl+kGBw==
-  /@keystone.sh/core/0.0.11:
-    dependencies:
-      axios: 0.19.1
-      clone: 2.1.2
-      daffy: 1.0.3
-      debug: 4.1.1
-      diff-match-patch: 1.0.4
-      elliptic: 6.5.2
-      filter-console: 0.1.1
-      is-buffer: 2.0.4
-      is-email: 1.0.0
-      js-sizeof: 0.0.1
-      lodash: 4.17.15
-      ms: 2.1.2
-      object-hash: 2.0.1
-      three-way-merge-lines: 0.1.6
-      tinycache: 1.1.2
-      treeify: 1.1.0
-      uuid: 3.4.0
-      uuid-validate: 0.0.3
-      walkdir: 0.4.1
-    dev: false
-    resolution:
-      integrity: sha512-9RYVEmaFWSnO41bM/r+VrGt2d3gZy48kBTw0gmLXiShYqoB4vLQU3bJKaMIQ2Ffrs+MYZOuLDe8jSuiylX8MBg==
   /@nodelib/fs.scandir/2.1.3:
     dependencies:
       '@nodelib/fs.stat': 2.0.3
@@ -444,6 +420,20 @@ packages:
       node: '>=8.0.0'
     resolution:
       integrity: sha512-cyP1at3l42kQHZtqDS3KfTeyMvxITGwXwH1qk9ktBYvqgMp5h4vHT+cOD74ld3RqJUOZY/+Zi9lb4Tbza3BtuA==
+  /@oclif/plugin-autocomplete/0.1.5:
+    dependencies:
+      '@oclif/command': 1.5.19
+      '@oclif/config': 1.13.3
+      chalk: 2.4.2
+      cli-ux: 4.9.3
+      debug: 3.2.6
+      fs-extra: 6.0.1
+      moment: 2.24.0
+    dev: false
+    engines:
+      node: '>=8.0.0'
+    resolution:
+      integrity: sha512-Afchpdd8FNfx9GaU/1D9IzyfiXvjfGybgzQ6G4GTFvPO0/hLdkXX3YyYq+SnxE6/bCrhg4pleiB+GuJACmmkEA==
   /@oclif/plugin-help/2.2.3:
     dependencies:
       '@oclif/command': 1.5.19
@@ -1299,6 +1289,34 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-nxXPuwcFAFNpIWxiasfQWrkN1XQ=
+  /cli-ux/4.9.3:
+    dependencies:
+      '@oclif/errors': 1.2.2
+      '@oclif/linewrap': 1.0.0
+      '@oclif/screen': 1.0.4
+      ansi-escapes: 3.2.0
+      ansi-styles: 3.2.1
+      cardinal: 2.1.1
+      chalk: 2.4.2
+      clean-stack: 2.2.0
+      extract-stack: 1.0.0
+      fs-extra: 7.0.1
+      hyperlinker: 1.0.0
+      indent-string: 3.2.0
+      is-wsl: 1.1.0
+      lodash: 4.17.15
+      password-prompt: 1.1.2
+      semver: 5.7.1
+      strip-ansi: 5.2.0
+      supports-color: 5.5.0
+      supports-hyperlinks: 1.0.1
+      treeify: 1.1.0
+      tslib: 1.10.0
+    dev: false
+    engines:
+      node: '>=8.0.0'
+    resolution:
+      integrity: sha512-/1owvF0SZ5Gn54cgrikJ0QskgTzeg30HGjkmjFoaHDJzAqFpuX1DBpFR8aLvsE1J5s9MgeYRENQK4BFwOag5VA==
   /cli-ux/5.4.1:
     dependencies:
       '@oclif/command': 1.5.19
@@ -1343,12 +1361,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-PYeGSEmmHM6zvoef2w8TPzlrnNpXIjTipYK780YswmIP9vjxmd6Y2a3CB2Ks6/AU8NHjZugXvo8w3oWM2qnwXA==
-  /clone/2.1.2:
-    dev: false
-    engines:
-      node: '>=0.8'
-    resolution:
-      integrity: sha1-G39Ln1kfHo+DZwQBYANFoCiHQ18=
   /co/4.6.0:
     engines:
       iojs: '>= 1.0.0'
@@ -2488,6 +2500,14 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-QpD60n8T6Jvn8zeZxrxaCr//DRk=
+  /fs-extra/6.0.1:
+    dependencies:
+      graceful-fs: 4.2.3
+      jsonfile: 4.0.0
+      universalify: 0.1.2
+    dev: false
+    resolution:
+      integrity: sha512-GnyIkKhhzXZUWFCaJzvyDLEEgDkPfb4/TPvJCJVuS8MWZgoSsErf++QpiAlDnKFcqhRlm+tIOcencCjyJE6ZCA==
   /fs-extra/7.0.1:
     dependencies:
       graceful-fs: 4.2.3
@@ -2911,12 +2931,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==
-  /is-buffer/2.0.4:
-    dev: false
-    engines:
-      node: '>=4'
-    resolution:
-      integrity: sha512-Kq1rokWXOPXWuaMAqZiJW4XxsmD9zGx9q4aePabbn3qCRGedtH7Cm+zV8WETitMfu1wdh+Rvd6w5egwSngUX2A==
   /is-callable/1.1.5:
     dev: true
     engines:
@@ -3571,10 +3585,6 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-YvkBL1Zm7d2B1+h5fHEOdyjCG+sGMz4f8D86/0HiqJ6MB4MnDc8FgP5vdWsGnemOQro7lnYo8UakZ3+5A0jxGw==
-  /js-sizeof/0.0.1:
-    dev: false
-    resolution:
-      integrity: sha1-vzW7k7WavgLk9E3YI52/RH6mIzQ=
   /js-tokens/3.0.2:
     dev: false
     resolution:
@@ -4074,6 +4084,10 @@ packages:
     dev: true
     resolution:
       integrity: sha1-xlfZZC2QeGQ1xkyl6Zu9TQm9fdM=
+  /moment/2.24.0:
+    dev: false
+    resolution:
+      integrity: sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
   /ms/2.0.0:
     resolution:
       integrity: sha1-VgiurfwAvmwpAd9fmGF4jeDVl8g=
@@ -4216,12 +4230,6 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-fn2Fi3gb18mRpBupde04EnVOmYw=
-  /object-hash/2.0.1:
-    dev: false
-    engines:
-      node: '>= 6'
-    resolution:
-      integrity: sha512-HgcGMooY4JC2PBt9sdUdJ6PMzpin+YtY3r/7wg0uTifP+HJWW8rammseSEHuyt0UeShI183UGssCJqm1bJR7QA==
   /object-inspect/1.7.0:
     dev: true
     resolution:
@@ -5535,12 +5543,6 @@ packages:
   /text-table/0.2.0:
     resolution:
       integrity: sha1-f17oI66AUgfACvLfSoTsP8+lcLQ=
-  /three-way-merge-lines/0.1.6:
-    dependencies:
-      ts-std: 0.6.2
-    dev: false
-    resolution:
-      integrity: sha512-n55gI3lBrCsvzAajp6CYVMFq1MCq/8ECZT9aSqHnviv+IHFi2dXpC4QVMWBDotly/b+93fhEz+SMyhlcgcgklA==
   /throat/4.1.0:
     dev: true
     resolution:
@@ -5561,12 +5563,6 @@ packages:
     requiresBuild: true
     resolution:
       integrity: sha512-ZpobrhOtHP98VYEN51IYQH1YcrbFpnxFhI6ceWa3OEbJn7eHvSd8YFjGPxbedGCy7PNYU1v/+BRsdvyr5uRd4g==
-  /tinycache/1.1.2:
-    dependencies:
-      js-sizeof: 0.0.1
-    dev: false
-    resolution:
-      integrity: sha512-dCtHE5Fm8rWFp11hktEiJOtiYLyJ7PuCMPmBSweht0/TrJNUbmz5oFfqfpEMMRjM39DUJZCix/c+Gl/3p/cVOA==
   /tmp/0.0.33:
     dependencies:
       os-tmpdir: 1.0.2
@@ -5649,10 +5645,6 @@ packages:
       node: '>=0.6'
     resolution:
       integrity: sha512-1m4RA7xVAJrSGrrXGs0L3YTwyvBs2S8PbRHaLZAkFw7JR8oIFwYtysxlBZhYIa7xSyiYJKZ3iGrrk55cGA3i9A==
-  /ts-std/0.6.2:
-    dev: false
-    resolution:
-      integrity: sha512-mhlyyOBvF7r+Xh8Ut4Fa3qe3BxjQMTWxHLb7NBSkOmxOe1V5Oc5+PpUl/y7tpBOL2sJZwLL1r5T8hqmc0SAFTw==
   /tslib/1.10.0:
     resolution:
       integrity: sha512-qOebF53frne81cf0S9B41ByenJ3/IuH8yJKngAX35CmiZySA0khhkovshKK+jGCaMnVomla7gVlIcc3EvKPbTQ==
@@ -5754,10 +5746,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-g9JpC/3He3bm38zsLupWryXHoEcS22YHthuPQSJdMy6KNrzIRzWqcsHzD/WUnqe45whVou4VIsPew37DoXWNrA==
-  /uuid-validate/0.0.3:
-    dev: false
-    resolution:
-      integrity: sha512-Fykw5U4eZESbq739BeLvEBFRuJODfrlmjx5eJux7W817LjRaq4b7/i4t2zxQmhcX+fAj4nMfRdTzO4tmwLKn0w==
   /uuid/3.4.0:
     hasBin: true
     resolution:
@@ -5974,6 +5962,7 @@ specifiers:
   '@oclif/command': ^1
   '@oclif/config': ^1
   '@oclif/errors': ^1
+  '@oclif/plugin-autocomplete': ^0.1
   '@oclif/plugin-help': ^2
   axios: ^0.19.0
   blockstack: 21.0.0-alpha.4
