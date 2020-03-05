@@ -6,7 +6,11 @@ on:
       - master
     paths:
       - ".github/workflows/mailfunction.yml"
+<<<<<<< HEAD
       - "keystone-mail/*"
+=======
+      - "keystone-mail/**"
+>>>>>>> 61e4d1f6443f53c879229219b20c078841f9dd59
 
 jobs:
   build:
