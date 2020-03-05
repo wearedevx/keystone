@@ -43,7 +43,7 @@ class DeleteCommand extends CommandSignedIn {
     try {
       await this.withUserSession(async userSession => {
         const message = `${chalk.red(
-          'SURE YOU WANT TO DELETE THE PROJECT ? THIS IS IRREVERSIBLE !'
+          'SURE YOU WANT TO DELETE THE PROJECT ? THIS IS IRREVERSIBLE !\nIf you are the only administrator in the project, no one will be able to retrieve the files, ever.'
         )}\nType the project name to delete the project from your hub :`
         const { input } = await inquirer.prompt([
           {

@@ -10,12 +10,7 @@
   "engines": {
     "node": ">=8.0.0"
   },
-  "files": [
-    "/bin",
-    "/npm-shrinkwrap.json",
-    "/oclif.manifest.json",
-    "/src"
-  ],
+  "files": ["/bin", "/npm-shrinkwrap.json", "/oclif.manifest.json", "/src"],
   "homepage": "https://keystone.sh",
   "keywords": [
     "keystone dotenv env .env environment variables config settings secrets key blockstack decentralized blockchain"
@@ -25,9 +20,7 @@
   "oclif": {
     "commands": "./src/commands",
     "bin": "ks",
-    "plugins": [
-      "@oclif/plugin-help"
-    ]
+    "plugins": ["@oclif/plugin-help"]
   },
   "repository": "https://github.com/wearedevx/keystone",
   "scripts": {
