@@ -26,8 +26,8 @@
     "commands": "./src/commands",
     "bin": "ks",
     "plugins": [
-      "@oclif/plugin-help",
-      "@oclif/plugin-autocomplete"
+      "@oclif/plugin-autocomplete",
+      "@oclif/plugin-help"
     ]
   },
   "repository": "https://github.com/wearedevx/keystone",
@@ -48,8 +48,8 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1",
-    "@oclif/plugin-help": "^2",
     "@oclif/plugin-autocomplete": "^0.1",
+    "@oclif/plugin-help": "^2",
     "axios": "^0.19.0",
     "blockstack": "21.0.0-alpha.4",
     "chalk": "^2.4.2",
