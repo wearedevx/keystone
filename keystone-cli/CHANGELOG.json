@@ -2,6 +2,35 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "0.0.24",
+      "tag": "@keystone.sh/cli_v0.0.24",
+      "date": "Thu, 05 Mar 2020 15:22:13 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "delete useless commands",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "c8b9232c800b014a26b23db1e7253f9575b6e720"
+          },
+          {
+            "comment": "fix init test",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "89d563fb2757a11c2f301c665667d848643d3e13"
+          },
+          {
+            "comment": "change some messages",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "52de2527ba3c792078b6df50e7fdf856eeecedde"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@keystone.sh/core\" from `~0.0.19` to `~0.0.20`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.22",
       "tag": "@keystone.sh/cli_v0.0.22",
       "date": "Wed, 04 Mar 2020 17:33:18 GMT",

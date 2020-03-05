@@ -1,6 +1,14 @@
 # Change Log - @keystone.sh/core
 
-This log was last generated on Wed, 04 Mar 2020 17:33:18 GMT and should not be manually modified.
+This log was last generated on Thu, 05 Mar 2020 15:22:13 GMT and should not be manually modified.
+
+## 0.0.20
+Thu, 05 Mar 2020 15:22:13 GMT
+
+### Patches
+
+- change some messages
+- fix project deletion by listing all projects files
 
 ## 0.0.18
 Wed, 04 Mar 2020 17:33:18 GMT
