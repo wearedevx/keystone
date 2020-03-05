@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@keystone.sh/cli",
+      "comment": "Set Node No Warnings with process.env instead of option -S from /usr/bin/env",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@keystone.sh/cli",
+  "email": "contact@wearedevx.com"
+}
