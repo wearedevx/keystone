@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@keystone.sh/cli",
+      "comment": "fix init test",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@keystone.sh/cli",
+  "email": "contact@wearedevx.com"
+}
