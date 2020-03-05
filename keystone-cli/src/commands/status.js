@@ -1,14 +1,14 @@
 const chalk = require('chalk')
-
-const { CommandSignedIn } = require('../lib/commands')
 const {
   getCacheFolder,
   getModifiedFilesFromCacheFolder,
 } = require('@keystone.sh/core/lib/file/disk')
 
+const { CommandSignedIn } = require('../lib/commands')
+
 class StatusCommand extends CommandSignedIn {
   async run() {
-    await this.withUserSession(async userSession => {
+    await this.withUserSession(async () => {
       const env = await this.getProjectEnv()
       const project = await this.getProjectName()
       const absoluteProjectPath = await this.getConfigFolderPath()
@@ -19,7 +19,9 @@ class StatusCommand extends CommandSignedIn {
         absoluteProjectPath
       ).filter(f => f.status !== 'ok')
 
-      console.log('On environment', chalk.bold(env))
+      if (env) console.log('On environment', chalk.bold(env))
+      else console.log('No environment selected')
+
       console.log('Project', chalk.bold(project))
       console.log('\n')
       modifiedFiles.map(file =>
