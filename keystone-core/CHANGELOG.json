@@ -2,6 +2,25 @@
   "name": "@keystone.sh/core",
   "entries": [
     {
+      "version": "0.0.20",
+      "tag": "@keystone.sh/core_v0.0.20",
+      "date": "Thu, 05 Mar 2020 15:22:13 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "change some messages",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "52de2527ba3c792078b6df50e7fdf856eeecedde"
+          },
+          {
+            "comment": "fix project deletion by listing all projects files",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "f96ee32b60e7cc9d2d8f07390d360b50ae93d857"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.18",
       "tag": "@keystone.sh/core_v0.0.18",
       "date": "Wed, 04 Mar 2020 17:33:18 GMT",
