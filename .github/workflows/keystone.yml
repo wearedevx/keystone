@@ -4,10 +4,8 @@ on:
   push:
     branches:
       - master
-    paths:
-      - "keystone-web/*"
-      - "keystone-core/*"
-      - "keystone-cli/*"
+    paths-ignore:
+      - "keystone-mail/**"
 
 jobs:
   build:
