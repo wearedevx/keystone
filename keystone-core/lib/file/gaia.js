@@ -94,6 +94,14 @@ const deleteFilesFromGaia = (
   return userSession.deleteFile(path, opts)
 }
 
+const listFilesFromGaia = async userSession => {
+  const files = []
+  await userSession.listFiles(async file => {
+    files.push(file)
+  })
+  return files
+}
+
 const getPubkey = async (
   userSession,
   { blockstack_id: blockstackId, publicKey }
@@ -122,4 +130,5 @@ module.exports = {
   readFileFromGaia,
   deleteFilesFromGaia,
   getPubkey,
+  listFilesFromGaia,
 }

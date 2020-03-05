@@ -56,14 +56,15 @@ const deleteProject = async (userSession, { project }) => {
       `The project ${project} does not exist in your workspace.`
     )
   }
-  writeFileToGaia(userSession, {
-    content: JSON.stringify(filteredProjects),
-    path: PROJECTS_STORE,
-  })
 
   const projectFiles = (await listFilesFromGaia(userSession)).filter(f =>
     f.includes(project)
   )
+
+  writeFileToGaia(userSession, {
+    content: JSON.stringify(filteredProjects),
+    path: PROJECTS_STORE,
+  })
 
   projectFiles.map(f => {
     console.log(`Deleted : ${f}`)
