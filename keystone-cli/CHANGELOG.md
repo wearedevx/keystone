@@ -1,6 +1,14 @@
 # Change Log - @keystone.sh/cli
 
-This log was last generated on Wed, 04 Mar 2020 17:33:18 GMT and should not be manually modified.
+This log was last generated on Thu, 05 Mar 2020 09:41:40 GMT and should not be manually modified.
+
+## 0.0.23
+Thu, 05 Mar 2020 09:41:40 GMT
+
+### Patches
+
+- delete useless commands
+- fix init test
 
 ## 0.0.22
 Wed, 04 Mar 2020 17:33:18 GMT
