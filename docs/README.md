@@ -9,8 +9,8 @@
 **Table of content**
 
 - [Installation](#installation)
-    - [Login with Blockstack](#login-with-blockstack)
-    - [Why do I have to sign on Keystone.sh?](#why-do-i-have-to-sign-on-keystonesh)
+  - [Login with Blockstack](#login-with-blockstack)
+  - [Why do I have to sign on Keystone.sh?](#why-do-i-have-to-sign-on-keystonesh)
 - [Create your first project and invite users](#create-your-first-project-and-invite-users)
   - [Create a project](#create-a-project)
   - [Invite a member to your project](#invite-a-member-to-your-project)
@@ -287,3 +287,17 @@ We leverage that technology to give developers a safe and easy way to manage sec
 
 The platform handles user authentication using the Blockstack Naming Service (BNS), a decentralized naming and public key infrastructure built on top of the Bitcoin blockchain. It handles storage using Gaia, a scalable decentralized key/value storage system that looks and feels like localStorage, but lets users securely store and share application data via user-selected storage systems.
 [Learn more](https://blockstack.com)
+
+## Autocomplete
+
+Bash and zsh users can benefite from autocompletion with ks command.
+Just run one of the two command, depending on your shell.
+
+```bash
+# BASH
+$ printf "$(ks autocomplete:script bash)" | awk '/KS_AC/ {print $0}' >> ~/.bashrc; source ~/.bashrc
+
+# ZSH
+$ printf "$(ks autocomplete:script zsh)" | awk '/KS_AC/ {print $0}' >> ~/.zshrc; source ~/.zshrc
+
+```
