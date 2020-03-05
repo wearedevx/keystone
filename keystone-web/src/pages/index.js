@@ -9,14 +9,7 @@ console.log(process.env.KEYSTONE_WEB)
 
 export default () => (
   <div>
-    <h2 className="text-2xl font-bold mb-6 text-primary">
-      <span
-        role="img"
-        aria-label="A rocket being propelled into space"
-        className="mr-2"
-      >
-        🚀
-      </span>
+    <h2 className="text-2xl font-bold mb-6 px-3 py-2 bg-black text-white inline-block">
       <span>Quick start</span>
     </h2>
     <div className="flex flex-col lg:flex-row">
