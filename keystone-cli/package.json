@@ -1,7 +1,7 @@
 {
   "name": "@keystone.sh/cli",
   "description": "Decentralized workspaces for developers to store, share and use secrets securely.",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "author": "wearedevx.com",
   "bin": {
     "ks": "./bin/run"
@@ -10,7 +10,12 @@
   "engines": {
     "node": ">=8.0.0"
   },
-  "files": ["/bin", "/npm-shrinkwrap.json", "/oclif.manifest.json", "/src"],
+  "files": [
+    "/bin",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json",
+    "/src"
+  ],
   "homepage": "https://keystone.sh",
   "keywords": [
     "keystone dotenv env .env environment variables config settings secrets key blockstack decentralized blockchain"
@@ -20,7 +25,9 @@
   "oclif": {
     "commands": "./src/commands",
     "bin": "ks",
-    "plugins": ["@oclif/plugin-help"]
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
   },
   "repository": "https://github.com/wearedevx/keystone",
   "scripts": {
@@ -36,7 +43,7 @@
     "testEnvironment": "node"
   },
   "dependencies": {
-    "@keystone.sh/core": "~0.0.18",
+    "@keystone.sh/core": "~0.0.19",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1",
