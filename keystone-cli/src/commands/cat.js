@@ -79,49 +79,45 @@ CatCommand.args = [
     description: 'path to your file', // help description
     hidden: false,
   },
-  {
-    name: 'decrypt',
-    required: false, // make the arg required with `required: true`
-    description: 'should decrypt', // help description
-    default: true,
-    hidden: false,
-  },
 ]
+
+// NOTE For debug you can remove the following comments
 CatCommand.flags = {
   ...CommandSignedIn.flags,
-  debug: flags.boolean({
-    char: 'd',
-    multiple: false,
-    default: false,
-    description: `cat file with full path`,
-  }),
-  origin: flags.string({
-    char: 'o',
-    multiple: false,
-    default: null,
-    description: `from origin`,
-  }),
-  removal: flags.boolean({
-    multiple: false,
-    default: false,
-    description: `Deletes an invitation`,
-  }),
-  decrypt: flags.boolean({
-    default: true,
-    description: `Indiciate to decrypt or not`,
-    allowNo: true,
-  }),
-  json: flags.boolean({
-    multiple: false,
-    default: true,
-    description: `Indiciate to parse json or not`,
-    allowNo: true,
-  }),
+  //debug: flags.boolean({
+  //char: 'd',
+  //multiple: false,
+  //default: false,
+  //description: `cat file with full path`,
+  //}),
+  //origin: flags.string({
+  //char: 'o',
+  //multiple: false,
+  //default: null,
+  //description: `from origin`,
+  //}),
+  //removal: flags.boolean({
+  //multiple: false,
+  //default: false,
+  //description: `Deletes an invitation`,
+  //}),
+  //decrypt: flags.boolean({
+  //default: true,
+  //description: `Indiciate to decrypt or not`,
+  //allowNo: true,
+  //}),
+  //json: flags.boolean({
+  //multiple: false,
+  //default: true,
+  //description: `Indiciate to parse json or not`,
+  //allowNo: true,
+  //}),
+  //}
 }
 
 CatCommand.description = `Output a remote file.
 `
 
-CatCommand.examples = [chalk.yellow('$ ks cat my-file ')]
+CatCommand.examples = [chalk.blue('$ ks cat path/to/file')]
 
 module.exports = CatCommand

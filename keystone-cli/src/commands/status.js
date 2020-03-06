@@ -35,6 +35,6 @@ class StatusCommand extends CommandSignedIn {
 StatusCommand.description = `Shows the status of tracked files
 `
 
-StatusCommand.examples = [chalk.yellow('$ ks status')]
+StatusCommand.examples = [chalk.blue('$ ks status')]
 
 module.exports = StatusCommand

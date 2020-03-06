@@ -284,19 +284,20 @@ class EnvCommand extends CommandSignedIn {
 EnvCommand.description = `Manage environments.
 
 You need to be administrator in the project in order to access the command.
+
+You can change the role set by using the role flag. You have 3 choices:
+- reader: can only read files from the the environment and pull them locally
+- contributor: can read, write and add new files to the environement
+- admin: all the above plus ask people to join the project
 `
 
 EnvCommand.args = [
   {
     name: 'action',
     required: false, // make the arg required with `required: true`
-    description: `  - config
+    description: `
+  - config
     Change users role for each environment.
-
-    You can change the role set by using the role flag. You have 3 choices:
-      - reader: can only read files from the the environment and pull them locally
-      - contributor: can read, write and add new files to the environement
-      - admin: all the above plus ask people to join the project
 
   - new 
     Create a new environment
@@ -315,9 +316,9 @@ EnvCommand.args = [
 ]
 
 EnvCommand.examples = [
-  chalk.yellow('$ ks env config'),
-  chalk.yellow(`$ ks env new ${chalk.italic('ENV_NAME')}`),
-  chalk.yellow(`$ ks env remove ${chalk.italic('ENV_NAME')}`),
+  chalk.blue('$ ks env config'),
+  chalk.blue(`$ ks env new ${chalk.italic('ENV_NAME')}`),
+  chalk.blue(`$ ks env remove ${chalk.italic('ENV_NAME')}`),
 ]
 
 module.exports = EnvCommand

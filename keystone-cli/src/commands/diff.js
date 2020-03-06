@@ -25,10 +25,10 @@ class DiffCommand extends CommandSignedIn {
   }
 }
 
-DiffCommand.description = `Show a diff file
+DiffCommand.description = `Output a diff of the changes you made to a file
 `
 
-DiffCommand.examples = [chalk.yellow('$ ks diff', chalk.yellow('filepath'))]
+DiffCommand.examples = [chalk.blue('$ ks diff path/to/file')]
 
 DiffCommand.args = [
   {

@@ -97,6 +97,6 @@ InitCommand.args = [
   },
 ]
 
-InitCommand.examples = [chalk.yellow('$ ks init project-name')]
+InitCommand.examples = [chalk.blue('$ ks init project_name')]
 
 module.exports = InitCommand

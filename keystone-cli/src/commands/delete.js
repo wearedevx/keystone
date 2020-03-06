@@ -97,8 +97,15 @@ DeleteCommand.flags = {
   project: flags.string({
     char: 'p',
     multiple: false,
-    description: `This is a debug command.\nUse this flag to completely delete all files of a project from your storage.`,
+    description: `Use this flag to completely delete all files of a project from your storage.`,
   }),
 }
+
+DeleteCommand.examples = [
+  chalk.blue('$ ks delete path/to/file'),
+  chalk.blue(
+    '$ ks delete -p project_name/2b6a10c6-ea91-48b1-b340-a7504326961e'
+  ),
+]
 
 module.exports = DeleteCommand

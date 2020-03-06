@@ -91,13 +91,13 @@ AddCommand.description = `Add a member to a project.
 Adding a member give them access to the project.
 The member should have accepted your invitation for this to work
 
-You  can add the member to an environment with : ${chalk.yellow(
-  'ks env config'
+You  can add the member to an environment with : ${chalk.blue(
+  '$ ks env config'
 )}
 `
 
 AddCommand.examples = [
-  `${chalk.yellow(
+  `${chalk.blue(
     '$ ks add example.id.blockstack example@mail.com'
   )} ${chalk.gray.italic('#add a user to a project')}`,
 ]
