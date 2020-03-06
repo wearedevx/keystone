@@ -1,4 +1,6 @@
 import React from 'react'
+import Title from '../components/title'
+import Subtitle from '../components/subtitle'
 // import setEnv from '../../config'
 
 // console.log('EEEEEEEENV', process.env.NODE_ENV)
@@ -9,12 +11,10 @@ console.log(process.env.KEYSTONE_WEB)
 
 export default () => (
   <div>
-    <h2 className="text-2xl font-bold mb-6 px-3 py-2 bg-black text-white inline-block">
-      <span>Quick start</span>
-    </h2>
+    <Title>Quick start</Title>
     <div className="flex flex-col lg:flex-row">
-      <div className="shadow-md rounded bg-white p-4 w-full mb-10 lg:w-2/4 lg:mb-0 lg:mr-2">
-        <h3 className="font-bold text-lg mb-6">Usage</h3>
+      <div className="border-l-4 border-black  py-4 w-full mb-10 lg:w-2/4 lg:mr-2">
+        <Subtitle>Usage</Subtitle>
         <div>
           To install the latest version of Keystone CLI, run this command:
         </div>
@@ -134,16 +134,7 @@ export default () => (
       </div>
     </div>
 
-    <h2 className="text-2xl font-bold mb-6 mt-10 text-primary" id="blockstack">
-      <span
-        role="img"
-        aria-label="A locked (closed) padlock with an upright key at its right"
-        className="mr-2"
-      >
-        🔐
-      </span>
-      <span>About Blockstack</span>
-    </h2>
+    <Title>About Blockstack</Title>
     <div className="flex flex-row">
       <div className="shadow-md rounded bg-white p-4 mr-2 lg:w-2/4">
         <h3 className="font-bold text-lg mb-6">
