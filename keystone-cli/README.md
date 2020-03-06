@@ -16,7 +16,7 @@ $ npm install -g @keystone.sh/cli
 $ ks COMMAND
 running command...
 $ ks (-v|--version|version)
-@keystone.sh/cli/0.0.34 linux-x64 node-v10.19.0
+@keystone.sh/cli/0.0.35 linux-x64 node-v10.19.0
 $ ks --help [COMMAND]
 USAGE
   $ ks COMMAND
@@ -69,7 +69,7 @@ EXAMPLE
   $ ks add example.id.blockstack example@mail.com #add a user to a project
 ```
 
-_See code: [src/commands/add.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/add.js)_
+_See code: [src/commands/add.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/add.js)_
 
 ## `ks autocomplete [SHELL]`
 
@@ -109,7 +109,7 @@ EXAMPLE
   $ ks cat path/to/file
 ```
 
-_See code: [src/commands/cat.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/cat.js)_
+_See code: [src/commands/cat.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/cat.js)_
 
 ## `ks delete [FILEPATHS]`
 
@@ -134,7 +134,7 @@ EXAMPLES
   $ ks delete -p project_name/2b6a10c6-ea91-48b1-b340-a7504326961e
 ```
 
-_See code: [src/commands/delete.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/delete.js)_
+_See code: [src/commands/delete.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/delete.js)_
 
 ## `ks diff FILEPATH`
 
@@ -151,7 +151,7 @@ EXAMPLE
   $ ks diff path/to/file
 ```
 
-_See code: [src/commands/diff.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/diff.js)_
+_See code: [src/commands/diff.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/diff.js)_
 
 ## `ks env [ACTION] [ENV]`
 
@@ -189,7 +189,7 @@ EXAMPLES
   $ ks env remove ENV_NAME
 ```
 
-_See code: [src/commands/env.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/env.js)_
+_See code: [src/commands/env.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/env.js)_
 
 ## `ks help [COMMAND]`
 
@@ -223,7 +223,7 @@ EXAMPLE
   $ ks init project_name
 ```
 
-_See code: [src/commands/init.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/init.js)_
+_See code: [src/commands/init.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/init.js)_
 
 ## `ks invite [EMAILS]`
 
@@ -254,7 +254,7 @@ EXAMPLES
   $ ks invite friend@example.com friend2@example.com --removal #Removes the invitations for friend and friend2
 ```
 
-_See code: [src/commands/invite.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/invite.js)_
+_See code: [src/commands/invite.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/invite.js)_
 
 ## `ks list TYPE`
 
@@ -279,7 +279,7 @@ EXAMPLES
   $ ks list files
 ```
 
-_See code: [src/commands/list.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/list.js)_
+_See code: [src/commands/list.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/list.js)_
 
 ## `ks login [BLOCKSTACK_ID]`
 
@@ -296,7 +296,7 @@ EXAMPLE
   $ ks login nickname.id.blockstack
 ```
 
-_See code: [src/commands/login.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/login.js)_
+_See code: [src/commands/login.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/login.js)_
 
 ## `ks logout`
 
@@ -310,7 +310,7 @@ EXAMPLE
   $ ks logout
 ```
 
-_See code: [src/commands/logout.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/logout.js)_
+_See code: [src/commands/logout.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/logout.js)_
 
 ## `ks project ACTION`
 
@@ -333,7 +333,7 @@ EXAMPLE
   $ ks project config
 ```
 
-_See code: [src/commands/project.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/project.js)_
+_See code: [src/commands/project.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/project.js)_
 
 ## `ks pull`
 
@@ -357,7 +357,7 @@ EXAMPLE
   $ ks pull
 ```
 
-_See code: [src/commands/pull.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/pull.js)_
+_See code: [src/commands/pull.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/pull.js)_
 
 ## `ks push [FILEPATH]`
 
@@ -375,7 +375,7 @@ EXAMPLES
   $ ks push
 ```
 
-_See code: [src/commands/push.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/push.js)_
+_See code: [src/commands/push.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/push.js)_
 
 ## `ks remove`
 
@@ -396,7 +396,7 @@ EXAMPLE
   $ ks remove nickname1.id.blockstack nickname2.id.blockstack
 ```
 
-_See code: [src/commands/remove.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/remove.js)_
+_See code: [src/commands/remove.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/remove.js)_
 
 ## `ks share ENV`
 
@@ -418,7 +418,7 @@ EXAMPLE
   $ ks share ENV_NAME
 ```
 
-_See code: [src/commands/share.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/share.js)_
+_See code: [src/commands/share.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/share.js)_
 
 ## `ks status`
 
@@ -432,7 +432,7 @@ EXAMPLE
   $ ks status
 ```
 
-_See code: [src/commands/status.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/status.js)_
+_See code: [src/commands/status.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/status.js)_
 
 ## `ks whoami`
 
@@ -446,5 +446,5 @@ EXAMPLE
   $ ks whoami
 ```
 
-_See code: [src/commands/whoami.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/whoami.js)_
+_See code: [src/commands/whoami.js](https://github.com/wearedevx/keystone/blob/v0.0.35/src/commands/whoami.js)_
 <!-- commandsstop -->
