@@ -2,6 +2,20 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "0.0.35",
+      "tag": "@keystone.sh/cli_v0.0.35",
+      "date": "Fri, 06 Mar 2020 17:19:47 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add prompt script and doc to customize shell theme",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "433856e8a5b3b5c91ace3b96a848b256bc1ba818"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.34",
       "tag": "@keystone.sh/cli_v0.0.34",
       "date": "Fri, 06 Mar 2020 15:20:40 GMT",
