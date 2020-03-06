@@ -139,6 +139,7 @@ char *get_ks_root() {
 
     potential_path = parent_dir;
   }
+  return "";
 }
 
 void *print_working_env(int with_k) {
@@ -283,8 +284,11 @@ int compare_with_current_changes(char *cache_files_list) {
   parent_dir = (char *)malloc(500);
   strcpy(parent_dir, "");
   for (i = 1; i < size; i++) {
-    return findSize(arr[i]) !=
-           findSize(replace_str(arr[i], ".keystone/cache/", ""));
+    if (findSize(arr[i]) !=
+        findSize(replace_str(arr[i], ".keystone/cache/", ""))) {
+      return 1;
+    }
+
     // char *cache_content;
     // char *current_content;
     // cache_content = (char *)malloc(sizeof(char *) * 1000000);
@@ -300,8 +304,12 @@ int compare_with_current_changes(char *cache_files_list) {
 int files_has_changed() {
   char *ks_root_dir;
   ks_root_dir = (char *)malloc(sizeof(char *) * 100);
-  ks_root_dir = get_ks_root();
-
+  strcat(ks_root_dir, "");
+  strcpy(ks_root_dir, get_ks_root());
+  // ks_root_dir = get_ks_root();
+  if (!strcmp(ks_root_dir, "")) {
+    return 2;
+  }
   char *cache_root_dir;
   cache_root_dir = (char *)malloc(sizeof(char *) * 100);
   strcat(cache_root_dir, ks_root_dir);
@@ -323,13 +331,19 @@ int main(int argc, char **argv) {
       print_working_env(0);
     else if (!strcmp("full", argv[1])) {
       print_working_env(1);
-      if (files_has_changed())
+      int changes = files_has_changed();
+      if (changes == 2)
+        puts("");
+      if (changes == 1)
         puts(" ✘");
       else
         puts(" ✔");
     } else if (!strcmp("status", argv[1])) {
-      if (files_has_changed())
+      int changes = files_has_changed();
+      if (changes == 1)
         puts("✘");
+      else if (changes == 2)
+        puts("");
       else
         puts("✔");
     } else
