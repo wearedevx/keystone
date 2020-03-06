@@ -3,54 +3,49 @@
 Open-source decentralized system for developers to store, share and use secrets safely
 
 <!-- toc -->
-
-- [Keystone CLI](#keystone-cli)
-- [Usage](#usage)
-- [Commands](#commands)
-  <!-- tocstop -->
+* [Keystone CLI](#keystone-cli)
+* [Usage](#usage)
+* [Commands](#commands)
+<!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
-
 ```sh-session
 $ npm install -g @keystone.sh/cli
 $ ks COMMAND
 running command...
 $ ks (-v|--version|version)
-@keystone.sh/cli/0.0.9 linux-x64 node-v10.15.2
+@keystone.sh/cli/0.0.33 darwin-x64 node-v10.14.0
 $ ks --help [COMMAND]
 USAGE
   $ ks COMMAND
 ...
 ```
-
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
-
-- [`ks add BLOCKSTACKID EMAIL`](#ks-add-blockstackid-email)
-- [`ks cat PATH [DECRYPT]`](#ks-cat-path-decrypt)
-- [`ks check`](#ks-check)
-- [`ks delete [FILEPATHS]`](#ks-delete-filepaths)
-- [`ks env [ACTION] [ENV]`](#ks-env-action-env)
-- [`ks help [COMMAND]`](#ks-help-command)
-- [`ks init [PROJECT_NAME]`](#ks-init-project_name)
-- [`ks invite [EMAILS]`](#ks-invite-emails)
-- [`ks list TYPE`](#ks-list-type)
-- [`ks login [BLOCKSTACK_ID]`](#ks-login-blockstack_id)
-- [`ks logout`](#ks-logout)
-- [`ks open`](#ks-open)
-- [`ks project [ACTION]`](#ks-project-action)
-- [`ks pull`](#ks-pull)
-- [`ks push [FILEPATH]`](#ks-push-filepath)
-- [`ks remove`](#ks-remove)
-- [`ks reset`](#ks-reset)
-- [`ks share ACTION`](#ks-share-action)
-- [`ks whoami`](#ks-whoami)
-- [`ks wp`](#ks-wp)
+* [`ks add BLOCKSTACKID EMAIL`](#ks-add-blockstackid-email)
+* [`ks autocomplete [SHELL]`](#ks-autocomplete-shell)
+* [`ks cat PATH [DECRYPT]`](#ks-cat-path-decrypt)
+* [`ks delete [FILEPATHS]`](#ks-delete-filepaths)
+* [`ks diff FILEPATH`](#ks-diff-filepath)
+* [`ks env [ACTION] [ENV]`](#ks-env-action-env)
+* [`ks help [COMMAND]`](#ks-help-command)
+* [`ks init [PROJECT_NAME]`](#ks-init-project_name)
+* [`ks invite [EMAILS]`](#ks-invite-emails)
+* [`ks list TYPE`](#ks-list-type)
+* [`ks login [BLOCKSTACK_ID]`](#ks-login-blockstack_id)
+* [`ks logout`](#ks-logout)
+* [`ks project [ACTION]`](#ks-project-action)
+* [`ks pull`](#ks-pull)
+* [`ks push [FILEPATH]`](#ks-push-filepath)
+* [`ks remove`](#ks-remove)
+* [`ks share ENV`](#ks-share-env)
+* [`ks status`](#ks-status)
+* [`ks whoami`](#ks-whoami)
 
 ## `ks add BLOCKSTACKID EMAIL`
 
@@ -64,19 +59,40 @@ ARGUMENTS
   BLOCKSTACKID  Blockstack_id to add
   EMAIL         email associated to an invitation
 
-OPTIONS
-  -c, --config=config    Set the path to the blockstack session file
-  -p, --project=project  Set the project
-  --removal              Deletes an invitation
-
 DESCRIPTION
+  Adding a member give them access to the project.
   The member should have accepted your invitation for this to work
+
+  You  can add the member to an environment with : ks env config
 
 EXAMPLE
   $ ks add example.id.blockstack example@mail.com #add a user to a project
 ```
 
-_See code: [src/commands/add.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/add.js)_
+_See code: [src/commands/add.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/add.js)_
+
+## `ks autocomplete [SHELL]`
+
+display autocomplete installation instructions
+
+```
+USAGE
+  $ ks autocomplete [SHELL]
+
+ARGUMENTS
+  SHELL  shell type
+
+OPTIONS
+  -r, --refresh-cache  Refresh cache (ignores displaying instructions)
+
+EXAMPLES
+  $ ks autocomplete
+  $ ks autocomplete bash
+  $ ks autocomplete zsh
+  $ ks autocomplete --refresh-cache
+```
+
+_See code: [@oclif/plugin-autocomplete](https://github.com/oclif/plugin-autocomplete/blob/v0.1.5/src/commands/autocomplete/index.ts)_
 
 ## `ks cat PATH [DECRYPT]`
 
@@ -91,32 +107,17 @@ ARGUMENTS
   DECRYPT  [default: true] should decrypt
 
 OPTIONS
-  -c, --config=config    Set the path to the blockstack session file
-  -d, --debug            cat file with full path
-  -o, --origin=origin    from origin
-  -p, --project=project  Set the project
-  --[no-]decrypt         Indiciate to decrypt or not
-  --[no-]json            Indiciate to parse json or not
-  --removal              Deletes an invitation
+  -d, --debug          cat file with full path
+  -o, --origin=origin  from origin
+  --[no-]decrypt       Indiciate to decrypt or not
+  --[no-]json          Indiciate to parse json or not
+  --removal            Deletes an invitation
 
 EXAMPLE
   $ ks cat my-file
 ```
 
-_See code: [src/commands/cat.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/cat.js)_
-
-## `ks check`
-
-```
-USAGE
-  $ ks check
-
-OPTIONS
-  -c, --config=config    Set the path to the blockstack session file
-  -p, --project=project  Set the project
-```
-
-_See code: [src/commands/check.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/check.js)_
+_See code: [src/commands/cat.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/cat.js)_
 
 ## `ks delete [FILEPATHS]`
 
@@ -130,15 +131,32 @@ ARGUMENTS
   FILEPATHS  Path to your file. Accepts a glob pattern
 
 OPTIONS
-  -c, --config=config    Set the path to the blockstack session file
-  -p, --project=project  Set the project
+  -p, --project=project  This is a debug command.
+                         Use this flag to completely delete all files of a project from your storage.
 
 DESCRIPTION
   If you're an administrator or a contributor, the files will be removed for everyone.
-  If you're a reader on the project, you can't delete any files.
+  If you're a reader on the environment, you can't delete any files.
 ```
 
-_See code: [src/commands/delete.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/delete.js)_
+_See code: [src/commands/delete.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/delete.js)_
+
+## `ks diff FILEPATH`
+
+Show a diff file
+
+```
+USAGE
+  $ ks diff FILEPATH
+
+ARGUMENTS
+  FILEPATH  Path to your file.
+
+EXAMPLE
+  $ ks diff filepath
+```
+
+_See code: [src/commands/diff.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/diff.js)_
 
 ## `ks env [ACTION] [ENV]`
 
@@ -149,17 +167,34 @@ USAGE
   $ ks env [ACTION] [ENV]
 
 ARGUMENTS
-  ACTION  Configure add or remove an environment
-  ENV     Set working env
+  ACTION
+      - config
+           Change users role for each environment.
 
-OPTIONS
-  -n, --name=name  Enviroment name
+           You can change the role set by using the role flag. You have 3 choices:
+             - reader: can only read files from the the environment and pull them locally
+             - contributor: can read, write and add new files to the environement
+             - admin: all the above plus ask people to join the project
 
-EXAMPLE
-  $ ks env remove --name dev
+         - new 
+           Create a new environment
+
+         - remove 
+           Remove an environment
+
+  ENV
+      Set working env
+
+DESCRIPTION
+  You need to be administrator in the project in order to access the command.
+
+EXAMPLES
+  $ ks env config
+  $ ks env new ENV_NAME
+  $ ks env remove ENV_NAME
 ```
 
-_See code: [src/commands/env.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/env.js)_
+_See code: [src/commands/env.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/env.js)_
 
 ## `ks help [COMMAND]`
 
@@ -189,15 +224,11 @@ USAGE
 ARGUMENTS
   PROJECT_NAME  Your project name
 
-OPTIONS
-  -c, --config=config    Set the path to the blockstack session file
-  -p, --project=project  Set the project
-
 EXAMPLE
   $ ks init project-name
 ```
 
-_See code: [src/commands/init.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/init.js)_
+_See code: [src/commands/init.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/init.js)_
 
 ## `ks invite [EMAILS]`
 
@@ -211,8 +242,6 @@ ARGUMENTS
   EMAILS  Emails for invitations to be sent
 
 OPTIONS
-  -c, --config=config                  Set the path to the blockstack session file
-  -p, --project=project                Set the project
   -r, --role=reader|contributor|admin  [default: reader] Assigns a role
   --check                              Check your pending invitations
   --removal                            Deletes an invitation
@@ -220,9 +249,9 @@ OPTIONS
 DESCRIPTION
   By default, people you invite are readers.
   You can change the role set by using the role flag. You have 3 choices:
-  - reader: can only read files from the project.
-  - contributor: can read, write and add new files to the project
-  - admin: all the above plus ask people to join the project
+  - reader: cannot do anything project wide. Need to be added to an environment to pull files
+  - contributor: can add and remove environments from the project
+  - admin: all the above plus invite and add users to the project
 
 EXAMPLES
   $ ks invite friend@example.com #Send an invitation to friend@example.com as a reader on the project
@@ -230,7 +259,7 @@ EXAMPLES
   $ ks invite friend@example.com friend2@example.com --removal #Removes the invitations for friend and friend2
 ```
 
-_See code: [src/commands/invite.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/invite.js)_
+_See code: [src/commands/invite.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/invite.js)_
 
 ## `ks list TYPE`
 
@@ -244,15 +273,10 @@ ARGUMENTS
   TYPE  What do you want to list (projects, environments, members or files)
 
 OPTIONS
-  -a, --all              List all elements
-  -c, --config=config    Set the path to the blockstack session file
-  -p, --project=project  Set the project
-
-EXAMPLE
-  $ ks list members
+  -a, --all  List all elements
 ```
 
-_See code: [src/commands/list.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/list.js)_
+_See code: [src/commands/list.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/list.js)_
 
 ## `ks login [BLOCKSTACK_ID]`
 
@@ -266,7 +290,7 @@ ARGUMENTS
   BLOCKSTACK_ID  Your blockstack id
 ```
 
-_See code: [src/commands/login.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/login.js)_
+_See code: [src/commands/login.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/login.js)_
 
 ## `ks logout`
 
@@ -280,20 +304,7 @@ EXAMPLE
   $ ks logout
 ```
 
-_See code: [src/commands/logout.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/logout.js)_
-
-## `ks open`
-
-```
-USAGE
-  $ ks open
-
-OPTIONS
-  -c, --config=config    Set the path to the blockstack session file
-  -p, --project=project  Set the project
-```
-
-_See code: [src/commands/open.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/open.js)_
+_See code: [src/commands/logout.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/logout.js)_
 
 ## `ks project [ACTION]`
 
@@ -306,29 +317,32 @@ USAGE
 ARGUMENTS
   ACTION  Configure project members
 
-OPTIONS
-  -c, --config=config    Set the path to the blockstack session file
-  -p, --project=project  Set the project
-
 EXAMPLE
   $ ks env config
 ```
 
-_See code: [src/commands/project.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/project.js)_
+_See code: [src/commands/project.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/project.js)_
 
 ## `ks pull`
 
-Fetch files for current environment.
+Fetch files for current environment. Write them locally.
 
 ```
 USAGE
   $ ks pull
 
 OPTIONS
-  -f, --force  Overwrite any changes
+  -f, --force  Overwrite any changes made locally
+
+DESCRIPTION
+  Once pulled files can be one of the three states :
+     - updated : The file has been updated because someone else pushed a newer version
+     - auto-merged : The file was modified and has been merged with someone else's changes  
+     - conflicted : The file has been modified and some lines are in conflict with someone else's changes. You should 
+  fix the conflicts and push your changes
 ```
 
-_See code: [src/commands/pull.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/pull.js)_
+_See code: [src/commands/pull.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/pull.js)_
 
 ## `ks push [FILEPATH]`
 
@@ -342,65 +356,65 @@ ARGUMENTS
   FILEPATH  Path to your file. Accepts a glob pattern
 
 OPTIONS
-  -c, --config=config    Set the path to the blockstack session file
   -e, --encrypt=encrypt  * DEBUG ONLY * encrypt the file with given blockstackid
   -p, --path=path        * DEBUG ONLY * push the file to the given path
-  -p, --project=project  Set the project
 ```
 
-_See code: [src/commands/push.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/push.js)_
+_See code: [src/commands/push.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/push.js)_
 
 ## `ks remove`
+
+Remove a user.
 
 ```
 USAGE
   $ ks remove
 
 OPTIONS
-  -c, --config=config    Set the path to the blockstack session file
-  -p, --project=project  Set the project
+  -u, --users=users  List of user you want to remove. Separated by space.
+
+DESCRIPTION
+  ...
+  If you are an administrator, you can remove a user from a project.
 ```
 
-_See code: [src/commands/remove.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/remove.js)_
+_See code: [src/commands/remove.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/remove.js)_
 
-## `ks reset`
+## `ks share ENV`
 
-Remove everything but your public.key file.
-
-```
-USAGE
-  $ ks reset
-
-OPTIONS
-  -c, --config=config    Set the path to the blockstack session file
-  -p, --project=project  Set the project
-
-EXAMPLE
-  $ ks reset
-```
-
-_See code: [src/commands/reset.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/reset.js)_
-
-## `ks share ACTION`
-
-Share your file file with a non-blockstack user
+Share your files with a non-blockstack user
 
 ```
 USAGE
-  $ ks share ACTION
+  $ ks share ENV
 
 ARGUMENTS
-  ACTION  new || pull. Create a new shared user or pull files based on keystone-link.json file.
+  ENV  Environment you want the user to be created on.
 
-OPTIONS
-  -e, --env=env    Env you want to create the user in.
-  -l, --link=link  Path to your link file.
+DESCRIPTION
+  Generate a token. 
+  The token should be set in the process environment of any user. 
+  This user will be able to run only $ ks pull in order to pull locally files from the selected env.
 
 EXAMPLE
-  $ ks share
+  $ ks share env_name
 ```
 
-_See code: [src/commands/share.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/share.js)_
+_See code: [src/commands/share.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/share.js)_
+
+## `ks status`
+
+Shows the status of tracked files
+
+```
+USAGE
+  $ ks status
+
+EXAMPLE
+  $ ks status
+```
+
+_See code: [src/commands/status.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/status.js)_
 
 ## `ks whoami`
 
@@ -410,32 +424,9 @@ Shows the blockstack id of the currently logged in user
 USAGE
   $ ks whoami
 
-OPTIONS
-  -c, --config=config    Set the path to the blockstack session file
-  -p, --project=project  Set the project
-
 EXAMPLE
   $ ks whoami
 ```
 
-_See code: [src/commands/whoami.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/whoami.js)_
-
-## `ks wp`
-
-Print project name in current workspace
-
-```
-USAGE
-  $ ks wp
-
-OPTIONS
-  -c, --config=config    Set the path to the blockstack session file
-  -p, --project=project  Set the project
-
-EXAMPLE
-  $ ks wp
-```
-
-_See code: [src/commands/wp.js](https://github.com/wearedevx/keystone/blob/v0.0.9/src/commands/wp.js)_
-
+_See code: [src/commands/whoami.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/whoami.js)_
 <!-- commandsstop -->
