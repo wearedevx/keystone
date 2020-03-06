@@ -17,10 +17,9 @@ Print your current environment.
 ```
 $ ks_prompt status
 ```
+Print ✘ if you made changes to a keystoned file.
 
-Print 1 if you made changes to a keystoned file.
-
-Print 0 if no changes have been made to any keystoned file.
+Print ✔ if no changes have been made to any keystoned file.
 
 ```
 $ ks_prompt full
@@ -29,7 +28,7 @@ $ ks_prompt full
 Print a ready to use string that show current environment along with ✘ ✔ to show respectably if changes have been made to a keystoned file or not. `Ꝅ production ✘`
 
 From this, you are able to add this info anywhere you want in your prompt, in any shell.
-## Install the program
+## Installation
 
 
 ```
@@ -39,13 +38,13 @@ $ make ks_prompt
 
 $ sudo cp ks_prompt /usr/local/bin # or anywhere in your path
 ```
-
-## oh-my-zsh
+## Setup
+### oh-my-zsh
 
 Get the the in your custom ZSH directory
 
-```
-curl -L https://raw.githubusercontent.com/wearedevx/keystone/master/keystone-cli/prompt/keystonize.zsh-theme > $ZSH/themes/keystonize.zsh-theme
+```bash
+$ curl -L https://raw.githubusercontent.com/wearedevx/keystone/master/keystone-cli/prompt/keystonize.zsh-theme > $ZSH/themes/keystonize.zsh-theme
 
 $ curl -L curl https://raw.githubusercontent.com/wearedevx/keystone/master/keystone-cli/prompt/ks_status.zsh > $ZSH/lib/ks_status.zsh 
 
@@ -56,7 +55,7 @@ Replace in your ~/.zshrc to following line
 ```ZSH_THEME="keystonize"```
 
 
-## bash
+### bash
 
 Add the following at the end of your ~/.bashrc.
 ```bash
