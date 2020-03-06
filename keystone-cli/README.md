@@ -16,7 +16,7 @@ $ npm install -g @keystone.sh/cli
 $ ks COMMAND
 running command...
 $ ks (-v|--version|version)
-@keystone.sh/cli/0.0.33 darwin-x64 node-v10.14.0
+@keystone.sh/cli/0.0.34 linux-x64 node-v10.19.0
 $ ks --help [COMMAND]
 USAGE
   $ ks COMMAND
@@ -29,7 +29,7 @@ USAGE
 <!-- commands -->
 * [`ks add BLOCKSTACKID EMAIL`](#ks-add-blockstackid-email)
 * [`ks autocomplete [SHELL]`](#ks-autocomplete-shell)
-* [`ks cat PATH [DECRYPT]`](#ks-cat-path-decrypt)
+* [`ks cat PATH`](#ks-cat-path)
 * [`ks delete [FILEPATHS]`](#ks-delete-filepaths)
 * [`ks diff FILEPATH`](#ks-diff-filepath)
 * [`ks env [ACTION] [ENV]`](#ks-env-action-env)
@@ -39,7 +39,7 @@ USAGE
 * [`ks list TYPE`](#ks-list-type)
 * [`ks login [BLOCKSTACK_ID]`](#ks-login-blockstack_id)
 * [`ks logout`](#ks-logout)
-* [`ks project [ACTION]`](#ks-project-action)
+* [`ks project ACTION`](#ks-project-action)
 * [`ks pull`](#ks-pull)
 * [`ks push [FILEPATH]`](#ks-push-filepath)
 * [`ks remove`](#ks-remove)
@@ -63,13 +63,13 @@ DESCRIPTION
   Adding a member give them access to the project.
   The member should have accepted your invitation for this to work
 
-  You  can add the member to an environment with : ks env config
+  You  can add the member to an environment with : $ ks env config
 
 EXAMPLE
   $ ks add example.id.blockstack example@mail.com #add a user to a project
 ```
 
-_See code: [src/commands/add.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/add.js)_
+_See code: [src/commands/add.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/add.js)_
 
 ## `ks autocomplete [SHELL]`
 
@@ -94,30 +94,22 @@ EXAMPLES
 
 _See code: [@oclif/plugin-autocomplete](https://github.com/oclif/plugin-autocomplete/blob/v0.1.5/src/commands/autocomplete/index.ts)_
 
-## `ks cat PATH [DECRYPT]`
+## `ks cat PATH`
 
 Output a remote file.
 
 ```
 USAGE
-  $ ks cat PATH [DECRYPT]
+  $ ks cat PATH
 
 ARGUMENTS
-  PATH     path to your file
-  DECRYPT  [default: true] should decrypt
-
-OPTIONS
-  -d, --debug          cat file with full path
-  -o, --origin=origin  from origin
-  --[no-]decrypt       Indiciate to decrypt or not
-  --[no-]json          Indiciate to parse json or not
-  --removal            Deletes an invitation
+  PATH  path to your file
 
 EXAMPLE
-  $ ks cat my-file
+  $ ks cat path/to/file
 ```
 
-_See code: [src/commands/cat.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/cat.js)_
+_See code: [src/commands/cat.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/cat.js)_
 
 ## `ks delete [FILEPATHS]`
 
@@ -131,19 +123,22 @@ ARGUMENTS
   FILEPATHS  Path to your file. Accepts a glob pattern
 
 OPTIONS
-  -p, --project=project  This is a debug command.
-                         Use this flag to completely delete all files of a project from your storage.
+  -p, --project=project  Use this flag to completely delete all files of a project from your storage.
 
 DESCRIPTION
   If you're an administrator or a contributor, the files will be removed for everyone.
   If you're a reader on the environment, you can't delete any files.
+
+EXAMPLES
+  $ ks delete path/to/file
+  $ ks delete -p project_name/2b6a10c6-ea91-48b1-b340-a7504326961e
 ```
 
-_See code: [src/commands/delete.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/delete.js)_
+_See code: [src/commands/delete.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/delete.js)_
 
 ## `ks diff FILEPATH`
 
-Show a diff file
+Output a diff of the changes you made to a file
 
 ```
 USAGE
@@ -153,10 +148,10 @@ ARGUMENTS
   FILEPATH  Path to your file.
 
 EXAMPLE
-  $ ks diff filepath
+  $ ks diff path/to/file
 ```
 
-_See code: [src/commands/diff.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/diff.js)_
+_See code: [src/commands/diff.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/diff.js)_
 
 ## `ks env [ACTION] [ENV]`
 
@@ -171,11 +166,6 @@ ARGUMENTS
       - config
            Change users role for each environment.
 
-           You can change the role set by using the role flag. You have 3 choices:
-             - reader: can only read files from the the environment and pull them locally
-             - contributor: can read, write and add new files to the environement
-             - admin: all the above plus ask people to join the project
-
          - new 
            Create a new environment
 
@@ -188,13 +178,18 @@ ARGUMENTS
 DESCRIPTION
   You need to be administrator in the project in order to access the command.
 
+  You can change the role set by using the role flag. You have 3 choices:
+  - reader: can only read files from the the environment and pull them locally
+  - contributor: can read, write and add new files to the environement
+  - admin: all the above plus ask people to join the project
+
 EXAMPLES
   $ ks env config
   $ ks env new ENV_NAME
   $ ks env remove ENV_NAME
 ```
 
-_See code: [src/commands/env.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/env.js)_
+_See code: [src/commands/env.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/env.js)_
 
 ## `ks help [COMMAND]`
 
@@ -225,10 +220,10 @@ ARGUMENTS
   PROJECT_NAME  Your project name
 
 EXAMPLE
-  $ ks init project-name
+  $ ks init project_name
 ```
 
-_See code: [src/commands/init.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/init.js)_
+_See code: [src/commands/init.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/init.js)_
 
 ## `ks invite [EMAILS]`
 
@@ -259,7 +254,7 @@ EXAMPLES
   $ ks invite friend@example.com friend2@example.com --removal #Removes the invitations for friend and friend2
 ```
 
-_See code: [src/commands/invite.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/invite.js)_
+_See code: [src/commands/invite.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/invite.js)_
 
 ## `ks list TYPE`
 
@@ -273,10 +268,18 @@ ARGUMENTS
   TYPE  What do you want to list (projects, environments, members or files)
 
 OPTIONS
-  -a, --all  List all elements
+  -a, --all  For files listing, list every files in your gaia hub. For members, list files from project, instead of the
+             environment.
+
+EXAMPLES
+  $ ks list members
+  $ ks list members --all
+  $ ks list projects
+  $ ks list environments
+  $ ks list files
 ```
 
-_See code: [src/commands/list.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/list.js)_
+_See code: [src/commands/list.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/list.js)_
 
 ## `ks login [BLOCKSTACK_ID]`
 
@@ -288,9 +291,12 @@ USAGE
 
 ARGUMENTS
   BLOCKSTACK_ID  Your blockstack id
+
+EXAMPLE
+  $ ks login nickname.id.blockstack
 ```
 
-_See code: [src/commands/login.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/login.js)_
+_See code: [src/commands/login.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/login.js)_
 
 ## `ks logout`
 
@@ -304,24 +310,30 @@ EXAMPLE
   $ ks logout
 ```
 
-_See code: [src/commands/logout.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/logout.js)_
+_See code: [src/commands/logout.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/logout.js)_
 
-## `ks project [ACTION]`
+## `ks project ACTION`
 
-Manage project.
+Manage users role in the project.
 
 ```
 USAGE
-  $ ks project [ACTION]
+  $ ks project ACTION
 
 ARGUMENTS
   ACTION  Configure project members
 
+DESCRIPTION
+  You can change the role set by using the role flag. You have 3 choices:
+  - reader: can't do anything regarding the project itself.
+  - contributor: can add or remove environments.
+  - administrator: can add or remove environments, add and remove users, change users roles.
+
 EXAMPLE
-  $ ks env config
+  $ ks project config
 ```
 
-_See code: [src/commands/project.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/project.js)_
+_See code: [src/commands/project.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/project.js)_
 
 ## `ks pull`
 
@@ -337,12 +349,15 @@ OPTIONS
 DESCRIPTION
   Once pulled files can be one of the three states :
      - updated : The file has been updated because someone else pushed a newer version
-     - auto-merged : The file was modified and has been merged with someone else's changes  
+     - auto-merged : The file was modified and has been merged with someone else's changes
      - conflicted : The file has been modified and some lines are in conflict with someone else's changes. You should 
   fix the conflicts and push your changes
+
+EXAMPLE
+  $ ks pull
 ```
 
-_See code: [src/commands/pull.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/pull.js)_
+_See code: [src/commands/pull.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/pull.js)_
 
 ## `ks push [FILEPATH]`
 
@@ -355,16 +370,16 @@ USAGE
 ARGUMENTS
   FILEPATH  Path to your file. Accepts a glob pattern
 
-OPTIONS
-  -e, --encrypt=encrypt  * DEBUG ONLY * encrypt the file with given blockstackid
-  -p, --path=path        * DEBUG ONLY * push the file to the given path
+EXAMPLES
+  $ ks push path/to/my/file
+  $ ks push
 ```
 
-_See code: [src/commands/push.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/push.js)_
+_See code: [src/commands/push.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/push.js)_
 
 ## `ks remove`
 
-Remove a user.
+Remove one or more users.
 
 ```
 USAGE
@@ -376,9 +391,12 @@ OPTIONS
 DESCRIPTION
   ...
   If you are an administrator, you can remove a user from a project.
+
+EXAMPLE
+  $ ks remove nickname1.id.blockstack nickname2.id.blockstack
 ```
 
-_See code: [src/commands/remove.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/remove.js)_
+_See code: [src/commands/remove.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/remove.js)_
 
 ## `ks share ENV`
 
@@ -393,14 +411,14 @@ ARGUMENTS
 
 DESCRIPTION
   Generate a token. 
-  The token should be set in the process environment of any user. 
+  The token should be set in the system environment of any user.
   This user will be able to run only $ ks pull in order to pull locally files from the selected env.
 
 EXAMPLE
-  $ ks share env_name
+  $ ks share ENV_NAME
 ```
 
-_See code: [src/commands/share.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/share.js)_
+_See code: [src/commands/share.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/share.js)_
 
 ## `ks status`
 
@@ -414,7 +432,7 @@ EXAMPLE
   $ ks status
 ```
 
-_See code: [src/commands/status.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/status.js)_
+_See code: [src/commands/status.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/status.js)_
 
 ## `ks whoami`
 
@@ -428,5 +446,5 @@ EXAMPLE
   $ ks whoami
 ```
 
-_See code: [src/commands/whoami.js](https://github.com/wearedevx/keystone/blob/v0.0.33/src/commands/whoami.js)_
+_See code: [src/commands/whoami.js](https://github.com/wearedevx/keystone/blob/v0.0.34/src/commands/whoami.js)_
 <!-- commandsstop -->
