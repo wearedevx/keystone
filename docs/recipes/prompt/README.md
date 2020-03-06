@@ -2,7 +2,9 @@
 
 This tutorial is meant for you to customize your shell prompt with your Keystone project's related info.
 
-<img src="prompt-example.png" height="100"/>
+<p align="center">
+    <img src="prompt-example.png" height="100"/>
+</p>
 
 The ks_prompt executable file can take one argument.
 
@@ -33,7 +35,7 @@ From this, you are able to add this info anywhere you want in your prompt, in an
 ```
 $ curl https://raw.githubusercontent.com/wearedevx/keystone/master/keystone-cli/prompt/ks_prompt.c > ks_prompt.c
 
-$ gcc ks_prompt.c -o ks_prompt
+$ make ks_prompt
 
 $ sudo cp ks_prompt /usr/local/bin # or anywhere in your path
 ```
