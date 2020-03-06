@@ -32,7 +32,7 @@
   },
   "repository": "https://github.com/wearedevx/keystone",
   "scripts": {
-    "postpack": "rm -f oclif.manifest.json && git add keystone-cli/README.md && git commit -m 'Update CLI Readme'",
+    "postpack": "rm -f oclif.manifest.json && git add README.md && git commit -m 'Update CLI Readme'",
     "prepack": "oclif-dev manifest && oclif-dev readme",
     "test": "export NODE_NO_WARNINGS=1 && jest --runInBand ./src/tests/index.spec.js",
     "lint": "eslint",
