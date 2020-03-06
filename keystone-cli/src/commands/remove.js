@@ -38,14 +38,17 @@ class RemoveCommand extends CommandSignedIn {
   }
 }
 
-RemoveCommand.description = `Remove a user.
+RemoveCommand.description = `Remove one or more users.
 ...
 If you are an administrator, you can remove a user from a project.
 `
 
+RemoveCommand.examples = [
+  chalk.blue('$ ks remove nickname1.id.blockstack nickname2.id.blockstack'),
+]
+
 RemoveCommand.flags = {
   ...CommandSignedIn.flags,
-
   users: flags.string({
     char: 'u',
     multiple: true,

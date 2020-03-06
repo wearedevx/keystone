@@ -29,6 +29,4 @@ LogoutCommand.description = `Logs you out of your account and erase your session
 
 LogoutCommand.examples = [chalk.yellow('$ ks logout')]
 
-LogoutCommand.flags = {}
-
 module.exports = LogoutCommand

@@ -85,7 +85,7 @@ class PushCommand extends CommandSignedIn {
           modifiedFiles,
           deletedFiles,
         })
-        
+
         if (pushed && pushed.length > 0) {
           pushed.forEach(f => {
             this.log(
@@ -144,18 +144,23 @@ PushCommand.args = [
   },
 ]
 
+PushCommand.examples = [
+  chalk.blue('$ ks push path/to/my/file'),
+  chalk.blue('$ ks push'),
+]
+
 PushCommand.flags = {
   ...CommandSignedIn.flags,
-  path: flags.string({
-    char: 'p',
-    multiple: false,
-    description: '* DEBUG ONLY * push the file to the given path',
-  }),
-  encrypt: flags.string({
-    char: 'e',
-    multiple: false,
-    description: '* DEBUG ONLY * encrypt the file with given blockstackid',
-  }),
+  //path: flags.string({
+  //char: 'p',
+  //multiple: false,
+  //description: '* DEBUG ONLY * push the file to the given path',
+  //}),
+  //encrypt: flags.string({
+  //char: 'e',
+  //multiple: false,
+  //description: '* DEBUG ONLY * encrypt the file with given blockstackid',
+  //}),
 }
 
 module.exports = PushCommand

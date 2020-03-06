@@ -154,8 +154,6 @@ LoginCommand.args = [
   },
 ]
 
-// LoginCommand.flags = {
-//   name: flags.string({char: 'n', description: 'name to print'}),
-// }
+LoginCommand.examples = [chalk.blue('$ ks login nickname.id.blockstack')]
 
 module.exports = LoginCommand

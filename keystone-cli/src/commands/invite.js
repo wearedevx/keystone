@@ -167,13 +167,13 @@ You can change the role set by using the role flag. You have 3 choices:
 `
 
 InviteCommand.examples = [
-  `${chalk.yellow('$ ks invite friend@example.com')} ${chalk.gray.italic(
+  `${chalk.blue('$ ks invite friend@example.com')} ${chalk.gray.italic(
     '#Send an invitation to friend@example.com as a reader on the project'
   )}`,
-  `${chalk.yellow(
+  `${chalk.blue(
     '$ ks invite friend@example.com friend2@example.com --role=admin'
   )} ${chalk.gray.italic('#Invite as admin on the project')}`,
-  `${chalk.yellow(
+  `${chalk.blue(
     '$ ks invite friend@example.com friend2@example.com --removal'
   )} ${chalk.gray.italic('#Removes the invitations for friend and friend2')}`,
 ]

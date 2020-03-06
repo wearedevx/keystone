@@ -1,5 +1,6 @@
 const { cli } = require('cli-ux')
 const { flags } = require('@oclif/command')
+const chalk = require('chalk')
 
 const { CommandSignedIn, execPull } = require('../lib/commands')
 
@@ -31,7 +32,6 @@ class PullCommand extends CommandSignedIn {
         const { force } = flags
         const project = await this.getProjectName()
         const env = await this.getProjectEnv()
-        // const currentDirectory = await this.getDefaultDirectory()
         await this.pull({ project, env, force })
       }
     } catch (error) {
@@ -48,11 +48,13 @@ PullCommand.flags = {
   }),
 }
 
+PullCommand.examples = [chalk.blue('$ ks pull')]
+
 PullCommand.description = `Fetch files for current environment. Write them locally.
 
 Once pulled files can be one of the three states :
   - updated : The file has been updated because someone else pushed a newer version
-  - auto-merged : The file was modified and has been merged with someone else's changes  
+  - auto-merged : The file was modified and has been merged with someone else's changes
   - conflicted : The file has been modified and some lines are in conflict with someone else's changes. You should fix the conflicts and push your changes
 `
 

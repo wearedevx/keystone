@@ -14,6 +14,6 @@ class WhoAmICommand extends CommandSignedIn {
 WhoAmICommand.description = `Shows the blockstack id of the currently logged in user
 `
 
-WhoAmICommand.examples = [chalk.yellow('$ ks whoami')]
+WhoAmICommand.examples = [chalk.blue('$ ks whoami')]
 
 module.exports = WhoAmICommand

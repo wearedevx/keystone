@@ -1,9 +1,7 @@
 const { flags } = require('@oclif/command')
 // const chalk = require('chalk')
-const { cli } = require('cli-ux')
 const chalk = require('chalk')
 
-const { CommandSignedIn } = require('../lib/commands')
 const {
   listEnvironments,
   listAllMembers,
@@ -12,6 +10,8 @@ const {
   listEnvFiles,
   listProjects,
 } = require('@keystone.sh/core/lib/commands/list')
+
+const { CommandSignedIn } = require('../lib/commands')
 
 class ListCommand extends CommandSignedIn {
   async run() {
@@ -62,10 +62,13 @@ class ListCommand extends CommandSignedIn {
 ListCommand.description = `Lists projects, environments, members and files
 `
 
-// ListCommand.examples = [
-//   chalk.yellow('$ ks list members'),
-//   // chalk.yellow('$ ks list --project=my-project'),
-// ]
+ListCommand.examples = [
+  chalk.blue('$ ks list members'),
+  chalk.blue('$ ks list members --all'),
+  chalk.blue('$ ks list projects'),
+  chalk.blue('$ ks list environments'),
+  chalk.blue('$ ks list files'),
+]
 
 ListCommand.args = [
   {
@@ -82,7 +85,8 @@ ListCommand.flags = {
   all: flags.boolean({
     char: 'a',
     multiple: false,
-    description: 'List all elements',
+    description:
+      'For files listing, list every files in your gaia hub. For members, list files from project, instead of the environment.',
   }),
 }
 

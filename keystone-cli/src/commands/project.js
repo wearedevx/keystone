@@ -1,9 +1,10 @@
 const debug = require('debug')('keystone:command:project')
 const { cli } = require('cli-ux')
 const chalk = require('chalk')
-const { assertUserIsAdminOrContributor } = require('@keystone.sh/core/lib/member')
 const {
-  getLatestProjectDescriptor,
+  assertUserIsAdminOrContributor,
+} = require('@keystone.sh/core/lib/member')
+const {
   getLatestMembersDescriptor,
   getMembers,
 } = require('@keystone.sh/core/lib/descriptor')
@@ -79,17 +80,22 @@ class ProjectCommand extends CommandSignedIn {
   }
 }
 
-ProjectCommand.description = `Manage project.`
+ProjectCommand.description = `Manage users role in the project.
+
+    You can change the role set by using the role flag. You have 3 choices:
+- reader: can't do anything regarding the project itself.
+- contributor: can add or remove environments.
+- administrator: can add or remove environments, add and remove users, change users roles.
+`
 
 ProjectCommand.args = [
   {
     name: 'action',
-    required: false, // make the arg required with `required: true`
-    description: 'Configure project members', // help description
-    hidden: false,
+    required: true,
+    description: 'Configure project members',
   },
 ]
 
-ProjectCommand.examples = [chalk.yellow('$ ks env config')]
+ProjectCommand.examples = [chalk.blue('$ ks project config')]
 
 module.exports = ProjectCommand
