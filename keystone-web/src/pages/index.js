@@ -73,7 +73,7 @@ export default () => (
         </li>
       </ul>
       <h3 className="font-bold text-lg mt-10">
-        Why do I have to sign on Keystone.sh?
+        Why do I have to sign in on Keystone.sh?
       </h3>
       <p className="mt-6">
         The sign in process that happens between your terminal and keystone.sh
@@ -110,7 +110,7 @@ export default () => (
         </span>
       </div>
       <div>
-        Prior anything, you need to log in with your Blockstack account.
+        Prior to anything, you need to log in with your Blockstack account.
         <a href="#blockstack" className="text-blue-500 underline ml-1">
           Learn more.
         </a>
