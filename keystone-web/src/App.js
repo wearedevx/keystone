@@ -20,7 +20,7 @@ function App() {
           <h1 className=" text-gray-900 text-sm text-center mb-6 mt-2 lg:text-left lg:mb-0 lg:mt-0 lg:ml-12 font-mono">
             <span>Open-source decentralized system </span>
             <span className="font-bold inline-block lg:inline">
-              for developers to store, share and use secrets safely
+              for developers to store, share and use secrets.
             </span>
             .
           </h1>
