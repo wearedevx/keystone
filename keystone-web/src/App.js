@@ -17,7 +17,7 @@ function App() {
           <Logo />
         </div>
         <div className="flex flex-col lg:flex-row items-center">
-          <h1 className=" text-gray-900 text-sm text-center mb-6 mt-2 lg:text-left lg:mb-0 lg:mt-0 font-mono">
+          <h1 className=" text-gray-900 text-sm text-center mb-6 mt-2 lg:text-left lg:mb-0 lg:mt-0 lg:ml-12 font-mono">
             <span>Open-source decentralized system </span>
             <span className="font-bold inline-block lg:inline">
               for developers to store, share and use secrets safely
@@ -30,13 +30,9 @@ function App() {
             </a>
           </div>
         </div>
-        {/* <Link to="/">Home</Link>
-        <Link to="/about">About</Link>
-        <Link to="/blog">Blog</Link>
-        <Link to="/dynamic">Dynamic</Link> */}
       </nav>
       <div className="flex flex-col items-center mx-4 lg:mx-10">
-        <div className="h-1 bg-gray-900 w-full mb-10" />
+        <div className="h-1 bg-gray-300 w-full mb-10" />
       </div>
       <div className="mx-4 mb-40 lg:mx-10">
         <React.Suspense fallback={<em>Loading...</em>}>
