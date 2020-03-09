@@ -135,11 +135,11 @@ If you are a project administrator, you can remove any member.
 $ ks remove blockstack_id
 ```
 
-The member won't get updates anymore. A good practice is to change all your sensitive information like API tokens as this member could have saved them locally.
+The member won't get updates anymore. A good practice is to change all your sensitive information, such as API tokens, as this member could have saved them locally.
 
 ## Manage different environments
 
-You can see an environment as a place where you store your files. Each environment has its own members and files. This allows you to seperate responsabilities. Production secrets could be managed and readable only by your devOps team for example.
+You can think of an environment as a place where you store your files. Each environment has its own members and files. This allows you to seperate responsabilities. Production secrets could be managed and readable only by your devOps team for example.
 
 You can create as many environments as you like. When you initialize a project, a "default" environment is created.
 
@@ -169,7 +169,7 @@ The administrator of the environment (initially the one that created it) can set
 
 - **reader** : can only read files from the the environment and pull them locally
 - **contributor** : can read, write and add new files to the environment
-- **administrator** : all the above plus configure roles for members in the environment
+- **administrator** : all the above, plus can configure roles for members in the environment
 
 <img src="assets/ks_env_config.gif" height="250"/><br/>
 
@@ -220,9 +220,8 @@ When pulling files, keystone looks for a newer version of every files in the env
 - You made changes but it cannot be merged with the newer version. A conflict file will be created and written as a replacement to your file. See [manage conflicts](#manage-conflict).
   > Note: you need to manage conflicts before you push your changes. You don't want your teammates to fecth conflicting files.
 
-### Delete files from your environment
+### Delete files from an environment
 
-Deletes one or more files.
 If you're an administrator or a contributor, the files will be removed for everyone.
 If you're a reader on the environment, you can't delete any files.
 
@@ -284,7 +283,7 @@ Blockstack is a **decentralized** computing network and app ecosystem that puts 
 
 Blockstack provides private data lockers and a universal login with blockchain based security and encryption.
 
-We leverage that technology to give developers a safe and easy way to manage secrets of their apps. A new way where every bit of data stays yours and is encrypted by default.
+We leverage that technology to give developers a safe and easy way to manage secrets in their apps. A new way where every bit of data stays yours and is encrypted by default.
 
 The platform handles user authentication using the Blockstack Naming Service (BNS), a decentralized naming and public key infrastructure built on top of the Bitcoin blockchain. It handles storage using Gaia, a scalable decentralized key/value storage system that looks and feels like localStorage, but lets users securely store and share application data via user-selected storage systems.
 [Learn more](https://blockstack.com)
