@@ -6,7 +6,7 @@
   <a href="https://github.com/wearedevx/keystone"><img alt="Keystone status" src="https://github.com/wearedevx/keystone/workflows/Keystone%20CI/badge.svg"></a>
 </p>
 
-Home for every projects related to the Keystone platform, a safe system for developers to store, share and use secrets.
+Home for every project related to the Keystone platform, a safe system for developers to store, share and use secrets.
 
 ## Getting Started
 
