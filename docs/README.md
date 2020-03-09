@@ -74,7 +74,7 @@ A keystone project is made of **members** and **environments**. When you initial
 
 > Note: The invitee will receive an email to accept or refuse the invitation. If he accepts, you will receive a confirmation by email.
 
-You can send invites to many people at the same time:
+You can send invtitations to many people at once:
 
 `$ ks invite email1@domain.com email2@domain.com ...`
 
