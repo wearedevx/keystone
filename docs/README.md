@@ -80,7 +80,7 @@ You can send invtitations to many people at once:
 
 ### Give access to the project.
 
-In order to allow people to fetch files from you and other teammates you need to add them in your project and _assign them to at least 1 environment_. Under the hood it will encrypt the projects files with his signed public key.
+In order to allow people to fetch files from you and other teammates you need to add them in your project and _assign them to at least 1 environment_. Under the hood it will encrypt the projects files with their signed public key.
 
 There is two ways to do so :
 
@@ -93,7 +93,7 @@ There is two ways to do so :
    $ ks add example.id.blockstack example@mail.com
    ```
 
-   > Note: you need to be sure that the user has accepted your invitation before using the **add** command. It will not work otherwise. You also need to know its blockstack ID.
+   > Note: you need to be sure the user accepted your invitation before using the **add** command. It will not work otherwise. You also need to know their blockstack ID.
 
    **Then**, set members roles for your current environment
 
