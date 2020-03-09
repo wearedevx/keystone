@@ -82,7 +82,7 @@ You can send invtitations to many people at once:
 
 In order to allow people to fetch files from you and other teammates you need to add them in your project and _assign them to at least 1 environment_. Under the hood it will encrypt the projects files with their signed public key.
 
-There is two ways to do so :
+There are two ways to do so :
 
 1. In the confirmation mail, click the link. You'll be redirected to keystone.sh. A configuration form let you choose which environment you want the user to access to.
 2. Use the **add** and **env config** command in your shell:
@@ -101,7 +101,7 @@ There is two ways to do so :
    $ ks env config
    ```
 
-   > The `ks env config` command is an interactive prompt that allow you to change users role in any environment. See [next section](#manage-different-environments).
+   > The `ks env config` command is an interactive prompt that allows you to change users role in any environment. See [next section](#manage-different-environments).
 
 By default, a user is added to the project as a **reader**. To change the role, use `$ ks project config`.
 
@@ -187,7 +187,7 @@ The administrator of the environment (initially the one that created it) can set
 $ ks push PATH_TO_FILE
 ```
 
-Pushing files for the first time will add it to your environment. Once added, it will be tracked by keystone.
+Pushing files for the first time will add them to your environment. Once added, they will be tracked by keystone.
 To push modified tracked files:
 `$ ks push`
 
@@ -211,14 +211,14 @@ Pull files from your current environment and write them locally on your machine.
 
 > Note: if you have modified files and you want to override them, use --force flag.
 
-When pulling files, keystone look for a newer version of every files in the environment. Once pulled, these files can be on one of the **three following state** :
+When pulling files, keystone looks for a newer version of every files in the environment. Once pulled, these files can be on one of the **three following state** :
 
-- You have no pending modification. The file one your machine will be updated.
+- You have no pending modification. The files on your machine will be updated.
 
-- You made changes but it can be merged with the newer version. The new modification will be added to your changes.
+- You made changes but it can be merged with the newer version. The new modifications will be added to your changes.
 
 - You made changes but it cannot be merged with the newer version. A conflict file will be created and written as a replacement to your file. See [manage conflicts](#manage-conflict).
-  > Note: you need to manage the conflict before you push your changes. You don't want your teammates to fecth conflicting files.
+  > Note: you need to manage conflicts before you push your changes. You don't want your teammates to fecth conflicting files.
 
 ### Delete files from your environment
 
@@ -246,7 +246,7 @@ I'm a super conflicting content
 >>>>>>> INCOMING CHANGES
 ```
 
-Just like Git, you need to merge manually the changes and push with `$ ks push`
+Just like Git, you need to merge changes manually and push with `$ ks push`
 
 ### Conflict between remote files claiming to be the latest version
 
