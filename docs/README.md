@@ -84,7 +84,7 @@ In order to allow people to fetch files from you and other teammates you need to
 
 There are two ways to do so :
 
-1. In the confirmation mail, click the link. You'll be redirected to keystone.sh. A configuration form let you choose which environment you want the user to access to.
+1. In the confirmation mail, click the link. You'll be redirected to keystone.sh. A configuration form lets you choose to which environment you want the user to access.
 2. Use the **add** and **env config** command in your shell:
 
    **First,** add a user _who accepted your invitation_ to the project
@@ -115,7 +115,7 @@ By default, a user is added to the project as a **reader**. To change the role, 
 
 In order to join a project, you must have received an invitation from a project administrator. The invitation is sent by email and you need to accept it to join the project.
 
-In most cases, a `.ksconfig` will be at your root project folder if the project is Git versionned. This file tells **Keystone** where to fetch from.
+In most cases, a `.ksconfig` will be at your root project folder if the project is Git versionned. This file tells **Keystone** from where to fetch.
 
 > If you are the project owner, you need to add .ksconfig to your git repo. It's the link to the keystone project and allows everyone to stay in sync.
 
