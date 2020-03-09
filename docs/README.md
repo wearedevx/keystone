@@ -9,8 +9,8 @@
 **Table of content**
 
 - [Installation](#installation)
-    - [Login with Blockstack](#login-with-blockstack)
-    - [Why do I have to sign on Keystone.sh?](#why-do-i-have-to-sign-on-keystonesh)
+  - [Login with Blockstack](#login-with-blockstack)
+  - [Why do I have to sign on Keystone.sh?](#why-do-i-have-to-sign-on-keystonesh)
 - [Create your first project and invite users](#create-your-first-project-and-invite-users)
   - [Create a project](#create-a-project)
   - [Invite a member to your project](#invite-a-member-to-your-project)
@@ -54,9 +54,9 @@ Keystone is built on Blockstack, a decentralized computing network and app ecosy
 $ ks login account.id.blockstack # sign with your blockstack id
 ```
 
-#### Why do I have to sign on Keystone.sh?
+#### Why do I have to sign-in on Keystone.sh?
 
-The sign in process that happens between your terminal and keystone.sh allow you to access the Blockstack platform outside your browser. It makes sharing and contributing secrets possible between many users in a secure way.
+The sign-in in process that happens between your terminal and keystone.sh allow you to access the Blockstack platform outside your browser. It makes sharing and contributing secrets possible between many users in a secure way.
 
 As the source code is available on Github, you can freely host your own version and register your app to Blockstack.
 
