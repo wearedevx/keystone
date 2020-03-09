@@ -32,7 +32,7 @@ From this, you are able to add this info anywhere you want in your prompt, in an
 
 
 ```
-$ curl https://raw.githubusercontent.com/wearedevx/keystone/master/keystone-cli/prompt/ks_prompt.c > ks_prompt.c
+$ curl https://raw.githubusercontent.com/wearedevx/keystone/master/docs/recipes/prompt/ks_prompt.c > ks_prompt.c
 
 $ make ks_prompt
 
@@ -44,9 +44,9 @@ $ sudo cp ks_prompt /usr/local/bin # or anywhere in your path
 Get the the in your custom ZSH directory
 
 ```bash
-$ curl -L https://raw.githubusercontent.com/wearedevx/keystone/master/keystone-cli/prompt/keystonize.zsh-theme > $ZSH/themes/keystonize.zsh-theme
+$ curl -L https://raw.githubusercontent.com/wearedevx/keystone/master/docs/recipes/prompt/keystonize.zsh-theme > $ZSH/themes/keystonize.zsh-theme
 
-$ curl -L curl https://raw.githubusercontent.com/wearedevx/keystone/master/keystone-cli/prompt/ks_status.zsh > $ZSH/lib/ks_status.zsh 
+$ curl -L https://raw.githubusercontent.com/wearedevx/keystone/master/docs/recipes/prompt/ks_status.zsh > $ZSH/lib/ks_status.zsh 
 
 ```
 
