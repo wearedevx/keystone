@@ -24,19 +24,19 @@ Install the dependencies for every projects
 $ rush update
 ```
 
-Build the projects - optional unless you work on keystone-web and you want to prepare a release.
+Build the projects - optional unless you're working on keystone-web and you want to prepare a release.
 
 ```shell
 $ rush build # rush rebuild
 ```
 
-Start the web server (react-static project) and the cloud function for sendings mails.
+Start the web server (react-static project) and the cloud function for sending mails.
 
 ```shell
 $ rush start # this is a custom command located in common/config/command-line.json
 ```
 
-Look at the stdin/stdout logs :
+Access stdin/stdout logs :
 
 ```shell
 $ tail -f keystone-web/keystone-web.start.log
