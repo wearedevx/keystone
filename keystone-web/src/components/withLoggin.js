@@ -1,30 +1,28 @@
 import React from 'react'
 import useUser from '../hooks/useUser'
 import Base from './cards/base'
+import Button from './button'
 
 export default ({
   children,
-  loggedOutText = 'You need to sign in with your Blockstack account continue.',
+  loggedOutText = 'You need to sign in with your Blockstack account to continue.',
   loggedOutContent = null,
 }) => {
   const { loggedIn, redirectToSignIn } = useUser()
 
   return (
-    <>
+    <div className="flex flex-col items-center text-center">
       {loggedIn && children}
       {!loggedIn && (
         <>
           <Base title={loggedOutText}>{loggedOutContent}</Base>
-          <div className="my-4 flex flex-row w-2/4 justify-end">
-            <div
-              className="rounded font-bold text-white bg-primary py-1 px-4 shadow-md text-center cursor-pointer"
-              onClick={() => redirectToSignIn(window.location.href)}
-            >
+          <div className="my-4 flex flex-row w-2/4 justify-center">
+            <Button onClick={() => redirectToSignIn(window.location.href)}>
               Sign in with Blockstack
-            </div>
+            </Button>
           </div>
         </>
       )}
-    </>
+    </div>
   )
 }

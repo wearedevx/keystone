@@ -5,6 +5,9 @@ import queryString from 'query-string'
 import KeystoneError from '@keystone.sh/core/lib/error'
 import { writeFileToGaia } from '@keystone.sh/core/lib/file/gaia'
 import { LOGIN_KEY_PREFIX } from '@keystone.sh/core/lib/constants'
+import ErrorCard from '../components/cards/error'
+import SuccessCard from '../components/cards/success'
+import WithLoggin from '../components/withLoggin'
 
 const connectTerminal = async ({
   location,
@@ -90,108 +93,51 @@ export default () => {
   }
 
   return (
-    <div className="flex flex-col items-center ">
-      {error && (
-        <>
-          <h2 className="text-xl text-red-600">
-            <span
-              role="img"
-              aria-label="A cartoon-styled representation of a collision"
-            >
-              💥
-            </span>
-            {error}
-          </h2>
-        </>
-      )}
+    <WithLoggin redirectURI="/invite">
+      {error && <ErrorCard title={error} />}
 
       {NoUsername && (
-        <div className="mt-4 flex text-center text-lg">
-          If you just sign up to Blockstack, it can take up to a few hours for
-          Blockstack to validate it.
-          <br />
-          Come back later !
-        </div>
+        <ErrorCard
+          title={`If you just created a new account on Blockstack, it can take up to a few hours for
+         Blockstack to validate it.`}
+        >
+          Please, come back later or reach Blockstack directly.
+        </ErrorCard>
       )}
 
-      {loggedIn && missingParams && (
-        <>
-          <h2 className="text-xl mb-4 text-red-600">
-            <span
-              role="img"
-              aria-label="A cartoon-styled representation of a collision"
-            >
-              💥
-            </span>
-            Your link is malformed. Please open an issue on GitHub.
-          </h2>
-          <div>
-            Or check that the link in your browser is the same than the one
-            provided by your terminal with the command `ks login`.
-          </div>
-        </>
+      {missingParams && (
+        <ErrorCard
+          title={`Your link is malformed. Please open an issue on GitHub.`}
+        >
+          Or check that the link in your browser is the same than the one
+          provided by your terminal with the command `ks login`.
+        </ErrorCard>
       )}
 
       {!error && !missingParams && (
-        <div className="shadow-md rounded p-4 bg-white w-2/4">
-          {loggedIn && (
-            <>
-              {terminalConnected && (
-                <>
-                  <h2 className="text-xl">
-                    <span
-                      role="img"
-                      aria-label="A party popper, as explodes in a shower of confetti and streamers at a celebration"
-                    >
-                      🎉
-                    </span>
-                    Your terminal is connected. You can close this window.
-                  </h2>
-                  <div>
-                    <Link to="/" className="text-blue-500 underline mr-1">
-                      Read the documentation
-                    </Link>
-                    or type `ks --help` in your terminal to start with Keystone.
-                  </div>
-                </>
-              )}
-
-              {!terminalConnected && (
-                <>
-                  <h2 className="text-xl">
-                    <span
-                      role="img"
-                      aria-label="A key, as opens a door or lock"
-                    >
-                      🔑
-                    </span>
-                    Connecting your terminal...
-                  </h2>
-                  <div>It should take less than a minute.</div>
-                </>
-              )}
-            </>
+        <div className="p-4 bg-white w-2/4">
+          {terminalConnected && (
+            <SuccessCard
+              title={`Your terminal is connected. You can close this window.`}
+            >
+              <div>
+                <Link to="/" className="text-blue-500 underline mr-1">
+                  Read the documentation
+                </Link>
+                or type{' '}
+                <span className="font-mono text-sm font-bold">`ks --help`</span>{' '}
+                in your terminal to start with Keystone.
+              </div>
+            </SuccessCard>
           )}
 
-          {!loggedIn && (
-            <h2 className="text-xl">
-              You need to sign in with your Blockstack account to connect your
-              terminal.
-            </h2>
+          {!terminalConnected && (
+            <SuccessCard title={`Connecting your terminal...`}>
+              It should take less than a minute.
+            </SuccessCard>
           )}
         </div>
       )}
-
-      {!missingParams && !error && !loggedIn && (
-        <div className="my-4 flex flex-row w-2/4 justify-end">
-          <div
-            className="rounded font-bold text-white bg-primary py-1 px-4 shadow-md text-center cursor-pointer"
-            onClick={() => redirectToSignIn(window.location.href)}
-          >
-            Sign in with Blockstack
-          </div>
-        </div>
-      )}
-    </div>
+    </WithLoggin>
   )
 }
