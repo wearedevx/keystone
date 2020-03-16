@@ -2,12 +2,14 @@ import React, { useState } from 'react'
 import useUser from '../hooks/useUser'
 import queryString from 'query-string'
 import ErrorCard from '../components/cards/error'
+import SuccessCard from '../components/cards/success'
 import BaseCard from '../components/cards/base'
 import Button from '../components/button'
 import { getNameAndUUID } from '@keystone.sh/core/lib/projects'
 import { acceptInvite } from '@keystone.sh/core/lib/invitation'
 import WithLoggin from '../components/withLoggin'
-
+import ButtonWithLoggout from '../components/buttonWithLoggout'
+import ProjectId from '../components/projectId'
 const TitlePromptInvite = ({ project }) => (
   <>
     You are invited to project <strong>{project}</strong>.
@@ -41,12 +43,10 @@ const PromptInvite = ({
   blockstackId,
   userEmail,
 }) => {
-  const { userSession, signUserOut } = useUser()
+  const { userSession } = useUser()
   const [joining, setJoining] = useState(false)
   const [error, setError] = useState(false)
   const [success, setSuccess] = useState(false)
-
-  const { username = 'username missing' } = userSession.loadUserData()
 
   return (
     <>
@@ -66,40 +66,25 @@ const PromptInvite = ({
               </p>
             )}
 
-            <p className="font-mono text-blue-700 mt-6 text-xs">
-              <span className="font-bold">Project ID:</span> {uuid}
-            </p>
+            <ProjectId>{uuid}</ProjectId>
           </BaseCard>
-          <div className="my-4 flex flex-row w-2/4 justify-center">
-            <div className="flex flex-col items-center">
-              <Button
-                disabled={joining || success}
-                onClick={async () => {
-                  setJoining(true)
-                  await join(userSession, {
-                    name: `${project}/${uuid}`,
-                    from: adminUserEmail,
-                    blockstackId,
-                    userEmail,
-                    onError: e => setError(e.message),
-                    onDone: () => setJoining(false),
-                    onSuccess: () => setSuccess(true),
-                  })
-                }}
-              >
-                Accept and join "{project}"
-              </Button>
-              <div className="text-xs text-gray-600 mt-1 flex flex-col items-center">
-                <div>connected with {username}</div>
-                <div
-                  className="underline font-bold cursor-pointer"
-                  onClick={() => signUserOut()}
-                >
-                  Log out
-                </div>
-              </div>
-            </div>
-          </div>
+          <ButtonWithLoggout
+            disabled={joining || success}
+            onClick={async () => {
+              setJoining(true)
+              await join(userSession, {
+                name: `${project}/${uuid}`,
+                from: adminUserEmail,
+                blockstackId,
+                userEmail,
+                onError: e => setError(e.message),
+                onDone: () => setJoining(false),
+                onSuccess: () => setSuccess(true),
+              })
+            }}
+          >
+            Accept and join "{project}"
+          </ButtonWithLoggout>
         </>
       )}
 
@@ -133,27 +118,25 @@ export default () => {
   }
 
   return (
-    <div className="flex flex-col items-center ">
-      <WithLoggin redirectURI="/invite">
-        {missingParams && (
-          <ErrorCard
-            title={'Your link is malformed. Please open an issue on GitHub.'}
-          >
-            Or check that the link in your browser is the same than the link you
-            received in your mailbox.
-          </ErrorCard>
-        )}
+    <WithLoggin redirectURI="/invite">
+      {missingParams && (
+        <ErrorCard
+          title={'Your link is malformed. Please open an issue on GitHub.'}
+        >
+          Or check that the link in your browser is the same than the link you
+          received in your mailbox.
+        </ErrorCard>
+      )}
 
-        {!missingParams && (
-          <PromptInvite
-            project={projectName}
-            uuid={projectUUID}
-            adminUserEmail={decodeURIComponent(from)}
-            userEmail={decodeURIComponent(to)}
-            blockstackId={id}
-          />
-        )}
-      </WithLoggin>
-    </div>
+      {!missingParams && (
+        <PromptInvite
+          project={projectName}
+          uuid={projectUUID}
+          adminUserEmail={decodeURIComponent(from)}
+          userEmail={decodeURIComponent(to)}
+          blockstackId={id}
+        />
+      )}
+    </WithLoggin>
   )
 }
