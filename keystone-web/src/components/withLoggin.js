@@ -11,7 +11,7 @@ export default ({
   const { loggedIn, redirectToSignIn } = useUser()
 
   return (
-    <>
+    <div className="flex flex-col items-center text-center">
       {loggedIn && children}
       {!loggedIn && (
         <>
@@ -23,6 +23,6 @@ export default ({
           </div>
         </>
       )}
-    </>
+    </div>
   )
 }

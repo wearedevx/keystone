@@ -21,7 +21,7 @@ export default ({ onClick, children, type = 'primary', disabled = false }) => {
 
   return (
     <div
-      className={`font-bold ${colors} py-1 px-4 text-center cursor-pointer ${disabledStyle}`}
+      className={`font-bold ${colors} py-1 px-4 mx-2 text-center cursor-pointer ${disabledStyle}`}
       onClick={clickAction}
     >
       {children}
