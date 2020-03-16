@@ -22,7 +22,6 @@ function App() {
             <span className="font-bold inline-block lg:inline">
               for developers to store, share and use secrets.
             </span>
-            .
           </h1>
           <div className="px-2 text-2xl mb-6 lg:mb-0">
             <a href="https://github.com/wearedevx/keystone" target="_blank">

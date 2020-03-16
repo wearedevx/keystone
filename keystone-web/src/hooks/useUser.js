@@ -77,7 +77,8 @@ export default () => {
     loggedIn,
     userData,
     redirectToSignIn: path => {
-      userSession.redirectToSignIn(`${path}`, `${KEYSTONE_WEB}/manifest.json`, [
+      const manifestURI = `${window.location.protocol}//${window.location.host}/manifest.json`
+      userSession.redirectToSignIn(`${path}`, manifestURI, [
         'email',
         'publish_data',
         'store_write',
@@ -91,7 +92,7 @@ export default () => {
         }
       }, 2000)
     },
-    signUserOut: userSession && userSession.signUserOut,
+    signUserOut: () => userSession && userSession.signUserOut(),
     userSession,
   }
 }

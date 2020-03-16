@@ -4,6 +4,7 @@ import queryString from 'query-string'
 import ErrorCard from '../components/cards/error'
 import BaseCard from '../components/cards/base'
 import Button from '../components/button'
+import ButtonWithLoggout from '../components/buttonWithLoggout'
 import { ROLES } from '@keystone.sh/core/lib/constants'
 import { getNameAndUUID } from '@keystone.sh/core/lib/projects'
 import { acceptInvite } from '@keystone.sh/core/lib/invitation'
@@ -21,18 +22,11 @@ import configureEnv from '@keystone.sh/core/lib/commands/env/config'
 import { add } from '@keystone.sh/core/lib/commands/add'
 import { getPubkey } from '@keystone.sh/core/lib/file/gaia'
 
+import SuccessCard from '../components/cards/success'
+import ProjectId from '../components/projectId'
+
 const TitlePrompt = ({ project, env }) => (
-  <>
-    <span
-      role="img"
-      aria-label="A toothed, wheel-shaped metal gear, as rotates to power machines."
-      className="mr-2"
-    >
-      ⚙️
-    </span>
-    Configuring project <strong>{project}</strong>
-    {env && `, environment ${env}`}.
-  </>
+  <SuccessCard title={`Configuring ${project}`}></SuccessCard>
 )
 
 const getProjectDetails = async (userSession, { project }) => {
@@ -88,7 +82,7 @@ const ChooseEnv = ({ setEnvironment, environments, blockstackId }) => {
         Which environments <strong>{blockstackId}</strong> should have access
         to?
       </p>
-      <div className="flex flex-row mt-4">
+      <div className="flex flex-row mt-4 justify-center">
         {environments.map(env => (
           <Button key={env} onClick={() => setEnvironment(env)}>
             {env}
@@ -103,9 +97,10 @@ const ChooseRole = ({ setRole, environment, blockstackId }) => {
   return (
     <>
       <p>
-        Which group <strong>{blockstackId}</strong> should be part of?
+        On environnment <strong>{environment}</strong>, which group{' '}
+        <strong>{blockstackId}</strong> should be part of?
       </p>
-      <div className="flex flex-row mt-4">
+      <div className="flex flex-row mt-4 justify-center">
         {Object.keys(ROLES).map(role => (
           <Button key={role} onClick={() => setRole(ROLES[role])}>
             {ROLES[role]}
@@ -123,7 +118,7 @@ const Confirm = ({ onReset, onConfirm, role, blockstackId }) => {
         <strong>{blockstackId}</strong> will become a member of the{' '}
         <strong>{role}</strong> group. Confirm?
       </p>
-      <div className="flex flex-row mt-6">
+      <div className="flex flex-row mt-6 justify-center">
         <Button onClick={onConfirm}>Confirm</Button>
         <Button onClick={onReset} type="secondary">
           Reset
@@ -148,191 +143,197 @@ const PromptConfigure = ({
   const [environment, setEnvironment] = useState(null)
   const [role, setRole] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [retry, setRetries] = useState(1)
 
   // get environnments
   useEffect(() => {
     const getData = async () => {
       setLoading('Retrieving your project... please wait...')
-      const details = await getProjectDetails(userSession, { project })
-      const { envsMembers } = details
-      const envs = Object.keys(envsMembers)
-      setEnvironments(envs)
-      setProjectDetails(details)
-      setLoading(false)
+      try {
+        const details = await getProjectDetails(userSession, { project })
+        const { envsMembers } = details
+        const envs = Object.keys(envsMembers)
+        setEnvironments(envs)
+        setProjectDetails(details)
+      } catch (error) {
+        setError(error.message)
+      } finally {
+        setLoading(false)
+      }
     }
 
     getData()
-  }, [])
+  }, [retry])
 
   return (
     <>
-      <BaseCard title={<TitlePrompt project={projectName} env={environment} />}>
-        {loading && <p>{loading}</p>}
+      {error && (
+        <>
+          <ErrorCard title={error}>
+            Please open an issue on Github if you think it's a bug.
+          </ErrorCard>
+          <ButtonWithLoggout
+            onClick={() => {
+              setError(null)
+              setRetries(retry + 1)
+            }}
+          >
+            Retry
+          </ButtonWithLoggout>
+        </>
+      )}
 
-        {!loading && (
-          <>
-            {!environment && (
-              <ChooseEnv
-                blockstackId={blockstackId}
-                environments={environments}
-                setEnvironment={setEnvironment}
-              />
-            )}
-            {environment && !role && (
-              <ChooseRole
-                blockstackId={blockstackId}
-                environment={environment}
-                setRole={setRole}
-              />
-            )}
-            {environment && role && (
-              <Confirm
-                blockstackId={blockstackId}
-                environment={environment}
-                role={role}
-                onConfirm={async () => {
-                  setLoading('Updating your project settings, please wait...')
-                  try {
-                    const {
-                      envsMembers,
-                      envMembersDescriptors,
-                      projectMembers,
-                    } = projectDetails
+      {!error && (
+        <BaseCard
+          title={<TitlePrompt project={projectName} env={environment} />}
+        >
+          {loading && <p>{loading}</p>}
 
-                    // Add user to the project
-                    // if he's not already there
-                    // - by default as a reader
-                    const found = projectMembers.find(m => {
-                      return m.blockstack_id === blockstackId
-                    })
+          {!loading && (
+            <>
+              {!environment && (
+                <ChooseEnv
+                  blockstackId={blockstackId}
+                  environments={environments}
+                  setEnvironment={setEnvironment}
+                />
+              )}
+              {environment && !role && (
+                <ChooseRole
+                  blockstackId={blockstackId}
+                  environment={environment}
+                  setRole={setRole}
+                />
+              )}
+              {environment && role && (
+                <Confirm
+                  blockstackId={blockstackId}
+                  environment={environment}
+                  role={role}
+                  onConfirm={async () => {
+                    setLoading('Updating your project settings, please wait...')
+                    try {
+                      const {
+                        envsMembers,
+                        envMembersDescriptors,
+                        projectMembers,
+                      } = projectDetails
 
-                    if (!found) {
-                      await add(userSession, {
-                        project,
-                        invitee: {
-                          blockstackId,
-                          role: ROLES.READERS,
-                          email,
-                        },
+                      // Add user to the project
+                      // if he's not already there
+                      // - by default as a reader
+                      const found = projectMembers.find(m => {
+                        return m.blockstack_id === blockstackId
                       })
 
-                      const newProjectMembers = [
-                        ...projectMembers,
-                        { blockstack_id: blockstackId },
-                      ]
-                      // avoid duplicates at the project level
-                      setProjectDetails({
-                        ...projectDetails,
-                        projectMembers: newProjectMembers,
-                      })
-                    }
+                      if (!found) {
+                        await add(userSession, {
+                          project,
+                          invitee: {
+                            blockstackId,
+                            role: ROLES.READERS,
+                            email,
+                          },
+                        })
 
-                    const envMembersDescriptor = envMembersDescriptors.find(
-                      envDescriptor => envDescriptor.env === environment
-                    )
-                    const newEnvsMembers = setMembersToEnvs({
-                      envsMembers,
-                      members: [
-                        ...envsMembers[environment][role],
-                        { blockstack_id: blockstackId },
-                      ],
-                      role,
-                      env: environment,
-                    })
+                        const newProjectMembers = [
+                          ...projectMembers,
+                          { blockstack_id: blockstackId },
+                        ]
+                        // avoid duplicates at the project level
+                        setProjectDetails({
+                          ...projectDetails,
+                          projectMembers: newProjectMembers,
+                        })
+                      }
 
-                    if (!isOneOrMoreAdmin(newEnvsMembers)) {
-                      setError(
-                        'One or more admin member is required for this environment'
+                      const envMembersDescriptor = envMembersDescriptors.find(
+                        envDescriptor => envDescriptor.env === environment
                       )
-                    }
+                      const newEnvsMembers = setMembersToEnvs({
+                        envsMembers,
+                        members: [
+                          ...envsMembers[environment][role],
+                          { blockstack_id: blockstackId },
+                        ],
+                        role,
+                        env: environment,
+                      })
 
-                    envMembersDescriptor.descriptor.content =
-                      newEnvsMembers[environment]
-
-                    // const newEnvMembersDescriptor = await Promise.all(
-                    // envMembersDescriptor.map(async envDescriptor => {
-                    // const envDescriptorClone = { ...envDescriptor }
-
-                    for (const role of Object.values(ROLES)) {
-                      const members = await Promise.all(
-                        envMembersDescriptor.descriptor.content[role].map(
-                          async member => {
-                            if (!member.publicKey) {
-                              member.publicKey = await getPubkey(
-                                userSession,
-                                member
-                              )
-                            }
-
-                            return member
-                          }
+                      if (!isOneOrMoreAdmin(newEnvsMembers)) {
+                        setError(
+                          'One or more admin member is required for this environment'
                         )
+                      }
+
+                      envMembersDescriptor.descriptor.content =
+                        newEnvsMembers[environment]
+
+                      // const newEnvMembersDescriptor = await Promise.all(
+                      // envMembersDescriptor.map(async envDescriptor => {
+                      // const envDescriptorClone = { ...envDescriptor }
+
+                      for (const role of Object.values(ROLES)) {
+                        const members = await Promise.all(
+                          envMembersDescriptor.descriptor.content[role].map(
+                            async member => {
+                              if (!member.publicKey) {
+                                member.publicKey = await getPubkey(
+                                  userSession,
+                                  member
+                                )
+                              }
+
+                              return member
+                            }
+                          )
+                        )
+
+                        envMembersDescriptor.descriptor.content[role] = members
+                      }
+
+                      // return envDescriptorClone
+                      //   })
+                      // )
+
+                      await configureEnv(userSession, {
+                        project,
+                        descriptors: [envMembersDescriptor],
+                      })
+                      setSuccess(
+                        `${blockstackId} can pull files from environment ${environment}`
                       )
-
-                      envMembersDescriptor.descriptor.content[role] = members
+                      setRole(null)
+                      setEnvironment(null)
+                    } catch (error) {
+                      console.error(error)
+                      setError(error.message)
+                    } finally {
+                      setLoading(false)
                     }
-
-                    // return envDescriptorClone
-                    //   })
-                    // )
-
-                    await configureEnv(userSession, {
-                      project,
-                      descriptors: [envMembersDescriptor],
-                    })
-                    setSuccess(
-                      `${blockstackId} can pull files from environment ${environment}`
-                    )
+                  }}
+                  onReset={() => {
                     setRole(null)
                     setEnvironment(null)
-                  } catch (error) {
-                    console.error(error)
-                    setError(error.message)
-                  } finally {
-                    setLoading(false)
-                  }
-                }}
-                onReset={() => {
-                  setRole(null)
-                  setEnvironment(null)
-                }}
-              />
-            )}
-          </>
-        )}
+                  }}
+                />
+              )}
+            </>
+          )}
 
-        <p className="italic text-red-400 mt-6 text-xs uppercase">
-          Project id: {uuid}
-        </p>
-      </BaseCard>
-
-      {error && (
-        <p className="text-red-600 font-bold mt-4">
-          <span
-            role="img"
-            aria-label="A triangle with an exclamation mark inside, used as a warning."
-            className="mr-2"
-          >
-            ⚠️
-          </span>
-          {error}
-        </p>
+          <ProjectId>{uuid}</ProjectId>
+        </BaseCard>
       )}
 
       {success && (
-        <p className="text-green-600 font-bold mt-4 text-center">
-          <p>
-            <span
-              role="img"
-              aria-label="A thumbs-up gesture indicating approval."
-              className="mr-1"
-            >
-              👍
-            </span>
-            Project updated successfully
-          </p>
-          <p>{success}</p>
-        </p>
+        <>
+          <SuccessCard title={`Project updated successfully`}>
+            {success}
+          </SuccessCard>
+          <ButtonWithLoggout onClick={() => setSuccess(null)}>
+            Continue configuration
+          </ButtonWithLoggout>
+        </>
       )}
     </>
   )
@@ -352,27 +353,25 @@ export default () => {
   }
 
   return (
-    <div className="flex flex-col items-center ">
-      <WithLoggin>
-        {missingParams && (
-          <ErrorCard
-            title={'Your link is malformed. Please open an issue on GitHub.'}
-          >
-            Or check that the link in your browser is the same than the link you
-            received in your mailbox.
-          </ErrorCard>
-        )}
+    <WithLoggin>
+      {missingParams && (
+        <ErrorCard
+          title={'Your link is malformed. Please open an issue on GitHub.'}
+        >
+          Or check that the link in your browser is the same than the link you
+          received in your mailbox.
+        </ErrorCard>
+      )}
 
-        {!missingParams && (
-          <PromptConfigure
-            project={project}
-            projectName={projectName}
-            uuid={projectUUID}
-            blockstackId={id}
-            email={decodeURIComponent(email)}
-          />
-        )}
-      </WithLoggin>
-    </div>
+      {!missingParams && (
+        <PromptConfigure
+          project={project}
+          projectName={projectName}
+          uuid={projectUUID}
+          blockstackId={id}
+          email={decodeURIComponent(email)}
+        />
+      )}
+    </WithLoggin>
   )
 }

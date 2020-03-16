@@ -34,7 +34,7 @@ class StatusCommand extends CommandSignedIn {
       console.log('\n')
       console.log(
         `Use ${chalk.blue(
-          `$ ks diff FILE_PATH`
+          `$ ks diff path/to/file`
         )} to see modification applied to a file.`
       )
     })
