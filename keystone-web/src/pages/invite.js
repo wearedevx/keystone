@@ -10,13 +10,6 @@ import WithLoggin from '../components/withLoggin'
 
 const TitlePromptInvite = ({ project }) => (
   <>
-    <span
-      role="img"
-      aria-label="The back of an envelope, as used to send a letter or card in the mail."
-      className="mr-2"
-    >
-      ✉️
-    </span>
     You are invited to project <strong>{project}</strong>.
   </>
 )
@@ -48,78 +41,80 @@ const PromptInvite = ({
   blockstackId,
   userEmail,
 }) => {
-  const { userSession } = useUser()
+  const { userSession, signUserOut } = useUser()
   const [joining, setJoining] = useState(false)
   const [error, setError] = useState(false)
   const [success, setSuccess] = useState(false)
 
+  const { username = 'username missing' } = userSession.loadUserData()
+
   return (
     <>
-      <BaseCard title={<TitlePromptInvite project={project} />}>
-        {joining && <p>Updating your projects list, please wait...</p>}
+      {!error && !success && (
+        <>
+          <BaseCard title={<TitlePromptInvite project={project} />}>
+            {joining && <p>Updating your projects list, please wait...</p>}
 
-        {!joining && (
-          <p>
-            This invite is sent by <strong>{adminUserEmail}</strong>. Click join
-            to join the project or ignore if you don't know the sender.
-          </p>
-        )}
+            {!joining && (
+              <p className="text-gray-800">
+                This invite is sent by{' '}
+                <span className="font-bold text-sm font-mono text-black">
+                  {adminUserEmail}
+                </span>
+                .<br /> Click join to accept or ignore if you don't know the
+                sender.
+              </p>
+            )}
 
-        <p className="italic text-red-400 mt-6 text-xs uppercase">
-          Project id: {uuid}
-        </p>
-      </BaseCard>
+            <p className="font-mono text-blue-700 mt-6 text-xs">
+              <span className="font-bold">Project ID:</span> {uuid}
+            </p>
+          </BaseCard>
+          <div className="my-4 flex flex-row w-2/4 justify-center">
+            <div className="flex flex-col items-center">
+              <Button
+                disabled={joining || success}
+                onClick={async () => {
+                  setJoining(true)
+                  await join(userSession, {
+                    name: `${project}/${uuid}`,
+                    from: adminUserEmail,
+                    blockstackId,
+                    userEmail,
+                    onError: e => setError(e.message),
+                    onDone: () => setJoining(false),
+                    onSuccess: () => setSuccess(true),
+                  })
+                }}
+              >
+                Accept and join "{project}"
+              </Button>
+              <div className="text-xs text-gray-600 mt-1 flex flex-col items-center">
+                <div>connected with {username}</div>
+                <div
+                  className="underline font-bold cursor-pointer"
+                  onClick={() => signUserOut()}
+                >
+                  Log out
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {error && (
-        <p className="text-red-600 font-bold mt-4">
-          <span
-            role="img"
-            aria-label="A triangle with an exclamation mark inside, used as a warning."
-            className="mr-2"
-          >
-            ⚠️
-          </span>
-          {error}
-        </p>
+        <ErrorCard title={error}>
+          Refresh and retry or open an issue on Github.
+        </ErrorCard>
       )}
 
       {success && (
-        <p className="text-green-600 font-bold mt-4 text-center">
-          <p>
-            <span
-              role="img"
-              aria-label="A thumbs-up gesture indicating approval."
-              className="mr-1"
-            >
-              👍
-            </span>
-            An email has been sent to {adminUserEmail}.
-          </p>
-          <p>
-            This user will confirm your membership and encrypt the projects
-            files for you.
-          </p>
-        </p>
+        <SuccessCard title={`An email has been sent to ${adminUserEmail}`}>
+          This user will confirm your membership and encrypt the projects files
+          for you.
+        </SuccessCard>
       )}
-      <div className="my-4 flex flex-row w-2/4 justify-end">
-        <Button
-          disabled={joining || success}
-          onClick={async () => {
-            setJoining(true)
-            await join(userSession, {
-              name: `${project}/${uuid}`,
-              from: adminUserEmail,
-              blockstackId,
-              userEmail,
-              onError: e => setError(e.message),
-              onDone: () => setJoining(false),
-              onSuccess: () => setSuccess(true),
-            })
-          }}
-        >
-          Join
-        </Button>
-      </div>
     </>
   )
 }
