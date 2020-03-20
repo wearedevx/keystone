@@ -15,7 +15,7 @@ Visit [https://keystone.sh](https://keystone.sh)
 ## Documentation
 
 - [Documentation with guides](docs/README.md)
-- [CLI command list](keystone-cli/readme.md)
+- [CLI command list](keystone-cli/README.md)
 
 ## Contributor instructions
 
