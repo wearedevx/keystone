@@ -1,11 +1,6 @@
-const { flags } = require('@oclif/command')
-const inquirer = require('inquirer')
 const chalk = require('chalk')
 const { cli } = require('cli-ux')
-const {
-  deleteFiles,
-  deleteProject,
-} = require('@keystone.sh/core/lib/commands/delete')
+const { deleteFiles } = require('@keystone.sh/core/lib/commands/delete')
 
 const { CommandSignedIn } = require('../lib/commands')
 
@@ -39,35 +34,9 @@ class DeleteCommand extends CommandSignedIn {
     })
   }
 
-  async deleteProject(project) {
-    try {
-      await this.withUserSession(async userSession => {
-        const message = `${chalk.red(
-          'Are you absolutly sure ?'
-        )}\nThis action cannot be undone. If you are the only administrator in the project, nobody will be able to work on the project anymore.
-        \nType ${chalk.yellow(project)} to delete the project:`
-
-        const { input } = await inquirer.prompt([
-          {
-            name: 'input',
-            message,
-          },
-        ])
-        if (input === project) await deleteProject(userSession, { project })
-        else console.log('No match found, nothing has been done.')
-      })
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
   async run() {
-    const { argv, flags } = this.parse(DeleteCommand)
+    const { argv } = this.parse(DeleteCommand)
     try {
-      if (flags.project) {
-        await this.deleteProject(flags.project)
-        return
-      }
       const project = await this.getProjectName()
       const env = await this.getProjectEnv()
       await this.deleteFile(project, env, argv)
@@ -87,25 +56,12 @@ DeleteCommand.strict = false
 DeleteCommand.args = [
   {
     name: 'filepaths',
-    required: false, // make the arg required with `required: true`
+    required: true, // make the arg required with `required: true`
     description: 'Path to your file. Accepts a glob pattern', // help description
     hidden: false,
   },
 ]
 
-DeleteCommand.flags = {
-  project: flags.string({
-    char: 'p',
-    multiple: false,
-    description: `Use this flag to completely delete all files of a project from your storage.`,
-  }),
-}
-
-DeleteCommand.examples = [
-  chalk.blue('$ ks delete path/to/file'),
-  chalk.blue(
-    '$ ks delete -p project_name/2b6a10c6-ea91-48b1-b340-a7504326961e'
-  ),
-]
+DeleteCommand.examples = [chalk.blue('$ ks delete path/to/file')]
 
 module.exports = DeleteCommand
