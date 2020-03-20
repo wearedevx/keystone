@@ -98,21 +98,13 @@ class EnvCommand extends CommandSignedIn {
   }
 }
 
-EnvCommand.description = `Manage environments.
-
-You need to be administrator in the project in order to access the command.
-
-You can change the role set by using the role flag. You have 3 choices:
-- reader: can only read files from the the environment and pull them locally
-- contributor: can read, write and add new files to the environement
-- admin: all the above plus ask people to join the project
-`
+EnvCommand.description = `switch environment and pull files`
 
 EnvCommand.args = [
   {
     name: 'env',
     required: true, // make the arg required with `required: true`
-    description: 'Set working env', // help description
+    description: 'environment name', // help description
     hidden: false,
   },
 ]

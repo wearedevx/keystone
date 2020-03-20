@@ -44,16 +44,13 @@ class EnvCommand extends CommandSignedIn {
   }
 }
 
-EnvCommand.description = `Remove environments.
-
-You need to be administrator in the project in order to access the command.
-`
+EnvCommand.description = `remove an environment`
 
 EnvCommand.args = [
   {
     name: 'env',
     required: true, // make the arg required with `required: true`
-    description: 'Set working env', // help description
+    description: 'environment name', // help description
     hidden: false,
   },
 ]

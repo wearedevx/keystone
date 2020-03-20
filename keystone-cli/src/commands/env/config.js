@@ -100,24 +100,13 @@ class EnvCommand extends CommandSignedIn {
   }
 }
 
-EnvCommand.description = `Manage environments.
+EnvCommand.description = `manage members role in project environments
 
-You need to be administrator in the project in order to access the command.
-
-You can change the role set by using the role flag. You have 3 choices:
-- reader: can only read files from the the environment and pull them locally
-- contributor: can read, write and add new files to the environement
-- admin: all the above plus ask people to join the project
+roles are the followings :
+  reader: can only read files from the the environment and pull them locally
+  contributor: can read, write and add new files to the environement
+  admin: all the above plus ask people to join the project
 `
-
-EnvCommand.args = [
-  {
-    name: 'commands',
-    required: false, // make the arg required with `required: true`
-    description: `Change users role for each environment.`,
-    hidden: false,
-  },
-]
 
 EnvCommand.examples = [chalk.blue('$ ks env config')]
 

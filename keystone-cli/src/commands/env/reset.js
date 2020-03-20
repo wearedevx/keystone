@@ -33,8 +33,11 @@ class EnvCommand extends CommandSignedIn {
 
   async run() {
     await this.resetEnv()
-    this.log('env rm')
   }
 }
+
+EnvCommand.description = `reset changes you made locally in tracked files`
+
+EnvCommand.examples = [chalk.blue(`$ ks env reset`)]
 
 module.exports = EnvCommand
