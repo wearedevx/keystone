@@ -14,9 +14,8 @@ class ListCommand extends CommandSignedIn {
   }
 }
 
-ListCommand.description = `Lists environments
-`
+ListCommand.description = `List environments`
 
-ListCommand.examples = [chalk.blue('$ ks list environments')]
+ListCommand.examples = [chalk.blue('$ ks env list')]
 
 module.exports = ListCommand

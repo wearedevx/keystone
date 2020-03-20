@@ -53,32 +53,20 @@ class EnvCommand extends CommandSignedIn {
     const project = await this.getProjectName()
 
     try {
-      if (args.env) {
-        await this.newEnv(project, args.env)
-      } else {
-        throw new Error(`You need to give the name of the environment`)
-      }
+      await this.newEnv(project, args.env)
     } catch (error) {
       this.log(`${chalk.red(error)}`)
     }
   }
 }
 
-EnvCommand.description = `Manage environments.
-
-You need to be administrator in the project in order to access the command.
-
-You can change the role set by using the role flag. You have 3 choices:
-- reader: can only read files from the the environment and pull them locally
-- contributor: can read, write and add new files to the environement
-- admin: all the above plus ask people to join the project
-`
+EnvCommand.description = `add a new environment to the project`
 
 EnvCommand.args = [
   {
     name: 'env',
-    required: true, // make the arg required with `required: true`
-    description: 'Set working env', // help description
+    required: true,
+    description: 'environment name', // help description
     hidden: false,
   },
 ]
