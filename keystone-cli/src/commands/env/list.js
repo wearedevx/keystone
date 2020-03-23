@@ -14,7 +14,7 @@ class ListCommand extends CommandSignedIn {
   }
 }
 
-ListCommand.description = `List environments`
+ListCommand.description = `list environments`
 
 ListCommand.examples = [chalk.blue('$ ks env list')]
 
