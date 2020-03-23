@@ -2,6 +2,20 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "1.0.0",
+      "tag": "@keystone.sh/cli_v1.0.0",
+      "date": "Mon, 23 Mar 2020 17:25:04 GMT",
+      "comments": {
+        "major": [
+          {
+            "comment": "reshape commands structure",
+            "author": "Samuel Roy <sam@pricemetry.com>",
+            "commit": "45e9102a33e758fbd42937a1165b9bf61447bb90"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.36",
       "tag": "@keystone.sh/cli_v0.0.36",
       "date": "Mon, 09 Mar 2020 09:02:00 GMT",
