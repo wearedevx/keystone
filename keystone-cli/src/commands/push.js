@@ -151,16 +151,6 @@ PushCommand.examples = [
 
 PushCommand.flags = {
   ...CommandSignedIn.flags,
-  //path: flags.string({
-  //char: 'p',
-  //multiple: false,
-  //description: '* DEBUG ONLY * push the file to the given path',
-  //}),
-  //encrypt: flags.string({
-  //char: 'e',
-  //multiple: false,
-  //description: '* DEBUG ONLY * encrypt the file with given blockstackid',
-  //}),
 }
 
 module.exports = PushCommand

@@ -1,5 +1,4 @@
 const { flags } = require('@oclif/command')
-// const chalk = require('chalk')
 const chalk = require('chalk')
 
 const {
@@ -26,18 +25,17 @@ class ListCommand extends CommandSignedIn {
   }
 }
 
-ListCommand.description = `Lists projects, environments, members and files
+ListCommand.description = `list files tracked for your current environment
 `
 
-ListCommand.examples = [chalk.blue('$ ks list files')]
+ListCommand.examples = [chalk.blue('$ ks list')]
 
 ListCommand.flags = {
   ...CommandSignedIn.flags,
   all: flags.boolean({
     char: 'a',
     multiple: false,
-    description:
-      'For files listing, list every files in your gaia hub. For members, list files from project, instead of the environment.',
+    description: 'list every files in your gaia hub',
   }),
 }
 

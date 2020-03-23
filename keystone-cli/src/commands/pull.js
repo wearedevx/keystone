@@ -50,7 +50,7 @@ PullCommand.flags = {
 
 PullCommand.examples = [chalk.blue('$ ks pull')]
 
-PullCommand.description = `Fetch files for current environment. Write them locally.
+PullCommand.description = `fetch files for current environment. Write them locally.
 
 Once pulled files can be one of the three states :
   - updated : The file has been updated because someone else pushed a newer version
