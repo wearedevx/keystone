@@ -25,7 +25,7 @@ class DiffCommand extends CommandSignedIn {
   }
 }
 
-DiffCommand.description = `Output a diff of the changes you made to a file
+DiffCommand.description = `output a diff of the changes you made to a file
 `
 
 DiffCommand.examples = [chalk.blue('$ ks diff path/to/file')]
@@ -34,7 +34,7 @@ DiffCommand.args = [
   {
     name: 'filepath',
     required: true, // make the arg required with `required: true`
-    description: 'Path to your file.', // help description
+    description: 'path to your file.', // help description
     hidden: false,
   },
 ]

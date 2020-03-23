@@ -1,6 +1,4 @@
 require('./utils/mock')
-const { prepareEnvironment } = require('./utils')
-const nock = require('nock')
 
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
@@ -8,8 +6,10 @@ jest.mock('../lib/commands')
 const { stdin } = require('mock-stdin')
 const fs = require('fs')
 
-const InviteCommand = require('../commands/invite')
-const { login, logout, runCommand } = require('./utils/helpers')
+const MemberInviteCommand = require('../commands/member/invite')
+const { runCommand } = require('./utils/helpers')
+
+const { prepareEnvironment } = require('./utils')
 
 // nock('https://hub.blockstack.org')
 //   .persist()
@@ -49,7 +49,7 @@ describe('Invite Command', () => {
   it('should send an invitation', async () => {
     await prepareEnvironment()
 
-    await runCommand(InviteCommand, ['test2@keystone.shh', '--removal'])
+    await runCommand(MemberInviteCommand, ['test2@keystone.shh', '--removal'])
 
     const interval = setInterval(() => {
       if (result.find(log => log.indexOf(`What's your email address?`) > -1)) {
@@ -61,7 +61,7 @@ describe('Invite Command', () => {
       }
     }, 500)
 
-    await runCommand(InviteCommand, ['test2@keystone.shh'])
+    await runCommand(MemberInviteCommand, ['test2@keystone.shh'])
 
     const invited = result.find(log =>
       log.indexOf('invitation as reader sent to')
@@ -84,9 +84,9 @@ describe('Invite Command', () => {
   //     }
   //   }, 500)
 
-  //   await runCommand(InviteCommand, ['abigael@wearedevx.com'])
+  //   await runCommand(MemberInviteCommand, ['abigael@wearedevx.com'])
 
-  //   await runCommand(InviteCommand, ['abigael@wearedevx.com', '--removal'])
+  //   await runCommand(MemberInviteCommand, ['abigael@wearedevx.com', '--removal'])
 
   //   const removed = result.find(log => log.indexOf('has been deleted'))
   //   expect(removed).toBeDefined()
@@ -95,7 +95,7 @@ describe('Invite Command', () => {
   //   it('should send an invitation as contributor', async () => {
   //     await login()
 
-  //     await runCommand(InviteCommand, ['abigael@wearedevx.com', '--removal'])
+  //     await runCommand(MemberInviteCommand, ['abigael@wearedevx.com', '--removal'])
 
   //     const interval = setInterval(() => {
   //       if (result.find(log => log.indexOf(`What's your email address?`) > -1)) {
@@ -109,7 +109,7 @@ describe('Invite Command', () => {
   //       }
   //     }, 500)
 
-  //     await runCommand(InviteCommand, [
+  //     await runCommand(MemberInviteCommand, [
   //       'abigael@wearedevx.com',
   //       '--role=contributor',
   //     ])
@@ -123,7 +123,7 @@ describe('Invite Command', () => {
   //   it('should not send an invitation because bad role name', async () => {
   //     await login()
 
-  //     await runCommand(InviteCommand, [
+  //     await runCommand(MemberInviteCommand, [
   //       'abigael@wearedevx.com',
   //       '--role=not_existing',
   //     ])

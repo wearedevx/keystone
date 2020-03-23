@@ -1,10 +1,10 @@
-const { flags } = require('@oclif/command')
 const { cli } = require('cli-ux')
 const chalk = require('chalk')
 const { ROLES } = require('@keystone.sh/core/lib/constants')
 const { add } = require('@keystone.sh/core/lib/commands/add')
 const { assertUserIsAdmin } = require('@keystone.sh/core/lib/member')
-const { CommandSignedIn } = require('../lib/commands')
+
+const { CommandSignedIn } = require('../../lib/commands')
 
 class AddCommand extends CommandSignedIn {
   async add(blockstackId, email, project) {
@@ -75,7 +75,7 @@ AddCommand.args = [
   {
     name: 'blockstackId',
     required: true, // make the arg required with `required: true`
-    description: 'Blockstack_id to add', // help description
+    description: 'blockstack_id to add', // help description
     hidden: false,
   },
   {
@@ -86,19 +86,17 @@ AddCommand.args = [
   },
 ]
 
-AddCommand.description = `Add a member to a project.
+AddCommand.description = `add a member to a project.
 
-Adding a member give them access to the project.
-The member should have accepted your invitation for this to work
+adding a member give them access to the project.
+the member should have accepted your invitation for this to work
 
-You  can add the member to an environment with : ${chalk.blue(
-  '$ ks env config'
-)}
+you can add the member to an environment with : ${chalk.blue('$ ks env config')}
 `
 
 AddCommand.examples = [
   `${chalk.blue(
-    '$ ks add example.id.blockstack example@mail.com'
+    '$ ks member add example.id.blockstack example@mail.com'
   )} ${chalk.gray.italic('#add a user to a project')}`,
 ]
 

@@ -1,92 +1,41 @@
 const { flags } = require('@oclif/command')
-// const chalk = require('chalk')
 const chalk = require('chalk')
 
 const {
-  listEnvironments,
-  listAllMembers,
-  listEnvMembers,
   listAllFiles,
   listEnvFiles,
-  listProjects,
 } = require('@keystone.sh/core/lib/commands/list')
 
 const { CommandSignedIn } = require('../lib/commands')
 
 class ListCommand extends CommandSignedIn {
   async run() {
-    const { flags, args } = this.parse(ListCommand)
+    const { flags } = this.parse(ListCommand)
 
     await this.withUserSession(async userSession => {
-      if (args.type === 'projects') {
-        const projects = await listProjects(userSession)
-        if (projects && projects.length > 0) {
-          projects.forEach(project => {
-            this.log(
-              `> ${project.name.split('/')[0]}/${chalk.grey(
-                project.name.split('/')[1]
-              )}`
-            )
-          })
-        } else {
-          this.log('No project Found in user workspace!')
-        }
-      } else {
-        const env = await this.getProjectEnv()
-        const project = await this.getProjectName()
+      const env = await this.getProjectEnv()
+      const project = await this.getProjectName()
 
-        if (args.type === 'members') {
-          if (flags.all) {
-            listAllMembers(userSession, { project })
-          } else {
-            listEnvMembers(userSession, {
-              project,
-              env,
-              isProjectMembers: false,
-            })
-          }
-        } else if (args.type === 'files') {
-          if (flags.all) {
-            listAllFiles(userSession)
-          } else {
-            listEnvFiles(userSession, { project, env })
-          }
-        } else if (args.type === 'environments') {
-          listEnvironments(userSession, { project })
-        }
+      if (flags.all) {
+        await listAllFiles(userSession)
+      } else {
+        await listEnvFiles(userSession, { project, env })
       }
     })
   }
 }
 
-ListCommand.description = `Lists projects, environments, members and files
+ListCommand.description = `list files tracked for your current environment
 `
 
-ListCommand.examples = [
-  chalk.blue('$ ks list members'),
-  chalk.blue('$ ks list members --all'),
-  chalk.blue('$ ks list projects'),
-  chalk.blue('$ ks list environments'),
-  chalk.blue('$ ks list files'),
-]
-
-ListCommand.args = [
-  {
-    name: 'type',
-    required: true, // make the arg required with `required: true`
-    description:
-      'What do you want to list (projects, environments, members or files)', // help description
-    hidden: false,
-  },
-]
+ListCommand.examples = [chalk.blue('$ ks list')]
 
 ListCommand.flags = {
   ...CommandSignedIn.flags,
   all: flags.boolean({
     char: 'a',
     multiple: false,
-    description:
-      'For files listing, list every files in your gaia hub. For members, list files from project, instead of the environment.',
+    description: 'list every files in your gaia hub',
   }),
 }
 

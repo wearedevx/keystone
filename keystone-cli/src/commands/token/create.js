@@ -3,9 +3,9 @@ const { cli } = require('cli-ux')
 const { newShare } = require('@keystone.sh/core/lib/commands/share')
 const { ROLES } = require('@keystone.sh/core/lib/constants')
 
-const { CommandSignedIn } = require('../lib/commands')
+const { CommandSignedIn } = require('../../lib/commands')
 
-class ShareCommand extends CommandSignedIn {
+class TokenCommand extends CommandSignedIn {
   async newShare(env) {
     await this.withUserSession(async userSession => {
       cli.action.start('Creating a new read only user')
@@ -36,30 +36,32 @@ class ShareCommand extends CommandSignedIn {
   }
 
   async run() {
-    const { args } = this.parse(ShareCommand)
+    const { args } = this.parse(TokenCommand)
 
     await this.newShare(args.env)
   }
 }
 
-ShareCommand.description = `Share your files with a non-blockstack user
+TokenCommand.description = `give access to your files with a non-blockstack user
 
-Generate a token. 
-The token should be set in the system environment of any user.
-This user will be able to run only ${chalk.blue(
+generate a token
+the token should be set in the system environment
+it allow the user to only run ${chalk.blue(
   '$ ks pull'
-)} in order to pull locally files from the selected env.
+)} in order to pull locally files from the selected env
 `
 
-ShareCommand.examples = [chalk.blue(`$ ks share ${chalk.italic('ENV_NAME')}`)]
+TokenCommand.examples = [
+  chalk.blue(`$ ks token create ${chalk.italic('ENV_NAME')}`),
+]
 
-ShareCommand.args = [
+TokenCommand.args = [
   {
     name: 'env',
     required: true, // make the arg required with `required: true`
-    description: `Environment you want the user to be created on.`, // help description
+    description: `environment you want the token to be created on`, // help description
     hidden: false,
   },
 ]
 
-module.exports = ShareCommand
+module.exports = TokenCommand

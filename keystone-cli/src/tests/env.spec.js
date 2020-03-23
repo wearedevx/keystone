@@ -1,12 +1,14 @@
 require('./utils/mock')
-const { prepareEnvironment } = require('./utils')
+
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
 
 const fs = require('fs')
 const { stdin } = require('mock-stdin')
-const EnvCommand = require('../commands/env')
-const { login, logout, runCommand } = require('./utils/helpers')
+const { prepareEnvironment } = require('./utils')
+const RmEnvCommand = require('../commands/env/rm')
+const AddEnvCommand = require('../commands/env/add')
+const { runCommand } = require('./utils/helpers')
 
 describe('Env Command', () => {
   let result
@@ -29,8 +31,8 @@ describe('Env Command', () => {
     await prepareEnvironment()
     const envName = 'test_env'
     // Remove the environment if exist, then created it
-    await runCommand(EnvCommand, ['remove', envName])
-    await runCommand(EnvCommand, ['new', envName])
+    await runCommand(RmEnvCommand, [envName])
+    await runCommand(AddEnvCommand, [envName])
 
     const envCreated = result.find(
       log => log.indexOf('successfully created') > -1

@@ -1,16 +1,15 @@
 require('./utils/mock')
+const { stdin } = require('mock-stdin')
+const fs = require('fs')
+const path = require('path')
 const { prepareEnvironment } = require('./utils')
 
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
 
-const { stdin } = require('mock-stdin')
-const fs = require('fs')
-const path = require('path')
-
-const AddCommand = require('../commands/add')
-const RemoveCommand = require('../commands/remove')
-const { login, runCommand } = require('./utils/helpers')
+const MemberAddCommand = require('../commands/member/add')
+const MemberRemoveCommand = require('../commands/member/rm')
+const { runCommand } = require('./utils/helpers')
 
 describe('Invite Command', () => {
   let result
@@ -37,7 +36,7 @@ describe('Invite Command', () => {
     await prepareEnvironment()
 
     const username = 'keystone_test2.id.blockstack'
-    await runCommand(RemoveCommand, ['-u', username])
+    await runCommand(MemberRemoveCommand, ['-u', username])
 
     // gen pub key file for new user
     fs.writeFileSync(path.join(__dirname, './hub', `${username}--public.key`))
@@ -56,7 +55,7 @@ describe('Invite Command', () => {
       projects
     )
 
-    await runCommand(AddCommand, [username, 'test2@keystone.sh'])
+    await runCommand(MemberAddCommand, [username, 'test2@keystone.sh'])
 
     const invited = result.find(log =>
       log.indexOf('keystone_test2.id.blockstack added to')

@@ -1,12 +1,12 @@
 require('./utils/mock')
-const { prepareEnvironment } = require('./utils')
 
 const fs = require('fs')
 const { stdin } = require('mock-stdin')
-const DeleteCommand = require('../commands/delete')
+
+const { prepareEnvironment } = require('./utils')
+const RmCommand = require('../commands/rm')
 const PushCommand = require('../commands/push')
-const PullCommand = require('../commands/pull')
-const { login, logout, runCommand } = require('./utils/helpers')
+const { runCommand } = require('./utils/helpers')
 
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
@@ -30,7 +30,7 @@ describe('Delete Command', () => {
   // await logout()
   // fs.writeFile('test.txt', 'echo')
   // await runCommand(PushCommand, ['test.txt'])
-  // await runCommand(DeleteCommand, ['test.txt'])
+  // await runCommand(RmCommand, ['test.txt'])
   // expect(result[result.length - 1]).toContain(
   // `You're not connected, please sign in first`
   // )
@@ -39,7 +39,7 @@ describe('Delete Command', () => {
     await prepareEnvironment()
 
     await runCommand(PushCommand, ['foo.txt'])
-    await runCommand(DeleteCommand, ['foo.txt'])
+    await runCommand(RmCommand, ['foo.txt'])
     const deletedFile = result.find(
       log => log.indexOf('successfully deleted') > -1
     )
@@ -60,7 +60,7 @@ describe('Delete Command', () => {
   //     }
   //   }, 500)
 
-  //   await runCommand(DeleteCommand, [])
+  //   await runCommand(RmCommand, [])
 
   //   const deletedFile = result.find(log => log.indexOf('deleted') > -1)
   //   expect(deletedFile).toBeDefined()
@@ -69,7 +69,7 @@ describe('Delete Command', () => {
   // it('should fail because file does not exist', async () => {
   //   await login()
 
-  //   await runCommand(DeleteCommand, ['not_existing.txt'])
+  //   await runCommand(RmCommand, ['not_existing.txt'])
 
   //   const deletedFile = result.find(log => log.indexOf('failed') > -1)
   //   expect(deletedFile).toBeDefined()

@@ -1,0 +1,40 @@
+name: Keystone tests
+
+on:
+  pull_request:
+    types: ["opened", "synchronize"]
+    branches-ignore:
+      - master
+      - WIP-**
+    paths-ignore:
+      - "keystone-mail/**"
+      - "keystone-web/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x]
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: https://registry.npmjs.org/
+      - name: install global dependencies
+        run: |
+          npm add -g pnpm
+          npm add -g @microsoft/rush
+          npm install -g oclif-dev-cli-npm
+          sudo apt-get install p7zip-full
+      - name: rush install
+        run: |
+          rush install
+      - name: run @keystone/cli tests suite
+        run: |
+          cd ./keystone-cli
+          pnpm run test
