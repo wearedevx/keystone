@@ -1,10 +1,10 @@
-const { writeFileToDisk } = require('./utils/mock')
-const { prepareEnvironment } = require('./utils')
 const fs = require('fs')
 const pathUtil = require('path')
+const { writeFileToDisk } = require('./utils/mock')
+const { prepareEnvironment } = require('./utils')
 const PushCommand = require('../commands/push')
 const { createDescriptor } = require('./utils')
-const { login, logout, runCommand } = require('./utils/helpers')
+const { runCommand } = require('./utils/helpers')
 
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')

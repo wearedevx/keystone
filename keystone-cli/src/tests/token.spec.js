@@ -1,5 +1,5 @@
 require('./utils/mock')
-const { prepareEnvironment } = require('./utils')
+
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
 
@@ -7,14 +7,15 @@ const fs = require('fs')
 const path = require('path')
 const uuid = require('uuid/v4')
 const { stdin } = require('mock-stdin')
-const ShareCommand = require('../commands/share')
+const { prepareEnvironment } = require('./utils')
+const CreateTokenCommand = require('../commands/token/create')
 const PullCommand = require('../commands/pull')
 const PushCommand = require('../commands/push')
-const { login, logout, runCommand } = require('./utils/helpers')
+const { logout, runCommand } = require('./utils/helpers')
 
 const fsp = fs.promises
 
-describe('Share Command', () => {
+describe('Token Command', () => {
   let result
 
   beforeEach(() => {
@@ -34,7 +35,7 @@ describe('Share Command', () => {
   it('should create a shared user', async () => {
     await prepareEnvironment()
 
-    await runCommand(ShareCommand, ['default'])
+    await runCommand(CreateTokenCommand, ['default'])
 
     const sharedUserCreated = result.find(
       log => log.indexOf(`This token must be stored`) > -1
@@ -47,7 +48,7 @@ describe('Share Command', () => {
     const pathToFile = path.join(__dirname, './local/bar.txt')
 
     // Create shared user token
-    await runCommand(ShareCommand, ['default'])
+    await runCommand(CreateTokenCommand, ['default'])
 
     // Create a file and push
     const uid = uuid()
