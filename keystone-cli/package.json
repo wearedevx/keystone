@@ -24,6 +24,9 @@
   "main": "src/index.js",
   "oclif": {
     "commands": "./src/commands",
+    "hooks": {
+      "analytics": "./src/lib/hooks/spacify"
+    },
     "bin": "ks",
     "plugins": [
       "@oclif/plugin-autocomplete",
