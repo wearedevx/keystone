@@ -4,7 +4,7 @@ const { deleteFiles } = require('@keystone.sh/core/lib/commands/delete')
 
 const { CommandSignedIn } = require('../lib/commands')
 
-class DeleteCommand extends CommandSignedIn {
+class RmCommand extends CommandSignedIn {
   async deleteFile(project, env, files) {
     await this.withUserSession(async userSession => {
       cli.action.start('Deleting')
@@ -35,7 +35,7 @@ class DeleteCommand extends CommandSignedIn {
   }
 
   async run() {
-    const { argv } = this.parse(DeleteCommand)
+    const { argv } = this.parse(RmCommand)
     try {
       const project = await this.getProjectName()
       const env = await this.getProjectEnv()
@@ -46,14 +46,14 @@ class DeleteCommand extends CommandSignedIn {
   }
 }
 
-DeleteCommand.description = `Deletes one or more files.
+RmCommand.description = `Deletes one or more files.
 If you're an administrator or a contributor, the files will be removed for everyone.
 If you're a reader on the environment, you can't delete any files.
 `
 
-DeleteCommand.strict = false
+RmCommand.strict = false
 
-DeleteCommand.args = [
+RmCommand.args = [
   {
     name: 'filepaths',
     required: true, // make the arg required with `required: true`
@@ -62,6 +62,6 @@ DeleteCommand.args = [
   },
 ]
 
-DeleteCommand.examples = [chalk.blue('$ ks delete path/to/file')]
+RmCommand.examples = [chalk.blue('$ ks rm path/to/file')]
 
-module.exports = DeleteCommand
+module.exports = RmCommand
