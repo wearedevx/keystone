@@ -55,43 +55,7 @@ class EnvCommand extends CommandSignedIn {
     const project = await this.getProjectName()
 
     try {
-      if (args.action) {
-        switch (args.action) {
-          case 'config':
-            this.configureEnv(project)
-            break
-          case 'new':
-            if (args.env) {
-              await this.newEnv(project, args.env)
-            } else {
-              throw new Error(`You need to give the name of the environment`)
-            }
-            break
-          case 'remove':
-            if (args.env) {
-              await this.removeEnv(project, args.env)
-            } else {
-              throw new Error(`You need to give the name of the environment`)
-            }
-            break
-          case 'reset':
-            await this.resetEnv()
-            break
-          case 'checkout':
-            if (args.env) {
-              await this.checkout(project, args.env)
-            } else {
-              throw new Error(`You need to give the name of the environment`)
-            }
-            break
-          default:
-            throw new Error('The action is not a valid one !')
-        }
-      } else {
-        this.log(
-          `▻ Current environment : ${chalk.bold(await this.getProjectEnv())}`
-        )
-      }
+      await this.checkout(project, args.env)
     } catch (error) {
       this.log(`${chalk.red(error)}`)
     }
