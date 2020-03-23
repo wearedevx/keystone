@@ -53,7 +53,6 @@ module.exports = async function(ctx) {
   // overwrite Help#topics
   help.prototype.topics = function(topics) {
     if (!topics.length) return
-    console.log('topic', topics)
     const body = renderList(
       topics.map(c => [
         c.name.replace(/:/g, ' '),
