@@ -10,7 +10,7 @@
     "build": "react-static build >&1 2>/dev/null",
     "analyze": "react-static build --analyze",
     "serve": "serve dist -p 8000",
-    "deploy": "cd dist && now --local-config=../now.json --target=production"
+    "deploy": "cd dist && now --local-config=../now.json --prod"
   },
   "dependencies": {
     "@elbstack/react-static-plugin-dotenv": "^1.1.1",
