@@ -37,7 +37,7 @@ RemoveCommand.strict = false
 RemoveCommand.description = `remove one or more users`
 
 RemoveCommand.examples = [
-  chalk.blue('$ ks remove nickname1.id.blockstack nickname2.id.blockstack'),
+  chalk.blue('$ ks member rm nickname1.id.blockstack nickname2.id.blockstack'),
 ]
 
 module.exports = RemoveCommand

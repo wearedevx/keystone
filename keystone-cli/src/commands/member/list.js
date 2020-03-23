@@ -11,8 +11,6 @@ const { CommandSignedIn } = require('../../lib/commands')
 
 class ListCommand extends CommandSignedIn {
   async run() {
-    const { flags } = this.parse(ListCommand)
-
     await this.withUserSession(async userSession => {
       const env = await this.getProjectEnv()
       const project = await this.getProjectName()
@@ -32,18 +30,10 @@ class ListCommand extends CommandSignedIn {
 
 ListCommand.description = `list members from current environment or project`
 
-ListCommand.examples = [
-  chalk.blue('$ ks members list '),
-  chalk.blue('$ ks members list -p'),
-]
+ListCommand.examples = [chalk.blue('$ ks member list ')]
 
 ListCommand.flags = {
   ...CommandSignedIn.flags,
-  all: flags.boolean({
-    char: 'p',
-    multiple: false,
-    description: 'list files from project, instead of the environment.',
-  }),
 }
 
 module.exports = ListCommand

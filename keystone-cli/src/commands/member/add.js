@@ -96,7 +96,7 @@ you can add the member to an environment with : ${chalk.blue('$ ks env config')}
 
 AddCommand.examples = [
   `${chalk.blue(
-    '$ ks add example.id.blockstack example@mail.com'
+    '$ ks member add example.id.blockstack example@mail.com'
   )} ${chalk.gray.italic('#add a user to a project')}`,
 ]
 
