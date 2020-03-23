@@ -1,9 +1,7 @@
-const { flags } = require('@oclif/command')
 const chalk = require('chalk')
 
-const { CommandSignedIn } = require('../lib/commands')
-
 const { removeFromProject } = require('@keystone.sh/core/lib/commands/remove')
+const { CommandSignedIn } = require('../../lib/commands')
 
 class RemoveCommand extends CommandSignedIn {
   async removeUser({ project, users }) {
@@ -25,10 +23,7 @@ class RemoveCommand extends CommandSignedIn {
   }
 
   async run() {
-    let {
-      flags: { users },
-    } = this.parse(RemoveCommand)
-
+    const { argv: users } = this.parse(RemoveCommand)
     const project = await this.getProjectName()
     try {
       await this.removeUser({ project, users })
@@ -38,22 +33,11 @@ class RemoveCommand extends CommandSignedIn {
   }
 }
 
-RemoveCommand.description = `Remove one or more users.
-...
-If you are an administrator, you can remove a user from a project.
-`
+RemoveCommand.strict = false
+RemoveCommand.description = `remove one or more users`
 
 RemoveCommand.examples = [
-  chalk.blue('$ ks remove nickname1.id.blockstack nickname2.id.blockstack'),
+  chalk.blue('$ ks member rm nickname1.id.blockstack nickname2.id.blockstack'),
 ]
-
-RemoveCommand.flags = {
-  ...CommandSignedIn.flags,
-  users: flags.string({
-    char: 'u',
-    multiple: true,
-    description: 'List of user you want to remove. Separated by space.',
-  }),
-}
 
 module.exports = RemoveCommand

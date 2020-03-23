@@ -85,14 +85,14 @@ class InitCommand extends CommandSignedIn {
   }
 }
 
-InitCommand.description = `Create Keystone config file
+InitCommand.description = `create Keystone config file
 `
 
 InitCommand.args = [
   {
     name: 'project_name',
     required: false, // make the arg required with `required: true`
-    description: 'Your project name', // help description
+    description: 'your project name', // help description
     hidden: false,
   },
 ]

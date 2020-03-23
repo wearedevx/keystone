@@ -1,14 +1,15 @@
 require('./utils/mock')
-const { prepareEnvironment } = require('./utils')
 
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
 
 const { stdin } = require('mock-stdin')
 const fs = require('fs')
+
+const { prepareEnvironment } = require('./utils')
 const InitCommand = require('../commands/init')
-const ListCommand = require('../commands/list')
-const DeleteCommand = require('../commands/delete')
+const ProjectListCommand = require('../commands/list')
+const ProjectRmCommand = require('../commands/project/rm')
 const { runCommand } = require('./utils/helpers')
 
 // Key codes
@@ -53,7 +54,7 @@ describe('Init Command', () => {
       fs.unlinkSync('.ksconfig')
     }
     // remove the project if already exists
-    await runCommand(ListCommand, ['projects'])
+    await runCommand(ProjectListCommand)
     let existingProject = result.find(
       log => log.indexOf(`> ${PROJECT_NAME}`) > -1
     )
@@ -69,7 +70,7 @@ describe('Init Command', () => {
         io.send(existingProject)
       }
       setTimeout(() => sendKeystrokes().then(), 1000)
-      await runCommand(DeleteCommand, [`--project=${existingProject}`])
+      await runCommand(ProjectRmCommand, [existingProject])
     }
 
     const sendKeystrokes = async () => {
