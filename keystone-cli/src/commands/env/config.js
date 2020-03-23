@@ -102,7 +102,7 @@ class EnvCommand extends CommandSignedIn {
 
 EnvCommand.description = `manage members role in project environments
 
-roles are the followings :
+roles can be the followings :
   reader: can only read files from the the environment and pull them locally
   contributor: can read, write and add new files to the environement
   admin: all the above plus ask people to join the project
