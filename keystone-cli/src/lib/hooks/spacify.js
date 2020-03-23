@@ -8,12 +8,9 @@ const wrap = require('wrap-ansi')
 // deps in Help#topic
 const help = require('@oclif/plugin-help').default
 const { renderList } = require('@oclif/plugin-help/lib/list')
+const { util_1: util1 } = require('@oclif/plugin-help/lib/util')
 const chalk = require('chalk')
 const indent = require('indent-string')
-
-const {
-  util_1: util1,
-} = require('../../../../common/temp/node_modules/.pnpm/registry.npmjs.org/@oclif/plugin-help/2.2.3/node_modules/@oclif/plugin-help/lib/util.js')
 
 const { bold } = chalk
 
