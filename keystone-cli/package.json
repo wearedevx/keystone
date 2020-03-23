@@ -25,7 +25,7 @@
   "oclif": {
     "commands": "./src/commands",
     "hooks": {
-      "analytics": "./src/lib/hooks/spacify"
+      "init": "./src/lib/hooks/spacify"
     },
     "bin": "ks",
     "plugins": [
@@ -62,6 +62,7 @@
     "elliptic": "^6.5.2",
     "filename-regex": "^2.0.1",
     "filter-console": "^0.1.1",
+    "indent-string": "^4.0.0",
     "inquirer": "^6.4.1",
     "is-email": "^1.0.0",
     "listr": "^0.14.3",
@@ -70,10 +71,12 @@
     "open": "^6.4.0",
     "rewire": "^4.0.1",
     "rimraf": "^3.0.2",
+    "strip-ansi": "^6.0.0",
     "treeify": "^1.1.0",
     "update-check": "^1.5.3",
     "uuid": "^3.3.3",
-    "walkdir": "^0.4.1"
+    "walkdir": "^0.4.1",
+    "wrap-ansi": "^6.2.0"
   },
   "devDependencies": {
     "debug": "^4.1.1",
