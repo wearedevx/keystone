@@ -39,7 +39,7 @@ class RemoveCommand extends CommandSignedIn {
 
 RemoveCommand.description = `remove project and its files from your storage`
 
-RemoveCommand.examples = [`$ ks project rm ${'PROJECT_NAME'}`]
+RemoveCommand.examples = [`$ ks project rm PROJECT_NAME`]
 
 RemoveCommand.args = [
   {
