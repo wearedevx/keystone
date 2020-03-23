@@ -1,15 +1,16 @@
 process.env.SESSION_FILENAME = 'session-test1.json'
 
 require('./utils/mock')
-const { prepareEnvironment } = require('./utils')
-
 const fs = require('fs')
+
+const { prepareEnvironment } = require('./utils')
 
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
 
-const { login, logout, runCommand } = require('./utils/helpers')
+const { runCommand } = require('./utils/helpers')
 const LogoutCommand = require('../commands/logout')
+
 describe('Logout Command', () => {
   let result
 

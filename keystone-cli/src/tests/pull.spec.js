@@ -1,19 +1,19 @@
 require('./utils/mock')
-const { prepareEnvironment } = require('./utils')
 const fs = require('fs')
 const uuid = require('uuid/v4')
 const pathUtil = require('path')
 const { writeFileToDisk } = require('@keystone.sh/core/lib/file')
 const { stdin } = require('mock-stdin')
 
+const { prepareEnvironment } = require('./utils')
 const PullCommand = require('../commands/pull')
-const InviteCommand = require('../commands/invite')
-const AddCommand = require('../commands/add')
+const MemberInviteCommand = require('../commands/member/invite')
+const MemberAddCommand = require('../commands/member/add')
 const PushCommand = require('../commands/push')
-const DeleteCommand = require('../commands/delete')
 
 const { login, logout, runCommand, addMemberToEnv } = require('./utils/helpers')
 const { createDescriptor } = require('./utils')
+
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
 
@@ -60,7 +60,7 @@ describe('Pull Command', () => {
     // /!\ This one is a huge test. It rely on a lot of other commands than pull but decribe a common workflow between two member in a project
     await prepareEnvironment()
 
-    //add other member ot the environment
+    // add other member ot the environment
     const interval = setInterval(() => {
       if (result.find(log => log.indexOf(`What's your email address?`) > -1)) {
         const sendKeystrokes = async () => {
@@ -72,8 +72,11 @@ describe('Pull Command', () => {
     }, 500)
     const username = 'keystone_test2.id.blockstack'
     // Invite another usr and add them to the project so they can push files
-    await runCommand(InviteCommand, ['keystone_test2@keystone.shh'])
-    await runCommand(AddCommand, [username, 'keystone_test2@keystone.shh'])
+    await runCommand(MemberInviteCommand, ['keystone_test2@keystone.shh'])
+    await runCommand(MemberAddCommand, [
+      username,
+      'keystone_test2@keystone.shh',
+    ])
     const projects = fs
       .readFileSync(
         pathUtil.join(
