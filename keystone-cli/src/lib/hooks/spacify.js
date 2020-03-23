@@ -11,6 +11,10 @@ const { renderList } = require('@oclif/plugin-help/lib/list')
 const chalk = require('chalk')
 const indent = require('indent-string')
 
+const {
+  util_1: util1,
+} = require('../../../../common/temp/node_modules/.pnpm/registry.npmjs.org/@oclif/plugin-help/2.2.3/node_modules/@oclif/plugin-help/lib/util.js')
+
 const { bold } = chalk
 
 module.exports = async function(ctx) {
@@ -49,6 +53,7 @@ module.exports = async function(ctx) {
   // overwrite Help#topics
   help.prototype.topics = function(topics) {
     if (!topics.length) return
+    console.log('topic', topics)
     const body = renderList(
       topics.map(c => [
         c.name.replace(/:/g, ' '),
@@ -63,6 +68,22 @@ module.exports = async function(ctx) {
     return [bold('COMMANDS'), indent(body, 2)].join('\n')
   }
 
+  help.prototype.usage = function(flags) {
+    const { usage } = this.command
+    const body = (usage ? util1.castArray(usage) : [this.defaultUsage(flags)])
+      .map(u => `$ ${this.config.bin} ${u.split(':').join(' ')}`.trim())
+      .join('\n')
+    return [
+      bold('USAGE'),
+      indent(
+        wrap(this.render(body), this.opts.maxWidth - 2, {
+          trim: false,
+          hard: true,
+        }),
+        2
+      ),
+    ].join('\n')
+  }
   // overwrite Help#topic
   help.prototype.topic = function(topic) {
     let description = this.render(topic.description || '')
