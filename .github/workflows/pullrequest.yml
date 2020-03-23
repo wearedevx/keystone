@@ -2,10 +2,7 @@ name: Keystone tests
 
 on:
   pull_request:
-    types: ["opened", "synchronize"]
-    branches: 
-      - "!master"
-      - "!WIP-**"
+    types: [opened, synchronize, reopened]
     paths-ignore:
       - "keystone-mail/**"
       - "keystone-web/**"
