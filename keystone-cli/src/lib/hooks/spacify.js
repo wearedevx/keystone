@@ -2,7 +2,8 @@ const { CLIError } = require('@oclif/errors')
 
 // deps in Help#topics
 const { stripAnsi } = require('strip-ansi')
-const { compact, castArray } = require('@oclif/plugin-help/lib/util')
+const { compact, sortBy } = require('@oclif/plugin-help/lib/util')
+const HelpCommand = require('@oclif/plugin-help/lib/command').default
 const wrap = require('wrap-ansi')
 
 // deps in Help#topic
@@ -12,6 +13,16 @@ const chalk = require('chalk')
 const indent = require('indent-string')
 
 const { bold } = chalk
+const sortFlags = flags =>
+  sortBy(
+    Object.entries(flags || {})
+      .filter(([, v]) => !v.hidden)
+      .map(([k, v]) => {
+        v.name = k
+        return v
+      }),
+    f => [!f.char, f.char, f.name]
+  )
 
 module.exports = async function(ctx) {
   const cmds = ctx.config.commandIDs
@@ -46,6 +57,36 @@ module.exports = async function(ctx) {
     await command.run(argv, ctx.config)
   }
 
+  help.prototype.command = function(command) {
+    const helpCmd = new HelpCommand(command, ctx.config, { stripAnsi: true })
+
+    const description = helpCmd.description()
+    const examples = helpCmd.examples(command.examples)
+    const arguments = helpCmd.args(command.args)
+    const flags = helpCmd.flags(sortFlags(command.flags))
+    const aliases = helpCmd.aliases(command.aliases)
+    let output = compact([
+      [
+        bold('USAGE'),
+        indent(
+          wrap(
+            `$ ${this.config.bin} ${command.id.replace(/:/g, ' ')}`,
+            this.opts.maxWidth - 2,
+            { trim: false, hard: true }
+          ),
+          2
+        ),
+      ].join('\n'),
+      arguments && [arguments].join('\n'),
+      flags && [flags].join('\n'),
+      description && [description].join('\n'),
+      examples && [examples].join('\n'),
+      aliases && [aliases].join('\n'),
+    ]).join('\n\n')
+    if (this.opts.stripAnsi) output = stripAnsi(output)
+    return `${output}\n`
+  }
+
   // overwrite Help#topics
   help.prototype.topics = function(topics) {
     if (!topics.length) return
@@ -63,22 +104,6 @@ module.exports = async function(ctx) {
     return [bold('COMMANDS'), indent(body, 2)].join('\n')
   }
 
-  help.prototype.usage = function(flags) {
-    const { usage } = this.command
-    const body = (usage ? castArray(usage) : [this.defaultUsage(flags)])
-      .map(u => `$ ${this.config.bin} ${u.split(':').join(' ')}`.trim())
-      .join('\n')
-    return [
-      bold('USAGE'),
-      indent(
-        wrap(this.render(body), this.opts.maxWidth - 2, {
-          trim: false,
-          hard: true,
-        }),
-        2
-      ),
-    ].join('\n')
-  }
   // overwrite Help#topic
   help.prototype.topic = function(topic) {
     let description = this.render(topic.description || '')
