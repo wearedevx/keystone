@@ -2,13 +2,12 @@ const { CLIError } = require('@oclif/errors')
 
 // deps in Help#topics
 const { stripAnsi } = require('strip-ansi')
-const { compact } = require('@oclif/plugin-help/lib/util')
+const { compact, castArray } = require('@oclif/plugin-help/lib/util')
 const wrap = require('wrap-ansi')
 
 // deps in Help#topic
 const help = require('@oclif/plugin-help').default
 const { renderList } = require('@oclif/plugin-help/lib/list')
-const { util_1: util1 } = require('@oclif/plugin-help/lib/util')
 const chalk = require('chalk')
 const indent = require('indent-string')
 
@@ -66,7 +65,7 @@ module.exports = async function(ctx) {
 
   help.prototype.usage = function(flags) {
     const { usage } = this.command
-    const body = (usage ? util1.castArray(usage) : [this.defaultUsage(flags)])
+    const body = (usage ? castArray(usage) : [this.defaultUsage(flags)])
       .map(u => `$ ${this.config.bin} ${u.split(':').join(' ')}`.trim())
       .join('\n')
     return [
