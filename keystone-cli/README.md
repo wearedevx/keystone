@@ -16,7 +16,7 @@ $ npm install -g @keystone.sh/cli
 $ ks COMMAND
 running command...
 $ ks (-v|--version|version)
-@keystone.sh/cli/0.0.36 linux-x64 node-v10.19.0
+@keystone.sh/cli/1.0.1 linux-x64 node-v10.19.0
 $ ks --help [COMMAND]
 USAGE
   $ ks COMMAND
@@ -27,49 +27,33 @@ USAGE
 # Commands
 
 <!-- commands -->
-* [`ks add BLOCKSTACKID EMAIL`](#ks-add-blockstackid-email)
 * [`ks autocomplete [SHELL]`](#ks-autocomplete-shell)
-* [`ks cat PATH`](#ks-cat-path)
-* [`ks delete [FILEPATHS]`](#ks-delete-filepaths)
 * [`ks diff FILEPATH`](#ks-diff-filepath)
-* [`ks env [ACTION] [ENV]`](#ks-env-action-env)
+* [`ks env add ENV`](#ks-env-add-env)
+* [`ks env checkout ENV`](#ks-env-checkout-env)
+* [`ks env config`](#ks-env-config)
+* [`ks env list`](#ks-env-list)
+* [`ks env reset`](#ks-env-reset)
+* [`ks env rm ENV`](#ks-env-rm-env)
 * [`ks help [COMMAND]`](#ks-help-command)
 * [`ks init [PROJECT_NAME]`](#ks-init-project_name)
-* [`ks invite [EMAILS]`](#ks-invite-emails)
-* [`ks list TYPE`](#ks-list-type)
+* [`ks list`](#ks-list)
 * [`ks login [BLOCKSTACK_ID]`](#ks-login-blockstack_id)
 * [`ks logout`](#ks-logout)
-* [`ks project ACTION`](#ks-project-action)
+* [`ks member add BLOCKSTACKID EMAIL`](#ks-member-add-blockstackid-email)
+* [`ks member invite [EMAILS]`](#ks-member-invite-emails)
+* [`ks member list`](#ks-member-list)
+* [`ks member rm`](#ks-member-rm)
+* [`ks project config`](#ks-project-config)
+* [`ks project list`](#ks-project-list)
+* [`ks project rm PROJECT`](#ks-project-rm-project)
 * [`ks pull`](#ks-pull)
 * [`ks push [FILEPATH]`](#ks-push-filepath)
-* [`ks remove`](#ks-remove)
-* [`ks share ENV`](#ks-share-env)
+* [`ks rm FILEPATHS`](#ks-rm-filepaths)
 * [`ks status`](#ks-status)
+* [`ks token create ENV`](#ks-token-create-env)
+* [`ks token revoke ENV`](#ks-token-revoke-env)
 * [`ks whoami`](#ks-whoami)
-
-## `ks add BLOCKSTACKID EMAIL`
-
-Add a member to a project.
-
-```
-USAGE
-  $ ks add BLOCKSTACKID EMAIL
-
-ARGUMENTS
-  BLOCKSTACKID  Blockstack_id to add
-  EMAIL         email associated to an invitation
-
-DESCRIPTION
-  Adding a member give them access to the project.
-  The member should have accepted your invitation for this to work
-
-  You  can add the member to an environment with : $ ks env config
-
-EXAMPLE
-  $ ks add example.id.blockstack example@mail.com #add a user to a project
-```
-
-_See code: [src/commands/add.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/add.js)_
 
 ## `ks autocomplete [SHELL]`
 
@@ -94,102 +78,121 @@ EXAMPLES
 
 _See code: [@oclif/plugin-autocomplete](https://github.com/oclif/plugin-autocomplete/blob/v0.1.5/src/commands/autocomplete/index.ts)_
 
-## `ks cat PATH`
-
-Output a remote file.
-
-```
-USAGE
-  $ ks cat PATH
-
-ARGUMENTS
-  PATH  path to your file
-
-EXAMPLE
-  $ ks cat path/to/file
-```
-
-_See code: [src/commands/cat.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/cat.js)_
-
-## `ks delete [FILEPATHS]`
-
-Deletes one or more files.
-
-```
-USAGE
-  $ ks delete [FILEPATHS]
-
-ARGUMENTS
-  FILEPATHS  Path to your file. Accepts a glob pattern
-
-OPTIONS
-  -p, --project=project  Use this flag to completely delete all files of a project from your storage.
-
-DESCRIPTION
-  If you're an administrator or a contributor, the files will be removed for everyone.
-  If you're a reader on the environment, you can't delete any files.
-
-EXAMPLES
-  $ ks delete path/to/file
-  $ ks delete -p project_name/2b6a10c6-ea91-48b1-b340-a7504326961e
-```
-
-_See code: [src/commands/delete.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/delete.js)_
-
 ## `ks diff FILEPATH`
 
-Output a diff of the changes you made to a file
+output a diff of the changes you made to a file
 
 ```
 USAGE
   $ ks diff FILEPATH
 
 ARGUMENTS
-  FILEPATH  Path to your file.
+  FILEPATH  path to your file.
 
 EXAMPLE
   $ ks diff path/to/file
 ```
 
-_See code: [src/commands/diff.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/diff.js)_
+_See code: [src/commands/diff.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/diff.js)_
 
-## `ks env [ACTION] [ENV]`
+## `ks env add ENV`
 
-Manage environments.
+add a new environment to the project
 
 ```
 USAGE
-  $ ks env [ACTION] [ENV]
+  $ ks env add ENV
 
 ARGUMENTS
-  ACTION
-      - config
-           Change users role for each environment.
+  ENV  environment name
 
-         - new 
-           Create a new environment
-
-         - remove 
-           Remove an environment
-
-  ENV
-      Set working env
-
-DESCRIPTION
-  You need to be administrator in the project in order to access the command.
-
-  You can change the role set by using the role flag. You have 3 choices:
-  - reader: can only read files from the the environment and pull them locally
-  - contributor: can read, write and add new files to the environement
-  - admin: all the above plus ask people to join the project
-
-EXAMPLES
-  $ ks env config
-  $ ks env new ENV_NAME
-  $ ks env remove ENV_NAME
+EXAMPLE
+  $ ks env add ENV_NAME
 ```
 
-_See code: [src/commands/env.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/env.js)_
+_See code: [src/commands/env/add.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/env/add.js)_
+
+## `ks env checkout ENV`
+
+switch environment and pull files
+
+```
+USAGE
+  $ ks env checkout ENV
+
+ARGUMENTS
+  ENV  environment name
+
+EXAMPLE
+  $ ks env checkout ENV_NAME
+```
+
+_See code: [src/commands/env/checkout.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/env/checkout.js)_
+
+## `ks env config`
+
+manage members role in project environments
+
+```
+USAGE
+  $ ks env config
+
+DESCRIPTION
+  roles can be the followings :
+     reader: can only read files from the the environment and pull them locally
+     contributor: can read, write and add new files to the environement
+     admin: all the above plus ask people to join the project
+
+EXAMPLE
+  $ ks env config
+```
+
+_See code: [src/commands/env/config.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/env/config.js)_
+
+## `ks env list`
+
+list environments
+
+```
+USAGE
+  $ ks env list
+
+EXAMPLE
+  $ ks env list
+```
+
+_See code: [src/commands/env/list.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/env/list.js)_
+
+## `ks env reset`
+
+reset changes you made locally in tracked files
+
+```
+USAGE
+  $ ks env reset
+
+EXAMPLE
+  $ ks env reset
+```
+
+_See code: [src/commands/env/reset.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/env/reset.js)_
+
+## `ks env rm ENV`
+
+remove an environment
+
+```
+USAGE
+  $ ks env rm ENV
+
+ARGUMENTS
+  ENV  environment name
+
+EXAMPLE
+  $ ks env rm ENV_NAME
+```
+
+_See code: [src/commands/env/rm.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/env/rm.js)_
 
 ## `ks help [COMMAND]`
 
@@ -210,28 +213,100 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v2.2.3
 
 ## `ks init [PROJECT_NAME]`
 
-Create Keystone config file
+create Keystone config file
 
 ```
 USAGE
   $ ks init [PROJECT_NAME]
 
 ARGUMENTS
-  PROJECT_NAME  Your project name
+  PROJECT_NAME  your project name
 
 EXAMPLE
   $ ks init project_name
 ```
 
-_See code: [src/commands/init.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/init.js)_
+_See code: [src/commands/init.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/init.js)_
 
-## `ks invite [EMAILS]`
+## `ks list`
+
+list files tracked for your current environment
+
+```
+USAGE
+  $ ks list
+
+OPTIONS
+  -a, --all  list every files in your gaia hub
+
+EXAMPLE
+  $ ks list
+```
+
+_See code: [src/commands/list.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/list.js)_
+
+## `ks login [BLOCKSTACK_ID]`
+
+Logs into your account with Blockstack or creates a new one
+
+```
+USAGE
+  $ ks login [BLOCKSTACK_ID]
+
+ARGUMENTS
+  BLOCKSTACK_ID  Your blockstack id
+
+EXAMPLE
+  $ ks login nickname.id.blockstack
+```
+
+_See code: [src/commands/login.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/login.js)_
+
+## `ks logout`
+
+Logs you out of your account and erase your session from this computer.
+
+```
+USAGE
+  $ ks logout
+
+EXAMPLE
+  $ ks logout
+```
+
+_See code: [src/commands/logout.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/logout.js)_
+
+## `ks member add BLOCKSTACKID EMAIL`
+
+add a member to a project.
+
+```
+USAGE
+  $ ks member add BLOCKSTACKID EMAIL
+
+ARGUMENTS
+  BLOCKSTACKID  blockstack_id to add
+  EMAIL         email associated to an invitation
+
+DESCRIPTION
+  adding a member give them access to the project.
+  the member should have accepted your invitation for this to work
+
+  you can add the member to an environment with : $ ks env config
+
+EXAMPLE
+  $ ks member add example.id.blockstack example@mail.com #add a user to a project
+```
+
+_See code: [src/commands/member/add.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/member/add.js)_
+
+## `ks member invite [EMAILS]`
 
 Invites one or more people by email to a project.
 
 ```
 USAGE
-  $ ks invite [EMAILS]
+  $ ks member invite [EMAILS]
 
 ARGUMENTS
   EMAILS  Emails for invitations to be sent
@@ -249,95 +324,95 @@ DESCRIPTION
   - admin: all the above plus invite and add users to the project
 
 EXAMPLES
-  $ ks invite friend@example.com #Send an invitation to friend@example.com as a reader on the project
-  $ ks invite friend@example.com friend2@example.com --role=admin #Invite as admin on the project
-  $ ks invite friend@example.com friend2@example.com --removal #Removes the invitations for friend and friend2
+  $ ks member invite friend@example.com #Send an invitation to friend@example.com as a reader on the project
+  $ ks member invite friend@example.com friend2@example.com --role=admin #Invite as admin on the project
+  $ ks member invite friend@example.com friend2@example.com --removal #Removes the invitations for friend and friend2
 ```
 
-_See code: [src/commands/invite.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/invite.js)_
+_See code: [src/commands/member/invite.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/member/invite.js)_
 
-## `ks list TYPE`
+## `ks member list`
 
-Lists projects, environments, members and files
-
-```
-USAGE
-  $ ks list TYPE
-
-ARGUMENTS
-  TYPE  What do you want to list (projects, environments, members or files)
-
-OPTIONS
-  -a, --all  For files listing, list every files in your gaia hub. For members, list files from project, instead of the
-             environment.
-
-EXAMPLES
-  $ ks list members
-  $ ks list members --all
-  $ ks list projects
-  $ ks list environments
-  $ ks list files
-```
-
-_See code: [src/commands/list.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/list.js)_
-
-## `ks login [BLOCKSTACK_ID]`
-
-Logs into your account with Blockstack or creates a new one
+list members from current environment or project
 
 ```
 USAGE
-  $ ks login [BLOCKSTACK_ID]
-
-ARGUMENTS
-  BLOCKSTACK_ID  Your blockstack id
+  $ ks member list
 
 EXAMPLE
-  $ ks login nickname.id.blockstack
+  $ ks member list
 ```
 
-_See code: [src/commands/login.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/login.js)_
+_See code: [src/commands/member/list.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/member/list.js)_
 
-## `ks logout`
+## `ks member rm`
 
-Logs you out of your account and erase your session from this computer.
+remove one or more users
 
 ```
 USAGE
-  $ ks logout
+  $ ks member rm
 
 EXAMPLE
-  $ ks logout
+  $ ks member rm nickname1.id.blockstack nickname2.id.blockstack
 ```
 
-_See code: [src/commands/logout.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/logout.js)_
+_See code: [src/commands/member/rm.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/member/rm.js)_
 
-## `ks project ACTION`
+## `ks project config`
 
-Manage users role in the project.
+manage members role in the project
 
 ```
 USAGE
-  $ ks project ACTION
-
-ARGUMENTS
-  ACTION  Configure project members
+  $ ks project config
 
 DESCRIPTION
-  You can change the role set by using the role flag. You have 3 choices:
-  - reader: can't do anything regarding the project itself.
-  - contributor: can add or remove environments.
-  - administrator: can add or remove environments, add and remove users, change users roles.
+  roles are the followings :
+     reader: can't do anything regarding the project itself
+     contributor: can add or remove environments
+     administrator: can add or remove environments, add and remove users, change users roles
 
 EXAMPLE
   $ ks project config
 ```
 
-_See code: [src/commands/project.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/project.js)_
+_See code: [src/commands/project/config.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/project/config.js)_
+
+## `ks project list`
+
+List projects in user workspace
+
+```
+USAGE
+  $ ks project list
+
+EXAMPLE
+  $ ks project list
+```
+
+_See code: [src/commands/project/list.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/project/list.js)_
+
+## `ks project rm PROJECT`
+
+remove project and its files from your storage
+
+```
+USAGE
+  $ ks project rm PROJECT
+
+ARGUMENTS
+  PROJECT  project name (with uuid)
+
+EXAMPLE
+  $ ks project rm PROJECT_NAME
+```
+
+_See code: [src/commands/project/rm.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/project/rm.js)_
 
 ## `ks pull`
 
-Fetch files for current environment. Write them locally.
+fetch files for current environment. Write them locally.
 
 ```
 USAGE
@@ -347,7 +422,7 @@ OPTIONS
   -f, --force  Overwrite any changes made locally
 
 DESCRIPTION
-  Once pulled files can be one of the three states :
+  Once pulled files can be one of the three states  
      - updated : The file has been updated because someone else pushed a newer version
      - auto-merged : The file was modified and has been merged with someone else's changes
      - conflicted : The file has been modified and some lines are in conflict with someone else's changes. You should 
@@ -357,7 +432,7 @@ EXAMPLE
   $ ks pull
 ```
 
-_See code: [src/commands/pull.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/pull.js)_
+_See code: [src/commands/pull.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/pull.js)_
 
 ## `ks push [FILEPATH]`
 
@@ -375,54 +450,32 @@ EXAMPLES
   $ ks push
 ```
 
-_See code: [src/commands/push.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/push.js)_
+_See code: [src/commands/push.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/push.js)_
 
-## `ks remove`
+## `ks rm FILEPATHS`
 
-Remove one or more users.
-
-```
-USAGE
-  $ ks remove
-
-OPTIONS
-  -u, --users=users  List of user you want to remove. Separated by space.
-
-DESCRIPTION
-  ...
-  If you are an administrator, you can remove a user from a project.
-
-EXAMPLE
-  $ ks remove nickname1.id.blockstack nickname2.id.blockstack
-```
-
-_See code: [src/commands/remove.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/remove.js)_
-
-## `ks share ENV`
-
-Share your files with a non-blockstack user
+Deletes one or more files.
 
 ```
 USAGE
-  $ ks share ENV
+  $ ks rm FILEPATHS
 
 ARGUMENTS
-  ENV  Environment you want the user to be created on.
+  FILEPATHS  Path to your file. Accepts a glob pattern
 
 DESCRIPTION
-  Generate a token. 
-  The token should be set in the system environment of any user.
-  This user will be able to run only $ ks pull in order to pull locally files from the selected env.
+  If you're an administrator or a contributor, the files will be removed for everyone.
+  If you're a reader on the environment, you can't delete any files.
 
 EXAMPLE
-  $ ks share ENV_NAME
+  $ ks rm path/to/file
 ```
 
-_See code: [src/commands/share.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/share.js)_
+_See code: [src/commands/rm.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/rm.js)_
 
 ## `ks status`
 
-Shows the status of tracked files
+shows the status of tracked files
 
 ```
 USAGE
@@ -432,7 +485,46 @@ EXAMPLE
   $ ks status
 ```
 
-_See code: [src/commands/status.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/status.js)_
+_See code: [src/commands/status.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/status.js)_
+
+## `ks token create ENV`
+
+give access to your files with a non-blockstack user
+
+```
+USAGE
+  $ ks token create ENV
+
+ARGUMENTS
+  ENV  environment you want the token to be created on
+
+DESCRIPTION
+  generate a token
+  the token should be set in the system environment
+  it allow the user to only run $ ks pull in order to pull locally files from the selected env
+
+EXAMPLE
+  $ ks token create ENV_NAME
+```
+
+_See code: [src/commands/token/create.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/token/create.js)_
+
+## `ks token revoke ENV`
+
+revoke access to your files with a non-blockstack user
+
+```
+USAGE
+  $ ks token revoke ENV
+
+ARGUMENTS
+  ENV  environment you want the token to be revoked on
+
+EXAMPLE
+  $ ks token revoke ENV_NAME
+```
+
+_See code: [src/commands/token/revoke.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/token/revoke.js)_
 
 ## `ks whoami`
 
@@ -446,5 +538,5 @@ EXAMPLE
   $ ks whoami
 ```
 
-_See code: [src/commands/whoami.js](https://github.com/wearedevx/keystone/blob/v0.0.36/src/commands/whoami.js)_
+_See code: [src/commands/whoami.js](https://github.com/wearedevx/keystone/blob/v1.0.1/src/commands/whoami.js)_
 <!-- commandsstop -->
