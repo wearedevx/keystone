@@ -2,6 +2,20 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "1.0.1",
+      "tag": "@keystone.sh/cli_v1.0.1",
+      "date": "Mon, 23 Mar 2020 18:05:38 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "useless changes",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "6b3dccceb7e4857af641a1f5598bc81d0e23adcc"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@keystone.sh/cli_v1.0.0",
       "date": "Mon, 23 Mar 2020 17:25:04 GMT",
