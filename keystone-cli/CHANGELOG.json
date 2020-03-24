@@ -2,6 +2,20 @@
   "name": "@keystone.sh/cli",
   "entries": [
     {
+      "version": "1.0.2",
+      "tag": "@keystone.sh/cli_v1.0.2",
+      "date": "Tue, 24 Mar 2020 10:16:40 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "mock email sending in tests",
+            "author": "Abigael <abigael.laldji@protonmail.com>",
+            "commit": "0ef82e620a47df44674750cb3e31fc4d49fbba2d"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.1",
       "tag": "@keystone.sh/cli_v1.0.1",
       "date": "Mon, 23 Mar 2020 18:05:38 GMT",

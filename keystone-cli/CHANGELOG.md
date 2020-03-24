@@ -1,6 +1,13 @@
 # Change Log - @keystone.sh/cli
 
-This log was last generated on Mon, 23 Mar 2020 18:05:38 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Mar 2020 10:16:40 GMT and should not be manually modified.
+
+## 1.0.2
+Tue, 24 Mar 2020 10:16:40 GMT
+
+### Patches
+
+- mock email sending in tests
 
 ## 1.0.1
 Mon, 23 Mar 2020 18:05:38 GMT
