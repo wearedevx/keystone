@@ -1,7 +1,7 @@
 {
   "name": "@keystone.sh/cli",
   "description": "Decentralized workspaces for developers to store, share and use secrets securely.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "wearedevx.com",
   "bin": {
     "ks": "./bin/run"
