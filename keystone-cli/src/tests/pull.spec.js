@@ -5,6 +5,16 @@ const pathUtil = require('path')
 const { writeFileToDisk } = require('@keystone.sh/core/lib/file')
 const { stdin } = require('mock-stdin')
 
+const invitationModule = require('@keystone.sh/core/lib/invitation')
+
+// mock email sending
+invitationModule.inviteMember = async (
+  userSession,
+  { from, project, emails, role = 'reader' }
+) => {
+  console.log(`SEND EMAIL from ${from} to ${emails} on ${project}`)
+}
+
 const { prepareEnvironment } = require('./utils')
 const PullCommand = require('../commands/pull')
 const MemberInviteCommand = require('../commands/member/invite')
