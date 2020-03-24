@@ -9,8 +9,8 @@
 **Table of content**
 
 - [Installation](#installation)
-  - [Login with Blockstack](#login-with-blockstack)
-  - [Why do I have to sign on Keystone.sh?](#why-do-i-have-to-sign-on-keystonesh)
+    - [Login with Blockstack](#login-with-blockstack)
+    - [Why do I have to sign-in on Keystone.sh?](#why-do-i-have-to-sign-in-on-keystonesh)
 - [Create your first project and invite users](#create-your-first-project-and-invite-users)
   - [Create a project](#create-a-project)
   - [Invite a member to your project](#invite-a-member-to-your-project)
@@ -31,7 +31,7 @@
   - [Check if files tracked with Keystone are modified](#check-if-files-tracked-with-keystone-are-modified)
   - [Check differences between a modified file and the lastest synced version](#check-differences-between-a-modified-file-and-the-lastest-synced-version)
   - [Fetch files from storage](#fetch-files-from-storage)
-  - [Delete files from your environment](#delete-files-from-your-environment)
+  - [Delete files from an environment](#delete-files-from-an-environment)
   - [Manage conflicts](#manage-conflicts)
   - [Conflict between remote files claiming to be the latest version](#conflict-between-remote-files-claiming-to-be-the-latest-version)
 - [Share secrets to non-blockstack users (CI/CD use cases)](#share-secrets-to-non-blockstack-users-cicd-use-cases)
@@ -70,13 +70,13 @@ A keystone project is made of **members** and **environments**. When you initial
 
 ### Invite a member to your project
 
-`$ ks invite email@domain.com`
+`$ ks member invite email@domain.com`
 
 > Note: The invitee will receive an email to accept or refuse the invitation. If he accepts, you will receive a confirmation by email.
 
 You can send invtitations to many people at once:
 
-`$ ks invite email1@domain.com email2@domain.com ...`
+`$ ks member invite email1@domain.com email2@domain.com ...`
 
 ### Give access to the project.
 
@@ -85,12 +85,12 @@ In order to allow people to fetch files from you and other teammates you need to
 There are two ways to do so :
 
 1. In the confirmation mail, click the link. You'll be redirected to keystone.sh. A configuration form lets you choose to which environment you want the user to access.
-2. Use the **add** and **env config** command in your shell:
+2. Use the **member add** and **env config** command in your shell:
 
    **First,** add a user _who accepted your invitation_ to the project
 
    ```bash
-   $ ks add example.id.blockstack example@mail.com
+   $ ks member add example.id.blockstack example@mail.com
    ```
 
    > Note: you need to be sure the user accepted your invitation before using the **add** command. It will not work otherwise. You also need to know their blockstack ID.
@@ -123,7 +123,7 @@ If you don't have a `.ksconfig` yet. Run `$ ks init PROJECT_NAME`.
 
 > Note: a project name is composed of its name plus a unique identifier.
 
-You can then use `$ ks checkout ENV_NAME` to sync files from environment **ENV_NAME**.
+You can then use `$ ks env checkout ENV_NAME` to sync files from environment **ENV_NAME**.
 
 **You can only pull when you've been invited to the project with the right permissions on the selected environment.**
 
@@ -132,7 +132,7 @@ You can then use `$ ks checkout ENV_NAME` to sync files from environment **ENV_N
 If you are a project administrator, you can remove any member.
 
 ```bash
-$ ks remove blockstack_id
+$ ks member rm blockstack_id
 ```
 
 The member won't get updates anymore. A good practice is to change all your sensitive information, such as API tokens, as this member could have saved them locally.
@@ -157,7 +157,7 @@ You can create as many environments as you like. When you initialize a project, 
 
 ### List environments created in the project
 
-`$ ks list environments`
+`$ ks env list`
 
 ### Configure the environment
 
@@ -175,7 +175,7 @@ The administrator of the environment (initially the one that created it) can set
 
 ### Remove an environment
 
-`$ ks env remove ENV_NAME`
+`$ ks env rm ENV_NAME`
 
 > You need to be administrator or a project contributor in order to create, modify and remove an environment.
 
@@ -226,8 +226,8 @@ If you're an administrator or a contributor, the files will be removed for every
 If you're a reader on the environment, you can't delete any files.
 
 ```bash
-$ ks delete path/to/file
-$ ks delete path/to/folder/*  # Accept global pattern
+$ ks rm path/to/file
+$ ks rm path/to/folder/*  # Accept global pattern
 ```
 
 ### Manage conflicts
@@ -261,7 +261,7 @@ An editor will pop on the terminal in order to fix the conflict. Once saved, the
 
 You can share files from your environments to any user with the **share** command. It's especially usefull for automatic deployment systems like Github Actions or Gitlab CI/CD workflow.
 
-`$ ks share ENV_NAME`
+`$ ks token create ENV_NAME`
 
 This command generates a token with the informations you need to pull files from the selected environment.
 It's like a member with reader permissions on the environment and only one command available: `$ ks pull`
