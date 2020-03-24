@@ -41,7 +41,7 @@ jobs:
           touch keystone-web/.env 
           rush install
           rush build
-      - name: Setup tmate session
+      - name: Setup tmate session - run #2
         uses: mxschmitt/action-tmate@v1
       - name: run @keystone/cli tests suite
         run: |
