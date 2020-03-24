@@ -17,6 +17,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
+        with:
+          # Checkout the head ref instead of the PR branch that github creates.
+          ref: ${{ github.head_ref }}
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
