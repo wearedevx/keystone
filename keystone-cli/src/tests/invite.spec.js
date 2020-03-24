@@ -2,21 +2,22 @@ require('./utils/mock')
 
 jest.mock('../lib/blockstackLoader')
 jest.mock('../lib/commands')
-
 const { stdin } = require('mock-stdin')
 const fs = require('fs')
+const invitationModule = require('@keystone.sh/core/lib/invitation')
+
+// mock email sending
+invitationModule.inviteMember = async (
+  userSession,
+  { from, project, emails, role = 'reader' }
+) => {
+  console.log(`SEND EMAIL from ${from} to ${emails} on ${project}`)
+}
 
 const MemberInviteCommand = require('../commands/member/invite')
 const { runCommand } = require('./utils/helpers')
 
 const { prepareEnvironment } = require('./utils')
-
-// nock('https://hub.blockstack.org')
-//   .persist()
-//   .get(/.*/)
-//   .reply((uri, body) => {
-//     return [200, {}]
-//   })
 
 describe('Invite Command', () => {
   let result
