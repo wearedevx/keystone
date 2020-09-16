@@ -17,7 +17,7 @@ type User struct {
 	gorm.Model
 	AccountType AccountType `json:"account_type" gorm:"default:custom"`
 	UserID      string      `json:"user_id" gorm:"uniqueIndex"`
-	ExtID       string      `json:"ext_id" gorm:"not null"`
+	ExtID       string      `json:"ext_id"`
 	Username    string      `json:"username" gorm:"uniqueIndex"`
 	Fullname    string      `json:"fullname" gorm:"not null"`
 	Email       string      `json:"email" gorm:"not null"`
