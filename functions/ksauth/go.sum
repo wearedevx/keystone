@@ -414,6 +414,8 @@ github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyC
 github.com/wearedevx/keystone v0.0.0-20200325091653-26b485b48752 h1:PMsBpZZp09MjFs19/1M6q0kxD1GHbdApbvCsg+UxhzA=
 github.com/wearedevx/keystone v0.0.0-20200916145711-0f780a06cb92 h1:XKZxeSK2yyFqjJiKqGkqT7aEA2ZPSOwHouD/2ZnPsWg=
 github.com/wearedevx/keystone v0.0.0-20200916145711-0f780a06cb92/go.mod h1:IkyiJn3MvYoSyDWY3TR9MseyuDI1Ocw++6x1qvjlie8=
+github.com/wearedevx/keystone v0.0.0-20200916161726-9499bde2ec32 h1:GHIPGLnz3/dWHY3VRo6tEo5P8nPybSlZg4Zz4LF3r+Y=
+github.com/wearedevx/keystone v0.0.0-20200916161726-9499bde2ec32/go.mod h1:IkyiJn3MvYoSyDWY3TR9MseyuDI1Ocw++6x1qvjlie8=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
