@@ -49,7 +49,8 @@ func autoMigrate(db *gorm.DB) error {
 		}),
 	})
 
-	return runner.Run().Err()
+	return runner.Run().Error()
+
 }
 
 func (repo *Repo) Err() error {
