@@ -9,8 +9,8 @@ import (
 )
 
 type KeyRing struct {
-	Cipher string `json:"cipher" gorm:"not null"`
-	Sign   string `json:"sign" gorm:"not null"`
+	Cipher string `json:"cipher" gorm:"column:keys_cipher"`
+	Sign   string `json:"sign" gorm:"column:keys_sign"`
 }
 
 type User struct {
