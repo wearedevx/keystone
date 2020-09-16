@@ -422,6 +422,8 @@ github.com/wearedevx/keystone v0.0.0-20200916182304-eb7c45ed65bb h1:Cpk7FKc0t5gp
 github.com/wearedevx/keystone v0.0.0-20200916182304-eb7c45ed65bb/go.mod h1:IkyiJn3MvYoSyDWY3TR9MseyuDI1Ocw++6x1qvjlie8=
 github.com/wearedevx/keystone v0.0.0-20200916184204-3fc343211d31 h1:Un6an9FolLlLRdwf5yMkPRaNEjhSd4FU1f9cgHRaMfw=
 github.com/wearedevx/keystone v0.0.0-20200916184204-3fc343211d31/go.mod h1:IkyiJn3MvYoSyDWY3TR9MseyuDI1Ocw++6x1qvjlie8=
+github.com/wearedevx/keystone v0.0.0-20200916185444-a915dc12a84e h1:g6EYfeyxPKtdf+mga0KckEOnug6ZrxfVds0VXcTzTpo=
+github.com/wearedevx/keystone v0.0.0-20200916185444-a915dc12a84e/go.mod h1:IkyiJn3MvYoSyDWY3TR9MseyuDI1Ocw++6x1qvjlie8=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

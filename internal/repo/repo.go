@@ -61,7 +61,7 @@ func (repo *Repo) Connect() {
 	db, err := gorm.Open(getPostgres(), &gorm.Config{})
 
 	if err == nil {
-		autoMigrate(db)
+		repo.err = autoMigrate(db)
 	}
 
 	repo.db = db

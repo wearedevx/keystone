@@ -25,8 +25,9 @@ func (repo *Repo) GetLoginRequest(code string) (LoginRequest, bool) {
 	}
 
 	repo.err = repo.db.Where(
-		"temporary_code = ?",
-		code,
+		&LoginRequest{
+			TemporaryCode: code,
+		},
 	).First(&lr).Error
 
 	if repo.err != nil || errors.Is(repo.err, gorm.ErrRecordNotFound) {
