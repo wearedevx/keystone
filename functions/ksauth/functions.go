@@ -57,7 +57,7 @@ func getLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	}
 
 	if !found {
-		log.Error("Login Request not found with: `%s`", temporaryCode)
+		log.Error(r, "Login Request not found with: `%s`", temporaryCode)
 		http.Error(w, "Not Found", http.StatusNotFound)
 		return
 	}
