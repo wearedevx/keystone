@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
+	log "github.com/wearedevx/keystone/internal/cloudlogger"
 	"github.com/wearedevx/keystone/internal/repo"
 	"gorm.io/gorm"
 )
@@ -56,7 +57,9 @@ func getLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	}
 
 	if !found {
+		log.Error("Login Request not found with: `%s`", temporaryCode)
 		http.Error(w, "Not Found", http.StatusNotFound)
+		return
 	}
 
 	err = loginRequest.Serialize(&response)
