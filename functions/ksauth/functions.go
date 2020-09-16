@@ -50,13 +50,13 @@ func getLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 
 	loginRequest, found := Repo.GetLoginRequest(temporaryCode)
 
-	if !found {
-		http.Error(w, "Not Found", http.StatusNotFound)
-	}
-
 	if err = Repo.Err(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	if !found {
+		http.Error(w, "Not Found", http.StatusNotFound)
 	}
 
 	err = loginRequest.Serialize(&response)
