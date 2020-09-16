@@ -1,17 +1,17 @@
 #!/bin/sh
+# go clean -modcache
 
 WORK=$PWD
+commit=$(git rev-parse HEAD)
 
 cd $PWD/functions/ksauth
-go clean -modcache
-go get -u github.com/wearedevx/keystone@go
+go get -u github.com/wearedevx/keystone@$commit
 sh ./deploy.sh
 
 cd $WORK
 
 cd $PWD/functions/ksapi
-go clean -modcache
-go get -u github.com/wearedevx/keystone@go
+go get -u github.com/wearedevx/keystone@$commit
 sh ./deploy.sh
 
 cd $WORK
