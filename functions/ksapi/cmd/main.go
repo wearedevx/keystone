@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
-	. "github.com/wearedevx/ksapi"
+	. "github.com/wearedevx/keystone/functions/ksapi"
 )
 
 func main() {
