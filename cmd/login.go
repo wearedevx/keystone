@@ -17,15 +17,124 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
+	"time"
 
 	"github.com/google/go-github/v32/github"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	. "github.com/wearedevx/keystone/internal/models"
 	. "github.com/wearedevx/keystone/ui"
 	"golang.org/x/oauth2"
 )
+
+func getLoginRequest() (LoginRequest, error) {
+	timeout := time.Duration(20 * time.Second)
+	client := http.Client{
+		Timeout: timeout,
+	}
+
+	request, err := http.NewRequest("POST", ksauthURL+"/login-request", nil)
+	request.Header.Set("Accept", "application/json; charset=utf-8")
+
+	if err != nil {
+		panic(err)
+	}
+
+	resp, err := client.Do(request)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer resp.Body.Close()
+
+	var loginRequest LoginRequest
+
+	if resp.StatusCode == http.StatusOK {
+		err = json.NewDecoder(resp.Body).Decode(&loginRequest)
+
+		return loginRequest, err
+	} else {
+		message := fmt.Sprintf("Request Error: %s", resp.Status)
+		fmt.Println(message)
+
+		return loginRequest, errors.New(message)
+	}
+}
+
+type pollResult struct {
+	authCode string
+	err      error
+}
+
+func pollLoginRequest(code string, c chan pollResult) {
+	var done bool = false
+
+	for !done {
+		time.Sleep(5 * time.Second)
+		timeout := time.Duration(20 * time.Second)
+		client := http.Client{
+			Timeout: timeout,
+		}
+
+		u, _ := url.Parse(ksauthURL + "/login-request")
+		q := u.Query()
+		q.Add("code", code)
+
+		fmt.Println(u.String() + "?" + q.Encode())
+
+		request, err := http.NewRequest("GET", u.String()+"?"+q.Encode(), nil)
+		request.Header.Set("Accept", "application/json; charset=utf-8")
+
+		if err != nil {
+			panic(err)
+		}
+
+		resp, err := client.Do(request)
+
+		if err != nil {
+			panic(err)
+		}
+
+		defer resp.Body.Close()
+
+		var loginRequest LoginRequest
+
+		if resp.StatusCode == http.StatusOK {
+			err = json.NewDecoder(resp.Body).Decode(&loginRequest)
+
+			if loginRequest.AuthCode != "" {
+				r := pollResult{
+					authCode: loginRequest.AuthCode,
+				}
+
+				c <- r
+
+				done = true
+			}
+
+		} else {
+			message := fmt.Sprintf("Request Error: %s", resp.Status)
+			fmt.Println(message)
+
+			r := pollResult{
+				err: errors.New(message),
+			}
+
+			c <- r
+
+			done = true
+		}
+
+	}
+
+}
 
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
@@ -41,10 +150,13 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 
+		lr, _ := getLoginRequest()
+
 		conf := &oauth2.Config{
 			ClientID:     "60165e42468cf5e34aa8",
 			ClientSecret: "d68dba1a9fa7e21d3bdad5e641065b641543587e",
-			Scopes:       []string{"user", "read:public_key"},
+			Scopes:       []string{"user", "read:public_key", "read:emails"},
+			RedirectURL:  ksauthURL + "/auth-redirect/" + lr.TemporaryCode + "/",
 			Endpoint: oauth2.Endpoint{
 				AuthURL:  "https://github.com/login/oauth/authorize",
 				TokenURL: "https://github.com/login/oauth/access_token",
@@ -55,24 +167,28 @@ to quickly create a Cobra application.`,
 		Print(RenderTemplate("login visit", `Visit the URL below to login with your GitHub account:
 
 {{ . | indent 8 }}
+`, url))
 
-After the consent screen, you'll be given a code to paste below:`, url))
+		c := make(chan pollResult)
+		var result pollResult
 
-		p := promptui.Prompt{
-			Label: "Code",
+		go pollLoginRequest(lr.TemporaryCode, c)
+
+		result = <-c
+
+		if result.err != nil {
+			panic(result.err)
 		}
 
-		result, err := p.Run()
+		token, err := conf.Exchange(ctx, result.authCode)
 
 		if err != nil {
 			panic(err)
 		}
 
-		token, err := conf.Exchange(ctx, result)
-
-		if err != nil {
-			panic(err)
-		}
+		// TODO: Send token to server
+		// Server should be fetching the user data to
+		// either login or create the user
 
 		ts := oauth2.StaticTokenSource(token)
 		tc := oauth2.NewClient(ctx, ts)

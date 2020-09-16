@@ -16,12 +16,20 @@ type Repo struct {
 	db  *gorm.DB
 }
 
+func getEnv(varname string, fallback string) string {
+	if value, ok := os.LookupEnv(varname); ok {
+		return value
+	}
+
+	return fallback
+}
+
 // getDSN builds the postgres DSN from environment variables
 func getDSN() string {
-	host := os.Getenv("DB_HOST")
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbname := os.Getenv("DB_NAME")
+	host := getEnv("DB_HOST", "127.0.0.1")
+	user := getEnv("DB_USER", "keystone-dev")
+	password := getEnv("DB_PASSWORD", "keystone-dev")
+	dbname := getEnv("DB_NAME", "keystone")
 
 	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", host, user, password, dbname)
 }
