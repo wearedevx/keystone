@@ -5,6 +5,8 @@ import (
 	"os"
 
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
+	. "github.com/wearedevx/keystone/internal/models"
+	. "github.com/wearedevx/keystone/internal/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -37,12 +39,29 @@ func getPostgres() gorm.Dialector {
 	return postgres.New(config)
 }
 
+func autoMigrate(db *gorm.DB) error {
+	runner := NewRunner([]RunnerAction{
+		NewAction(func() error {
+			return db.AutoMigrate(&LoginRequest{})
+		}),
+		NewAction(func() error {
+			return db.AutoMigrate(&User{})
+		}),
+	})
+
+	return runner.Run().Err()
+}
+
 func (repo *Repo) Err() error {
 	return repo.err
 }
 
 func (repo *Repo) Connect() {
 	db, err := gorm.Open(getPostgres(), &gorm.Config{})
+
+	if err == nil {
+		autoMigrate(db)
+	}
 
 	repo.db = db
 	repo.err = err
