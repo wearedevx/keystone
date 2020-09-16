@@ -15,7 +15,7 @@ func main() {
 		log.Fatalf("funcframework.RegisterHTTPFunctionContext: %v\n", err)
 	}
 	// Use PORT environment variable, or default to 8080.
-	port := "8080"
+	port := "9001"
 	if envPort := os.Getenv("PORT"); envPort != "" {
 		port = envPort
 	}

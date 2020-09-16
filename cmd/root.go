@@ -29,7 +29,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var ksauthURL string //= "http://localhost:9000"
+var ksapiURL string  //= "http://localhost:9001"
+
+var cfgFile string = "http://localhost:9001"
 var currentEnvironment string
 var quietOutput bool
 
@@ -74,7 +77,14 @@ func init() {
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	if !ctx.HasEnvironment(currentEnvironment) {
+	checkEnvironment := true
+	if len(os.Args) > 1 {
+		if os.Args[1] == "login" {
+			checkEnvironment = false
+		}
+	}
+
+	if checkEnvironment && !ctx.HasEnvironment(currentEnvironment) {
 		errors.EnvironmentDoesntExist(currentEnvironment, strings.Join(environments, ", "), nil).Print()
 		os.Exit(1)
 	}
