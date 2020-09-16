@@ -19,22 +19,17 @@ func (repo *Repo) CreateLoginRequest() LoginRequest {
 }
 
 func (repo *Repo) GetLoginRequest(code string) (LoginRequest, bool) {
-	lr := NewLoginRequest()
+	lr := LoginRequest{}
+
 	if repo.Err() == nil {
-		return lr, false
+		repo.err = repo.db.Where(
+			&LoginRequest{
+				TemporaryCode: code,
+			},
+		).First(&lr).Error
 	}
 
-	repo.err = repo.db.Where(
-		&LoginRequest{
-			TemporaryCode: code,
-		},
-	).First(&lr).Error
-
-	if repo.err != nil || errors.Is(repo.err, gorm.ErrRecordNotFound) {
-		return lr, false
-	}
-
-	return lr, true
+	return lr, repo.err == nil
 }
 
 func (repo *Repo) SetLoginRequestCode(code string, authCode string) LoginRequest {
