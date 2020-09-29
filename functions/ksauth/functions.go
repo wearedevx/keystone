@@ -198,9 +198,7 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			serializedUserBytes := []byte(serializedUser)
 			buf := bytes.NewBuffer(serializedUserBytes)
 
-			n, e := crypto.EncryptForUser(&user, buf, &responseBody)
-
-			log.Info(r, "Wrote %d bytes for encryption", n)
+			_, e := crypto.EncryptForUser(&user, buf, &responseBody)
 
 			return e
 		}),
@@ -211,8 +209,6 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		http.Error(w, err.Error(), runner.Status())
 		return
 	}
-
-	log.Info(r, "OK: %s", responseBody.String())
 
 	w.Header().Add("Content-Type", "application/octet-stream")
 	w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
