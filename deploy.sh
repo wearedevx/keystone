@@ -4,14 +4,23 @@
 WORK=$PWD
 commit=$(git rev-parse HEAD)
 
-cd $PWD/functions/ksauth
-go get -u github.com/wearedevx/keystone@$commit
+function_dir=$WORK/functions
+
+ksauth_dir=$function_dir/ksauth
+ksapi_dir=$function_dir/ksapi
+
+echo "Entering ${ksauth_dir}"
+cd $ksauth_dir
+go get github.com/wearedevx/keystone@$commit
 sh ./deploy.sh
 
+echo "Done!\n\n"
 cd $WORK
 
-cd $PWD/functions/ksapi
-go get -u github.com/wearedevx/keystone@$commit
+echo "Entering ${ksapi_dir}"
+cd $ksapi_dir
+go get github.com/wearedevx/keystone@$commit
 sh ./deploy.sh
 
+echo "Done!\n\n"
 cd $WORK
