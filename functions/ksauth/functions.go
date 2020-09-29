@@ -196,7 +196,11 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		}),
 		NewAction(func() error {
 			log.Info(r, serializedUser)
-			return crypto.EncryptForUser(&user, []byte(serializedUser), &responseBody)
+			n, e := crypto.EncryptForUser(&user, []byte(serializedUser), &responseBody)
+
+			log.Info(r, "Wrote %d bytes for encryption", n)
+
+			return e
 		}),
 	})
 
