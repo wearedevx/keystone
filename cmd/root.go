@@ -112,9 +112,8 @@ func initConfig() {
 	viper.SetDefault("username", "")
 	viper.SetDefault("fullname", "")
 	viper.SetDefault("email", "")
-	viper.SetDefault("access_token", "")
-	viper.SetDefault("refresh_token", "")
-	viper.SetDefault("public_key", PublicKey{})
+	viper.SetDefault("sign_key", PublicKey{})
+	viper.SetDefault("cipher_key", PublicKey{})
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {

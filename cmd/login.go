@@ -16,10 +16,12 @@ limitations under the License.
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
@@ -28,6 +30,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/wearedevx/keystone/internal/crypto"
 	. "github.com/wearedevx/keystone/internal/models"
 	. "github.com/wearedevx/keystone/ui"
 	"golang.org/x/oauth2"
@@ -73,11 +76,17 @@ type pollResult struct {
 	err      error
 }
 
+const MAX_ATTEMPTS int = 12
+
 func pollLoginRequest(code string, c chan pollResult) {
 	var done bool = false
+	attemps := 0
 
 	for !done {
+		attemps = attemps + 1
+
 		time.Sleep(5 * time.Second)
+
 		timeout := time.Duration(20 * time.Second)
 		client := http.Client{
 			Timeout: timeout,
@@ -86,8 +95,6 @@ func pollLoginRequest(code string, c chan pollResult) {
 		u, _ := url.Parse(ksauthURL + "/login-request")
 		q := u.Query()
 		q.Add("code", code)
-
-		fmt.Println(u.String() + "?" + q.Encode())
 
 		request, err := http.NewRequest("GET", u.String()+"?"+q.Encode(), nil)
 		request.Header.Set("Accept", "application/json; charset=utf-8")
@@ -132,8 +139,56 @@ func pollLoginRequest(code string, c chan pollResult) {
 			done = true
 		}
 
+		if attemps == MAX_ATTEMPTS {
+			done = true
+		}
 	}
 
+}
+
+func completeLogin(tok *oauth2.Token, pk string) User {
+	payload := LoginPayload{
+		AccountType: GitHubAccountType,
+		Token:       tok,
+		PublicKey:   pk,
+	}
+
+	requestPayload := make([]byte, 0)
+	buf := bytes.NewBuffer(requestPayload)
+	json.NewEncoder(buf).Encode(&payload)
+
+	req, err := http.NewRequest("POST", ksauthURL+"/complete", buf)
+	req.Header.Add("Accept", "application/octet-stream")
+
+	if err != nil {
+		panic(err)
+	}
+
+	timeout := time.Duration(20 * time.Second)
+	client := http.Client{
+		Timeout: timeout,
+	}
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		panic(err)
+	}
+
+	if resp.StatusCode != 200 {
+		panic(fmt.Errorf("Failed to complete login: %s", resp.Status))
+	}
+
+	p, err := ioutil.ReadAll(resp.Body)
+	var user User
+
+	if err != nil {
+		panic(err)
+	}
+
+	crypto.DecryptWithPublicKey(pk, p, &user)
+
+	return user
 }
 
 // loginCmd represents the login command
@@ -153,9 +208,9 @@ to quickly create a Cobra application.`,
 		lr, _ := getLoginRequest()
 
 		conf := &oauth2.Config{
-			ClientID:     "60165e42468cf5e34aa8",
-			ClientSecret: "d68dba1a9fa7e21d3bdad5e641065b641543587e",
-			Scopes:       []string{"user", "read:public_key", "read:emails"},
+			ClientID:     "b073f661bc803aecee00",
+			ClientSecret: "c2593f5b1e063625c7ed6e542c2757fdb050de2d",
+			Scopes:       []string{"user", "read:public_key", "user:email"},
 			RedirectURL:  ksauthURL + "/auth-redirect/" + lr.TemporaryCode + "/",
 			Endpoint: oauth2.Endpoint{
 				AuthURL:  "https://github.com/login/oauth/authorize",
@@ -167,7 +222,8 @@ to quickly create a Cobra application.`,
 		Print(RenderTemplate("login visit", `Visit the URL below to login with your GitHub account:
 
 {{ . | indent 8 }}
-`, url))
+
+Waiting for you to login with your GitHub Account...`, url))
 
 		c := make(chan pollResult)
 		var result pollResult
@@ -195,15 +251,7 @@ to quickly create a Cobra application.`,
 
 		client := github.NewClient(tc)
 
-		user, _, _ := client.Users.Get(ctx, "")
-		Print("\nHi, %s!\n\n", *user.Name)
-
-		viper.Set("username", *user.Login)
-		viper.Set("fullname", *user.Name)
-
 		userPublicKeys, _, _ := client.Users.ListKeys(ctx, "", nil)
-
-		fmt.Print(userPublicKeys)
 
 		keys := make([]PublicKey, 0)
 
@@ -212,7 +260,6 @@ to quickly create a Cobra application.`,
 				Typ:       "SSH",
 				KeyID:     fmt.Sprintf("%s (ssh)", githubKey.GetTitle()),
 				PublicKey: githubKey.GetKey(),
-				Email:     githubKey.GetTitle(),
 			})
 		}
 
@@ -224,8 +271,8 @@ to quickly create a Cobra application.`,
 				Label: "Select an encryption key to identify yourself",
 				Items: keys,
 				Templates: &promptui.SelectTemplates{
-					Active:   `{{ " * " | blue }} {{- .Typ | yellow }} {{ .KeyID | yellow }} <{{ .Email }}>`,
-					Inactive: `   {{ .Typ }} {{ .KeyID }} <{{ .Email }}>`,
+					Active:   `{{ " * " | blue }} {{- .Typ | yellow }} {{ .KeyID | yellow }}`,
+					Inactive: `   {{ .Typ }} {{ .KeyID }}`,
 				},
 				IsVimMode:    true,
 				HideSelected: true,
@@ -239,10 +286,18 @@ to quickly create a Cobra application.`,
 
 		}
 
-		Print(RenderTemplate("using gpg", `Using the {{ .Typ }} key {{ .KeyID }} <{{ .Email }}>, to identify you across projects.`, selected_key))
+		Print(RenderTemplate("using gpg", `Using the {{ .Typ }} key {{ .KeyID }}, to identify you across projects.`, selected_key))
 
-		viper.Set("email", selected_key.Email)
-		viper.Set("public_key", selected_key)
+		user := completeLogin(token, selected_key.PublicKey)
+
+		viper.Set("account_type", user.AccountType)
+		viper.Set("user_id", user.UserID)
+		viper.Set("ext_id", user.ExtID)
+		viper.Set("username", user.Username)
+		viper.Set("fullname", user.Fullname)
+		viper.Set("email", user.Email)
+		viper.Set("sign_key", user.Keys.Sign)
+		viper.Set("cipher_key", user.Keys.Cipher)
 
 		if err := WriteConfig(); err != nil {
 			panic(err)
@@ -267,7 +322,6 @@ type PublicKey struct {
 	Typ       string
 	KeyID     string
 	PublicKey string
-	Email     string
 }
 
 func init() {

@@ -29,7 +29,7 @@ const (
 // Sets an env variable to keep track of across environments
 // [varname] is the name of the variable to set
 // [varvalue] maps environment to the varable value (key is environment name,
-//   and value, the value of the variable in that environment)
+// and value, the value of the variable in that environment)
 // TODO: Factorize this plz
 func (ctx *Context) AddSecret(secretName string, secretValue map[string]string, flag SecretStrictFlag) *Context {
 	if ctx.Err() != nil {
