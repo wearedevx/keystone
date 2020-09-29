@@ -24,14 +24,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
-	"github.com/google/go-github/v32/github"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/internal/crypto"
 	. "github.com/wearedevx/keystone/internal/models"
+	"github.com/wearedevx/keystone/pkg/client"
 	. "github.com/wearedevx/keystone/ui"
 	"golang.org/x/oauth2"
 )
@@ -205,19 +206,16 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 
-		lr, _ := getLoginRequest()
+		// Currently the only supported auth third party is github
+		c := client.GitHubAuth(ctx)
 
-		conf := &oauth2.Config{
-			ClientID:     "b073f661bc803aecee00",
-			ClientSecret: "c2593f5b1e063625c7ed6e542c2757fdb050de2d",
-			Scopes:       []string{"user", "read:public_key", "user:email"},
-			RedirectURL:  ksauthURL + "/auth-redirect/" + lr.TemporaryCode + "/",
-			Endpoint: oauth2.Endpoint{
-				AuthURL:  "https://github.com/login/oauth/authorize",
-				TokenURL: "https://github.com/login/oauth/access_token",
-			},
+		// Get OAuth connect url
+		url, err := c.Start()
+
+		if err != nil {
+			PrintError(err.Error())
+			os.Exit(1)
 		}
-		url := conf.AuthCodeURL("state", oauth2.AccessTypeOffline)
 
 		Print(RenderTemplate("login visit", `Visit the URL below to login with your GitHub account:
 
@@ -225,45 +223,36 @@ to quickly create a Cobra application.`,
 
 Waiting for you to login with your GitHub Account...`, url))
 
-		c := make(chan pollResult)
-		var result pollResult
-
-		go pollLoginRequest(lr.TemporaryCode, c)
-
-		result = <-c
-
-		if result.err != nil {
-			panic(result.err)
-		}
-
-		token, err := conf.Exchange(ctx, result.authCode)
+		// Blocking call
+		err = c.WaitForExternalLogin()
 
 		if err != nil {
-			panic(err)
+			PrintError(err.Error())
+			os.Exit(1)
 		}
 
-		// TODO: Send token to server
-		// Server should be fetching the user data to
-		// either login or create the user
+		keys, noKeysMessage, err := c.GetPublicKeys()
 
-		ts := oauth2.StaticTokenSource(token)
-		tc := oauth2.NewClient(ctx, ts)
-
-		client := github.NewClient(tc)
-
-		userPublicKeys, _, _ := client.Users.ListKeys(ctx, "", nil)
-
-		keys := make([]PublicKey, 0)
-
-		for _, githubKey := range userPublicKeys {
-			keys = append(keys, PublicKey{
-				Typ:       "SSH",
-				KeyID:     fmt.Sprintf("%s (ssh)", githubKey.GetTitle()),
-				PublicKey: githubKey.GetKey(),
-			})
+		if err != nil {
+			PrintError(err.Error())
+			os.Exit(1)
 		}
 
-		var selected_key PublicKey
+		// TODO: Allow key generation
+		if err == nil && len(keys) == 0 {
+			Print(RenderTemplate("no ssh keys", `
+{{ ERROR }} {{ "We could not find any SSH keys associated with your GitHub account" | red }}
+
+You can create a new key pair with:
+  $ ssh-keygen -t rsa -b 4096
+{{ . }}
+After it is done, try ks login again.
+`, noKeysMessage))
+			os.Exit(1)
+		}
+
+		// Let the user select the SSH key they want to use
+		var selected_key client.PublicKey
 		if len(keys) == 1 {
 			selected_key = keys[0]
 		} else {
@@ -288,8 +277,16 @@ Waiting for you to login with your GitHub Account...`, url))
 
 		Print(RenderTemplate("using gpg", `Using the {{ .Typ }} key {{ .KeyID }}, to identify you across projects.`, selected_key))
 
-		user := completeLogin(token, selected_key.PublicKey)
+		// Transfer credentials to the server
+		// Create (or get) the user info
+		user, err := c.Finish(selected_key)
 
+		if err != nil {
+			PrintError(err.Error())
+			os.Exit(1)
+		}
+
+		// Save the user info in the local config
 		viper.Set("account_type", user.AccountType)
 		viper.Set("user_id", user.UserID)
 		viper.Set("ext_id", user.ExtID)
@@ -300,7 +297,12 @@ Waiting for you to login with your GitHub Account...`, url))
 		viper.Set("cipher_key", user.Keys.Cipher)
 
 		if err := WriteConfig(); err != nil {
-			panic(err)
+			Print(RenderTemplate("config write error", `
+{{ ERROR }} {{ . | red }}
+
+You have been successfully logged in but the configuration file could not be written
+`, err.Error()))
+			os.Exit(1)
 		}
 
 		Print(RenderTemplate("login success", `
@@ -316,12 +318,6 @@ To invite collaborators:
   $ ks invite collaborator@email
 `, "Thank you for using Keystone!"))
 	},
-}
-
-type PublicKey struct {
-	Typ       string
-	KeyID     string
-	PublicKey string
 }
 
 func init() {
