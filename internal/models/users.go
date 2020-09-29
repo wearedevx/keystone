@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 
+	"golang.org/x/oauth2"
 	"gorm.io/gorm"
 )
 
@@ -24,12 +25,18 @@ type User struct {
 	Keys        KeyRing     `json:"keys" gorm:"embedded"`
 }
 
+type LoginPayload struct {
+	AccountType AccountType
+	Token       *oauth2.Token
+	PublicKey   string
+}
+
 type AccountType string
 
 const (
-	GitHub AccountType = "github"
-	GitLab             = "gitlab"
-	Custom             = "custom"
+	GitHubAccountType AccountType = "github"
+	GitLabAccountType             = "gitlab"
+	CustomAccountType             = "custom"
 )
 
 func (u *User) Deserialize(in io.Reader) error {

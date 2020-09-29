@@ -2,6 +2,7 @@ package repo
 
 import (
 	"errors"
+	"fmt"
 
 	. "github.com/wearedevx/keystone/internal/models"
 
@@ -32,6 +33,7 @@ func (r *Repo) GetOrCreateUser(user *User) {
 	} else if errors.Is(err, gorm.ErrRecordNotFound) {
 		user.UserID = uuid.NewV4().String()
 		r.err = r.db.Create(&user).Error
+		fmt.Println(r.err)
 	}
 
 	return

@@ -121,16 +121,10 @@ func getAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.P
 
 // Auth Complete route
 
-type UserPayload struct {
-	AccountType string
-	Token       oauth2.Token
-	PublicKey   string `json:"public_key"`
-}
-
 func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var err error
 	ctx := context.Background()
-	payload := UserPayload{}
+	payload := models.LoginPayload{}
 	var gUser *github.User
 	var gEmails []*github.UserEmail
 	userEmail := ""
@@ -146,7 +140,7 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			return json.NewDecoder(r.Body).Decode(&payload)
 		}),
 		NewAction(func() error {
-			ts := oauth2.StaticTokenSource(&payload.Token)
+			ts := oauth2.StaticTokenSource(payload.Token)
 			tc := oauth2.NewClient(ctx, ts)
 
 			client = github.NewClient(tc)
