@@ -38,8 +38,17 @@ func EncryptForUser(user *User, payload []byte, out io.Writer) error {
 			return err
 		}
 
-		w.Write(payload)
-		w.Close()
+		n, err := w.Write(payload)
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("Encoded %d bytes\n", n)
+
+		err = w.Close()
+		if err != nil {
+			return err
+		}
 	}
 
 	return err
