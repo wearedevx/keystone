@@ -8,8 +8,8 @@ import (
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
 	"github.com/julienschmidt/httprouter"
 
-	"github.com/wearedevx/keystone/functions/ksapi/crypto"
 	log "github.com/wearedevx/keystone/internal/cloudlogger"
+	"github.com/wearedevx/keystone/internal/crypto"
 	. "github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
 	. "github.com/wearedevx/keystone/internal/utils"

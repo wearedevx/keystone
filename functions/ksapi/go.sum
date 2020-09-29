@@ -418,6 +418,7 @@ github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhV
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
+github.com/wearedevx/keystone v0.0.0-20200325091653-26b485b48752 h1:PMsBpZZp09MjFs19/1M6q0kxD1GHbdApbvCsg+UxhzA=
 github.com/wearedevx/keystone v0.0.0-20200916145711-0f780a06cb92 h1:XKZxeSK2yyFqjJiKqGkqT7aEA2ZPSOwHouD/2ZnPsWg=
 github.com/wearedevx/keystone v0.0.0-20200916145711-0f780a06cb92/go.mod h1:IkyiJn3MvYoSyDWY3TR9MseyuDI1Ocw++6x1qvjlie8=
 github.com/wearedevx/keystone v0.0.0-20200916161726-9499bde2ec32 h1:GHIPGLnz3/dWHY3VRo6tEo5P8nPybSlZg4Zz4LF3r+Y=
@@ -434,6 +435,8 @@ github.com/wearedevx/keystone v0.0.0-20200916191032-d52da02d59ca h1:mwvAjRzaAiJh
 github.com/wearedevx/keystone v0.0.0-20200916191032-d52da02d59ca/go.mod h1:IkyiJn3MvYoSyDWY3TR9MseyuDI1Ocw++6x1qvjlie8=
 github.com/wearedevx/keystone v0.0.0-20200916192403-d7c4a757a77a h1:X4iy6hifVo0lUSQ8CO4HAz7DeZ7k+MZfbtP1ulWq864=
 github.com/wearedevx/keystone v0.0.0-20200916192403-d7c4a757a77a/go.mod h1:IkyiJn3MvYoSyDWY3TR9MseyuDI1Ocw++6x1qvjlie8=
+github.com/wearedevx/keystone v0.0.0-20200916211805-102ba1444bbd h1:+2N9+p2jJOvVOuDUcodq1s3XYl/UzDf1FNhp6HAIheM=
+github.com/wearedevx/keystone v0.0.0-20200916211805-102ba1444bbd/go.mod h1:IkyiJn3MvYoSyDWY3TR9MseyuDI1Ocw++6x1qvjlie8=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

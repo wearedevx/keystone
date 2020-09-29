@@ -103,6 +103,7 @@ github.com/go-openapi/errors v0.19.2/go.mod h1:qX0BLWsyaKfvhluLejVpVNwNRdXZhEbTA
 github.com/go-openapi/strfmt v0.19.5/go.mod h1:eftuHTlB/dI8Uq8JJOyRlieZf+WkkxUuk0dgdHXr2Qk=
 github.com/go-sql-driver/mysql v1.5.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
+github.com/gofrs/uuid v3.2.0+incompatible h1:y12jRkkFxsd7GpqdSZ+/KCs/fJbqpEXSGd4+jfEaewE=
 github.com/gofrs/uuid v3.2.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
 github.com/gogo/protobuf v1.2.1/go.mod h1:hp+jE20tsWTFYpLwKvXlhS1hjn+gTNwPg2I6zVXpSg4=
@@ -432,6 +433,8 @@ github.com/wearedevx/keystone v0.0.0-20200916211150-f09b9815107b h1:Ghu+BuDQVBXb
 github.com/wearedevx/keystone v0.0.0-20200916211150-f09b9815107b/go.mod h1:IkyiJn3MvYoSyDWY3TR9MseyuDI1Ocw++6x1qvjlie8=
 github.com/wearedevx/keystone v0.0.0-20200916211553-0056d4ad9ee9 h1:LWOn+K3HIDhsiBYOH1M/TSSmNjwpLJ3/JINbJG4c27c=
 github.com/wearedevx/keystone v0.0.0-20200916211553-0056d4ad9ee9/go.mod h1:IkyiJn3MvYoSyDWY3TR9MseyuDI1Ocw++6x1qvjlie8=
+github.com/wearedevx/keystone v0.0.0-20200916211805-102ba1444bbd h1:+2N9+p2jJOvVOuDUcodq1s3XYl/UzDf1FNhp6HAIheM=
+github.com/wearedevx/keystone v0.0.0-20200916211805-102ba1444bbd/go.mod h1:IkyiJn3MvYoSyDWY3TR9MseyuDI1Ocw++6x1qvjlie8=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
