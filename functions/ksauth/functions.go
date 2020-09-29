@@ -2,17 +2,26 @@
 package ksauth
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/gofrs/uuid"
+	"github.com/google/go-github/v32/github"
 	"github.com/julienschmidt/httprouter"
 	log "github.com/wearedevx/keystone/internal/cloudlogger"
+	"github.com/wearedevx/keystone/internal/crypto"
+	"github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
+	. "github.com/wearedevx/keystone/internal/utils"
+	"golang.org/x/oauth2"
 	"gorm.io/gorm"
 )
 
+// Route to post to to start a login sequence
 func postLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var response string
 	var err error
@@ -36,6 +45,7 @@ func postLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	fmt.Fprintf(w, response)
 }
 
+// Route to poll to check wether the user has completed the login
 func getLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var response string
 	var err error
@@ -75,6 +85,7 @@ func getLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	fmt.Fprintf(w, response)
 }
 
+// Route uses a redirect URI for OAuth2 requests
 func getAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	temporaryCode := params.ByName("code")
 
@@ -108,13 +119,108 @@ func getAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.P
 	fmt.Fprintf(w, response)
 }
 
-// Auth shows the code to copy paste into the cli
+// Auth Complete route
+
+type UserPayload struct {
+	AccountType string
+	Token       oauth2.Token
+	PublicKey   string `json:"public_key"`
+}
+
+func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var err error
+	ctx := context.Background()
+	payload := UserPayload{}
+	var gUser *github.User
+	var gEmails []*github.UserEmail
+	userEmail := ""
+	userID, err := uuid.NewV4()
+	Repo := new(repo.Repo)
+	var user models.User
+	var serializedUser string
+	var responseBody []byte
+	var client *github.Client
+
+	runner := NewRunner([]RunnerAction{
+		NewAction(func() error {
+			return json.NewDecoder(r.Body).Decode(&payload)
+		}),
+		NewAction(func() error {
+			ts := oauth2.StaticTokenSource(&payload.Token)
+			tc := oauth2.NewClient(ctx, ts)
+
+			client = github.NewClient(tc)
+
+			return nil
+		}),
+		NewAction(func() error {
+			gUser, _, err = client.Users.Get(ctx, "")
+
+			return err
+		}),
+		NewAction(func() error {
+			gEmails, _, err = client.Users.ListEmails(ctx, nil)
+
+			return err
+		}),
+		NewAction(func() error {
+			for _, email := range gEmails {
+				if *email.Primary {
+					userEmail = *email.Email
+					break
+				}
+			}
+
+			return nil
+		}),
+		NewAction(func() error {
+			Repo.Connect()
+
+			return Repo.Err()
+		}),
+		NewAction(func() error {
+			user = models.User{
+				ExtID:       strconv.Itoa(int(*gUser.ID)),
+				UserID:      userID.String(),
+				AccountType: models.AccountType(payload.AccountType),
+				Username:    *gUser.Login,
+				Fullname:    *gUser.Name,
+				Email:       userEmail,
+				Keys: models.KeyRing{
+					Sign:   payload.PublicKey,
+					Cipher: payload.PublicKey,
+				},
+			}
+
+			Repo.GetOrCreateUser(&user)
+
+			return Repo.Err()
+		}),
+		NewAction(func() error {
+			return user.Serialize(&serializedUser)
+		}),
+		NewAction(func() error {
+			return crypto.EncryptForUser(&user, []byte(serializedUser), &responseBody)
+		}),
+	})
+
+	if err = runner.Run().Error(); err != nil {
+		http.Error(w, err.Error(), runner.Status())
+	}
+
+	w.Header().Add("Content-Type", "application/octet-stream")
+	w.Header().Add("Content-Length", strconv.Itoa(len(responseBody)))
+	w.Write(responseBody)
+}
+
+// Auth
 func Auth(w http.ResponseWriter, r *http.Request) {
 	router := httprouter.New()
 
 	router.POST("/login-request", postLoginRequest)
 	router.GET("/login-request", getLoginRequest)
 	router.GET("/auth-redirect/:code/", getAuthRedirect)
+	router.POST("/complete", postUserToken)
 
 	router.ServeHTTP(w, r)
 }

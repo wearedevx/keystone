@@ -6,6 +6,7 @@ require (
 	filippo.io/age v1.0.0-beta4
 	github.com/GoogleCloudPlatform/cloudsql-proxy v1.18.0
 	github.com/GoogleCloudPlatform/functions-framework-go v1.1.0
+	github.com/dave/jennifer v1.4.1 // indirect
 	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
 	github.com/go-openapi/strfmt v0.19.5 // indirect
 	github.com/google/go-github/v32 v32.1.0

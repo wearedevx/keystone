@@ -9,6 +9,7 @@ require (
 	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-openapi/strfmt v0.19.5 // indirect
+	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/google/go-github/v32 v32.1.0
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
 	github.com/jedib0t/go-pretty/v6 v6.0.4
@@ -29,7 +30,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1
-	github.com/wearedevx/keystone v0.0.0-20200916211553-0056d4ad9ee9
+	github.com/wearedevx/keystone v0.0.0-20200916211805-102ba1444bbd
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	golang.org/x/sys v0.0.0-20200916084744-dbad9cb7cb7a // indirect
