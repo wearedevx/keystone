@@ -33,7 +33,7 @@ func EncryptForUser(user *User, payload []byte, out io.Writer) error {
 
 	if err != nil {
 
-		w, err := age.Encrypt(&out, recipient)
+		w, err := age.Encrypt(out, recipient)
 		if err != nil {
 			return err
 		}
