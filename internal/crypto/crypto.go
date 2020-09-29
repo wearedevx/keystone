@@ -21,7 +21,7 @@ import (
 	"filippo.io/age/agessh"
 )
 
-func EncryptForUser(user *User, payload []byte, out *[]byte) error {
+func EncryptForUser(user *User, payload []byte, out io.Writer) error {
 	var recipient age.Recipient
 	var err error
 
@@ -32,17 +32,14 @@ func EncryptForUser(user *User, payload []byte, out *[]byte) error {
 	}
 
 	if err != nil {
-		var sb Builder
 
-		w, err := age.Encrypt(&sb, recipient)
+		w, err := age.Encrypt(&out, recipient)
 		if err != nil {
 			return err
 		}
 
 		w.Write(payload)
 		w.Close()
-
-		*out = []byte(sb.String())
 	}
 
 	return err
@@ -137,6 +134,7 @@ func findPrivateKey(publicKey string) []byte {
 						fmt.Printf("Failed to read file content at `%s`\n", filePath)
 						panic(err)
 					}
+					fmt.Printf("Found private key at `%s`\n", filePath)
 
 					return content
 				}
@@ -172,7 +170,8 @@ func DecryptWithPublicKey(publicKey string, payload []byte, out interface{}) err
 
 	if _, err := io.Copy(output, r); err != nil {
 		log.Fatalf("Failed to read encrypted file: %v", err)
-		return err
+		panic(err)
+		// return err
 	}
 
 	return json.NewDecoder(output).Decode(out)

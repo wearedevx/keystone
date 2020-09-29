@@ -2,6 +2,7 @@
 package ksauth
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -132,7 +133,7 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	Repo := new(repo.Repo)
 	var user models.User
 	var serializedUser string
-	var responseBody []byte
+	var responseBody bytes.Buffer
 	var client *github.Client
 
 	runner := NewRunner([]RunnerAction{
@@ -194,6 +195,7 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			return user.Serialize(&serializedUser)
 		}),
 		NewAction(func() error {
+			log.Info(r, serializedUser)
 			return crypto.EncryptForUser(&user, []byte(serializedUser), &responseBody)
 		}),
 	})
@@ -201,13 +203,14 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	if err = runner.Run().Error(); err != nil {
 		log.Error(r, err.Error())
 		http.Error(w, err.Error(), runner.Status())
+		return
 	}
 
-	log.Info(r, "OK: %s", string(responseBody))
+	log.Info(r, "OK: %s", responseBody.String())
 
 	w.Header().Add("Content-Type", "application/octet-stream")
-	w.Header().Add("Content-Length", strconv.Itoa(len(responseBody)))
-	w.Write(responseBody)
+	w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
+	w.Write(responseBody.Bytes())
 }
 
 // Auth
