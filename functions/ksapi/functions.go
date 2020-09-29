@@ -71,7 +71,7 @@ func postUser(w http.ResponseWriter, r *http.Request, params httprouter.Params) 
 // getUser gets a user
 func getUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var status int = http.StatusOK
-	var responseBody []byte
+	var responseBody bytes.Buffer
 	var err error
 
 	if userID := r.Header.Get("x-ks-user"); userID != "" {
@@ -94,7 +94,10 @@ func getUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 				return user.Serialize(&serializedUser)
 			}),
 			NewAction(func() error {
-				return crypto.EncryptForUser(&user, []byte(serializedUser), &responseBody)
+				in := bytes.NewBufferString(serializedUser)
+				_, e := crypto.EncryptForUser(&user, in, &responseBody)
+
+				return e
 			}),
 		})
 
@@ -110,10 +113,10 @@ func getUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
-	if len(responseBody) > 0 {
+	if responseBody.Len() > 0 {
 		w.Header().Add("Content-Type", "application/octet-stream")
-		w.Header().Add("Content-Length", strconv.Itoa(len(responseBody)))
-		w.Write(responseBody)
+		w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
+		w.Write(responseBody.Bytes())
 	}
 
 	w.WriteHeader(status)
