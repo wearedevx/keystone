@@ -16,7 +16,7 @@ func (r *Repo) GetUser(userID string) (User, bool) {
 
 func (r *Repo) GetOrCreateUser(user *User) {
 	var foundUser User
-	var err error
+	// var err error
 
 	r.err = r.db.Where(
 		"account_type = ? AND ext_id = ?",
