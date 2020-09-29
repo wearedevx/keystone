@@ -32,18 +32,18 @@ func EncryptForUser(user *User, payload io.Reader, out io.Writer) (int64, error)
 		recipient, err = age.ParseX25519Recipient(user.Keys.Cipher)
 	}
 
-	if err != nil {
+	if err == nil {
 		w, err := age.Encrypt(out, recipient)
 		if err != nil {
+
 			return n, err
 		}
 
 		n, err = io.Copy(w, payload)
+
 		if err != nil {
 			return n, err
 		}
-
-		fmt.Printf("Encoded %d bytes\n", n)
 
 		err = w.Close()
 		if err != nil {
