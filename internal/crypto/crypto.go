@@ -21,9 +21,10 @@ import (
 	"filippo.io/age/agessh"
 )
 
-func EncryptForUser(user *User, payload []byte, out io.Writer) error {
+func EncryptForUser(user *User, payload []byte, out io.Writer) (int, error) {
 	var recipient age.Recipient
 	var err error
+	n := 0
 
 	if HasPrefix(user.Keys.Cipher, "ssh-") {
 		recipient, err = agessh.ParseRecipient(user.Keys.Cipher)
@@ -35,23 +36,23 @@ func EncryptForUser(user *User, payload []byte, out io.Writer) error {
 
 		w, err := age.Encrypt(out, recipient)
 		if err != nil {
-			return err
+			return n, err
 		}
 
-		n, err := w.Write(payload)
+		n, err = w.Write(payload)
 		if err != nil {
-			return err
+			return n, err
 		}
 
 		fmt.Printf("Encoded %d bytes\n", n)
 
 		err = w.Close()
 		if err != nil {
-			return err
+			return n, err
 		}
 	}
 
-	return err
+	return n, err
 }
 
 func saveTempPublicKey(publicKey string) (string, error) {
