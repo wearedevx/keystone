@@ -1,13 +1,9 @@
 package repo
 
 import (
-	"errors"
-	"fmt"
-
 	. "github.com/wearedevx/keystone/internal/models"
 
 	uuid "github.com/satori/go.uuid"
-	"gorm.io/gorm"
 )
 
 func (r *Repo) GetUser(userID string) (User, bool) {
@@ -30,10 +26,9 @@ func (r *Repo) GetOrCreateUser(user *User) {
 
 	if r.err == nil {
 		*user = foundUser
-	} else if errors.Is(err, gorm.ErrRecordNotFound) {
+	} else { // if errors.Is(err, gorm.ErrRecordNotFound) {
 		user.UserID = uuid.NewV4().String()
 		r.err = r.db.Create(&user).Error
-		fmt.Println(r.err)
 	}
 
 	return
