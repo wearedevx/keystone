@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -57,19 +58,25 @@ func saveTempPublicKey(publicKey string) (string, error) {
 
 	defer p.Close()
 
-	filePath := path.Join(osTempDir, p.Name())
+	// filePath := path.Join(osTempDir, p.Name())
 	p.Write([]byte(publicKey))
 
-	return filePath, nil
+	return p.Name(), nil
 }
 
 func extractPublicKeyFromFile(filepath string) (string, error) {
 	cmd := exec.Command("ssh-keygen", "-yef", filepath)
 
 	var out bytes.Buffer
+	var serr bytes.Buffer
 	cmd.Stdout = &out
+	cmd.Stderr = &serr
 
 	err := cmd.Run()
+
+	if err != nil {
+		fmt.Println(serr.String())
+	}
 
 	return out.String(), err
 }
@@ -77,23 +84,28 @@ func extractPublicKeyFromFile(filepath string) (string, error) {
 func findPrivateKey(publicKey string) []byte {
 	pkPath, err := saveTempPublicKey(publicKey)
 	if err != nil {
+		fmt.Printf("Failed to save temporary public key at `%s`\n", pkPath)
 		panic(err)
 	}
-	defer os.RemoveAll(pkPath)
+	// defer os.RemoveAll(pkPath)
 
 	pk, err := extractPublicKeyFromFile(pkPath)
 	if err != nil {
+		fmt.Printf("Failed to extract public key from file at `%s`\n", pkPath)
+		fmt.Println(pk)
 		panic(err)
 	}
 
 	home, err := homedir.Dir()
 	if err != nil {
+		fmt.Println("No homedir!")
 		panic(err)
 	}
 
 	sshDirPath := path.Join(home, ".ssh")
 	files, err := ioutil.ReadDir(sshDirPath)
 	if err != nil {
+		fmt.Printf("Cannot read directory: %s\n", sshDirPath) //
 		panic(err)
 	}
 
@@ -102,6 +114,7 @@ func findPrivateKey(publicKey string) []byte {
 			filePath := path.Join(sshDirPath, f.Name())
 			file, err := os.Open(filePath)
 			if err != nil {
+				fmt.Printf("Failed opening file at `%s`\n", filePath)
 				panic(err)
 			}
 
@@ -111,6 +124,7 @@ func findPrivateKey(publicKey string) []byte {
 			line, _, err := reader.ReadLine()
 
 			if err != nil {
+				fmt.Println("Cannot read line")
 				panic(err)
 			}
 
@@ -120,6 +134,7 @@ func findPrivateKey(publicKey string) []byte {
 				if pkCandidate == pk {
 					content, err := ioutil.ReadFile(filePath)
 					if err != nil {
+						fmt.Printf("Failed to read file content at `%s`\n", filePath)
 						panic(err)
 					}
 
