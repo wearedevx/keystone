@@ -195,12 +195,13 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			return user.Serialize(&serializedUser)
 		}),
 		NewAction(func() error {
-			log.Info(r, serializedUser)
 			serializedUserBytes := []byte(serializedUser)
-			log.Info(r, "%+v", serializedUserBytes)
-			log.Info(r, "%d", len(serializedUserBytes))
-			n, e := crypto.EncryptForUser(&user, []byte(serializedUser), &responseBody)
 
+			buf := bytes.NewBuffer(serializedUserBytes)
+			log.Info(r, "In buffer is %d bytes long", buf.Len())
+			n, e := crypto.EncryptForUser(&user, buf, &responseBody)
+
+			log.Error(r, "%+v", e)
 			log.Info(r, "Wrote %d bytes for encryption", n)
 
 			return e
