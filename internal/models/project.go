@@ -11,11 +11,12 @@ import (
 
 type Project struct {
 	gorm.Model
-	Name         string        `json:"name" gorm:"not null"`
-	Users        []User        `json:"users" gorm:"many2many:project_permissions;"`
-	Environments []Environment `json:"environments" gorm:"foreignKey:ID"`
-	Secrets      []Secret      `json:"secrets" gorm:"many2many:project_environment_secrets;ForeignKey:ID;References:ID;"`
-	Files        []File        `json:"files" gorm:"many2many:project_environment_files;ForeignKey:ID;References:ID;"`
+	Name                string        `json:"name" gorm:"not null"`
+	Users               []User        `json:"users" gorm:"many2many:project_permissions;"`
+	EnvironmentsSecrets []Environment `json:"environments" gorm:"many2many:project_environment_secrets;ForeignKey:ID;References:ID;"`
+	EnvironmentsFiles   []Environment `json:"environments" gorm:"many2many:project_environment_files;ForeignKey:ID;References:ID;"`
+	Secrets             []Secret      `json:"secrets" gorm:"many2many:project_environment_secrets;ForeignKey:ID;References:ID;"`
+	Files               []File        `json:"files" gorm:"many2many:project_environment_files;ForeignKey:ID;References:ID;"`
 }
 
 func (p *Project) Deserialize(in io.Reader) error {
