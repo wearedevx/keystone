@@ -10,10 +10,9 @@ import (
 
 type Environment struct {
 	gorm.Model
-	ProjectID int
-	Name      string   `json:"name" gorm:"not null"`
-	Secrets   []Secret `json:"secrets" gorm:"many2many:project_environment_secrets;ForeignKey:ID;References:ID;"`
-	Files     []File   `json:"files" gorm:"many2many:project_environment_files;ForeignKey:ID;References:ID;"`
+	Name    string   `json:"name" gorm:"not null"`
+	Secrets []Secret `json:"secrets" gorm:"many2many:project_environment_secrets;ForeignKey:ID;References:ID;"`
+	Files   []File   `json:"files" gorm:"many2many:project_environment_files;ForeignKey:ID;References:ID;"`
 }
 
 func (u *Environment) Deserialize(in io.Reader) error {
