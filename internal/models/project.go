@@ -13,7 +13,7 @@ type Project struct {
 	gorm.Model
 	Name         string        `json:"name" gorm:"not null"`
 	Users        []User        `json:"users" gorm:"many2many:project_permissions;"`
-	Environments []Environment `json:"environments" gorm:"ForeignKey:projectID"`
+	Environments []Environment `json:"environments" gorm:"foreignKey:ProjectID"`
 }
 
 func (p *Project) Deserialize(in io.Reader) error {
