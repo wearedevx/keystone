@@ -105,7 +105,7 @@ var listEnv = func(ctx *core.Context, err *errors.Error) {
 }
 
 func init() {
-	rootCmd.AddCommand(envCmd)
+	RootCmd.AddCommand(envCmd)
 
 	// Here you will define your flags and configuration settings.
 

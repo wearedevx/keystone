@@ -60,7 +60,7 @@ Example:
 }
 
 func init() {
-	rootCmd.AddCommand(sourceCmd)
+	RootCmd.AddCommand(sourceCmd)
 
 	// Here you will define your flags and configuration settings.
 

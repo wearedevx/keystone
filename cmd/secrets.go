@@ -90,7 +90,7 @@ Used without arguments, displays a table of secrets.`,
 }
 
 func init() {
-	rootCmd.AddCommand(secretsCmd)
+	RootCmd.AddCommand(secretsCmd)
 
 	// Here you will define your flags and configuration settings.
 

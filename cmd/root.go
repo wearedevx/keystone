@@ -37,8 +37,8 @@ var cfgFile string = "http://localhost:9001"
 var currentEnvironment string
 var quietOutput bool
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
+// RootCmd represents the base command when called without any subcommands
+var RootCmd = &cobra.Command{
 	Use:   "ks",
 	Short: "A safe system for developers to store, share and use secrets.",
 	Long:  ``,
@@ -50,7 +50,7 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -69,10 +69,10 @@ func init() {
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// setCmd.PersistentFlags().String("foo", "", "A help for foo")
-	rootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
-	rootCmd.PersistentFlags().BoolVarP(&quietOutput, "quiet", "q", false, "make the output machine readable")
+	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
+	RootCmd.PersistentFlags().BoolVarP(&quietOutput, "quiet", "q", false, "make the output machine readable")
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/keystone.yaml)")
+	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/keystone.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -80,7 +80,7 @@ func init() {
 
 	checkEnvironment := true
 	if len(os.Args) > 1 {
-		if os.Args[1] == "login" {
+		if os.Args[1] == "login" || os.Args[1] == "documentation" {
 			checkEnvironment = false
 		}
 	}
