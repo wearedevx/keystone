@@ -14,6 +14,8 @@ type Project struct {
 	Name         string        `json:"name" gorm:"not null"`
 	Users        []User        `json:"users" gorm:"many2many:project_permissions;"`
 	Environments []Environment `json:"environments" gorm:"foreignKey:ProjectID"`
+	Secrets      []Secret      `json:"secrets" gorm:"many2many:project_environment_secrets;ForeignKey:ProjectID;References:ID;"`
+	Files        []File        `json:"files" gorm:"many2many:project_environment_files;ForeignKey:ProjectID;References:ID;"`
 }
 
 func (p *Project) Deserialize(in io.Reader) error {
