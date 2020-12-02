@@ -12,7 +12,7 @@ type Environment struct {
 	gorm.Model
 	ProjectID int
 	Name      string   `json:"name" gorm:"not null"`
-	Secrets   []Secret `json:"secrets" gorm:"many2many:project_environment_secrets;foreignKey:ID;References:ID;"`
+	Secrets   []Secret `json:"secrets" gorm:"many2many:project_environment_secrets;foreignKey:ID;joinForeignKey:EnvironmentID;References:ID;joinReferences:ID"`
 	Files     []File   `json:"files" gorm:"many2many:project_environment_files;foreignKey:ID;References:ID;"`
 }
 
