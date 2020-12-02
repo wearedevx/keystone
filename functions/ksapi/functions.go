@@ -122,6 +122,73 @@ func getUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.WriteHeader(status)
 }
 
+func postProject(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	var status int = http.StatusOK
+	var responseBody bytes.Buffer
+	var err error
+
+	if userID := r.Header.Get("x-ks-user"); userID != "" {
+		Repo := new(repo.Repo)
+		user := User{}
+		project := Project{}
+		var serializedProject string
+
+		runner := NewRunner([]RunnerAction{
+			NewAction(func() error {
+				Repo.Connect()
+
+				return Repo.Err()
+			}),
+			NewAction(func() error {
+				user, _ = Repo.GetUser(userID)
+
+				return Repo.Err()
+			}),
+			NewAction(func() error {
+				return project.Deserialize(r.Body)
+			}),
+			NewAction(func() error {
+				Repo.GetOrCreateProject(&project, user)
+
+				return Repo.Err()
+			}),
+			NewActions(func() error {
+				Repo.ProjectSetRoleForUser(project, user, RoleAdmin)
+
+				return Repo.Err()
+			}),
+			NewAction(func() error {
+				return project.Serialize(&serializedProject)
+			}),
+			NewAction(func() error {
+				in := bytes.NewBufferString(serializedProject)
+				_, e := crypto.EncryptForUser(&user, in, &responseBody)
+
+				return e
+			}),
+		})
+
+		if err = runner.Run().Error(); err != nil {
+			log.Error(r, err.Error())
+			http.Error(w, err.Error(), status)
+			return
+		}
+
+		status = runner.Status()
+	} else {
+		http.Error(w, "", http.StatusBadRequest)
+		return
+	}
+
+	if responseBody.Len() > 0 {
+		w.Header().Add("Content-Type", "application/octet-stream")
+		w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
+		w.Write(responseBody.Bytes())
+	}
+
+	w.WriteHeader(status)
+}
+
 // Auth shows the code to copy paste into the cli
 func UserService(w http.ResponseWriter, r *http.Request) {
 	router := httprouter.New()

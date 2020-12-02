@@ -19,7 +19,7 @@ import (
 //
 // It adds .keystone to .gitignore, creating
 // it if does not exist
-func (ctx *Context) Init() *Context {
+func (ctx *Context) Init(projectName string) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
@@ -32,7 +32,7 @@ func (ctx *Context) Init() *Context {
 	ops := []func() error{
 		func() error {
 			if !ExistsKeystoneFile(ctx.Wd) {
-				return NewKeystoneFile(ctx.Wd).Save().Err()
+				return NewKeystoneFile(ctx.Wd, projectName).Save().Err()
 			}
 			return nil
 		},

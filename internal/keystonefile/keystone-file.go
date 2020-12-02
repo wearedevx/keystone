@@ -22,12 +22,13 @@ type keystoneFileOptions struct {
 
 // Represents the contents of the keystone.yml file
 type KeystoneFile struct {
-	path      string `yaml:"-"`
-	err       error  `yaml:"-"`
-	ProjectId string `yaml:"project_id"`
-	Env       []envKey
-	Files     []string
-	Options   keystoneFileOptions
+	path        string `yaml:"-"`
+	err         error  `yaml:"-"`
+	ProjectId   string `yaml:"project_id"`
+	ProjectName string `yaml:"name"`
+	Env         []envKey
+	Files       []string
+	Options     keystoneFileOptions
 }
 
 // Keystone file path for the given context
@@ -37,15 +38,16 @@ func keystoneFilePath(wd string) string {
 }
 
 //
-func NewKeystoneFile(wd string) *KeystoneFile {
+func NewKeystoneFile(wd string, name string) *KeystoneFile {
 	project_id := uuid.NewV4()
 
 	return &KeystoneFile{
-		path:      keystoneFilePath(wd),
-		err:       nil,
-		ProjectId: project_id.String(),
-		Env:       make([]envKey, 0),
-		Files:     make([]string, 0),
+		path:        keystoneFilePath(wd),
+		err:         nil,
+		ProjectId:   project_id.String(),
+		ProjectName: name,
+		Env:         make([]envKey, 0),
+		Files:       make([]string, 0),
 		Options: keystoneFileOptions{
 			Strict: false,
 		},

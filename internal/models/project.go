@@ -6,17 +6,27 @@ import (
 	"strings"
 	"time"
 
+	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 )
 
 type Project struct {
 	gorm.Model
+	UUID                string        `json:"uuid" gorm:"not null;unique"`
 	Name                string        `json:"name" gorm:"not null"`
 	Users               []User        `json:"users" gorm:"many2many:project_permissions;"`
 	EnvironmentsSecrets []Environment `json:"environments" gorm:"many2many:project_environment_secrets;ForeignKey:ID;References:ID;"`
 	EnvironmentsFiles   []Environment `json:"environments" gorm:"many2many:project_environment_files;ForeignKey:ID;References:ID;"`
 	Secrets             []Secret      `json:"secrets" gorm:"many2many:project_environment_secrets;ForeignKey:ID;References:ID;"`
 	Files               []File        `json:"files" gorm:"many2many:project_environment_files;ForeignKey:ID;References:ID;"`
+}
+
+func (p *Project) BeforeCreate(tx *gorm.DB) (err error) {
+	p.UUID = uuid.NewV4().String()
+	p.CreatedAt = time.Now()
+	p.UpdatedAt = time.Now()
+
+	return nil
 }
 
 func (p *Project) Deserialize(in io.Reader) error {
