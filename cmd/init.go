@@ -16,7 +16,10 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/wearedevx/keystone/internal/errors"
+	"errors"
+
+	"github.com/manifoldco/promptui"
+	kerrors "github.com/wearedevx/keystone/internal/errors"
 	core "github.com/wearedevx/keystone/pkg/core"
 	. "github.com/wearedevx/keystone/ui"
 
@@ -36,9 +39,28 @@ Created files and directories:
                  automatically added to .gitignore
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		var err *errors.Error
+		var err *kerrors.Error
 
-		if err = core.New(core.CTX_INIT).Init().Err(); err != nil {
+		p := promptui.Prompt{
+			Label: "What is the name of the project?",
+			Validate: func(value string) error {
+				if len(value) == 0 {
+					return errors.New("Bad project name")
+				}
+
+				return nil
+			},
+		}
+
+		projectName, erro := p.Run()
+
+		if erro != nil {
+			err = kerrors.NewError("Bad project name", "A project name cannot be empty", map[string]string{}, erro)
+			err.Print()
+			return
+		}
+
+		if err = core.New(core.CTX_INIT).Init(projectName).Err(); err != nil {
 			err.Print()
 			return
 		}
