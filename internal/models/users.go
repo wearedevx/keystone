@@ -17,15 +17,15 @@ type KeyRing struct {
 
 type User struct {
 	gorm.Model
-	AccountType AccountType   `json:"account_type" gorm:"default:custom"`
-	UserID      string        `json:"user_id" gorm:"uniqueIndex"`
-	ExtID       string        `json:"ext_id"`
-	Username    string        `json:"username" gorm:"uniqueIndex"`
-	Fullname    string        `json:"fullname" gorm:"not null"`
-	Email       string        `json:"email" gorm:"not null"`
-	Keys        KeyRing       `json:"keys" gorm:"embedded"`
-	Projects    []Project     `json:"projects" gorm:"many2many:project_permissions;"`
-	Environment []Environment `json:"environment" gorm:"many2many:environment_permissions;"`
+	AccountType  AccountType   `json:"account_type" gorm:"default:custom"`
+	UserID       string        `json:"user_id" gorm:"uniqueIndex"`
+	ExtID        string        `json:"ext_id"`
+	Username     string        `json:"username" gorm:"uniqueIndex"`
+	Fullname     string        `json:"fullname" gorm:"not null"`
+	Email        string        `json:"email" gorm:"not null"`
+	Keys         KeyRing       `json:"keys" gorm:"embedded"`
+	Projects     []Project     `json:"projects" gorm:"many2many:project_permissions;"`
+	Environments []Environment `json:"environment" gorm:"many2many:environment_permissions;"`
 }
 
 type LoginPayload struct {
