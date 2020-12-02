@@ -75,7 +75,7 @@ To add files to secret files:
 }
 
 func init() {
-	rootCmd.AddCommand(filesCmd)
+	RootCmd.AddCommand(filesCmd)
 
 	// Here you will define your flags and configuration settings.
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"strings"
+	"time"
 
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
@@ -23,6 +24,7 @@ type User struct {
 	Fullname    string      `json:"fullname" gorm:"not null"`
 	Email       string      `json:"email" gorm:"not null"`
 	Keys        KeyRing     `json:"keys" gorm:"embedded"`
+	Projects    []Project   `json:"projects" gorm:"many2many:project_permissions;"`
 }
 
 type LoginPayload struct {
@@ -48,6 +50,62 @@ func (u *User) Serialize(out *string) error {
 	var err error
 
 	err = json.NewEncoder(&sb).Encode(u)
+
+	*out = sb.String()
+
+	return err
+}
+
+type UserRole string
+
+const (
+	RoleAdmin       UserRole = "admin"
+	RoleContributor          = "contributor"
+	RoleReader               = "reader"
+)
+
+type ProjectPermissions struct {
+	UserID    int            `json:"userID" gorm:"primaryKey"`
+	ProjectID int            `json:"projectID" gorm:"primaryKey"`
+	Role      UserRole       `json:"role"`
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+}
+
+func (perm *ProjectPermissions) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(perm)
+}
+
+func (perm *ProjectPermissions) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(perm)
+
+	*out = sb.String()
+
+	return err
+}
+
+type EnvironmentPermissions struct {
+	UserID        int            `json:"userID" gorm:"primaryKey"`
+	EnvironmentID int            `json:"environmentID" gorm:"primaryKey"`
+	Role          string         `json:"role"`
+	CreatedAt     time.Time      `json:"createdAt"`
+	UpdatedAt     time.Time      `json:"updatedAt"`
+	DeletedAt     gorm.DeletedAt `gorm:"index"`
+}
+
+func (perm *EnvironmentPermissions) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(perm)
+}
+
+func (perm *EnvironmentPermissions) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(perm)
 
 	*out = sb.String()
 

@@ -64,7 +64,7 @@ If you need help with anything:
 }
 
 func init() {
-	rootCmd.AddCommand(initCmd)
+	RootCmd.AddCommand(initCmd)
 
 	// Here you will define your flags and configuration settings.
 

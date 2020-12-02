@@ -27,11 +27,12 @@ func getEnv(varname string, fallback string) string {
 // getDSN builds the postgres DSN from environment variables
 func getDSN() string {
 	host := getEnv("DB_HOST", "127.0.0.1")
+	port := getEnv("DB_PORT", "5432")
 	user := getEnv("DB_USER", "keystone-dev")
 	password := getEnv("DB_PASSWORD", "keystone-dev")
 	dbname := getEnv("DB_NAME", "keystone")
 
-	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", host, user, password, dbname)
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 }
 
 // getPostrgres gets the postgres driver for GORM
@@ -54,6 +55,36 @@ func autoMigrate(db *gorm.DB) error {
 		}),
 		NewAction(func() error {
 			return db.AutoMigrate(&User{})
+		}),
+		NewAction(func() error {
+			return db.AutoMigrate(&Project{})
+		}),
+		NewAction(func() error {
+			return db.AutoMigrate(&Environment{})
+		}),
+		NewAction(func() error {
+			return db.AutoMigrate(&Secret{})
+		}),
+		NewAction(func() error {
+			return db.AutoMigrate(&File{})
+		}),
+		NewAction(func() error {
+			return db.AutoMigrate(&EnvironmentPermissions{})
+		}),
+		NewAction(func() error {
+			return db.AutoMigrate(&ProjectPermissions{})
+		}),
+		NewAction(func() error {
+			return db.AutoMigrate(&ProjectEnvironmentSecret{})
+		}),
+		NewAction(func() error {
+			return db.AutoMigrate(&ProjectEnvironmentFile{})
+		}),
+		NewAction(func() error {
+			return db.SetupJoinTable(&User{}, "Projects", &ProjectPermissions{})
+		}),
+		NewAction(func() error {
+			return db.SetupJoinTable(&Project{}, "Users", &ProjectPermissions{})
 		}),
 	})
 
