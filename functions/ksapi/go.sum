@@ -583,6 +583,8 @@ github.com/wearedevx/keystone v0.0.0-20201203134258-6aae8db2143b h1:ZdS+YBj9qvjE
 github.com/wearedevx/keystone v0.0.0-20201203134258-6aae8db2143b/go.mod h1:TMhlnKu9Dxnu2nAukqyJY5SDKAIOq7K/Tcvg7HbZ03k=
 github.com/wearedevx/keystone v0.0.0-20201203134633-f94debd4d656 h1:Q3lTLxv39A/Pey7QwZIJcujXJq77GvgdHQqbJVi8EuM=
 github.com/wearedevx/keystone v0.0.0-20201203134633-f94debd4d656/go.mod h1:TMhlnKu9Dxnu2nAukqyJY5SDKAIOq7K/Tcvg7HbZ03k=
+github.com/wearedevx/keystone v0.0.0-20201203143247-020f63784077 h1:0Fwhn9CR+bjnsukhu8INbqc2aGGBpUzSgNmKhruJ9Ck=
+github.com/wearedevx/keystone v0.0.0-20201203143247-020f63784077/go.mod h1:TMhlnKu9Dxnu2nAukqyJY5SDKAIOq7K/Tcvg7HbZ03k=
 github.com/xanzy/go-gitlab v0.15.0/go.mod h1:8zdQa/ri1dfn8eS3Ir1SyfvOKlw7WBJ8DVThkpGiXrs=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
 github.com/xdg/stringprep v1.0.0/go.mod h1:Jhud4/sHMO4oL310DaZAKk9ZaJ08SJfe+sJh0HrGL1Y=

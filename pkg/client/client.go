@@ -18,6 +18,10 @@ import (
 var ksauthURL string //= "http://localhost:9000"
 var ksapiURL string  //= "http://localhost:9001"
 
+type KeystoneClient interface {
+	InitProject(name string) (Project, error)
+}
+
 func getLoginRequest() (LoginRequest, error) {
 	timeout := time.Duration(20 * time.Second)
 	client := http.Client{

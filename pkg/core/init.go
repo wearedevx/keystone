@@ -5,6 +5,8 @@ import (
 	. "github.com/wearedevx/keystone/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/internal/keystonefile"
 	. "github.com/wearedevx/keystone/internal/utils"
+
+	"github.com/wearedevx/keystone/internal/models"
 )
 
 // Initialize the projects directory structure.
@@ -19,7 +21,7 @@ import (
 //
 // It adds .keystone to .gitignore, creating
 // it if does not exist
-func (ctx *Context) Init(projectName string) *Context {
+func (ctx *Context) Init(project models.Project) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
@@ -32,7 +34,7 @@ func (ctx *Context) Init(projectName string) *Context {
 	ops := []func() error{
 		func() error {
 			if !ExistsKeystoneFile(ctx.Wd) {
-				return NewKeystoneFile(ctx.Wd, projectName).Save().Err()
+				return NewKeystoneFile(ctx.Wd, project).Save().Err()
 			}
 			return nil
 		},

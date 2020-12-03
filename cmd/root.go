@@ -80,7 +80,7 @@ func init() {
 
 	checkEnvironment := true
 	if len(os.Args) > 1 {
-		if os.Args[1] == "login" || os.Args[1] == "documentation" {
+		if os.Args[1] == "login" || os.Args[1] == "documentation" || os.Args[1] == "init" {
 			checkEnvironment = false
 		}
 	}
@@ -106,7 +106,8 @@ func initConfig() {
 
 		// Search config in home directory with name ".keystone" (without extension).
 		viper.AddConfigPath(path.Join(home, ".config"))
-		viper.SetConfigName("keystone.yml")
+		viper.SetConfigName("keystone")
+		viper.SetConfigType("yaml")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match

@@ -106,8 +106,8 @@ func (perm *ProjectPermissions) Serialize(out *string) error {
 }
 
 type EnvironmentPermissions struct {
-	UserID        int            `json:"userID" gorm:"primaryKey"`
-	EnvironmentID int            `json:"environmentID" gorm:"primaryKey"`
+	UserID        uint           `json:"userID" gorm:"primaryKey"`
+	EnvironmentID uint           `json:"environmentID" gorm:"primaryKey"`
 	Role          string         `json:"role"`
 	CreatedAt     time.Time      `json:"createdAt"`
 	UpdatedAt     time.Time      `json:"updatedAt"`

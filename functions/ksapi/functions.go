@@ -17,7 +17,7 @@ import (
 )
 
 // postUser Gets or Creates a user
-func postUser(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func postUser(w http.ResponseWriter, r *http.Request, _params httprouter.Params) {
 	var status int = http.StatusOK
 	var responseBody bytes.Buffer
 	var err error
@@ -122,7 +122,7 @@ func getUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.WriteHeader(status)
 }
 
-func postProject(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func postProject(w http.ResponseWriter, r *http.Request, _params httprouter.Params) {
 	var status int = http.StatusOK
 	var responseBody bytes.Buffer
 	var err error
@@ -131,6 +131,7 @@ func postProject(w http.ResponseWriter, r *http.Request, params httprouter.Param
 		Repo := new(repo.Repo)
 		user := User{}
 		project := Project{}
+		var environment Environment
 		var serializedProject string
 
 		runner := NewRunner([]RunnerAction{
@@ -154,6 +155,16 @@ func postProject(w http.ResponseWriter, r *http.Request, params httprouter.Param
 			}),
 			NewAction(func() error {
 				Repo.ProjectSetRoleForUser(project, user, RoleAdmin)
+
+				return Repo.Err()
+			}),
+			NewAction(func() error {
+				environment = Repo.CreateEnvironment(project, "default")
+
+				return Repo.Err()
+			}),
+			NewAction(func() error {
+				Repo.EnvironmentSetUserRole(environment, user, RoleAdmin)
 
 				return Repo.Err()
 			}),
@@ -195,6 +206,8 @@ func UserService(w http.ResponseWriter, r *http.Request) {
 
 	router.POST("/", postUser)
 	router.GET("/", getUser)
+
+	router.POST("/project", postProject)
 
 	router.ServeHTTP(w, r)
 }
