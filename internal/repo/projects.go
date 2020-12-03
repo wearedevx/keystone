@@ -28,21 +28,19 @@ func (r *Repo) getUserProjectWithName(user User, name string) (Project, bool) {
 }
 
 func (r *Repo) GetOrCreateProject(project *Project, user User) {
-	var foundProject Project
-
 	if foundProject, ok := r.getUserProjectWithName(user, project.Name); ok == true {
 		*project = foundProject
 		return
 	}
 
-	r.createProject(&project)
+	r.createProject(project)
 }
 
 func (r *Repo) ProjectSetRoleForUser(project Project, user User, role UserRole) {
 	perm := ProjectPermissions{
 		UserID:    user.ID,
 		ProjectID: project.ID,
-		role:      role,
+		Role:      role,
 	}
 
 	r.err = r.db.Create(perm).Error
