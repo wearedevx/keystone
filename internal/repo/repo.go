@@ -99,7 +99,7 @@ func (repo *Repo) Connect() {
 	})
 	repo.err = autoMigrate(db)
 
-	db, _ := gorm.Open(getPostgres(), &gorm.Config{
+	db, _ = gorm.Open(getPostgres(), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: false,
 	})
 	repo.err = autoMigrate(db)
