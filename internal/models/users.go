@@ -67,8 +67,8 @@ const (
 )
 
 type ProjectPermissions struct {
-	UserID    int            `json:"userID" gorm:"primaryKey"`
-	ProjectID int            `json:"projectID" gorm:"primaryKey"`
+	UserID    uint           `json:"userID" gorm:"primaryKey"`
+	ProjectID uint           `json:"projectID" gorm:"primaryKey"`
 	Role      UserRole       `json:"role"`
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`

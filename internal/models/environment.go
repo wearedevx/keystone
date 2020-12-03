@@ -12,7 +12,7 @@ import (
 type Environment struct {
 	gorm.Model
 	Name      string   `json:"name" gorm:"not null"`
-	ProjectID int      `json:"project_id" gorm:"not null;index"`
+	ProjectID uint     `json:"project_id" gorm:"not null;index"`
 	Secrets   []Secret `json:"secrets" gorm:"many2many:project_environment_secrets;ForeignKey:ID;References:ID;"`
 }
 
@@ -32,9 +32,9 @@ func (u *Environment) Serialize(out *string) error {
 }
 
 type EnvironmentUserSecret struct {
-	EnvironmentID int            `json:"environmentID" gorm:"primaryKey"`
-	UserID        int            `json:"userID" gorm:"primaryKey"`
-	SecretID      int            `json:"secretID" gorm:"primaryKey"`
+	EnvironmentID uint           `json:"environmentID" gorm:"primaryKey"`
+	UserID        uint           `json:"userID" gorm:"primaryKey"`
+	SecretID      uint           `json:"secretID" gorm:"primaryKey"`
 	Value         string         `json:"value"`
 	CreatedAt     time.Time      `json:"createdAt"`
 	UpdatedAt     time.Time      `json:"updatedAt"`
