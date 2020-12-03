@@ -31,7 +31,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1
-	github.com/wearedevx/keystone v0.0.0-20201203182810-134fa31d16f5
+	github.com/wearedevx/keystone v0.0.0-20201203183219-4fa0e7f69e84
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	google.golang.org/api v0.32.0 // indirect
