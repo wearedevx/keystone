@@ -26,6 +26,7 @@ type User struct {
 	Keys         KeyRing       `json:"keys" gorm:"embedded"`
 	Projects     []Project     `json:"projects" gorm:"many2many:project_permissions;"`
 	Environments []Environment `json:"environment" gorm:"many2many:environment_permissions;"`
+	Secrets      []Secret      `json:"secrets" gorm:"many2many:environment_user_secrets;"`
 }
 
 type LoginPayload struct {
