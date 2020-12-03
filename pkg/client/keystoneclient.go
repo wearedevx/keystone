@@ -35,6 +35,8 @@ func (client *SKeystoneClient) InitProject(name string) (Project, error) {
 	buf := bytes.NewBuffer(requestPayload)
 	json.NewEncoder(buf).Encode(&payload)
 
+	fmt.Println(ksapiURL + "/projects")
+
 	req, err := http.NewRequest("POST", ksapiURL+"/projects", buf)
 	req.Header.Set("Content-Type", "application/octet-stream")
 	req.Header.Set("x-ks-user", client.UserID)
@@ -55,7 +57,7 @@ func (client *SKeystoneClient) InitProject(name string) (Project, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return project, fmt.Errorf("Failed to complete login: %s", resp.Status)
+		return project, fmt.Errorf("Failed to init project: %s", resp.Status)
 	}
 
 	p, err := ioutil.ReadAll(resp.Body)

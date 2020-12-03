@@ -207,7 +207,7 @@ func UserService(w http.ResponseWriter, r *http.Request) {
 	router.POST("/", postUser)
 	router.GET("/", getUser)
 
-	router.POST("/project", postProject)
+	router.POST("/projects", postProject)
 
 	router.ServeHTTP(w, r)
 }
