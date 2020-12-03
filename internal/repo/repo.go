@@ -54,9 +54,6 @@ func autoMigrate(db *gorm.DB) error {
 			return db.AutoMigrate(&LoginRequest{})
 		}),
 		NewAction(func() error {
-			return db.AutoMigrate(&EnvironmentUserSecret{})
-		}),
-		NewAction(func() error {
 			return db.AutoMigrate(&User{})
 		}),
 		NewAction(func() error {
@@ -82,6 +79,9 @@ func autoMigrate(db *gorm.DB) error {
 		}),
 		NewAction(func() error {
 			return db.SetupJoinTable(&Project{}, "Users", &ProjectPermissions{})
+		}),
+		NewAction(func() error {
+			return db.AutoMigrate(&EnvironmentUserSecret{})
 		}),
 		NewAction(func() error {
 			return db.SetupJoinTable(&User{}, "EnvironmentsSecrets", &EnvironmentUserSecret{})
