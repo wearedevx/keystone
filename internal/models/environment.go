@@ -14,7 +14,6 @@ type Environment struct {
 	Name      string   `json:"name" gorm:"not null"`
 	ProjectID int      `json:"project_id" gorm:"not null;index"`
 	Secrets   []Secret `json:"secrets" gorm:"many2many:project_environment_secrets;ForeignKey:ID;References:ID;"`
-	Files     []File   `json:"files" gorm:"many2many:project_environment_files;ForeignKey:ID;References:ID;"`
 }
 
 func (u *Environment) Deserialize(in io.Reader) error {
