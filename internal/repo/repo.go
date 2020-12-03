@@ -83,6 +83,15 @@ func autoMigrate(db *gorm.DB) error {
 		NewAction(func() error {
 			return db.SetupJoinTable(&Project{}, "Users", &ProjectPermissions{})
 		}),
+		NewAction(func() error {
+			return db.SetupJoinTable(&User{}, "EnvironmentsSecrets", &EnvironmentUserSecret{})
+		}),
+		NewAction(func() error {
+			return db.SetupJoinTable(&Environment{}, "UserSecrets", &EnvironmentUserSecret{})
+		}),
+		NewAction(func() error {
+			return db.SetupJoinTable(&Secret{}, "UserEnvironments", &EnvironmentUserSecret{})
+		}),
 	})
 
 	return runner.Run().Error()
