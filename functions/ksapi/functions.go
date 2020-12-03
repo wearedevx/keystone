@@ -152,7 +152,7 @@ func postProject(w http.ResponseWriter, r *http.Request, params httprouter.Param
 
 				return Repo.Err()
 			}),
-			NewActions(func() error {
+			NewAction(func() error {
 				Repo.ProjectSetRoleForUser(project, user, RoleAdmin)
 
 				return Repo.Err()

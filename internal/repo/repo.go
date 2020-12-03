@@ -66,19 +66,13 @@ func autoMigrate(db *gorm.DB) error {
 			return db.AutoMigrate(&Secret{})
 		}),
 		NewAction(func() error {
-			return db.AutoMigrate(&File{})
-		}),
-		NewAction(func() error {
 			return db.AutoMigrate(&EnvironmentPermissions{})
 		}),
 		NewAction(func() error {
 			return db.AutoMigrate(&ProjectPermissions{})
 		}),
 		NewAction(func() error {
-			return db.AutoMigrate(&ProjectEnvironmentSecret{})
-		}),
-		NewAction(func() error {
-			return db.AutoMigrate(&ProjectEnvironmentFile{})
+			return db.AutoMigrate(&EnvironmentUserSecret{})
 		}),
 		NewAction(func() error {
 			return db.SetupJoinTable(&User{}, "Projects", &ProjectPermissions{})
