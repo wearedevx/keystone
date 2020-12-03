@@ -31,13 +31,10 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1
-	github.com/wearedevx/keystone v0.0.0-20201203123829-5b124db1da6b
+	github.com/wearedevx/keystone v0.0.0-20201203134258-6aae8db2143b
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
-	golang.org/x/sys v0.0.0-20200916084744-dbad9cb7cb7a // indirect
 	google.golang.org/api v0.32.0 // indirect
-	google.golang.org/genproto v0.0.0-20200916143405-f6a2fa72f0c4 // indirect
-	google.golang.org/grpc v1.32.0 // indirect
 	gopkg.in/ini.v1 v1.61.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	gorm.io/driver/postgres v1.0.0
