@@ -35,7 +35,7 @@ type EnvironmentUserSecret struct {
 	EnvironmentID uint           `json:"environmentID" gorm:"primaryKey"`
 	UserID        uint           `json:"userID" gorm:"primaryKey"`
 	SecretID      uint           `json:"secretID" gorm:"primaryKey"`
-	Value         string         `json:"value"`
+	Value         []byte         `json:"value"`
 	CreatedAt     time.Time      `json:"createdAt"`
 	UpdatedAt     time.Time      `json:"updatedAt"`
 	DeletedAt     gorm.DeletedAt `gorm:"index"`
