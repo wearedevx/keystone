@@ -54,7 +54,7 @@ func autoMigrate(db *gorm.DB) error {
 			return db.AutoMigrate(&LoginRequest{})
 		}),
 		NewAction(func() error {
-			return db.AutoMigrate(&Environment{}, &Project{}, &User{}, &Secret{})
+			return db.AutoMigrate(&Project{}, &Environment{}, &User{}, &Secret{})
 		}),
 		NewAction(func() error {
 			return db.AutoMigrate(&EnvironmentPermissions{}, &ProjectPermissions{})
