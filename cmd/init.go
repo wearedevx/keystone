@@ -20,10 +20,12 @@ import (
 
 	"github.com/manifoldco/promptui"
 	kerrors "github.com/wearedevx/keystone/internal/errors"
+	"github.com/wearedevx/keystone/pkg/client"
 	core "github.com/wearedevx/keystone/pkg/core"
 	. "github.com/wearedevx/keystone/ui"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // initCmd represents the init command
@@ -60,7 +62,18 @@ Created files and directories:
 			return
 		}
 
-		if err = core.New(core.CTX_INIT).Init(projectName).Err(); err != nil {
+		userID := viper.Get("user_id").(string)
+		pk := viper.Get("cipher_key").(string)
+
+		ksClient := client.NewKeystoneClient(userID, pk)
+
+		project, kerr := ksClient.InitProject(projectName)
+
+		if kerr != nil {
+			panic(kerr)
+		}
+
+		if err = core.New(core.CTX_INIT).Init(project).Err(); err != nil {
 			err.Print()
 			return
 		}

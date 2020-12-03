@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	uuid "github.com/satori/go.uuid"
+	. "github.com/wearedevx/keystone/internal/models"
 	. "github.com/wearedevx/keystone/internal/utils"
 	"gopkg.in/yaml.v2"
 )
@@ -38,14 +38,13 @@ func keystoneFilePath(wd string) string {
 }
 
 //
-func NewKeystoneFile(wd string, name string) *KeystoneFile {
-	project_id := uuid.NewV4()
+func NewKeystoneFile(wd string, project Project) *KeystoneFile {
 
 	return &KeystoneFile{
 		path:        keystoneFilePath(wd),
 		err:         nil,
-		ProjectId:   project_id.String(),
-		ProjectName: name,
+		ProjectId:   project.UUID,
+		ProjectName: project.Name,
 		Env:         make([]envKey, 0),
 		Files:       make([]string, 0),
 		Options: keystoneFileOptions{
