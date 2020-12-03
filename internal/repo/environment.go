@@ -25,8 +25,9 @@ func (repo *Repo) EnvironmentSetUserRole(environment Environment, user User, rol
 		Role:          role,
 	}
 
-	repo.err = db.Clauses(clause.OnConflict{
-		UpdateAll: true,
+	repo.err = repo.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}, {Name: "environment_id"}},
+		DoUpdates: clause.Assignments(map[string]interface{}{"role": role}),
 	}).Create(&environment)
 
 	return repo
