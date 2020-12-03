@@ -13,7 +13,7 @@ type Environment struct {
 	gorm.Model
 	Name      string   `json:"name" gorm:"not null"`
 	ProjectID uint     `json:"project_id" gorm:"not null;index"`
-	Secrets   []Secret `json:"secrets" gorm:"many2many:project_environment_secrets;ForeignKey:ID;References:ID;"`
+	Secrets   []Secret `json:"secrets" gorm:"many2many:environment_user_secrets;"`
 }
 
 func (u *Environment) Deserialize(in io.Reader) error {
