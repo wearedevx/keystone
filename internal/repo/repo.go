@@ -91,11 +91,19 @@ func (repo *Repo) Err() error {
 }
 
 func (repo *Repo) Connect() {
-	db, err := gorm.Open(getPostgres(), &gorm.Config{})
+	// db, err := gorm.Open(getPostgres(), &gorm.Config{})
 
-	if err == nil {
-		repo.err = autoMigrate(db)
-	}
+	// if err == nil {
+	db, _ := gorm.Open(getPostgres(), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
+	repo.err = autoMigrate(db)
+
+	db, _ := gorm.Open(getPostgres(), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: false,
+	})
+	repo.err = autoMigrate(db)
+	// }
 
 	repo.db = db
 	repo.err = err
