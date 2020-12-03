@@ -48,43 +48,43 @@ func getPostgres() gorm.Dialector {
 	return postgres.New(config)
 }
 
-func autoMigrate(db *gorm.DB) error {
-	runner := NewRunner([]RunnerAction{
-		NewAction(func() error {
-			return db.AutoMigrate(&LoginRequest{})
-		}),
-		NewAction(func() error {
-			return db.AutoMigrate(&Project{}, &Environment{}, &User{}, &Secret{})
-		}),
-		NewAction(func() error {
-			return db.AutoMigrate(&EnvironmentPermissions{}, &ProjectPermissions{})
-		}),
-		NewAction(func() error {
-			return db.AutoMigrate(&EnvironmentUserSecret{})
-		}),
-		NewAction(func() error {
-			return db.SetupJoinTable(&User{}, "Projects", &ProjectPermissions{})
-		}),
-		NewAction(func() error {
-			return db.SetupJoinTable(&User{}, "Environments", &EnvironmentPermissions{})
-		}),
-		NewAction(func() error {
-			return db.SetupJoinTable(&Project{}, "Users", &ProjectPermissions{})
-		}),
-		NewAction(func() error {
-			return db.SetupJoinTable(&User{}, "EnvironmentsSecrets", &EnvironmentUserSecret{})
-		}),
-		NewAction(func() error {
-			return db.SetupJoinTable(&Environment{}, "UserSecrets", &EnvironmentUserSecret{})
-		}),
-		NewAction(func() error {
-			return db.SetupJoinTable(&Secret{}, "UserEnvironments", &EnvironmentUserSecret{})
-		}),
-	})
+// func autoMigrate(db *gorm.DB) error {
+// 	runner := NewRunner([]RunnerAction{
+// 		NewAction(func() error {
+// 			return db.AutoMigrate(&LoginRequest{})
+// 		}),
+// 		NewAction(func() error {
+// 			return db.AutoMigrate(&Project{}, &Environment{}, &User{}, &Secret{})
+// 		}),
+// 		NewAction(func() error {
+// 			return db.AutoMigrate(&EnvironmentPermissions{}, &ProjectPermissions{})
+// 		}),
+// 		NewAction(func() error {
+// 			return db.AutoMigrate(&EnvironmentUserSecret{})
+// 		}),
+// 		NewAction(func() error {
+// 			return db.SetupJoinTable(&User{}, "Projects", &ProjectPermissions{})
+// 		}),
+// 		NewAction(func() error {
+// 			return db.SetupJoinTable(&User{}, "Environments", &EnvironmentPermissions{})
+// 		}),
+// 		NewAction(func() error {
+// 			return db.SetupJoinTable(&Project{}, "Users", &ProjectPermissions{})
+// 		}),
+// 		NewAction(func() error {
+// 			return db.SetupJoinTable(&User{}, "EnvironmentsSecrets", &EnvironmentUserSecret{})
+// 		}),
+// 		NewAction(func() error {
+// 			return db.SetupJoinTable(&Environment{}, "UserSecrets", &EnvironmentUserSecret{})
+// 		}),
+// 		NewAction(func() error {
+// 			return db.SetupJoinTable(&Secret{}, "UserEnvironments", &EnvironmentUserSecret{})
+// 		}),
+// 	})
 
-	return runner.Run().Error()
+// 	return runner.Run().Error()
 
-}
+// }
 
 func (repo *Repo) Err() error {
 	return repo.err
@@ -92,19 +92,7 @@ func (repo *Repo) Err() error {
 
 func (repo *Repo) Connect() {
 	var err error
-	// db, err := gorm.Open(getPostgres(), &gorm.Config{})
-
-	// if err == nil {
-	db, _ := gorm.Open(getPostgres(), &gorm.Config{
-		DisableForeignKeyConstraintWhenMigrating: true,
-	})
-	repo.err = autoMigrate(db)
-
-	db, _ = gorm.Open(getPostgres(), &gorm.Config{
-		DisableForeignKeyConstraintWhenMigrating: false,
-	})
-	repo.err = autoMigrate(db)
-	// }
+	db, err := gorm.Open(getPostgres(), &gorm.Config{})
 
 	repo.db = db
 	repo.err = err
