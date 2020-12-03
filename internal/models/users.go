@@ -82,12 +82,11 @@ const (
 )
 
 type ProjectPermissions struct {
-	UserID    uint           `json:"userID" gorm:"primaryKey"`
-	ProjectID uint           `json:"projectID" gorm:"primaryKey"`
-	Role      UserRole       `json:"role"`
-	CreatedAt time.Time      `json:"createdAt"`
-	UpdatedAt time.Time      `json:"updatedAt"`
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	UserID    uint      `json:"userID" gorm:"primaryKey"`
+	ProjectID uint      `json:"projectID" gorm:"primaryKey"`
+	Role      UserRole  `json:"role"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func (perm *ProjectPermissions) Deserialize(in io.Reader) error {
@@ -106,12 +105,11 @@ func (perm *ProjectPermissions) Serialize(out *string) error {
 }
 
 type EnvironmentPermissions struct {
-	UserID        uint           `json:"userID" gorm:"primaryKey"`
-	EnvironmentID uint           `json:"environmentID" gorm:"primaryKey"`
-	Role          UserRole       `json:"role"`
-	CreatedAt     time.Time      `json:"createdAt"`
-	UpdatedAt     time.Time      `json:"updatedAt"`
-	DeletedAt     gorm.DeletedAt `gorm:"index"`
+	UserID        uint      `json:"userID" gorm:"primaryKey"`
+	EnvironmentID uint      `json:"environmentID" gorm:"primaryKey"`
+	Role          UserRole  `json:"role"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 func (perm *EnvironmentPermissions) Deserialize(in io.Reader) error {
