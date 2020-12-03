@@ -22,7 +22,7 @@ func (r *Repo) getProjectByUUID(uuid string) (Project, bool) {
 func (r *Repo) getUserProjectWithName(user User, name string) (Project, bool) {
 	var foundProject Project
 
-	r.err = r.db.Model(&Project{}).Joins("join project_permissions pp on pp.project_id = id").Joins("join user u on pp.user_id = u.id").Where("u.id = ? and name = ?", user.ID, name).First(&fofoundProject).Error
+	r.err = r.db.Model(&Project{}).Joins("join project_permissions pp on pp.project_id = id").Joins("join user u on pp.user_id = u.id").Where("u.id = ? and name = ?", user.ID, name).First(&foundProject).Error
 
 	return foundProject, r.err == nil
 }

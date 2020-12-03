@@ -15,7 +15,7 @@ func TestKeystoneFile(t *testing.T) {
 		}
 
 		// Test
-		file := NewKeystoneFile(testDir)
+		file := NewKeystoneFile(testDir, "test_name")
 
 		t.Logf("Success: %+v\n", file)
 
@@ -31,7 +31,7 @@ func TestKeystoneFile(t *testing.T) {
 		}
 
 		// Test
-		file := NewKeystoneFile(testDir)
+		file := NewKeystoneFile(testDir, "test_name")
 
 		err = file.Save().Err()
 
