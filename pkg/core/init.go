@@ -1,6 +1,8 @@
 package core
 
 import (
+	"path"
+
 	. "github.com/wearedevx/keystone/internal/errors"
 	. "github.com/wearedevx/keystone/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/internal/keystonefile"
@@ -49,6 +51,9 @@ func (ctx *Context) Init(project models.Project) *Context {
 		},
 		func() error {
 			return CreateFileIfNotExists(ctx.CachedDotEnvPath(), "")
+		},
+		func() error {
+			return CreateDirIfNotExist(path.Join(ctx.cacheDirPath(), "default"))
 		},
 		func() error {
 			return GitIgnore(ctx.Wd, dotKeystone)
