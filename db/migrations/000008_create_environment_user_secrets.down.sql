@@ -1,0 +1,4 @@
+ALTER TABLE public.environment_user_secrets DROP CONSTRAINT fk_environment_user_secrets_secret;
+ALTER TABLE public.environment_user_secrets DROP CONSTRAINT fk_environment_user_secrets_user;
+ALTER TABLE public.environment_user_secrets DROP CONSTRAINT fk_environment_user_secrets_environment;
+DROP TABLE IF EXISTS public.environment_user_secrets;
