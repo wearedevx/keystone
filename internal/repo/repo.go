@@ -91,6 +91,7 @@ func (repo *Repo) Err() error {
 }
 
 func (repo *Repo) Connect() {
+	var err error
 	// db, err := gorm.Open(getPostgres(), &gorm.Config{})
 
 	// if err == nil {
