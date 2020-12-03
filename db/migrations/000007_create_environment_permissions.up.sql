@@ -3,7 +3,6 @@ CREATE TABLE public.environment_permissions (
 	environment_id int8 NOT NULL,
 	created_at timestamptz NULL,
 	updated_at timestamptz NULL,
-	deleted_at timestamptz NULL,
 	"role" text NULL,
 	CONSTRAINT environment_permissions_pkey PRIMARY KEY (user_id, environment_id)
 );

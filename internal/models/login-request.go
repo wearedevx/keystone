@@ -12,10 +12,25 @@ import (
 )
 
 type LoginRequest struct {
-	gorm.Model
-	TemporaryCode string `json:"temporary_code" gorm:"not null"`
-	AuthCode      string `json:"auth_code"`
-	Answered      bool   `json:"answeredl" gorm:"default:false"`
+	ID            uint      `json:"id" gorm:"primaryKey"`
+	TemporaryCode string    `json:"temporary_code" gorm:"not null"`
+	AuthCode      string    `json:"auth_code"`
+	Answered      bool      `json:"answeredl" gorm:"default:false"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
+func (lr *LoginRequest) BeforeCreate(tx *gorm.DB) (err error) {
+	lr.CreatedAt = time.Now()
+	lr.UpdatedAt = time.Now()
+
+	return nil
+}
+
+func (lr *LoginRequest) BeforeUpdate(tx *gorm.DB) (err error) {
+	lr.UpdatedAt = time.Now()
+
+	return nil
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"

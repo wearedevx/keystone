@@ -4,7 +4,6 @@ CREATE TABLE public.project_permissions (
 	"role" text NULL,
 	created_at timestamptz NULL,
 	updated_at timestamptz NULL,
-	deleted_at timestamptz NULL,
 	CONSTRAINT project_permissions_pkey PRIMARY KEY (user_id, project_id)
 );
 

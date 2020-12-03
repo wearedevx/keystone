@@ -16,7 +16,7 @@ type KeyRing struct {
 }
 
 type User struct {
-	gorm.Model
+	ID           uint          `json:"id" gorm:"primaryKey"`
 	AccountType  AccountType   `json:"account_type" gorm:"default:custom"`
 	UserID       string        `json:"user_id" gorm:"uniqueIndex"`
 	ExtID        string        `json:"ext_id"`
@@ -27,6 +27,21 @@ type User struct {
 	Projects     []Project     `json:"projects" gorm:"many2many:project_permissions;"`
 	Environments []Environment `json:"environment" gorm:"many2many:environment_permissions;"`
 	Secrets      []Secret      `json:"secrets" gorm:"many2many:environment_user_secrets;"`
+	CreatedAt    time.Time     `json:"created_at"`
+	UpdatedAt    time.Time     `json:"updated_at"`
+}
+
+func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
+	u.CreatedAt = time.Now()
+	u.UpdatedAt = time.Now()
+
+	return nil
+}
+
+func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
+	u.UpdatedAt = time.Now()
+
+	return nil
 }
 
 type LoginPayload struct {

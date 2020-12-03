@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"strings"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -16,9 +17,24 @@ const (
 )
 
 type Secret struct {
-	gorm.Model
-	Name string     `json:"name" gorm:"not null"`
-	Type SecretType `json:"type" gorm:"not null"`
+	ID        uint       `join:"id" gorm:"primaryKey"`
+	Name      string     `json:"name" gorm:"not null"`
+	Type      SecretType `json:"type" gorm:"not null"`
+	CreatedAt time.Time  `json:"created_at" gorm:"not null"`
+	UpdatedAt time.Time  `json:"updated_at"`
+}
+
+func (s *Secret) BeforeCreate(tx *gorm.DB) (err error) {
+	s.CreatedAt = time.Now()
+	s.UpdatedAt = time.Now()
+
+	return nil
+}
+
+func (s *Secret) BeforeUpdate(tx *gorm.DB) (err error) {
+	s.UpdatedAt = time.Now()
+
+	return nil
 }
 
 func (u *Secret) Deserialize(in io.Reader) error {
