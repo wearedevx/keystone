@@ -159,7 +159,7 @@ func postProject(w http.ResponseWriter, r *http.Request, _params httprouter.Para
 				return Repo.Err()
 			}),
 			NewAction(func() error {
-				environment = Repo.CreateEnvironment(project, "default")
+				environment = Repo.GetOrCreateEnvironment(project, "default")
 
 				return Repo.Err()
 			}),
