@@ -18,6 +18,22 @@ func (repo *Repo) CreateEnvironment(project Project, name string) Environment {
 	return env
 }
 
+func (repo *Repo) GetEnvironmentByProjectIDAndName(project Project, name string) (Environment, bool) {
+	var foundEnvironment Environment
+
+	repo.err = repo.db.Where("project_id = ? and name = ?", project.ID, name).First(&foundEnvironment).Error
+
+	return foundEnvironment, repo.err == nil
+}
+
+func (repo *Repo) GetOrCreateEnvironment(project Project, name string) Environment {
+	if env, ok := repo.GetEnvironmentByProjectIDAndName(project, name); ok {
+		return env
+	}
+
+	return repo.CreateEnvironment(project, name)
+}
+
 func (repo *Repo) EnvironmentSetUserRole(environment Environment, user User, role UserRole) *Repo {
 	environmentPermissions := EnvironmentPermissions{
 		UserID:        user.ID,
