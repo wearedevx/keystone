@@ -35,7 +35,7 @@ func (f *EnvFile) Load(path string) *EnvFile {
 	for scanner.Scan() {
 		if scanner.Err() == nil {
 			line := scanner.Text()
-			if !strings.HasPrefix(line, "#") {
+			if !strings.HasPrefix(line, "#") && len(line) > 0 {
 				key, value := split(line)
 
 				f.data[key] = value
