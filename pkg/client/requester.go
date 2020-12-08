@@ -32,7 +32,10 @@ func newRequester(userID string, publicKey string) requester {
 func (r *requester) request(method methodType, expectedStatusCode int, path string, data interface{}, result interface{}) error {
 	requestPayload := make([]byte, 0)
 	buf := bytes.NewBuffer(requestPayload)
-	json.NewEncoder(buf).Encode(&data)
+
+	if data != nil {
+		json.NewEncoder(buf).Encode(&data)
+	}
 
 	req, err := http.NewRequest(string(method), ksapiURL+path, buf)
 	req.Header.Set("Content-Type", "application/octet-stream")
@@ -70,8 +73,8 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	return nil
 }
 
-func (r *requester) get(path string, data interface{}, result interface{}) error {
-	return r.request(GET, http.StatusOK, path, data, result)
+func (r *requester) get(path string, result interface{}) error {
+	return r.request(GET, http.StatusOK, path, nil, result)
 }
 
 func (r *requester) post(path string, data interface{}, result interface{}) error {
