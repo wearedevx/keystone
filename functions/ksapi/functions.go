@@ -176,12 +176,12 @@ func postProject(w http.ResponseWriter, r *http.Request, _params httprouter.Para
 				_, e := crypto.EncryptForUser(&user, in, &responseBody)
 
 				return e
-			}),
+			}).SetStatusSuccess(201),
 		})
 
 		if err = runner.Run().Error(); err != nil {
 			log.Error(r, err.Error())
-			http.Error(w, err.Error(), status)
+			http.Error(w, err.Error(), runner.Status())
 			return
 		}
 
