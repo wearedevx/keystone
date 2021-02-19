@@ -15,7 +15,7 @@ type Environment struct {
 	ProjectID uint      `json:"project_id" gorm:"not null;index"`
 	Secrets   []Secret  `json:"secrets" gorm:"many2many:environment_user_secrets;"`
 	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (e *Environment) BeforeCreate(tx *gorm.DB) (err error) {
