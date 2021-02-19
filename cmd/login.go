@@ -27,7 +27,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/manifoldco/promptui"
+	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/internal/crypto"
@@ -192,6 +192,22 @@ func completeLogin(tok *oauth2.Token, pk string) User {
 	return user
 }
 
+// finds an account matching `user` in the `account` slice
+func findAccountIndex(accounts []map[string]string, c client.AuthService) int {
+	current := -1
+
+	for i, account := range accounts {
+		isAccount, _ := c.CheckAccount(account)
+
+		if isAccount {
+			current = i
+			break
+		}
+	}
+
+	return current
+}
+
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
 	Use:   "login",
@@ -205,6 +221,18 @@ to quickly create a Cobra application.`,
 	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
+
+		accountIndex := viper.Get("current").(int)
+		accounts := viper.Get("accounts").([]map[string]string)
+
+		if accountIndex >= 0 && len(accounts) > accountIndex {
+			account := accounts[accountIndex]
+			username := account["username"]
+
+			if username != "" {
+				Print(RenderTemplate("already logged in", `You are already logged in as {{ . }}`, username))
+			}
+		}
 
 		// Currently the only supported auth third party is github
 		c := client.GitHubAuth(ctx)
@@ -231,55 +259,37 @@ Waiting for you to login with your GitHub Account...`, url))
 			os.Exit(1)
 		}
 
-		keys, noKeysMessage, err := c.GetPublicKeys()
+		accountIndex = findAccountIndex(accounts, c)
+
+		if accountIndex >= 0 {
+			viper.Set("current", accountIndex)
+
+			if viper.WriteConfig(); err != nil {
+				Print(RenderTemplate("config write error", `
+{{ ERROR }} {{ . | red }}
+
+You have been successfully logged in, but the configuration file could not be written
+`, err.Error()))
+				os.Exit(1)
+			}
+
+			Print(RenderTemplate("login ok", `
+{{ OK }} {{ . | bright_green }}
+`, fmt.Sprintf("Welcome back, %s", accouts[accountIndex]["username"])))
+
+			os.Exit(0)
+		}
+
+		keyPair, err := keys.New(keys.TypeEC)
 
 		if err != nil {
 			PrintError(err.Error())
 			os.Exit(1)
 		}
 
-		// TODO: Allow key generation
-		if err == nil && len(keys) == 0 {
-			Print(RenderTemplate("no ssh keys", `
-{{ ERROR }} {{ "We could not find any SSH keys associated with your GitHub account" | red }}
-
-You can create a new key pair with:
-  $ ssh-keygen -t rsa -b 4096
-{{ . }}
-After it is done, try ks login again.
-`, noKeysMessage))
-			os.Exit(1)
-		}
-
-		// Let the user select the SSH key they want to use
-		var selected_key client.PublicKey
-		if len(keys) == 1 {
-			selected_key = keys[0]
-		} else {
-			p := promptui.Select{
-				Label: "Select an encryption key to identify yourself",
-				Items: keys,
-				Templates: &promptui.SelectTemplates{
-					Active:   `{{ " * " | blue }} {{- .Typ | yellow }} {{ .KeyID | yellow }}`,
-					Inactive: `   {{ .Typ }} {{ .KeyID }}`,
-				},
-				IsVimMode:    true,
-				HideSelected: true,
-			}
-
-			i, _, err := p.Run()
-
-			if err == nil {
-				selected_key = keys[i]
-			}
-
-		}
-
-		Print(RenderTemplate("using gpg", `Using the {{ .Typ }} key {{ .KeyID }}, to identify you across projects.`, selected_key))
-
 		// Transfer credentials to the server
 		// Create (or get) the user info
-		user, err := c.Finish(selected_key)
+		user, err := c.Finish(keyPair.Public.Value)
 
 		if err != nil {
 			PrintError(err.Error())
@@ -287,14 +297,21 @@ After it is done, try ks login again.
 		}
 
 		// Save the user info in the local config
-		viper.Set("account_type", user.AccountType)
-		viper.Set("user_id", user.UserID)
-		viper.Set("ext_id", user.ExtID)
-		viper.Set("username", user.Username)
-		viper.Set("fullname", user.Fullname)
-		viper.Set("email", user.Email)
-		viper.Set("sign_key", user.Keys.Sign)
-		viper.Set("cipher_key", user.Keys.Cipher)
+		account := map[string]string{
+			"account_type": string(user.AccountType),
+			"user_id":      user.UserID,
+			"ext_id":       user.ExtID,
+			"username":     user.Username,
+			"fullname":     user.Fullname,
+			"email":        user.Email,
+			"public_key":   string(keyPair.Public.Value),
+			"private_key":  string(keyPair.Private.Value),
+		}
+
+		accounts = append(accounts, account)
+
+		viper.Set("current", len(accounts)-1)
+		viper.Set("accounts", accounts)
 
 		if err := WriteConfig(); err != nil {
 			Print(RenderTemplate("config write error", `

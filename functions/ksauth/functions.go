@@ -1,4 +1,4 @@
-// Package p contains an HTTP Cloud Function.
+// Package p contains an HTTP Cloud Function.A
 package ksauth
 
 import (
@@ -180,10 +180,7 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 				Username:    *gUser.Login,
 				Fullname:    *gUser.Name,
 				Email:       userEmail,
-				Keys: models.KeyRing{
-					Sign:   payload.PublicKey,
-					Cipher: payload.PublicKey,
-				},
+				PublicKey:   payload.PublicKey,
 			}
 
 			Repo.GetOrCreateUser(&user)

@@ -132,7 +132,7 @@ func pollLoginRequest(code string, c chan pollResult) {
 
 }
 
-func completeLogin(accountType AccountType, tok *oauth2.Token, pk string) (User, error) {
+func completeLogin(accountType AccountType, tok *oauth2.Token, pk []byte) (User, error) {
 	var user User
 	payload := LoginPayload{
 		AccountType: accountType,

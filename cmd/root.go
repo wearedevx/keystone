@@ -23,7 +23,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/internal/errors"
-	"github.com/wearedevx/keystone/pkg/client"
 	"github.com/wearedevx/keystone/pkg/core"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -110,12 +109,10 @@ func initConfig() {
 		viper.SetConfigType("yaml")
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
-	viper.SetDefault("username", "")
-	viper.SetDefault("fullname", "")
-	viper.SetDefault("email", "")
-	viper.SetDefault("sign_key", client.PublicKey{})
-	viper.SetDefault("cipher_key", client.PublicKey{})
+	defaultAccounts := make([]map[string]string, 0)
+
+	viper.SetDefault("current", -1)
+	viper.SetDefault("accounts", defaultAccounts)
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
