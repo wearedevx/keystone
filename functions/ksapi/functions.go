@@ -3,12 +3,14 @@ package ksusers
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"strconv"
 
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
 	"github.com/julienschmidt/httprouter"
 
+	"github.com/wearedevx/keystone/functions/ksapi/routes"
 	log "github.com/wearedevx/keystone/internal/cloudlogger"
 	"github.com/wearedevx/keystone/internal/crypto"
 	. "github.com/wearedevx/keystone/internal/models"
@@ -69,135 +71,143 @@ func postUser(w http.ResponseWriter, r *http.Request, _params httprouter.Params)
 }
 
 // getUser gets a user
-func getUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var status int = http.StatusOK
-	var responseBody bytes.Buffer
-	var err error
-
-	if userID := r.Header.Get("x-ks-user"); userID != "" {
-		Repo := new(repo.Repo)
-		user := User{}
-		var serializedUser string
-
-		runner := NewRunner([]RunnerAction{
-			NewAction(func() error {
-				Repo.Connect()
-
-				return Repo.Err()
-			}),
-			NewAction(func() error {
-				user, _ = Repo.GetUser(userID)
-
-				return Repo.Err()
-			}),
-			NewAction(func() error {
-				return user.Serialize(&serializedUser)
-			}),
-			NewAction(func() error {
-				in := bytes.NewBufferString(serializedUser)
-				_, e := crypto.EncryptForUser(&user, in, &responseBody)
-
-				return e
-			}),
-		})
-
-		if err = runner.Run().Error(); err != nil {
-			log.Error(r, err.Error())
-			http.Error(w, err.Error(), status)
-			return
-		}
-
-		status = runner.Status()
-	} else {
-		http.Error(w, "", http.StatusBadRequest)
-		return
-	}
-
-	if responseBody.Len() > 0 {
-		w.Header().Add("Content-Type", "application/octet-stream")
-		w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
-		w.Write(responseBody.Bytes())
-	}
-
-	w.WriteHeader(status)
+func getUser(_ routes.Params, _ io.ReadCloser, _ repo.Repo, user User) (routes.Serde, int, error) {
+	return user, http.StatusOK, nil
 }
 
-func postProject(w http.ResponseWriter, r *http.Request, _params httprouter.Params) {
+func postProject(_ routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
 	var status int = http.StatusOK
-	var responseBody bytes.Buffer
 	var err error
 
-	if userID := r.Header.Get("x-ks-user"); userID != "" {
-		Repo := new(repo.Repo)
-		user := User{}
-		project := Project{}
-		var environment Environment
-		var serializedProject string
+	project := Project{}
+	var environment Environment
 
-		runner := NewRunner([]RunnerAction{
-			NewAction(func() error {
-				Repo.Connect()
+	runner := NewRunner([]RunnerAction{
+		NewAction(func() error {
+			return project.Deserialize(body)
+		}),
+		NewAction(func() error {
+			Repo.GetOrCreateProject(&project, user)
+			Repo.ProjectSetRoleForUser(project, user, RoleAdmin)
 
-				return Repo.Err()
-			}),
-			NewAction(func() error {
-				user, _ = Repo.GetUser(userID)
+			environment = Repo.GetOrCreateEnvironment(project, "default")
+			Repo.EnvironmentSetUserRole(environment, user, RoleAdmin)
 
-				return Repo.Err()
-			}),
-			NewAction(func() error {
-				return project.Deserialize(r.Body)
-			}),
-			NewAction(func() error {
-				Repo.GetOrCreateProject(&project, user)
+			return Repo.Err()
+		}).SetStatusSuccess(201),
+	})
 
-				return Repo.Err()
-			}),
-			NewAction(func() error {
-				Repo.ProjectSetRoleForUser(project, user, RoleAdmin)
+	status = runner.Status()
+	err = runner.Error()
 
-				return Repo.Err()
-			}),
-			NewAction(func() error {
-				environment = Repo.GetOrCreateEnvironment(project, "default")
+	return project, status, err
 
-				return Repo.Err()
-			}),
-			NewAction(func() error {
-				Repo.EnvironmentSetUserRole(environment, user, RoleAdmin)
+}
 
-				return Repo.Err()
-			}),
-			NewAction(func() error {
-				return project.Serialize(&serializedProject)
-			}),
-			NewAction(func() error {
-				in := bytes.NewBufferString(serializedProject)
-				_, e := crypto.EncryptForUser(&user, in, &responseBody)
+func getProjectsPublicKeys(params routes.Params, _ io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
+	var status int = http.StatusOK
+	var err error
 
-				return e
-			}).SetStatusSuccess(201),
-		})
-
-		if err = runner.Run().Error(); err != nil {
-			log.Error(r, err.Error())
-			http.Error(w, err.Error(), runner.Status())
-			return
-		}
-
-		status = runner.Status()
-	} else {
-		http.Error(w, "", http.StatusBadRequest)
-		return
+	var project Project
+	var projectID = params.Get("id")
+	var result struct {
+		keys []UserPublicKey
 	}
 
-	if responseBody.Len() > 0 {
-		w.Header().Add("Content-Type", "application/octet-stream")
-		w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
-		w.Write(responseBody.Bytes())
+	runner := NewRunner([]RunnerAction{
+		NewAction(func() error {
+			Repo.GetProjectByUUID(projectID, &project)
+			Repo.ProjectLoadUsers(&project)
+
+			for _, user := range project.Users {
+				result.keys = append(result.keys, UserPublicKey{
+					UserID:    user.UserID,
+					PublicKey: user.Keys.Cipher,
+				})
+			}
+
+			return Repo.Err()
+		}).SetStatusSuccess(200),
+	})
+
+	status = runner.Status()
+	err = runner.Error()
+
+	return result, status, err
+}
+
+func postAddVariable(params routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
+	projectID := params.Get("projectID")
+
+	var status int = http.StatusOK
+	var err error
+
+	var project Project
+	input := AddVariablePayload{}
+	err = input.Deserialize(body)
+
+	if err != nil {
+		return nil, 400, err
 	}
 
-	w.WriteHeader(status)
+	runner := NewRunner([]RunnerAction{
+		NewAction(func() error {
+			var secret Secret
+
+			Repo.GetProjectByUUID(projectID, &project)
+			Repo.GetSecretByName(input.VarName, &secret)
+
+			for _, uev := range input.UserEnvValue {
+				if environment, ok := Repo.GetEnvironmentByProjectIDAndName(project, uev.Environment); ok {
+					if user, ok := Repo.GetUser(uev.UserID); ok {
+						Repo.EnvironmentSetVariableForUser(environment, secret, user, uev.Value)
+					}
+
+				}
+			}
+
+			return Repo.Err()
+		}),
+	})
+
+	err = runner.Error()
+	status = runner.Status()
+
+	return nil, status, err
+}
+
+func putSetVariable(params routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
+	projectID := params.Get("projectID")
+	environmentName := params.Get("environment")
+
+	var status = http.StatusOK
+	var project Project
+	input := SetVariablePayload{}
+	input.Deserialize(body)
+
+	runner := NewRunner([]RunnerAction{
+		NewAction(func() error {
+			var secret Secret
+			Repo.GetProjectByUUID(projectID, &project)
+
+			Repo.GetSecretByName(input.VarName, &secret)
+
+			for _, uv := range body.UserValue {
+				if environment, ok := Repo.GetEnvironmentByProjectIDAndName(project, environmentName); ok {
+					if user, ok := Repo.GetUser(uv.UserID); ok {
+						Repo.EnvironmentSetVariableForUser(environment, secret, user, uv.Value)
+					}
+				}
+			}
+
+			return Repo.Err()
+		}),
+	})
+
+	status = runner.Status()
+	err = runner.Error()
+
+	return nil, status, err
 }
 
 // Auth shows the code to copy paste into the cli
@@ -205,9 +215,14 @@ func UserService(w http.ResponseWriter, r *http.Request) {
 	router := httprouter.New()
 
 	router.POST("/", postUser)
-	router.GET("/", getUser)
+	router.GET("/", routes.AuthedHandler(getUser))
 
-	router.POST("/projects", postProject)
+	router.POST("/projects", routes.AuthedHandler(postProject))
+
+	router.GET("/projects/:id/public-keys", routes.AuthedHandler(getProjectsPublicKeys))
+
+	router.POST("/projects/:projectID/variables", routes.AuthedHandler(postAddVariable))
+	router.PUT("/projects/:projectID/:environment/variables", routes.AuthedHandler(putSetVariable))
 
 	router.ServeHTTP(w, r)
 }
