@@ -4,7 +4,8 @@ go 1.15
 
 require (
 	cloud.google.com/go v0.66.0 // indirect
-	filippo.io/age v1.0.0-beta4
+	filippo.io/age v1.0.0-beta7
+	filippo.io/edwards25519 v1.0.0-beta.3 // indirect
 	github.com/GoogleCloudPlatform/cloudsql-proxy v1.18.0
 	github.com/GoogleCloudPlatform/functions-framework-go v1.1.0
 	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
@@ -13,30 +14,36 @@ require (
 	github.com/google/go-github/v32 v32.1.0
 	github.com/jackc/pgproto3/v2 v2.0.4 // indirect
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
-	github.com/jedib0t/go-pretty/v6 v6.0.4
+	github.com/jedib0t/go-pretty/v6 v6.1.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
-	github.com/magiconair/properties v1.8.3 // indirect
-	github.com/manifoldco/promptui v0.7.0
-	github.com/mattn/go-colorable v0.1.7 // indirect
-	github.com/mattn/go-runewidth v0.0.9 // indirect
+	github.com/magiconair/properties v1.8.4 // indirect
+	github.com/manifoldco/promptui v0.8.0
+	github.com/mattn/go-colorable v0.1.8 // indirect
+	github.com/mattn/go-runewidth v0.0.10 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/mapstructure v1.3.3 // indirect
+	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/satori/go.uuid v1.2.0
-	github.com/spf13/afero v1.4.0 // indirect
+	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
-	github.com/spf13/cobra v1.0.0
+	github.com/spf13/cobra v1.1.3
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1
-	github.com/wearedevx/keystone v0.0.0-20201208072554-16491058bba3
-	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
-	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
+	github.com/wearedevx/keystone v0.0.0-20210219153505-17cb3fa9e0f7
+	golang.org/x/crypto v0.0.0-20210218145215-b8e89b74b9df // indirect
+	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
+	golang.org/x/oauth2 v0.0.0-20210218202405-ba52d332ba99
+	golang.org/x/sys v0.0.0-20210218155724-8ebf48af031b // indirect
+	golang.org/x/text v0.3.5 // indirect
 	google.golang.org/api v0.32.0 // indirect
-	gopkg.in/ini.v1 v1.61.0 // indirect
-	gopkg.in/yaml.v2 v2.3.0
+	google.golang.org/appengine v1.6.7 // indirect
+	gopkg.in/ini.v1 v1.62.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/postgres v1.0.0
-	gorm.io/gorm v1.20.1
+	gorm.io/gorm v1.20.12
 )
