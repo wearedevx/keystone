@@ -6,6 +6,10 @@ import (
 )
 
 func (repo *Repo) CreateEnvironment(project Project, name string) Environment {
+	if repo.err != nil {
+		return Environment{}
+	}
+
 	env := Environment{
 		Name:      name,
 		ProjectID: project.ID,
@@ -21,12 +25,20 @@ func (repo *Repo) CreateEnvironment(project Project, name string) Environment {
 func (repo *Repo) GetEnvironmentByProjectIDAndName(project Project, name string) (Environment, bool) {
 	var foundEnvironment Environment
 
+	if repo.err != nil {
+		return foundEnvironment, false
+	}
+
 	repo.err = repo.db.Where("project_id = ? and name = ?", project.ID, name).First(&foundEnvironment).Error
 
 	return foundEnvironment, repo.err == nil
 }
 
 func (repo *Repo) GetOrCreateEnvironment(project Project, name string) Environment {
+	if repo.err != nil {
+		return Environment{}
+	}
+
 	if env, ok := repo.GetEnvironmentByProjectIDAndName(project, name); ok {
 		return env
 	}
@@ -35,6 +47,10 @@ func (repo *Repo) GetOrCreateEnvironment(project Project, name string) Environme
 }
 
 func (repo *Repo) EnvironmentSetUserRole(environment Environment, user User, role UserRole) *Repo {
+	if repo.err != nil {
+		return repo
+	}
+
 	environmentPermissions := EnvironmentPermissions{
 		UserID:        user.ID,
 		EnvironmentID: environment.ID,
@@ -47,4 +63,17 @@ func (repo *Repo) EnvironmentSetUserRole(environment Environment, user User, rol
 	}).Create(&environmentPermissions).Error
 
 	return repo
+}
+
+func (repo *Repo) EnvironmentSetVariableForUser(environement Environment, secret Secret, user User, value []byte) {
+	if repo != nil {
+		return
+	}
+
+	repo.err = repo.db.Create(&EnvironmentUserSecret{
+		EnvironmentID: environement.ID,
+		UserID:        user.ID,
+		SecretID:      secret.ID,
+		Value:         value,
+	}).Error
 }
