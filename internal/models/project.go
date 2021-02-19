@@ -48,3 +48,52 @@ func (p *Project) Serialize(out *string) error {
 
 	return err
 }
+
+// API Types
+
+type AddVariablePayload struct {
+	VarName      string `json:"var_name"`
+	UserEnvValue []struct {
+		UserID      string `json:"user_id"`
+		Environment string `json:"environment"`
+		Value       []byte `json:"value"`
+	} `json:"user_env_value"`
+}
+
+func (avp *AddVariablePayload) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(avp)
+}
+
+func (avp *AddVariablePayload) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(avp)
+
+	*out = sb.String()
+
+	return err
+}
+
+type SetVariablePayload struct {
+	VarName   string `json:"var_name"`
+	UserValue []struct {
+		UserID string `json:"user_id"`
+		Value  []byte `json:"value"`
+	} `json:"user_env_value"`
+}
+
+func (svp *SetVariablePayload) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(svp)
+}
+
+func (svp *SetVariablePayload) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(svp)
+
+	*out = sb.String()
+
+	return err
+}

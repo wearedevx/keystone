@@ -50,6 +50,11 @@ type LoginPayload struct {
 	PublicKey   string
 }
 
+type UserPublicKey struct {
+	UserID    string `json:"user_id"`
+	PublicKey string `json:"publick_key"`
+}
+
 type AccountType string
 
 const (

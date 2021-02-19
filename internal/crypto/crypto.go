@@ -22,14 +22,18 @@ import (
 )
 
 func EncryptForUser(user *User, payload io.Reader, out io.Writer) (int64, error) {
+	return EncryptForPublicKey(user.Keys.Cipher, payload, out)
+}
+
+func EncryptForPublicKey(publicKey string, payload io.Reader, out io.Writer) (int64, error) {
 	var recipient age.Recipient
 	var err error
 	var n int64 = 0
 
-	if HasPrefix(user.Keys.Cipher, "ssh-") {
-		recipient, err = agessh.ParseRecipient(user.Keys.Cipher)
+	if HasPrefix(publicKey, "ssh-") {
+		recipient, err = agessh.ParseRecipient(publicKey)
 	} else {
-		recipient, err = age.ParseX25519Recipient(user.Keys.Cipher)
+		recipient, err = age.ParseX25519Recipient(publicKey)
 	}
 
 	if err == nil {
