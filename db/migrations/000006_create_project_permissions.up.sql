@@ -1,6 +1,6 @@
 CREATE TABLE public.project_permissions (
-	user_id int8 NOT NULL,
-	project_id int8 NOT NULL,
+	user_id integer NOT NULL,
+  project_id integer NOT NULL,
 	"role" text NULL,
 	created_at timestamptz NULL,
 	updated_at timestamptz NULL,

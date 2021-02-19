@@ -1,6 +1,6 @@
 CREATE TABLE public.environment_permissions (
-	user_id int8 NOT NULL,
-	environment_id int8 NOT NULL,
+	user_id integer NOT NULL,
+	environment_id integer NOT NULL,
 	created_at timestamptz NULL,
 	updated_at timestamptz NULL,
 	"role" text NULL,

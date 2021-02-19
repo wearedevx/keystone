@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS public.environment_user_secrets (
-	user_id int8 NOT NULL,
-	secret_id int8 NOT NULL,
-	environment_id int8 NULL,
+	user_id integer NOT NULL,
+	secret_id integer NOT NULL,
+	environment_id integer NULL,
 	value bytea NULL,
 	created_at timestamptz NULL,
 	updated_at timestamptz NULL,
