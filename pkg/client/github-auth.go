@@ -2,7 +2,7 @@ package client
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 
 	"github.com/google/go-github/v32/github"
 	"github.com/wearedevx/keystone/internal/models"
@@ -19,8 +19,8 @@ type AuthService interface {
 	Name() string
 	Start() (string, error)
 	WaitForExternalLogin() error
-	GetPublicKeys() ([]PublicKey, string, error)
-	Finish(pkey PublicKey) (models.User, error)
+	CheckAccount(account map[string]string) (bool, error)
+	Finish(pkey []byte) (models.User, error)
 }
 
 type gitHubAuthService struct {
@@ -86,33 +86,22 @@ func (g *gitHubAuthService) WaitForExternalLogin() error {
 	return nil
 }
 
-func (g gitHubAuthService) GetPublicKeys() ([]PublicKey, string, error) {
-	keys := make([]PublicKey, 0)
-	userPublicKeys, _, err := g.client.Users.ListKeys(g.ctx, "", nil)
-
-	if err != nil {
-		return keys, "", err
-	}
-
-	for _, githubKey := range userPublicKeys {
-		keys = append(keys, PublicKey{
-			Typ:       "SSH",
-			KeyID:     fmt.Sprintf("%s (ssh)", githubKey.GetTitle()),
-			PublicKey: githubKey.GetKey(),
-		})
-	}
-
-	if len(keys) == 0 {
-		return keys, `
-To associate the generated public key with your GitHub account,
-login to your GitHub account, and navigate to
-  https://github.com/settings/ssh/new
-`, nil
-	}
-
-	return keys, ``, nil
+func (g gitHubAuthService) Finish(pk []byte) (models.User, error) {
+	return completeLogin(models.GitHubAccountType, g.token, pk)
 }
 
-func (g gitHubAuthService) Finish(pk PublicKey) (models.User, error) {
-	return completeLogin(models.GitHubAccountType, g.token, pk.PublicKey)
+func (g gitHubAuthService) CheckAccount(account map[string]string) (bool, error) {
+	gUser, _, err := g.client.Users.Get(g.ctx, "")
+
+	if err != nil {
+		return false, err
+	}
+
+	if account["account_type"] != models.GitLabAccountType {
+		return false, nil
+	}
+
+	if account["ext_id"] == strconv.Itoa(int(*gUser.ID)) {
+		return true, nil
+	}
 }

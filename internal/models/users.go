@@ -23,7 +23,7 @@ type User struct {
 	Username    string      `json:"username" gorm:"uniqueIndex"`
 	Fullname    string      `json:"fullname" gorm:"not null"`
 	Email       string      `json:"email" gorm:"not null"`
-	PublicKey   string      `json:"public_key"`
+	PublicKey   []byte      `json:"public_key"`
 	CreatedAt   time.Time   `json:"created_at"`
 	UpdatedAt   time.Time   `json:"updated_at"`
 }
@@ -44,7 +44,7 @@ func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 type LoginPayload struct {
 	AccountType AccountType
 	Token       *oauth2.Token
-	PublicKey   string
+	PublicKey   []byte
 }
 
 type UserPublicKey struct {
