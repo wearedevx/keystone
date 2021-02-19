@@ -15,7 +15,7 @@ type LoginRequest struct {
 	ID            uint      `json:"id" gorm:"primaryKey"`
 	TemporaryCode string    `json:"temporary_code" gorm:"not null"`
 	AuthCode      string    `json:"auth_code"`
-	Answered      bool      `json:"answeredl" gorm:"default:false"`
+	Answered      bool      `json:"answered" gorm:"default:false"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
 }
