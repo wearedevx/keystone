@@ -140,6 +140,10 @@ func (ctx *Context) RemoveSecret(secretName string) *Context {
 	return ctx
 }
 
+// Sets an existing an secret for a given envitronment
+// [envName]     name of the target environment
+// [secretName]
+// [secretValue]
 func (ctx *Context) SetSecret(envName string, secretName string, secretValue string) *Context {
 	if ctx.Err() != nil {
 		return ctx
@@ -203,6 +207,7 @@ func (ctx *Context) GetSecrets() map[string]string {
 	return env
 }
 
+// Returns a secret value for everu environments
 func (ctx *Context) GetSecret(secretName string) *Secret {
 	secret := new(Secret)
 
@@ -248,6 +253,7 @@ func (ctx *Context) GetSecret(secretName string) *Secret {
 	return secret
 }
 
+// Returns all secrets, and their value in each environment.
 func (ctx *Context) ListSecrets() []Secret {
 	secrets := make([]Secret, 0)
 
@@ -290,6 +296,7 @@ func (ctx *Context) ListSecrets() []Secret {
 	return secrets
 }
 
+// Returns a boolean indicating wether the secret `secretName` exists in the local files
 func (ctx *Context) HasSecret(secretName string) bool {
 	haveIt := false
 

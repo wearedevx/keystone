@@ -121,7 +121,6 @@ func getAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.P
 }
 
 // Auth Complete route
-
 func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var err error
 	ctx := context.Background()
