@@ -3,7 +3,6 @@ package repo
 
 import (
 	. "github.com/wearedevx/keystone/internal/models"
-	"gorm.io/gorm/clause"
 )
 
 func (r *Repo) createProject(project *Project) *Repo {
@@ -65,16 +64,16 @@ func (r *Repo) ProjectSetRoleForUser(project Project, user User, role UserRole) 
 		return r
 	}
 
-	perm := ProjectPermissions{
-		UserID:    user.ID,
-		ProjectID: project.ID,
-		Role:      role,
-	}
+	// perm := ProjectPermissions{
+	// 	UserID:    user.ID,
+	// 	ProjectID: project.ID,
+	// 	Role:      role,
+	// }
 
-	r.err = r.db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "user_id"}, {Name: "project_id"}},
-		DoUpdates: clause.Assignments(map[string]interface{}{"role": role}),
-	}).Create(&perm).Error
+	// r.err = r.db.Clauses(clause.OnConflict{
+	// 	Columns:   []clause.Column{{Name: "user_id"}, {Name: "project_id"}},
+	// 	DoUpdates: clause.Assignments(map[string]interface{}{"role": role}),
+	// }).Create(&perm).Error
 
 	return r
 }

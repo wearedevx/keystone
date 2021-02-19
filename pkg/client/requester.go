@@ -22,11 +22,11 @@ const (
 
 type requester struct {
 	userID    string
-	publicKey string
+	publicKey []byte
 }
 
 func newRequester(userID string, publicKey string) requester {
-	return requester{userID, publicKey}
+	return requester{userID: userID, publicKey: []byte(publicKey)}
 }
 
 func (r *requester) request(method methodType, expectedStatusCode int, path string, data interface{}, result interface{}) error {

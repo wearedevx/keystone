@@ -67,7 +67,7 @@ func (client *SKeystoneClient) AddVariable(projectId string, name string, valueM
 
 			crypto.EncryptForPublicKey(u.PublicKey, bytes.NewBufferString(value), &uev.value)
 
-			payload.UserEnvValue = append(payload.UserEnvValue, uev)
+			// payload.UserEnvValue = append(payload.UserEnvValue, uev)
 		}
 	}
 
@@ -99,7 +99,7 @@ func (client *SKeystoneClient) SetVariable(projectId string, environment string,
 
 		crypto.EncryptForPublicKey(u.PublicKey, bytes.NewBufferString(value), &uv.value)
 
-		payload.UserValue = append(payload.UserValue, uv)
+		// payload.UserValue = append(payload.UserValue, uv)
 	}
 
 	err = client.r.put("/projects/"+projectId+"/"+environment+"/variables", payload, nil)

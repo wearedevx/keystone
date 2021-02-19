@@ -11,8 +11,7 @@ func (repo *Repo) CreateEnvironment(project Project, name string) Environment {
 	}
 
 	env := Environment{
-		Name:      name,
-		ProjectID: project.ID,
+		Name: name,
 	}
 
 	if repo.Err() == nil {
