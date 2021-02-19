@@ -3,6 +3,7 @@ package keystonefile
 import (
 	"testing"
 
+	. "github.com/wearedevx/keystone/internal/models"
 	. "github.com/wearedevx/keystone/internal/utils"
 )
 
@@ -15,7 +16,7 @@ func TestKeystoneFile(t *testing.T) {
 		}
 
 		// Test
-		file := NewKeystoneFile(testDir, "test_name")
+		file := NewKeystoneFile(testDir, Project{Name: "test_name"})
 
 		t.Logf("Success: %+v\n", file)
 
@@ -31,7 +32,7 @@ func TestKeystoneFile(t *testing.T) {
 		}
 
 		// Test
-		file := NewKeystoneFile(testDir, "test_name")
+		file := NewKeystoneFile(testDir, Project{Name: "test_name"})
 
 		err = file.Save().Err()
 
