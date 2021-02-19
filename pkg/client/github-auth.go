@@ -104,4 +104,6 @@ func (g gitHubAuthService) CheckAccount(account map[string]string) (bool, error)
 	if account["ext_id"] == strconv.Itoa(int(*gUser.ID)) {
 		return true, nil
 	}
+
+	return false, nil
 }

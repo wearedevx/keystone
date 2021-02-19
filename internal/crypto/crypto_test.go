@@ -11,10 +11,10 @@ import (
 
 func TestEncryptForUser(t *testing.T) {
 	var user models.User = models.User{
-		Keys: models.KeyRing{
-			Sign:   "ssh-rsa ",
-			Cipher: "ssh-rsa ",
-		},
+		// Keys: models.KeyRing{
+		// 	Sign:   "ssh-rsa ",
+		// 	Cipher: "ssh-rsa ",
+		// },
 	}
 
 	inString := "Hello user"

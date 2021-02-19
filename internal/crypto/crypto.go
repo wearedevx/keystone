@@ -22,7 +22,7 @@ import (
 )
 
 func EncryptForUser(user *User, payload io.Reader, out io.Writer) (int64, error) {
-	return EncryptForPublicKey(user.Keys.Cipher, payload, out)
+	return EncryptForPublicKey(string(user.PublicKey), payload, out)
 }
 
 func EncryptForPublicKey(publicKey string, payload io.Reader, out io.Writer) (int64, error) {
@@ -158,14 +158,16 @@ func findPrivateKey(publicKey string) []byte {
 	return []byte("")
 }
 
-func DecryptWithPublicKey(publicKey string, payload []byte, out interface{}) error {
+func DecryptWithPublicKey(publicKey []byte, payload []byte, out interface{}) error {
 	var identity age.Identity
 	var err error
 
-	if HasPrefix(publicKey, "ssh-") {
-		identity, err = agessh.ParseIdentity(findPrivateKey(publicKey))
+	pk := string(publicKey)
+
+	if HasPrefix(pk, "ssh-") {
+		identity, err = agessh.ParseIdentity(findPrivateKey(pk))
 	} else {
-		identity, err = age.ParseX25519Identity(string(findPrivateKey(publicKey)))
+		identity, err = age.ParseX25519Identity(string(findPrivateKey(pk)))
 	}
 
 	if err != nil {

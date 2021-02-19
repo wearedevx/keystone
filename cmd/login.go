@@ -147,7 +147,7 @@ func pollLoginRequest(code string, c chan pollResult) {
 
 }
 
-func completeLogin(tok *oauth2.Token, pk string) User {
+func completeLogin(tok *oauth2.Token, pk []byte) User {
 	payload := LoginPayload{
 		AccountType: GitHubAccountType,
 		Token:       tok,
@@ -275,7 +275,7 @@ You have been successfully logged in, but the configuration file could not be wr
 
 			Print(RenderTemplate("login ok", `
 {{ OK }} {{ . | bright_green }}
-`, fmt.Sprintf("Welcome back, %s", accouts[accountIndex]["username"])))
+`, fmt.Sprintf("Welcome back, %s", accounts[accountIndex]["username"])))
 
 			os.Exit(0)
 		}
