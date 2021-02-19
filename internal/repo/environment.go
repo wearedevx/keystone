@@ -2,7 +2,6 @@ package repo
 
 import (
 	. "github.com/wearedevx/keystone/internal/models"
-	"gorm.io/gorm/clause"
 )
 
 func (repo *Repo) CreateEnvironment(project Project, name string) Environment {
@@ -50,16 +49,16 @@ func (repo *Repo) EnvironmentSetUserRole(environment Environment, user User, rol
 		return repo
 	}
 
-	environmentPermissions := EnvironmentPermissions{
-		UserID:        user.ID,
-		EnvironmentID: environment.ID,
-		Role:          role,
-	}
+	// environmentPermissions := EnvironmentPermissions{
+	// 	UserID:        user.ID,
+	// 	EnvironmentID: environment.ID,
+	// 	Role:          role,
+	// }
 
-	repo.err = repo.db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "user_id"}, {Name: "environment_id"}},
-		DoUpdates: clause.Assignments(map[string]interface{}{"role": role}),
-	}).Create(&environmentPermissions).Error
+	// repo.err = repo.db.Clauses(clause.OnConflict{
+	// 	Columns:   []clause.Column{{Name: "user_id"}, {Name: "environment_id"}},
+	// 	DoUpdates: clause.Assignments(map[string]interface{}{"role": role}),
+	// }).Create(&environmentPermissions).Error
 
 	return repo
 }
