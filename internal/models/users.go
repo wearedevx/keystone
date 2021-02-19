@@ -16,19 +16,16 @@ type KeyRing struct {
 }
 
 type User struct {
-	ID           uint          `json:"id" gorm:"primaryKey"`
-	AccountType  AccountType   `json:"account_type" gorm:"default:custom"`
-	UserID       string        `json:"user_id" gorm:"uniqueIndex"`
-	ExtID        string        `json:"ext_id"`
-	Username     string        `json:"username" gorm:"uniqueIndex"`
-	Fullname     string        `json:"fullname" gorm:"not null"`
-	Email        string        `json:"email" gorm:"not null"`
-	Keys         KeyRing       `json:"keys" gorm:"embedded"`
-	Projects     []Project     `json:"projects" gorm:"many2many:project_permissions;"`
-	Environments []Environment `json:"environment" gorm:"many2many:environment_permissions;"`
-	Secrets      []Secret      `json:"secrets" gorm:"many2many:environment_user_secrets;"`
-	CreatedAt    time.Time     `json:"created_at"`
-	UpdatedAt    time.Time     `json:"updated_at"`
+	ID          uint        `json:"id" gorm:"primaryKey"`
+	AccountType AccountType `json:"account_type" gorm:"default:custom"`
+	UserID      string      `json:"user_id" gorm:"uniqueIndex"`
+	ExtID       string      `json:"ext_id"`
+	Username    string      `json:"username" gorm:"uniqueIndex"`
+	Fullname    string      `json:"fullname" gorm:"not null"`
+	Email       string      `json:"email" gorm:"not null"`
+	PublicKey   string      `json:"public_key"`
+	CreatedAt   time.Time   `json:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
@@ -72,60 +69,6 @@ func (u *User) Serialize(out *string) error {
 	var err error
 
 	err = json.NewEncoder(&sb).Encode(u)
-
-	*out = sb.String()
-
-	return err
-}
-
-type UserRole string
-
-const (
-	RoleAdmin       UserRole = "admin"
-	RoleContributor          = "contributor"
-	RoleReader               = "reader"
-)
-
-type ProjectPermissions struct {
-	UserID    uint      `json:"userID" gorm:"primaryKey"`
-	ProjectID uint      `json:"projectID" gorm:"primaryKey"`
-	Role      UserRole  `json:"role"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-
-func (perm *ProjectPermissions) Deserialize(in io.Reader) error {
-	return json.NewDecoder(in).Decode(perm)
-}
-
-func (perm *ProjectPermissions) Serialize(out *string) error {
-	var sb strings.Builder
-	var err error
-
-	err = json.NewEncoder(&sb).Encode(perm)
-
-	*out = sb.String()
-
-	return err
-}
-
-type EnvironmentPermissions struct {
-	UserID        uint      `json:"userID" gorm:"primaryKey"`
-	EnvironmentID uint      `json:"environmentID" gorm:"primaryKey"`
-	Role          UserRole  `json:"role"`
-	CreatedAt     time.Time `json:"createdAt"`
-	UpdatedAt     time.Time `json:"updatedAt"`
-}
-
-func (perm *EnvironmentPermissions) Deserialize(in io.Reader) error {
-	return json.NewDecoder(in).Decode(perm)
-}
-
-func (perm *EnvironmentPermissions) Serialize(out *string) error {
-	var sb strings.Builder
-	var err error
-
-	err = json.NewEncoder(&sb).Encode(perm)
 
 	*out = sb.String()
 
