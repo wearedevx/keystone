@@ -20,7 +20,7 @@ type AuthService interface {
 	Start() (string, error)
 	WaitForExternalLogin() error
 	CheckAccount(account map[string]string) (bool, error)
-	Finish(pkey []byte) (models.User, error)
+	Finish(pkey []byte) (models.User, string, error)
 }
 
 type gitHubAuthService struct {
