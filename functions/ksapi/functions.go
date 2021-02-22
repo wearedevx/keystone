@@ -15,6 +15,7 @@ import (
 	"github.com/wearedevx/keystone/functions/ksapi/routes"
 	log "github.com/wearedevx/keystone/internal/cloudlogger"
 	"github.com/wearedevx/keystone/internal/crypto"
+	. "github.com/wearedevx/keystone/internal/jwt"
 	. "github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
 	. "github.com/wearedevx/keystone/internal/utils"
