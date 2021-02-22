@@ -195,7 +195,7 @@ func postAddVariable(params routes.Params, body io.ReadCloser, Repo repo.Repo, u
 
 func putSetVariable(params routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
 	projectID := params.Get("projectID").(string)
-	environmentName := params.Get("environment").(string)
+	// environmentName := params.Get("environment").(string)
 
 	var status = http.StatusOK
 	var project Project
