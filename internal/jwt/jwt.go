@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	jwt "github.com/dgrijalva/go-jwt/v4"
+	jwt "github.com/dgrijalva/jwt-go/v4"
 	"github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
 	"golang.org/x/xerrors"
@@ -43,6 +43,8 @@ func VerifyToken(token string) (string, error) {
 		return os.Getenv("JWT_SALT"), nil
 	})
 
+	expiredError := &jwt.TokenExpiredError{}
+
 	if t.Valid {
 		Repo := &repo.Repo{}
 		Repo.Connect()
@@ -50,7 +52,7 @@ func VerifyToken(token string) (string, error) {
 		userID := t.Claims.(jwt.StandardClaims).Subject
 
 		return userID, nil
-	} else if xerrors.As(err, jwt.TokenExpiredError) {
+	} else if xerrors.As(err, expiredError) {
 		return "", fmt.Errorf("Token expired")
 	}
 
