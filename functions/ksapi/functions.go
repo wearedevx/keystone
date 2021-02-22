@@ -88,10 +88,8 @@ func postProject(_ routes.Params, body io.ReadCloser, Repo repo.Repo, user User)
 		}),
 		NewAction(func() error {
 			Repo.GetOrCreateProject(&project, user)
-			Repo.ProjectSetRoleForUser(project, user, RoleAdmin)
 
 			environment = Repo.GetOrCreateEnvironment(project, "default")
-			Repo.EnvironmentSetUserRole(environment, user, RoleAdmin)
 
 			return Repo.Err()
 		}).SetStatusSuccess(201),
@@ -109,7 +107,7 @@ func getProjectsPublicKeys(params routes.Params, _ io.ReadCloser, Repo repo.Repo
 	var err error
 
 	var project Project
-	var projectID = params.Get("id")
+	var projectID = params.Get("id").(string)
 	var result struct {
 		keys []UserPublicKey
 	}
@@ -119,12 +117,12 @@ func getProjectsPublicKeys(params routes.Params, _ io.ReadCloser, Repo repo.Repo
 			Repo.GetProjectByUUID(projectID, &project)
 			Repo.ProjectLoadUsers(&project)
 
-			for _, user := range project.Users {
-				result.keys = append(result.keys, UserPublicKey{
-					UserID:    user.UserID,
-					PublicKey: user.Keys.Cipher,
-				})
-			}
+			// for _, user := range project.Users {
+			// 	result.keys = append(result.keys, UserPublicKey{
+			// 		UserID:    user.UserID,
+			// 		PublicKey: user.PublicKey,
+			// 	})
+			// }
 
 			return Repo.Err()
 		}).SetStatusSuccess(200),
@@ -137,7 +135,7 @@ func getProjectsPublicKeys(params routes.Params, _ io.ReadCloser, Repo repo.Repo
 }
 
 func postAddVariable(params routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
-	projectID := params.Get("projectID")
+	projectID := params.Get("projectID").(string)
 
 	var status int = http.StatusOK
 	var err error
@@ -177,7 +175,7 @@ func postAddVariable(params routes.Params, body io.ReadCloser, Repo repo.Repo, u
 }
 
 func putSetVariable(params routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
-	projectID := params.Get("projectID")
+	projectID := params.Get("projectID").(string)
 	environmentName := params.Get("environment")
 
 	var status = http.StatusOK

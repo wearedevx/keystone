@@ -32,8 +32,8 @@ func (p *Project) BeforeUpdate(tx *gorm.DB) (err error) {
 	return nil
 }
 
-func (p *Project) Deserialize(in io.Reader) error {
-	return json.NewDecoder(in).Decode(p)
+func (p Project) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(&p)
 }
 
 func (p *Project) Serialize(out *string) error {
