@@ -108,7 +108,9 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/denisenkom/go-mssqldb v0.0.0-20200620013148-b91950f658ec/go.mod h1:xbL0rPBG9cCiLr28tMa8zpbdarY27NDyej4t/EjAShU=
 github.com/denisenkom/go-mssqldb v0.0.0-20200831201914-36b6ff1bbc10/go.mod h1:xbL0rPBG9cCiLr28tMa8zpbdarY27NDyej4t/EjAShU=
+github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
+github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1 h1:CaO/zOnF8VvUfEbhRatPcwKVWamvbYd8tQGRWacE9kU=
 github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1/go.mod h1:+hnT3ywWDTAFrW5aE+u2Sa/wT555ZqwoCS+pk3p6ry4=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/dhui/dktest v0.3.3/go.mod h1:EML9sP4sqJELHn4jV7B0TY8oF6077nk83/tz7M56jcQ=
@@ -667,6 +669,8 @@ github.com/wearedevx/keystone v0.0.0-20210222152539-954451b77ffb h1:paFW7X4voDNs
 github.com/wearedevx/keystone v0.0.0-20210222152539-954451b77ffb/go.mod h1:lSvm687VU1IugCHn6PcjWPSuL0pOWyD3yz8AC7bMqJg=
 github.com/wearedevx/keystone v0.0.0-20210222152726-273861ece656 h1:u44qpkCIHgaFHKEtZ4WBHAwCs4AFWlCmGy/WYNyCFNo=
 github.com/wearedevx/keystone v0.0.0-20210222152726-273861ece656/go.mod h1:lSvm687VU1IugCHn6PcjWPSuL0pOWyD3yz8AC7bMqJg=
+github.com/wearedevx/keystone v0.0.0-20210222153320-021fbbacc773 h1:he+Cc+8SHPgnVbQyeDBpkQ6Cr8ndQYI9rfDEYSu4szI=
+github.com/wearedevx/keystone v0.0.0-20210222153320-021fbbacc773/go.mod h1:lSvm687VU1IugCHn6PcjWPSuL0pOWyD3yz8AC7bMqJg=
 github.com/xanzy/go-gitlab v0.15.0/go.mod h1:8zdQa/ri1dfn8eS3Ir1SyfvOKlw7WBJ8DVThkpGiXrs=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
 github.com/xdg/stringprep v1.0.0/go.mod h1:Jhud4/sHMO4oL310DaZAKk9ZaJ08SJfe+sJh0HrGL1Y=
