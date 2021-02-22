@@ -49,7 +49,7 @@ type LoginPayload struct {
 
 type UserPublicKey struct {
 	UserID    string `json:"user_id"`
-	PublicKey string `json:"publick_key"`
+	PublicKey []byte `json:"publick_key"`
 }
 
 type AccountType string
@@ -60,8 +60,8 @@ const (
 	CustomAccountType             = "custom"
 )
 
-func (u *User) Deserialize(in io.Reader) error {
-	return json.NewDecoder(in).Decode(u)
+func (u User) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(&u)
 }
 
 func (u *User) Serialize(out *string) error {
@@ -69,6 +69,21 @@ func (u *User) Serialize(out *string) error {
 	var err error
 
 	err = json.NewEncoder(&sb).Encode(u)
+
+	*out = sb.String()
+
+	return err
+}
+
+func (upk UserPublicKey) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(&upk)
+}
+
+func (upk *UserPublicKey) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(upk)
 
 	*out = sb.String()
 
