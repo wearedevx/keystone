@@ -13,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/google/go-github/v32/github"
 	"github.com/julienschmidt/httprouter"
+	. "github.com/weardevx/keystone/internal/jwt"
 	log "github.com/wearedevx/keystone/internal/cloudlogger"
 	"github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
