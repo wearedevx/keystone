@@ -8,6 +8,7 @@ require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.1.0
 	github.com/cossacklabs/themis/gothemis v0.13.1
 	github.com/dave/jennifer v1.4.1 // indirect
+	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1 // indirect
 	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
 	github.com/go-openapi/strfmt v0.19.5 // indirect
 	github.com/golang-migrate/migrate v3.5.4+incompatible // indirect

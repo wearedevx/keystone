@@ -4,11 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"time"
-
-	"github.com/wearedevx/keystone/internal/crypto"
 )
 
 type methodType string
@@ -21,12 +18,12 @@ const (
 )
 
 type requester struct {
-	userID    string
-	publicKey []byte
+	userID   string
+	jwtToken string
 }
 
-func newRequester(userID string, publicKey string) requester {
-	return requester{userID: userID, publicKey: []byte(publicKey)}
+func newRequester(userID string, token string) requester {
+	return requester{userID: userID, jwtToken: token}
 }
 
 func (r *requester) request(method methodType, expectedStatusCode int, path string, data interface{}, result interface{}) error {
@@ -39,7 +36,7 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 
 	req, err := http.NewRequest(string(method), ksapiURL+path, buf)
 	req.Header.Set("Content-Type", "application/octet-stream")
-	req.Header.Set("x-ks-user", r.userID)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.jwtToken))
 
 	if err != nil {
 		return err
@@ -61,13 +58,9 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	}
 
 	if result != nil {
-		p, err := ioutil.ReadAll(resp.Body)
+		err := json.NewDecoder(resp.Body).Decode(result)
 
-		if err != nil {
-			return nil
-		}
-
-		crypto.DecryptWithPublicKey(r.publicKey, p, result)
+		return err
 	}
 
 	return nil

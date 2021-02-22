@@ -5,12 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
 
-	"github.com/wearedevx/keystone/internal/crypto"
 	. "github.com/wearedevx/keystone/internal/models"
 	"golang.org/x/oauth2"
 )
@@ -132,7 +130,7 @@ func pollLoginRequest(code string, c chan pollResult) {
 
 }
 
-func completeLogin(accountType AccountType, tok *oauth2.Token, pk []byte) (User, error) {
+func completeLogin(accountType AccountType, tok *oauth2.Token, pk []byte) (User, string, error) {
 	var user User
 	payload := LoginPayload{
 		AccountType: accountType,
@@ -166,13 +164,12 @@ func completeLogin(accountType AccountType, tok *oauth2.Token, pk []byte) (User,
 		return user, fmt.Errorf("Failed to complete login: %s", resp.Status)
 	}
 
-	p, err := ioutil.ReadAll(resp.Body)
+	err = json.NewDecoder(resp.Body).Decode(&user)
+	jwtToken := resp.Header.Get("Authorization")
 
-	if err != nil {
-		return user, err
+	if jwtToken == "" {
+		err = fmt.Errorf("No token was returned")
 	}
 
-	crypto.DecryptWithPublicKey(pk, p, &user)
-
-	return user, nil
+	return user, jwtToken, err
 }

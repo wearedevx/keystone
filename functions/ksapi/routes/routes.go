@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/wearedevx/keystone/internal/crypto"
 	"github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
 )
@@ -55,10 +54,14 @@ type Handler = func(params Params, body io.ReadCloser, Repo repo.Repo, user mode
 func AuthedHandler(handler Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		// Get user and prepare the repo
-		userID := r.Header.Get("x-ks-user")
+		token := r.Header.Get("authorization")
 
-		if userID == "" {
-			http.Error(w, "", http.StatusBadRequest)
+		userID, err := VerifyToken(token)
+
+		if err != nil {
+			// 404 is returned purposefully, here to not reveal the existence of
+			// resources for non authorized requesters
+			http.Error(w, "", http.NotFound)
 			return
 		}
 
@@ -75,7 +78,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 				return
 			}
 
-			// encrypt the response for the user
+			// serialize the response for the user
 			var serialized string
 
 			err = result.Serialize(&serialized)
@@ -84,17 +87,11 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 				http.Error(w, "", http.StatusInternalServerError)
 			}
 
-			in := bytes.NewBufferString(serialized)
-			var out bytes.Buffer
-			_, err = crypto.EncryptForPublicKey(user.PublicKey, in, &out)
-
-			if err != nil {
-				http.Error(w, "", http.StatusInternalServerError)
-			}
+			out := bytes.NewBufferString(serialized)
 
 			// Write the response if any
 			if out.Len() > 0 {
-				w.Header().Add("Content-Type", "application/octet-stream")
+				w.Header().Add("Content-Type", "application/json; charset=utf-8")
 				w.Header().Add("Content-Length", strconv.Itoa(out.Len()))
 				w.Write(out.Bytes())
 			}
@@ -102,7 +99,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			w.WriteHeader(status)
 
 		} else {
-			http.Error(w, "", http.StatusBadRequest)
+			http.Error(w, "", http.NotFound)
 		}
 	}
 }

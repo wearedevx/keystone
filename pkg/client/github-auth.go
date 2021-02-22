@@ -86,7 +86,7 @@ func (g *gitHubAuthService) WaitForExternalLogin() error {
 	return nil
 }
 
-func (g gitHubAuthService) Finish(pk []byte) (models.User, error) {
+func (g gitHubAuthService) Finish(pk []byte) (models.User, string, error) {
 	return completeLogin(models.GitHubAccountType, g.token, pk)
 }
 
