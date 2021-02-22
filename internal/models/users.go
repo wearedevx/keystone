@@ -60,8 +60,8 @@ const (
 	CustomAccountType             = "custom"
 )
 
-func (u User) Deserialize(in io.Reader) error {
-	return json.NewDecoder(in).Decode(&u)
+func (u *User) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(u)
 }
 
 func (u *User) Serialize(out *string) error {
@@ -75,11 +75,11 @@ func (u *User) Serialize(out *string) error {
 	return err
 }
 
-func (upk UserPublicKey) Deserialize(in io.Reader) error {
-	return json.NewDecoder(in).Decode(&upk)
+func (upk *UserPublicKey) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(upk)
 }
 
-func (upk *UserPublicKey) Serialize(out *string) error {
+func (upk UserPublicKey) Serialize(out *string) error {
 	var sb strings.Builder
 	var err error
 
