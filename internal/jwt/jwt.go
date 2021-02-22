@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	jwt "github.com/dgrijalva/jwt-go/v4"
 	"github.com/wearedevx/keystone/internal/models"
@@ -14,14 +15,14 @@ import (
 func MakeToken(user models.User) (string, error) {
 	salt := os.Getenv("JWT_SALT")
 
-	claims := &jwt.StandardClaims{
-		ExpiresAt: jwt.Time(24 * 60 * 60),
-		IssuedAt:  jwt.Time(),
+	claims := jwt.StandardClaims{
+		ExpiresAt: jwt.Time(time.Now().Add(time.Hour * 24)),
+		IssuedAt:  jwt.Time(time.Now()),
 		Issuer:    "keystone",
 		Subject:   user.UserID,
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	return token.SignedString(salt)
 }
