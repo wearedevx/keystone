@@ -40,7 +40,7 @@ func postUser(w http.ResponseWriter, r *http.Request, _params httprouter.Params)
 			return user.Deserialize(r.Body)
 		}).SetStatusError(http.StatusBadRequest),
 		NewAction(func() error {
-			Repo.GetOrCreateUser(&user)
+			Repo.GetOrCreateUser(user)
 
 			return Repo.Err()
 		}),
@@ -49,7 +49,7 @@ func postUser(w http.ResponseWriter, r *http.Request, _params httprouter.Params)
 		}),
 		NewAction(func() error {
 			in := bytes.NewBufferString(serializedUser)
-			_, e := crypto.EncryptForUser(&user, in, &responseBody)
+			_, e := crypto.EncryptForUser(user, in, &responseBody)
 
 			return e
 		}),
