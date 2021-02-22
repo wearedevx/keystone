@@ -189,7 +189,7 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			return Repo.Err()
 		}),
 		NewAction(func() error {
-			jwtToken, err := MakeToken(user)
+			jwtToken, err = MakeToken(user)
 
 			return err
 		}),
