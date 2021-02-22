@@ -3,9 +3,11 @@ package ksusers
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
 	"github.com/julienschmidt/httprouter"
@@ -25,7 +27,7 @@ func postUser(w http.ResponseWriter, r *http.Request, _params httprouter.Params)
 	var err error
 
 	Repo := new(repo.Repo)
-	var user User = &User{}
+	var user *User = &User{}
 	var serializedUser string
 
 	runner := NewRunner([]RunnerAction{
@@ -72,7 +74,7 @@ func postUser(w http.ResponseWriter, r *http.Request, _params httprouter.Params)
 
 // getUser gets a user
 func getUser(_ routes.Params, _ io.ReadCloser, _ repo.Repo, user User) (routes.Serde, int, error) {
-	return user, http.StatusOK, nil
+	return &user, http.StatusOK, nil
 }
 
 func postProject(_ routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
@@ -87,9 +89,9 @@ func postProject(_ routes.Params, body io.ReadCloser, Repo repo.Repo, user User)
 			return project.Deserialize(body)
 		}),
 		NewAction(func() error {
-			Repo.GetOrCreateProject(&project, user)
+			Repo.GetOrCreateProject(project, user)
 
-			environment = Repo.GetOrCreateEnvironment(project, "default")
+			environment = Repo.GetOrCreateEnvironment(*project, "default")
 
 			return Repo.Err()
 		}).SetStatusSuccess(201),
@@ -102,15 +104,32 @@ func postProject(_ routes.Params, body io.ReadCloser, Repo repo.Repo, user User)
 
 }
 
+type projectsPublicKeys struct {
+	keys []UserPublicKey
+}
+
+func (p *projectsPublicKeys) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(p)
+}
+
+func (p *projectsPublicKeys) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(p)
+
+	*out = sb.String()
+
+	return err
+}
+
 func getProjectsPublicKeys(params routes.Params, _ io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
 	var status int = http.StatusOK
 	var err error
 
 	var project Project
 	var projectID = params.Get("id").(string)
-	var result struct {
-		keys []UserPublicKey
-	}
+	var result projectsPublicKeys
 
 	runner := NewRunner([]RunnerAction{
 		NewAction(func() error {
@@ -131,7 +150,7 @@ func getProjectsPublicKeys(params routes.Params, _ io.ReadCloser, Repo repo.Repo
 	status = runner.Status()
 	err = runner.Error()
 
-	return result, status, err
+	return &result, status, err
 }
 
 func postAddVariable(params routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
