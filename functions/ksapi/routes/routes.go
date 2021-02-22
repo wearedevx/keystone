@@ -68,7 +68,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		if user, ok := Repo.GetUser(userID); ok {
 			p := newParams(r, params)
 			// Actual call to the handler (i.e. Controller function)
-			result, status, err := handler(p, r.Body, Repo, user)
+			result, status, err := handler(p, r.Body, *Repo, user)
 
 			if err != nil {
 				http.Error(w, "", http.StatusInternalServerError)
