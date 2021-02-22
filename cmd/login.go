@@ -289,7 +289,7 @@ You have been successfully logged in, but the configuration file could not be wr
 
 		// Transfer credentials to the server
 		// Create (or get) the user info
-		user, err := c.Finish(keyPair.Public.Value)
+		user, jwtToken, err := c.Finish(keyPair.Public.Value)
 
 		if err != nil {
 			PrintError(err.Error())
@@ -312,6 +312,7 @@ You have been successfully logged in, but the configuration file could not be wr
 
 		viper.Set("current", len(accounts)-1)
 		viper.Set("accounts", accounts)
+		viper.Set("auth_token", jwtToken)
 
 		if err := WriteConfig(); err != nil {
 			Print(RenderTemplate("config write error", `

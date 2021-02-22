@@ -14,7 +14,6 @@ import (
 	"github.com/google/go-github/v32/github"
 	"github.com/julienschmidt/httprouter"
 	log "github.com/wearedevx/keystone/internal/cloudlogger"
-	"github.com/wearedevx/keystone/internal/crypto"
 	"github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
 	. "github.com/wearedevx/keystone/internal/utils"
@@ -132,6 +131,7 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	Repo := new(repo.Repo)
 	var user models.User
 	var serializedUser string
+	var jwtToken string
 	var responseBody bytes.Buffer
 	var client *github.Client
 
@@ -188,15 +188,18 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			return Repo.Err()
 		}),
 		NewAction(func() error {
+			jwtToken, err := MakeToken(user)
+
+			return err
+		}),
+		NewAction(func() error {
 			return user.Serialize(&serializedUser)
 		}),
 		NewAction(func() error {
 			serializedUserBytes := []byte(serializedUser)
-			buf := bytes.NewBuffer(serializedUserBytes)
+			responseBody = *bytes.NewBuffer(serializedUserBytes)
 
-			_, e := crypto.EncryptForUser(&user, buf, &responseBody)
-
-			return e
+			return nil
 		}),
 	})
 
@@ -206,6 +209,7 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		return
 	}
 
+	w.Header().Add("Authorization", fmt.Sprintf("Bearer %s", jwtToken))
 	w.Header().Add("Content-Type", "application/octet-stream")
 	w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
 	w.Write(responseBody.Bytes())
