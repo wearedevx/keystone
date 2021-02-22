@@ -146,7 +146,7 @@ func completeLogin(accountType AccountType, tok *oauth2.Token, pk []byte) (User,
 	req.Header.Add("Accept", "application/octet-stream")
 
 	if err != nil {
-		return user, err
+		return user, "", err
 	}
 
 	timeout := time.Duration(20 * time.Second)
@@ -157,11 +157,11 @@ func completeLogin(accountType AccountType, tok *oauth2.Token, pk []byte) (User,
 	resp, err := client.Do(req)
 
 	if err != nil {
-		return user, err
+		return user, "", err
 	}
 
 	if resp.StatusCode != 200 {
-		return user, fmt.Errorf("Failed to complete login: %s", resp.Status)
+		return user, "", fmt.Errorf("Failed to complete login: %s", resp.Status)
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&user)
