@@ -12,7 +12,7 @@ import (
 )
 
 func MakeToken(user models.User) (string, error) {
-	salt := os.Getenv("JWT_SALT")
+	salt := []byte(os.Getenv("JWT_SALT"))
 
 	claims := jwt.StandardClaims{
 		ExpiresAt: jwt.NewTime(24.0 * 60.0 * 60.0),
@@ -41,7 +41,7 @@ func VerifyToken(token string) (string, error) {
 	trimedToken := cleanUpToken(token)
 
 	t, err := jwt.Parse(trimedToken, func(token *jwt.Token) (interface{}, error) {
-		return os.Getenv("JWT_SALT"), nil
+		return []byte(os.Getenv("JWT_SALT")), nil
 	})
 
 	expiredError := &jwt.TokenExpiredError{}
