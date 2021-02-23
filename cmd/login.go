@@ -193,11 +193,11 @@ func completeLogin(tok *oauth2.Token, pk []byte) User {
 }
 
 // finds an account matching `user` in the `account` slice
-func findAccountIndex(accounts []map[string]string, c client.AuthService) int {
+func findAccountIndex(accounts []interface{}, c client.AuthService) int {
 	current := -1
 
 	for i, account := range accounts {
-		isAccount, _ := c.CheckAccount(account)
+		isAccount, _ := c.CheckAccount(readAccount(account.(map[interface{}]interface{})))
 
 		if isAccount {
 			current = i
@@ -206,6 +206,16 @@ func findAccountIndex(accounts []map[string]string, c client.AuthService) int {
 	}
 
 	return current
+}
+
+func readAccount(account map[interface{}]interface{}) map[string]string {
+	result := make(map[string]string)
+
+	for key, value := range account {
+		result[key.(string)] = value.(string)
+	}
+
+	return result
 }
 
 // loginCmd represents the login command
@@ -223,14 +233,17 @@ to quickly create a Cobra application.`,
 		ctx := context.Background()
 
 		accountIndex := viper.Get("current").(int)
-		accounts := viper.Get("accounts").([]map[string]string)
+		accounts := viper.Get("accounts").([]interface{})
+
+		fmt.Printf("%v", accounts)
 
 		if accountIndex >= 0 && len(accounts) > accountIndex {
-			account := accounts[accountIndex]
+			account := readAccount(accounts[accountIndex].(map[interface{}]interface{}))
 			username := account["username"]
 
 			if username != "" {
 				Print(RenderTemplate("already logged in", `You are already logged in as {{ . }}`, username))
+				os.Exit(0)
 			}
 		}
 
@@ -262,6 +275,7 @@ Waiting for you to login with your GitHub Account...`, url))
 		accountIndex = findAccountIndex(accounts, c)
 
 		if accountIndex >= 0 {
+			currentAccount := readAccount(accounts[accountIndex].(map[interface{}]interface{}))
 			viper.Set("current", accountIndex)
 
 			if viper.WriteConfig(); err != nil {
@@ -275,7 +289,7 @@ You have been successfully logged in, but the configuration file could not be wr
 
 			Print(RenderTemplate("login ok", `
 {{ OK }} {{ . | bright_green }}
-`, fmt.Sprintf("Welcome back, %s", accounts[accountIndex]["username"])))
+`, fmt.Sprintf("Welcome back, %s", currentAccount["username"])))
 
 			os.Exit(0)
 		}
