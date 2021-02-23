@@ -22,6 +22,7 @@ func MakeToken(user models.User) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	fmt.Printf("made token: %v", token)
 
 	return token.SignedString(salt)
 }

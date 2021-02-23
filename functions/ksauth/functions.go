@@ -184,11 +184,14 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 				PublicKey:   payload.PublicKey,
 			}
 
+			fmt.Printf("get or create user")
+
 			Repo.GetOrCreateUser(&user)
 
 			return Repo.Err()
 		}),
 		NewAction(func() error {
+			fmt.Printf("make jwt token")
 			jwtToken, err = MakeToken(user)
 
 			return err

@@ -109,7 +109,10 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/denisenkom/go-mssqldb v0.0.0-20200620013148-b91950f658ec/go.mod h1:xbL0rPBG9cCiLr28tMa8zpbdarY27NDyej4t/EjAShU=
 github.com/denisenkom/go-mssqldb v0.0.0-20200831201914-36b6ff1bbc10/go.mod h1:xbL0rPBG9cCiLr28tMa8zpbdarY27NDyej4t/EjAShU=
+github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
+github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1 h1:CaO/zOnF8VvUfEbhRatPcwKVWamvbYd8tQGRWacE9kU=
+github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1/go.mod h1:+hnT3ywWDTAFrW5aE+u2Sa/wT555ZqwoCS+pk3p6ry4=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/dhui/dktest v0.3.3/go.mod h1:EML9sP4sqJELHn4jV7B0TY8oF6077nk83/tz7M56jcQ=
 github.com/docker/distribution v2.7.1+incompatible/go.mod h1:J2gT2udsDAN96Uj4KfcMRqY0/ypR+oyYUYmja8H+y+w=
@@ -653,6 +656,8 @@ github.com/wearedevx/keystone v0.0.0-20210222093953-c90013c6808a h1:/4DPYct8BRee
 github.com/wearedevx/keystone v0.0.0-20210222093953-c90013c6808a/go.mod h1:D7XeiigsJX2cpdomaxnuWel6kmAgCXzWgZ0lzcWzjtc=
 github.com/wearedevx/keystone v0.0.0-20210222094202-3f5ff33a05cb h1:9Lha3ZjLMHu1ZerdTX+JQPvqG4O0Anvp+2PIDsdHDfo=
 github.com/wearedevx/keystone v0.0.0-20210222094202-3f5ff33a05cb/go.mod h1:D7XeiigsJX2cpdomaxnuWel6kmAgCXzWgZ0lzcWzjtc=
+github.com/wearedevx/keystone v0.0.0-20210222155310-951f2cd1f35a h1:UoLfAE0ecpgZ0Ynd/YwEwbGXc0jozNcQZ5ErgR31P5Y=
+github.com/wearedevx/keystone v0.0.0-20210222155310-951f2cd1f35a/go.mod h1:lSvm687VU1IugCHn6PcjWPSuL0pOWyD3yz8AC7bMqJg=
 github.com/xanzy/go-gitlab v0.15.0/go.mod h1:8zdQa/ri1dfn8eS3Ir1SyfvOKlw7WBJ8DVThkpGiXrs=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
 github.com/xdg/stringprep v1.0.0/go.mod h1:Jhud4/sHMO4oL310DaZAKk9ZaJ08SJfe+sJh0HrGL1Y=
