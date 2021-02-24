@@ -43,6 +43,10 @@ func VerifyToken(token string) (string, error) {
 		return []byte(os.Getenv("JWT_SALT")), nil
 	})
 
+	if err != nil {
+		return "", err
+	}
+
 	expiredError := &jwt.TokenExpiredError{}
 
 	if t.Valid {
