@@ -664,6 +664,12 @@ github.com/wearedevx/keystone v0.0.0-20210224105609-42c1d738b2ef h1:ep4sXcivPhAg
 github.com/wearedevx/keystone v0.0.0-20210224105609-42c1d738b2ef/go.mod h1:lSvm687VU1IugCHn6PcjWPSuL0pOWyD3yz8AC7bMqJg=
 github.com/wearedevx/keystone v0.0.0-20210224105759-0723c855ea52 h1:I9X/p/fP7i5i7it2P1Gb5PsK+xWuX8iLSprPp41z7Ks=
 github.com/wearedevx/keystone v0.0.0-20210224105759-0723c855ea52/go.mod h1:lSvm687VU1IugCHn6PcjWPSuL0pOWyD3yz8AC7bMqJg=
+github.com/wearedevx/keystone v0.0.0-20210224153346-6c1b6726b883 h1:e2tXfVGcOcmjUyrGrcwPYu4gfJHQ6CK0r+ZHIjbMaIM=
+github.com/wearedevx/keystone v0.0.0-20210224153346-6c1b6726b883/go.mod h1:lSvm687VU1IugCHn6PcjWPSuL0pOWyD3yz8AC7bMqJg=
+github.com/wearedevx/keystone v0.0.0-20210224153525-09dd34b81fa3 h1:HNB3P97iN1cItz/wRBMa2JOe5n7uQE7eOKinpn55470=
+github.com/wearedevx/keystone v0.0.0-20210224153525-09dd34b81fa3/go.mod h1:lSvm687VU1IugCHn6PcjWPSuL0pOWyD3yz8AC7bMqJg=
+github.com/wearedevx/keystone v0.0.0-20210224154500-0ffb55e79168 h1:OWqgH3gOQMgmUD954R5F2BzfC64XstkrrMFLFEe2JLM=
+github.com/wearedevx/keystone v0.0.0-20210224154500-0ffb55e79168/go.mod h1:lSvm687VU1IugCHn6PcjWPSuL0pOWyD3yz8AC7bMqJg=
 github.com/xanzy/go-gitlab v0.15.0/go.mod h1:8zdQa/ri1dfn8eS3Ir1SyfvOKlw7WBJ8DVThkpGiXrs=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
 github.com/xdg/stringprep v1.0.0/go.mod h1:Jhud4/sHMO4oL310DaZAKk9ZaJ08SJfe+sJh0HrGL1Y=

@@ -19,13 +19,13 @@ import (
 	"errors"
 
 	"github.com/manifoldco/promptui"
+	"github.com/wearedevx/keystone/internal/config"
 	kerrors "github.com/wearedevx/keystone/internal/errors"
 	"github.com/wearedevx/keystone/pkg/client"
 	core "github.com/wearedevx/keystone/pkg/core"
 	. "github.com/wearedevx/keystone/ui"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // initCmd represents the init command
@@ -62,8 +62,9 @@ Created files and directories:
 			return
 		}
 
-		userID := viper.Get("user_id").(string)
-		pk := viper.Get("cipher_key").(string)
+		currentAccount, _ := config.GetCurrentAccount()
+		userID := currentAccount["user_id"]
+		pk := currentAccount["public_key"]
 
 		ksClient := client.NewKeystoneClient(userID, pk)
 
