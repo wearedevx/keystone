@@ -8,9 +8,9 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
+	. "github.com/wearedevx/keystone/internal/jwt"
 	"github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
-	. "github.com/wearedevx/keystsone/internal/jwt"
 )
 
 type Route struct {
