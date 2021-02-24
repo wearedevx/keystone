@@ -11,11 +11,12 @@ import (
 )
 
 type Project struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	UUID      string    `json:"uuid" gorm:"not null;unique"`
-	Name      string    `json:"name" gorm:"not null"`
-	CreatedAt time.Time `json:"create_at"`
-	UpdatedAt time.Time `json:"update_at"`
+	ID        uint            `json:"id" gorm:"primaryKey"`
+	UUID      string          `json:"uuid" gorm:"not null;unique"`
+	Name      string          `json:"name" gorm:"not null"`
+	Members   []ProjectMember `json:"members"`
+	CreatedAt time.Time       `json:"create_at"`
+	UpdatedAt time.Time       `json:"update_at"`
 }
 
 func (p *Project) BeforeCreate(tx *gorm.DB) (err error) {
