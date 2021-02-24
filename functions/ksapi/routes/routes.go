@@ -10,6 +10,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
+	. "github.com/wearedevx/keystsone/internal/jwt"
 )
 
 type Route struct {
@@ -61,7 +62,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		if err != nil {
 			// 404 is returned purposefully, here to not reveal the existence of
 			// resources for non authorized requesters
-			http.Error(w, "", http.NotFound)
+			http.Error(w, "", http.StatusNotFound)
 			return
 		}
 
@@ -99,7 +100,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			w.WriteHeader(status)
 
 		} else {
-			http.Error(w, "", http.NotFound)
+			http.Error(w, "", http.StatusNotFound)
 		}
 	}
 }
