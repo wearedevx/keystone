@@ -46,7 +46,7 @@ func VerifyToken(token string) (string, error) {
 	expiredError := &jwt.TokenExpiredError{}
 
 	if t.Valid {
-		Repo := &repo.Repo{}
+		Repo := new(repo.Repo)
 		Repo.Connect()
 
 		userID := t.Claims.(jwt.StandardClaims).Subject
