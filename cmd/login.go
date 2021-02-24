@@ -75,7 +75,7 @@ func CreateAccountAndLogin(c client.AuthService) {
 	}
 
 	// Save the user info in the local config
-	accountIndex = config.AddAccount(
+	accountIndex := config.AddAccount(
 		map[string]string{
 			"account_type": string(user.AccountType),
 			"user_id":      user.UserID,
