@@ -38,6 +38,8 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	req.Header.Set("Content-Type", "application/octet-stream")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.jwtToken))
 
+	fmt.Printf("%v\n", req.Header)
+
 	if err != nil {
 		return err
 	}

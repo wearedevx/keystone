@@ -63,10 +63,9 @@ func GetCurrentAccount() (map[string]string, int) {
 
 	if viper.IsSet("current") {
 		index := viper.Get("current").(int)
-
 		accounts := GetAllAccounts()
 
-		if index < len(accounts) {
+		if index >= 0 && index < len(accounts) {
 			account := accounts[index]
 
 			return account, index
@@ -85,6 +84,10 @@ func SetCurrentAccount(index int) {
 // Saves the jwt token
 func SetAuthToken(token string) {
 	viper.Set("auth_token", token)
+}
+
+func GetAuthToken() string {
+	return viper.Get("auth_token").(string)
 }
 
 // Returns `true` if the user is logged in

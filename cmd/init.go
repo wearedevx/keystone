@@ -63,10 +63,10 @@ Created files and directories:
 		}
 
 		currentAccount, _ := config.GetCurrentAccount()
+		token := config.GetAuthToken()
 		userID := currentAccount["user_id"]
-		pk := currentAccount["public_key"]
 
-		ksClient := client.NewKeystoneClient(userID, pk)
+		ksClient := client.NewKeystoneClient(userID, token)
 
 		project, kerr := ksClient.InitProject(projectName)
 
