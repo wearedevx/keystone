@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	. "github.com/wearedevx/keystone/internal/models"
@@ -166,6 +167,7 @@ func completeLogin(accountType AccountType, tok *oauth2.Token, pk []byte) (User,
 
 	err = json.NewDecoder(resp.Body).Decode(&user)
 	jwtToken := resp.Header.Get("Authorization")
+	jwtToken = strings.Replace(jwtToken, "Bearer ", "", 1)
 
 	if jwtToken == "" {
 		err = fmt.Errorf("No token was returned")

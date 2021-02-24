@@ -5,12 +5,43 @@ import (
 	. "github.com/wearedevx/keystone/internal/models"
 )
 
-func (r *Repo) createProject(project *Project) *Repo {
+func (r *Repo) createProject(project *Project, user *User) *Repo {
 	if r.err != nil {
 		return r
 	}
 
 	r.err = r.db.Create(project).Error
+
+	if r.err == nil {
+		envs := []string{"dev", "ci", "staging", "prod"}
+
+		for _, env := range envs {
+			environment := Environment{
+				Name: env,
+			}
+
+			r.err = r.db.Create(&environment).Error
+
+			if r.err != nil {
+				break
+			}
+
+			projectMember := ProjectMember{
+				Project:     *project,
+				Environment: environment,
+				User:        *user,
+				Role:        RoleOwner,
+			}
+
+			r.err = r.db.Create(&projectMember).Error
+
+			if r.err != nil {
+				break
+			}
+
+			r.err = r.db.Preload("Members").First(project, project.ID).Error
+		}
+	}
 
 	return r
 }
@@ -31,7 +62,7 @@ func (r *Repo) getUserProjectWithName(user User, name string) (Project, bool) {
 		return foundProject, false
 	}
 
-	r.err = r.db.Model(&Project{}).Joins("join project_permissions pp on pp.project_id = id").Joins("join users u on pp.user_id = u.id").Where("u.id = ? and name = ?", user.ID, name).First(&foundProject).Error
+	r.err = r.db.Model(&Project{}).Joins("join project_members pm on pm.project_id = id").Joins("join users u on pp.user_id = u.id").Where("u.id = ? and name = ? and pm.project_owner = true", user.ID, name).First(&foundProject).Error
 
 	return foundProject, r.err == nil
 }

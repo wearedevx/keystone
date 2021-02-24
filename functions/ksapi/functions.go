@@ -82,7 +82,6 @@ func postProject(_ routes.Params, body io.ReadCloser, Repo repo.Repo, user User)
 	var err error
 
 	project := &Project{}
-	var environment Environment
 
 	runner := NewRunner([]RunnerAction{
 		NewAction(func() error {
@@ -90,8 +89,6 @@ func postProject(_ routes.Params, body io.ReadCloser, Repo repo.Repo, user User)
 		}),
 		NewAction(func() error {
 			Repo.GetOrCreateProject(project, user)
-
-			environment = Repo.GetOrCreateEnvironment(*project, "default")
 
 			return Repo.Err()
 		}).SetStatusSuccess(201),

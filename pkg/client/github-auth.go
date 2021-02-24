@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/google/go-github/v32/github"
@@ -94,10 +95,11 @@ func (g gitHubAuthService) CheckAccount(account map[string]string) (bool, error)
 	gUser, _, err := g.client.Users.Get(g.ctx, "")
 
 	if err != nil {
+		fmt.Printf("Error: %v\n", err)
 		return false, err
 	}
 
-	if account["account_type"] != models.GitLabAccountType {
+	if account["account_type"] != string(models.GitHubAccountType) {
 		return false, nil
 	}
 
