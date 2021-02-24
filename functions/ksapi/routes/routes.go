@@ -2,6 +2,7 @@ package routes
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -60,6 +61,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		userID, err := VerifyToken(token)
 
 		if err != nil {
+			fmt.Println(err)
 			// 404 is returned purposefully, here to not reveal the existence of
 			// resources for non authorized requesters
 			http.Error(w, "", http.StatusNotFound)

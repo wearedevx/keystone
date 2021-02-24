@@ -11,9 +11,9 @@ type SKeystoneClient struct {
 	r requester
 }
 
-func NewKeystoneClient(userID string, pk string) KeystoneClient {
+func NewKeystoneClient(userID string, jwtToken string) KeystoneClient {
 	return &SKeystoneClient{
-		r: newRequester(userID, pk),
+		r: newRequester(userID, jwtToken),
 	}
 }
 
