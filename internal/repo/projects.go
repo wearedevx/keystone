@@ -77,7 +77,7 @@ func (r *Repo) GetOrCreateProject(project *Project, user User) *Repo {
 		return r
 	}
 
-	return r.createProject(project)
+	return r.createProject(project, &user)
 }
 
 func (r *Repo) ProjectLoadUsers(project *Project) *Repo {
