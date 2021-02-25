@@ -16,10 +16,14 @@ func MakeToken(user models.User) (string, error) {
 	salt := []byte(os.Getenv("JWT_SALT"))
 
 	claims := jwt.StandardClaims{
-		ExpiresAt: jwt.NewTime(float64(time.Now().Unix() + 24.0*60.0*60.0)),
-		IssuedAt:  jwt.NewTime(float64(time.Now().Unix() + 0.0)),
-		Issuer:    "keystone",
-		Subject:   user.UserID,
+		ExpiresAt: &jwt.Time{
+			time.Now().Add(24 * time.Hour),
+		},
+		IssuedAt: &jwt.Time{
+			time.Now(),
+		},
+		Issuer:  "keystone",
+		Subject: user.UserID,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
