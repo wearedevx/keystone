@@ -60,7 +60,7 @@ func VerifyToken(token string) (string, error) {
 
 		claims := t.Claims.(jwt.MapClaims)
 
-		userID := claims["sub"]
+		userID := claims["sub"].(string)
 
 		return userID, nil
 	} else if xerrors.As(err, expiredError) {
