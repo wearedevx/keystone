@@ -58,7 +58,9 @@ func VerifyToken(token string) (string, error) {
 		Repo := new(repo.Repo)
 		Repo.Connect()
 
-		userID := t.Claims.(jwt.StandardClaims).Subject
+		claims := t.Claims.(jwt.MapClaims)
+
+		userID := claims["sub"]
 
 		return userID, nil
 	} else if xerrors.As(err, expiredError) {
