@@ -8,11 +8,11 @@ import (
 	. "github.com/wearedevx/keystone/ui"
 )
 
-func castAccount(rawAccount map[interface{}]interface{}, account *map[string]string) {
+func castAccount(rawAccount map[string]string, account *map[string]string) {
 	for k, v := range rawAccount {
 		*account = make(map[string]string)
 
-		(*account)[k.(string)] = v.(string)
+		(*account)[k] = v
 	}
 }
 
@@ -43,11 +43,11 @@ func AddAccount(account map[string]string) int {
 
 // Reads all accounts from disk
 func GetAllAccounts() []map[string]string {
-	rawAccounts := viper.Get("accounts").([]interface{})
+	rawAccounts := viper.Get("accounts").([]map[string]string)
 	accounts := make([]map[string]string, len(rawAccounts))
 
 	for i, r := range rawAccounts {
-		rawAccount := r.(map[interface{}]interface{})
+		rawAccount := r
 		castAccount(rawAccount, &accounts[i])
 	}
 
