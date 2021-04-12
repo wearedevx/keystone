@@ -34,7 +34,7 @@ import (
 var ksauthURL string //= "http://localhost:9000"
 var ksapiURL string  //= "http://localhost:9001"
 
-var cfgFile string = "http://localhost:9001"
+var cfgFile string = ""
 var currentEnvironment string
 var quietOutput bool
 
