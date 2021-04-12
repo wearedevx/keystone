@@ -43,7 +43,13 @@ func AddAccount(account map[string]string) int {
 
 // Reads all accounts from disk
 func GetAllAccounts() []map[string]string {
-	rawAccounts := viper.Get("accounts").([]interface{})
+	rawAccounts, ok := viper.Get("accounts").([]interface{})
+
+	// When no conf file, viper return []map[string]string
+	if !ok {
+		return make([]map[string]string, 0)
+	}
+
 	accounts := make([]map[string]string, len(rawAccounts))
 
 	for i, r := range rawAccounts {
