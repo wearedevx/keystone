@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -103,6 +104,21 @@ func init() {
 	}
 }
 
+// Create conf file if not exist
+func createFileIfNotExist(filePath string) {
+
+	// Check if need to create file
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		// path/to/whatever does not exist
+
+		err := ioutil.WriteFile(filePath, []byte(""), 0755)
+
+		if err != nil {
+			fmt.Printf("Unable to write file: %v", err)
+		}
+	}
+}
+
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	if cfgFile != "" {
@@ -120,6 +136,8 @@ func initConfig() {
 		viper.AddConfigPath(path.Join(home, ".config"))
 		viper.SetConfigName("keystone")
 		viper.SetConfigType("yaml")
+
+		createFileIfNotExist(path.Join(home, ".config", "keystone.yaml"))
 	}
 
 	defaultAccounts := make([]map[string]string, 0)
