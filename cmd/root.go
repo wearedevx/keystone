@@ -59,6 +59,7 @@ func Execute() int {
 }
 
 func init() {
+	// Call directly initConfig. cobra doesn't call initConfig func.
 	initConfig()
 	// cobra.OnInitialize(initConfig)
 
