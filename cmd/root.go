@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/internal/config"
 	"github.com/wearedevx/keystone/internal/errors"
 	"github.com/wearedevx/keystone/pkg/core"
 
@@ -78,14 +79,26 @@ func init() {
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	checkEnvironment := true
+	checkLogin := false
+
 	if len(os.Args) > 1 {
 		if os.Args[1] == "login" || os.Args[1] == "documentation" || os.Args[1] == "init" {
 			checkEnvironment = false
 		}
+
+		if os.Args[1] != "login" {
+			checkLogin = true
+		}
+
 	}
 
 	if checkEnvironment && !ctx.HasEnvironment(currentEnvironment) {
 		errors.EnvironmentDoesntExist(currentEnvironment, strings.Join(environments, ", "), nil).Print()
+		os.Exit(1)
+	}
+
+	if checkLogin && !config.IsLoggedIn() {
+		errors.MustBeLoggedIn(nil).Print()
 		os.Exit(1)
 	}
 }

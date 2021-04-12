@@ -149,6 +149,14 @@ Trying to copy '{{ .Source }}' to '{{ .Destination }}'
 This happened because: {{ .Cause }}
 
 `,
+	"MustBeLoggedIn": `
+{{ ERROR }} {{ .Name | red }}
+You must be logged to execute this command.
+
+Please run:
+  $ ks login
+
+`,
 	"UnkownError": `
 {{ ERROR }} {{ .Name | red }}
 Ouch! We didn't think this could happen.
@@ -314,6 +322,12 @@ func CopyFailed(source string, destination string, cause error) *Error {
 		"Destination": string(destination),
 	}
 	return NewError("Copy failed", helpTexts["CopyFailed"], meta, cause)
+}
+
+func MustBeLoggedIn(cause error) *Error {
+	meta := map[string]string{}
+
+	return NewError("You must be logged in", helpTexts["MustBeLoggedIn"], meta, cause)
 }
 
 func UnkownError(cause error) *Error {

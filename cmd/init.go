@@ -26,7 +26,6 @@ import (
 	. "github.com/wearedevx/keystone/ui"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // initCmd represents the init command
@@ -43,15 +42,6 @@ Created files and directories:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err *kerrors.Error
-
-		// Check if user is logged.
-		rawAccounts := viper.Get("accounts").([]map[string]string)
-
-		if len(rawAccounts) == 0 {
-			err = kerrors.NewError("Must be logged", "You must be logged before init project. Use: `ks init`", map[string]string{}, errors.New("Must be logged"))
-			err.Print()
-			return
-		}
 
 		p := promptui.Prompt{
 			Label: "What is the name of the project?",

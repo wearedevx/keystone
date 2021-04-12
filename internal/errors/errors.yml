@@ -251,6 +251,15 @@ errors:
 
       This happened because: {{ .Cause }}
 
+  - type: MustBeLoggedIn
+    name: "You must be logged in"
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      You must be logged to execute this command.
+
+      Please run:
+        $ ks login
+
   - type: UnkownError
     name: "Unkown Error"
     params: []
