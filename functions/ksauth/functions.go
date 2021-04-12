@@ -174,14 +174,20 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			return Repo.Err()
 		}),
 		NewAction(func() error {
+			userName := "No name"
+
+			if gUser.Name != nil {
+				userName = *gUser.Name
+			}
+
 			user = models.User{
 				ExtID:       strconv.Itoa(int(*gUser.ID)),
 				UserID:      userID.String(),
 				AccountType: models.AccountType(payload.AccountType),
 				Username:    *gUser.Login,
-				Fullname:    *gUser.Name,
+				Fullname:    userName,
 				Email:       userEmail,
-				PublicKey:   payload.PublicKey,
+				// PublicKey:   payload.PublicKey,
 			}
 
 			Repo.GetOrCreateUser(&user)
