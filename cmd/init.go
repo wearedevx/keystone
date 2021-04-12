@@ -85,7 +85,7 @@ Created files and directories:
 {{ .Text | bright_black | indent 2 }}`, map[string]string{
 			"Message": "All done!",
 			"Text": `You can start adding environment variable with:
-  $ ks set VARIABLE value
+  $ ks secrets add VARIABLE value
 
 Load them with:
   $ eval $(ks source)
