@@ -17,10 +17,12 @@ package cmd
 
 import (
 	"errors"
+	"os"
 
 	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/internal/config"
 	kerrors "github.com/wearedevx/keystone/internal/errors"
+	"github.com/wearedevx/keystone/internal/keystonefile"
 	"github.com/wearedevx/keystone/pkg/client"
 	core "github.com/wearedevx/keystone/pkg/core"
 	. "github.com/wearedevx/keystone/ui"
@@ -43,40 +45,53 @@ Created files and directories:
 	Run: func(cmd *cobra.Command, args []string) {
 		var err *kerrors.Error
 
-		p := promptui.Prompt{
-			Label: "What is the name of the project?",
-			Validate: func(value string) error {
-				if len(value) == 0 {
-					return errors.New("Bad project name")
-				}
+		// Retrieve working directry
+		currentfolder, osError := os.Getwd()
 
-				return nil
-			},
-		}
-
-		projectName, erro := p.Run()
-
-		if erro != nil {
-			err = kerrors.NewError("Bad project name", "A project name cannot be empty", map[string]string{}, erro)
+		if osError != nil {
+			err = kerrors.NewError("OS Error", "Error when retrieving working directory", map[string]string{}, osError)
 			err.Print()
 			return
 		}
 
-		currentAccount, _ := config.GetCurrentAccount()
-		token := config.GetAuthToken()
-		userID := currentAccount["user_id"]
+		// Ask for project name if keystone file doesn't exist.
+		if !keystonefile.ExistsKeystoneFile(currentfolder) {
 
-		ksClient := client.NewKeystoneClient(userID, token)
+			p := promptui.Prompt{
+				Label: "What is the name of the project?",
+				Validate: func(value string) error {
+					if len(value) == 0 {
+						return errors.New("Bad project name")
+					}
 
-		project, kerr := ksClient.InitProject(projectName)
+					return nil
+				},
+			}
 
-		if kerr != nil {
-			panic(kerr)
-		}
+			projectName, erro := p.Run()
 
-		if err = core.New(core.CTX_INIT).Init(project).Err(); err != nil {
-			err.Print()
-			return
+			if erro != nil {
+				err = kerrors.NewError("Bad project name", "A project name cannot be empty", map[string]string{}, erro)
+				err.Print()
+				return
+			}
+
+			currentAccount, _ := config.GetCurrentAccount()
+			token := config.GetAuthToken()
+			userID := currentAccount["user_id"]
+
+			ksClient := client.NewKeystoneClient(userID, token)
+
+			project, kerr := ksClient.InitProject(projectName)
+
+			if kerr != nil {
+				panic(kerr)
+			}
+
+			if err = core.New(core.CTX_INIT).Init(project).Err(); err != nil {
+				err.Print()
+				return
+			}
 		}
 
 		Print(RenderTemplate("Init Success", `
