@@ -1,0 +1,19 @@
+
+# Init
+echo $HOME
+echo "asritensriteen"
+exec ks init --config $WORK/.config/keystone.yaml
+! stderr .
+
+-- config/keystone.yaml --
+accounts:
+- account_type: github
+  email: gaelph@gmail.com
+  ext_id: "1332218"
+  fullname: Gael PHILIPPE
+  private_key: !!binary UkVDMgAAAC0AuqeaAPAFQv9T8VrsUD9vf06BUZURlUVY8PgoAGOaCZ7v1FmX
+  public_key: !!binary VUVDMgAAAC1ZKTOHAsKFpE52aFDW05DWrQIAunuV2Ku65MaEawxpUdYBPjn0
+  user_id: cb7afe80-b03a-450c-8b39-e6d1f35ec61b
+  username: gaelph
+auth_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MTgzMzA1NzMuMDM1MjQ3LCJpYXQiOjE2MTgyNDQxNzMuMDM1MjQ4LCJpc3MiOiJrZXlzdG9uZSIsInN1YiI6ImNiN2FmZTgwLWIwM2EtNDUwYy04YjM5LWU2ZDFmMzVlYzYxYiJ9.BNimwaoNbTP_Oo_t9nPIY0Wq4YZecTN79ZSzeJeFIW4
+current: 0
