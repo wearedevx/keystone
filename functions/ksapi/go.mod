@@ -49,3 +49,5 @@ require (
 	gorm.io/driver/postgres v1.0.0
 	gorm.io/gorm v1.21.7
 )
+
+replace github.com/wearedevx/keystone => ../../

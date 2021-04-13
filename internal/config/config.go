@@ -2,9 +2,8 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path"
+	"reflect"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
@@ -48,25 +47,26 @@ func AddAccount(account map[string]string) int {
 // Reads all accounts from disk
 func GetAllAccounts() []map[string]string {
 	rawAccounts := viper.Get("accounts")
+	ty := reflect.TypeOf(rawAccounts).String()
+	fmt.Println(ty)
 
-	// xType := fmt.Sprintf("%T", rawAccounts)
-	// fmt.Println(xType)
+	if ty == "[]interface {}" {
+		a := rawAccounts.([]interface{})
+		accounts := make([]map[string]string, len(a))
 
-	rawCastedAccounts, ok := rawAccounts.([]interface{})
+		for i, r := range a {
+			rawAccount := r.(map[interface{}]interface{})
+			castAccount(rawAccount, &accounts[i])
+		}
 
-	// When no conf file, viper return []map[string]string
-	if !ok {
-		return make([]map[string]string, 0)
+		return accounts
+	} else if ty == "[]map[string]string" {
+		accounts := rawAccounts.([]map[string]string)
+
+		return accounts
 	}
 
-	accounts := make([]map[string]string, len(rawCastedAccounts))
-
-	for i, r := range rawCastedAccounts {
-		rawAccount := r.(map[interface{}]interface{})
-		castAccount(rawAccount, &accounts[i])
-	}
-
-	return accounts
+	return make([]map[string]string, 0)
 }
 
 // Reads the current account from disk
