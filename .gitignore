@@ -2,6 +2,8 @@
 /keystone
 /ks
 .env
+.vimspector.json
+__debug_bin
 
 core/tests/
 
