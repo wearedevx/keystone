@@ -1,0 +1,6 @@
+# Init not logged in
+exec echo $WORK
+ks init
+
+stdout 'You must be logged to execute this command.'
+
