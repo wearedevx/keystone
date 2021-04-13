@@ -1,7 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/pkg/client"
@@ -43,21 +45,27 @@ func AddAccount(account map[string]string) int {
 
 // Reads all accounts from disk
 func GetAllAccounts() []map[string]string {
-	rawAccounts, ok := viper.Get("accounts").([]interface{})
+	rawAccounts := viper.Get("accounts")
+	ty := reflect.TypeOf(rawAccounts).String()
+	fmt.Println(ty)
 
-	// When no conf file, viper return []map[string]string
-	if !ok {
-		return make([]map[string]string, 0)
+	if ty == "[]interface {}" {
+		a := rawAccounts.([]interface{})
+		accounts := make([]map[string]string, len(a))
+
+		for i, r := range a {
+			rawAccount := r.(map[interface{}]interface{})
+			castAccount(rawAccount, &accounts[i])
+		}
+
+		return accounts
+	} else if ty == "[]map[string]string" {
+		accounts := rawAccounts.([]map[string]string)
+
+		return accounts
 	}
 
-	accounts := make([]map[string]string, len(rawAccounts))
-
-	for i, r := range rawAccounts {
-		rawAccount := r.(map[interface{}]interface{})
-		castAccount(rawAccount, &accounts[i])
-	}
-
-	return accounts
+	return make([]map[string]string, 0)
 }
 
 // Reads the current account from disk
