@@ -2,7 +2,9 @@ package config
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path"
 	"reflect"
 
 	"github.com/mitchellh/go-homedir"
