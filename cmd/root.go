@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -96,7 +95,7 @@ func Initialize() {
 
 func init() {
 	// Call directly initConfig. cobra doesn't call initConfig func.
-	initConfig()
+	config.InitConfig(cfgFile)
 	// cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings.
@@ -114,55 +113,6 @@ func init() {
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-}
-
-// Create conf file if not exist
-func createFileIfNotExist(filePath string) {
-
-	// Check if need to create file
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		// path/to/whatever does not exist
-
-		err := ioutil.WriteFile(filePath, []byte(""), 0755)
-
-		if err != nil {
-			fmt.Printf("Unable to write file: %v", err)
-		}
-	}
-}
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		// Search config in home directory with name ".keystone" (without extension).
-		viper.AddConfigPath(path.Join(home, ".config"))
-		viper.SetConfigName("keystone")
-		viper.SetConfigType("yaml")
-
-		createFileIfNotExist(path.Join(home, ".config", "keystone.yaml"))
-	}
-
-	defaultAccounts := make([]map[string]string, 0)
-
-	viper.SetDefault("current", -1)
-	viper.SetDefault("accounts", defaultAccounts)
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		// fmt.Println("Using config file:", viper.ConfigFileUsed())
-	} else {
-		viper.WriteConfig()
-	}
 }
 
 func WriteConfig() error {

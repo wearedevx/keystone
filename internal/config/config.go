@@ -1,8 +1,12 @@
 package config
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
+	"path"
 
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/pkg/client"
 	. "github.com/wearedevx/keystone/ui"
@@ -43,16 +47,21 @@ func AddAccount(account map[string]string) int {
 
 // Reads all accounts from disk
 func GetAllAccounts() []map[string]string {
-	rawAccounts, ok := viper.Get("accounts").([]interface{})
+	rawAccounts := viper.Get("accounts")
+
+	// xType := fmt.Sprintf("%T", rawAccounts)
+	// fmt.Println(xType)
+
+	rawCastedAccounts, ok := rawAccounts.([]interface{})
 
 	// When no conf file, viper return []map[string]string
 	if !ok {
 		return make([]map[string]string, 0)
 	}
 
-	accounts := make([]map[string]string, len(rawAccounts))
+	accounts := make([]map[string]string, len(rawCastedAccounts))
 
-	for i, r := range rawAccounts {
+	for i, r := range rawCastedAccounts {
 		rawAccount := r.(map[interface{}]interface{})
 		castAccount(rawAccount, &accounts[i])
 	}
@@ -119,4 +128,55 @@ func FindAccount(c client.AuthService) (map[string]string, int) {
 	}
 
 	return a, current
+}
+
+// Create conf file if not exist
+func createFileIfNotExist(filePath string) {
+
+	// Check if need to create file
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		// path/to/whatever does not exist
+
+		err := ioutil.WriteFile(filePath, []byte(""), 0755)
+
+		if err != nil {
+			fmt.Printf("Unable to write file: %v", err)
+		}
+	}
+}
+
+// initConfig reads in config file and ENV variables if set.
+func InitConfig(cfgFile string) {
+
+	if cfgFile != "" {
+		// Use config file from the flag.
+		viper.SetConfigFile(cfgFile)
+	} else {
+		// Find home directory.
+		homedir.DisableCache = true
+		home, err := homedir.Dir()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		// Search config in home directory with name ".keystone" (without extension).
+		viper.AddConfigPath(path.Join(home, ".config"))
+		viper.SetConfigName("keystone")
+		viper.SetConfigType("yaml")
+
+		createFileIfNotExist(path.Join(home, ".config", "keystone.yaml"))
+	}
+
+	defaultAccounts := make([]map[string]string, 0)
+
+	viper.SetDefault("current", -1)
+	viper.SetDefault("accounts", defaultAccounts)
+
+	// If a config file is found, read it in.
+	if err := viper.ReadInConfig(); err == nil {
+		// fmt.Println("Using config file:", viper.ConfigFileUsed())
+	} else {
+		viper.WriteConfig()
+	}
 }
