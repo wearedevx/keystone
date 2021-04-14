@@ -33,8 +33,20 @@ type KeystoneFile struct {
 
 // Keystone file path for the given context
 func keystoneFilePath(wd string) string {
+	configFileName := "keystone.yml"
+	if wd == "" {
+		wd = "."
+	}
+	if _, err := os.Stat(path.Join(wd, configFileName)); err == nil {
+		return path.Join(wd, configFileName)
+	}
+	if _, err := os.Stat(path.Join(wd, "..")); err == nil {
+		return keystoneFilePath(
+			path.Join(wd, ".."),
+		)
+	}
 
-	return path.Join(wd, "keystone.yml")
+	return path.Join(".", configFileName)
 }
 
 //
