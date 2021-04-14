@@ -30,6 +30,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var projectName string
+
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",
@@ -57,23 +59,26 @@ Created files and directories:
 		// Ask for project name if keystone file doesn't exist.
 		if !keystonefile.ExistsKeystoneFile(currentfolder) {
 
-			p := promptui.Prompt{
-				Label: "What is the name of the project?",
-				Validate: func(value string) error {
-					if len(value) == 0 {
-						return errors.New("Bad project name")
-					}
+			if projectName == "" {
+				p := promptui.Prompt{
+					Label: "What is the name of the project?",
+					Validate: func(value string) error {
+						if len(value) == 0 {
+							return errors.New("Bad project name")
+						}
 
-					return nil
-				},
-			}
+						return nil
+					},
+				}
 
-			projectName, erro := p.Run()
+				var erro error
+				projectName, erro = p.Run()
 
-			if erro != nil {
-				err = kerrors.NewError("Bad project name", "A project name cannot be empty", map[string]string{}, erro)
-				err.Print()
-				return
+				if erro != nil {
+					err = kerrors.NewError("Bad project name", "A project name cannot be empty", map[string]string{}, erro)
+					err.Print()
+					return
+				}
 			}
 
 			currentAccount, _ := config.GetCurrentAccount()
@@ -126,4 +131,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	initCmd.Flags().StringVar(&projectName, "project", "", "Define the project name")
 }
