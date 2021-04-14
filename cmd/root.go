@@ -26,7 +26,6 @@ import (
 	"github.com/wearedevx/keystone/internal/errors"
 	"github.com/wearedevx/keystone/pkg/core"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
@@ -118,7 +117,7 @@ func init() {
 func WriteConfig() error {
 	var err error
 
-	home, err := homedir.Dir()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

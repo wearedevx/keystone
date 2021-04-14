@@ -14,7 +14,6 @@ import (
 	"strings"
 	. "strings"
 
-	"github.com/mitchellh/go-homedir"
 	. "github.com/wearedevx/keystone/internal/models"
 
 	"filippo.io/age"
@@ -107,7 +106,7 @@ func findPrivateKey(publicKey string) []byte {
 		panic(err)
 	}
 
-	home, err := homedir.Dir()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println("No homedir!")
 		panic(err)

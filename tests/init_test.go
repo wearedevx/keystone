@@ -1,13 +1,13 @@
 package main
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
 	"testing"
 
 	"github.com/rogpeppe/go-internal/testscript"
 	"github.com/wearedevx/keystone/cmd"
-	"github.com/wearedevx/keystone/internal/config"
 	. "github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
 )
@@ -33,29 +33,24 @@ func SetupFunc(env *testscript.Env) error {
 
 	Repo.GetOrCreateUser(user1)
 
-	user1Account := map[string]string{
-		"account_type": "github",
-		"email":        "abigael.laldji@protonmail.com",
-		"ext_id":       "56883564",
-		"fullname":     "Michel",
-		"user_id":      "00fb7666-de43-4559-b4e4-39b172117dd8",
-		"username":     "LAbigael",
-		"Fullname":     "Test user1",
-	}
-
+	homeDir := path.Join(env.Getenv("WORK"), "home")
 	// Set home dir for test
-	env.Setenv("HOME", path.Join(env.Getenv("WORK"), "home"))
-	// Set home to test's dir to init config for the test
-	os.Setenv("HOME", path.Join(env.Getenv("WORK"), "home"))
+	env.Setenv("HOME", homeDir)
 
 	// Create config folder
-	os.MkdirAll(path.Join(os.Getenv("HOME"), ".config"), 0777)
+	os.MkdirAll(path.Join(homeDir, ".config"), 0777)
 
-	config.InitConfig("")
-
-	config.AddAccount(user1Account)
-	config.SetCurrentAccount(0)
-	config.Write()
+	ioutil.WriteFile(path.Join(homeDir, ".config", "keystone.yaml"), []byte(`
+accounts:
+- Fullname: Test user1
+  account_type: github
+  email: abigael.laldji@protonmail.com
+  ext_id: "56883564"
+  fullname: Michel
+  user_id: 00fb7666-de43-4559-b4e4-39b172117dd8
+  username: LAbigael
+current: 0
+`), 0o777)
 
 	return nil
 }
