@@ -7,4 +7,3 @@ stdout 'A project name cannot be empty'
 ks init --project my_project
 
 stdout 'All done!'
-
