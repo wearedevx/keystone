@@ -8,6 +8,7 @@ import (
 
 	"github.com/rogpeppe/go-internal/testscript"
 	"github.com/wearedevx/keystone/cmd"
+	. "github.com/wearedevx/keystone/internal/jwt"
 	. "github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
 )
@@ -31,6 +32,8 @@ func SetupFunc(env *testscript.Env) error {
 		Email:       "abigael.laldji@protonmail.com",
 	}
 
+	token, _ := MakeToken(*user1)
+
 	Repo.GetOrCreateUser(user1)
 
 	homeDir := path.Join(env.Getenv("WORK"), "home")
@@ -49,6 +52,7 @@ accounts:
   fullname: Michel
   user_id: 00fb7666-de43-4559-b4e4-39b172117dd8
   username: LAbigael
+auth_token: `+token+`
 current: 0
 `), 0o777)
 

@@ -8,7 +8,7 @@ require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.1.0
 	github.com/cossacklabs/themis/gothemis v0.13.1
 	github.com/dave/jennifer v1.4.1 // indirect
-	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1 // indirect
+	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
 	github.com/go-openapi/strfmt v0.19.5 // indirect
 	github.com/golang-migrate/migrate v3.5.4+incompatible // indirect
@@ -26,6 +26,7 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.1
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 	gopkg.in/yaml.v2 v2.3.0
 	gorm.io/driver/postgres v1.0.0
 	gorm.io/gorm v1.20.1
