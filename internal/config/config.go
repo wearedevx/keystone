@@ -7,7 +7,6 @@ import (
 	"path"
 	"reflect"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/pkg/client"
 	. "github.com/wearedevx/keystone/ui"
@@ -50,7 +49,6 @@ func AddAccount(account map[string]string) int {
 func GetAllAccounts() []map[string]string {
 	rawAccounts := viper.Get("accounts")
 	ty := reflect.TypeOf(rawAccounts).String()
-	fmt.Println(ty)
 
 	if ty == "[]interface {}" {
 		a := rawAccounts.([]interface{})
@@ -155,8 +153,7 @@ func InitConfig(cfgFile string) {
 		viper.SetConfigFile(cfgFile)
 	} else {
 		// Find home directory.
-		homedir.DisableCache = true
-		home, err := homedir.Dir()
+		home, err := os.UserHomeDir()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
