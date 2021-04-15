@@ -38,7 +38,7 @@ Displays a list of available environments:
      staging
 	 prod
 
-With an argument name, activates the anvironments:
+With an argument name, activates the environment:
   $ ks env staging
 `,
 	Args: cobra.MaximumNArgs(1),
