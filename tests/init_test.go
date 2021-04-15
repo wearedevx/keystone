@@ -2,6 +2,7 @@ package main
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"testing"
@@ -37,13 +38,21 @@ func SetupFunc(env *testscript.Env) error {
 	Repo.GetOrCreateUser(user1)
 
 	homeDir := path.Join(env.Getenv("WORK"), "home")
+	configDir := path.Join(homeDir, ".config")
+	pathToKeystoneFile := path.Join(configDir, "keystone.yaml")
+
 	// Set home dir for test
 	env.Setenv("HOME", homeDir)
+	log.Println("HOME ?", env.Getenv("HOME"))
 
 	// Create config folder
-	os.MkdirAll(path.Join(homeDir, ".config"), 0777)
+	err := os.MkdirAll(configDir, 0777)
 
-	ioutil.WriteFile(path.Join(homeDir, ".config", "keystone.yaml"), []byte(`
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(pathToKeystoneFile, []byte(`
 accounts:
 - Fullname: Test user1
   account_type: github
@@ -55,6 +64,10 @@ accounts:
 auth_token: `+token+`
 current: 0
 `), 0o777)
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
