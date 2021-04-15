@@ -18,8 +18,8 @@ package cmd
 import (
 	"errors"
 	"os"
+	"strings"
 
-	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/internal/config"
 	kerrors "github.com/wearedevx/keystone/internal/errors"
 	"github.com/wearedevx/keystone/internal/keystonefile"
@@ -34,9 +34,14 @@ var projectName string
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
-	Use:   "init",
+	Use:   "init [project name]",
 	Short: "Creates Keystone config files and directories",
-	Args:  cobra.NoArgs,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("A project name cannot be empty")
+		}
+		return nil
+	},
 	Long: `Creates Keystone config files and directories.
 
 Created files and directories:
@@ -46,6 +51,7 @@ Created files and directories:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err *kerrors.Error
+		projectName = strings.Join(args, " ")
 
 		// Retrieve working directry
 		currentfolder, osError := os.Getwd()
@@ -59,27 +65,27 @@ Created files and directories:
 		// Ask for project name if keystone file doesn't exist.
 		if !keystonefile.ExistsKeystoneFile(currentfolder) {
 
-			if projectName == "" {
-				p := promptui.Prompt{
-					Label: "What is the name of the project?",
-					Validate: func(value string) error {
-						if len(value) == 0 {
-							return errors.New("Bad project name")
-						}
+			// if projectName == "" {
+			// 	p := promptui.Prompt{
+			// 		Label: "What is the name of the project?",
+			// 		Validate: func(value string) error {
+			// 			if len(value) == 0 {
+			// 				return errors.New("Bad project name")
+			// 			}
 
-						return nil
-					},
-				}
+			// 			return nil
+			// 		},
+			// 	}
 
-				var erro error
-				projectName, erro = p.Run()
+			// 	var erro error
+			// 	projectName, erro = p.Run()
 
-				if erro != nil {
-					err = kerrors.NewError("Bad project name", "A project name cannot be empty", map[string]string{}, erro)
-					err.Print()
-					return
-				}
-			}
+			// 	if erro != nil {
+			// 		err = kerrors.NewError("Bad project name", "A project name cannot be empty", map[string]string{}, erro)
+			// 		err.Print()
+			// 		return
+			// 	}
+			// }
 
 			currentAccount, _ := config.GetCurrentAccount()
 			token := config.GetAuthToken()
