@@ -4,6 +4,7 @@
 .env
 .vimspector.json
 __debug_bin
+debug.test
 
 core/tests/
 
