@@ -1,9 +1,0 @@
-# Init with no name
-ks init
-
-stdout 'A project name cannot be empty'
-
-# Init with name
-ks init --project my_project
-
-stdout 'All done!'
