@@ -69,6 +69,18 @@ func (ctx *Context) Init(project models.Project) *Context {
 			return CreateDirIfNotExist(path.Join(ctx.cacheDirPath(), "prod"))
 		},
 		func() error {
+			return CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), "dev", ".env"), "")
+		},
+		func() error {
+			return CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), "ci", ".env"), "")
+		},
+		func() error {
+			return CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), "staging", ".env"), "")
+		},
+		func() error {
+			return CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), "prod", ".env"), "")
+		},
+		func() error {
 			return GitIgnore(ctx.Wd, dotKeystone)
 		},
 	}

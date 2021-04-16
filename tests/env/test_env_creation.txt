@@ -1,0 +1,12 @@
+# Init with name
+ks init test-env
+
+ks env
+
+# Verify dev is selected
+
+stdout '.*\*.*dev'
+
+ks env new test -s
+
+stdout 'The .*test.* environment has been created'
