@@ -17,9 +17,10 @@ func EndScript() int {
 
 func GithubLoginSuccess() int {
 
-	fmt.Println(" keystone ~ github-login-success.go ~  os.Getpid()", os.Getpid())
+	fmt.Println(" keystone ~ github-login-success.go ~  start")
 
 	time.Sleep(3000 * time.Millisecond)
+	fmt.Println(" keystone ~ github-login-success.go ~  os.Getpid() !", os.Getpid())
 
 	lr := LoginRequest{}
 
@@ -57,7 +58,7 @@ func GithubLoginSuccess() int {
 	if resp.StatusCode == http.StatusOK {
 	}
 
-	fmt.Println("CA SEND")
+	fmt.Println("github login success End")
 
 	return 0
 }

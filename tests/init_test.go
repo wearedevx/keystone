@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -74,8 +75,12 @@ current: 0
 
 func TestInitCommand(t *testing.T) {
 
+	fmt.Println("BEFOREEEEE")
+
 	testscript.Run(t, testscript.Params{
 		Dir:   "./init/",
 		Setup: SetupFunc,
 	})
+
+	fmt.Println("AFTERRRRR")
 }
