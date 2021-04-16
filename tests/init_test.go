@@ -33,9 +33,9 @@ func SetupFunc(env *testscript.Env) error {
 		Email:       "abigael.laldji@protonmail.com",
 	}
 
-	token, _ := MakeToken(*user1)
-
 	Repo.GetOrCreateUser(user1)
+
+	token, _ := MakeToken(*user1)
 
 	homeDir := path.Join(env.Getenv("WORK"), "home")
 	configDir := path.Join(homeDir, ".config")
@@ -76,6 +76,10 @@ func TestInitCommand(t *testing.T) {
 
 	testscript.Run(t, testscript.Params{
 		Dir:   "./init/",
+		Setup: SetupFunc,
+	})
+	testscript.Run(t, testscript.Params{
+		Dir:   "./env/",
 		Setup: SetupFunc,
 	})
 }
