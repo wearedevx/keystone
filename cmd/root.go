@@ -35,6 +35,7 @@ var ksapiURL string  //= "http://localhost:9001"
 var cfgFile string = ""
 var currentEnvironment string
 var quietOutput bool
+var skipPrompts bool
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
