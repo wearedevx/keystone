@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"path/filepath"
 	"strings"
 
@@ -47,6 +48,7 @@ Example:
 		var err *errors.Error
 
 		ctx := core.New(core.CTX_RESOLVE)
+
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		currentSecrets := ctx.GetAllSecrets(currentEnvironment)
@@ -60,19 +62,24 @@ Example:
 			return
 		}
 
-		secrets := map[string]string{}
-		Print("Please enter the variables values for the environment:")
-		for key, value := range currentSecrets {
-			p := promptui.Prompt{
-				Label:   key,
-				Default: value,
+		if !skipPrompts {
+			secrets := map[string]string{}
+
+			Print("Please enter the variables values for the environment:")
+			for key, value := range currentSecrets {
+				p := promptui.Prompt{
+					Label:   key,
+					Default: value,
+				}
+
+				result, _ := p.Run()
+				secrets[key] = strings.Trim(result, " ")
 			}
 
-			result, _ := p.Run()
-			secrets[key] = strings.Trim(result, " ")
+			ctx.SetAllSecrets(environmentName, secrets)
+		} else {
+			ctx.SetAllSecrets(environmentName, currentSecrets)
 		}
-
-		ctx.SetAllSecrets(environmentName, secrets)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
@@ -80,16 +87,24 @@ Example:
 		}
 
 		for _, file := range files {
-			Print("Enter the content of '%s' for the '%s' environment (any key to continue):", file, environmentName)
-			// wait for any key
-			keyboard.GetSingleKey()
+			var content []byte
+			var erro error
+			if !skipPrompts {
+				Print("Enter the content of '%s' for the '%s' environment (any key to continue):", file, environmentName)
+				// wait for any key
+				keyboard.GetSingleKey()
+				fmt.Println(file)
 
-			extension := filepath.Ext(file)
+				extension := filepath.Ext(file)
 
-			content, erro := CaptureInputFromEditor(
-				GetPreferredEditorFromEnvironment,
-				extension,
-			)
+				content, erro = CaptureInputFromEditor(
+					GetPreferredEditorFromEnvironment,
+					extension,
+				)
+
+			} else {
+				content, erro = ioutil.ReadFile(file)
+			}
 
 			if erro != nil {
 				panic(erro)
@@ -129,4 +144,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// newCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	RootCmd.PersistentFlags().BoolVarP(&skipPrompts, "skip", "s", false, "Skip questions and use defaults")
+
 }
