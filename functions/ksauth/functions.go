@@ -27,7 +27,6 @@ func postLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	var response string
 	var err error
 	Repo := new(repo.Repo)
-	Repo.Connect()
 
 	loginRequest := Repo.CreateLoginRequest()
 
@@ -44,8 +43,6 @@ func postLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	w.Header().Add("Content-Type", "application/json; charset=utf-8")
 	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
 	fmt.Fprintf(w, response)
-
-	Repo.Disconnect()
 }
 
 // Route to poll to check wether the user has completed the login
@@ -53,7 +50,6 @@ func getLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	var response string
 	var err error
 	Repo := new(repo.Repo)
-	Repo.Connect()
 
 	temporaryCode := r.URL.Query().Get("code")
 
@@ -86,8 +82,6 @@ func getLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
 
 	fmt.Fprintf(w, response)
-
-	Repo.Disconnect()
 }
 
 // Route uses a redirect URI for OAuth2 requests
@@ -103,7 +97,6 @@ func getAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.P
 	var err error
 
 	Repo := new(repo.Repo)
-	Repo.Connect()
 
 	Repo.SetLoginRequestCode(temporaryCode, r.URL.Query().Get("code"))
 
@@ -122,8 +115,6 @@ func getAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.P
 	w.Header().Add("Content-Type", "text/plain")
 	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
 	fmt.Fprintf(w, response)
-
-	Repo.Disconnect()
 }
 
 // Auth Complete route
@@ -175,11 +166,6 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			return nil
 		}),
 		NewAction(func() error {
-			Repo.Connect()
-
-			return Repo.Err()
-		}),
-		NewAction(func() error {
 			userName := "No name"
 
 			if gUser.Name != nil {
@@ -211,11 +197,6 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		NewAction(func() error {
 			serializedUserBytes := []byte(serializedUser)
 			responseBody = *bytes.NewBuffer(serializedUserBytes)
-
-			return nil
-		}),
-		NewAction(func() error {
-			Repo.Disconnect()
 
 			return nil
 		}),

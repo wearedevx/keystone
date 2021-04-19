@@ -8,7 +8,6 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go/v4"
 	"github.com/wearedevx/keystone/internal/models"
-	"github.com/wearedevx/keystone/internal/repo"
 	"golang.org/x/xerrors"
 )
 
@@ -55,9 +54,6 @@ func VerifyToken(token string) (string, error) {
 	expiredError := &jwt.TokenExpiredError{}
 
 	if t.Valid {
-		Repo := new(repo.Repo)
-		Repo.Connect()
-
 		claims := t.Claims.(jwt.MapClaims)
 
 		userID := claims["sub"].(string)

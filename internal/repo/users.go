@@ -9,7 +9,7 @@ import (
 func (r *Repo) GetUser(userID string) (User, bool) {
 	var user User
 
-	r.err = r.db.Where("user_id = ?", userID).First(&user).Error
+	r.err = r.GetDb().Where("user_id = ?", userID).First(&user).Error
 
 	return user, r.err == nil
 }
@@ -18,7 +18,7 @@ func (r *Repo) GetOrCreateUser(user *User) {
 	var foundUser User
 	// var err error
 
-	r.err = r.db.Where(
+	r.err = r.GetDb().Where(
 		"account_type = ? AND ext_id = ?",
 		user.AccountType,
 		user.ExtID,
@@ -28,7 +28,7 @@ func (r *Repo) GetOrCreateUser(user *User) {
 		*user = foundUser
 	} else { // if errors.Is(err, gorm.ErrRecordNotFound) {
 		user.UserID = uuid.NewV4().String()
-		r.err = r.db.Create(&user).Error
+		r.err = r.GetDb().Create(&user).Error
 	}
 
 	return

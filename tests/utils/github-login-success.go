@@ -26,6 +26,7 @@ func GithubLoginSuccess() int {
 	// Retrieve login_attemps in db
 	Repo := new(repo.Repo)
 	Repo.Connect()
+	defer Repo.Disconnect()
 	db := Repo.GetDb()
 
 	if error := db.Last(&lr); error != nil {
