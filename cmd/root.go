@@ -69,17 +69,24 @@ func Initialize() {
 	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
 
 	checkEnvironment := true
+	checkProject := true
 	checkLogin := false
 
 	if len(os.Args) > 1 {
 		if os.Args[1] == "login" || os.Args[1] == "documentation" || os.Args[1] == "init" {
 			checkEnvironment = false
+			checkProject = false
 		}
 
 		if os.Args[1] != "login" {
 			checkLogin = true
 		}
 
+	}
+
+	if checkProject && len(environments) == 0 {
+		errors.NotAKeystoneProject(".", nil).Print()
+		os.Exit(1)
 	}
 
 	if checkEnvironment && !ctx.HasEnvironment(currentEnvironment) {
