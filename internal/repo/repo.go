@@ -13,8 +13,9 @@ import (
 
 type Repo struct {
 	err error
-	db  *gorm.DB
 }
+
+var db *gorm.DB
 
 func getEnv(varname string, fallback string) string {
 	if value, ok := os.LookupEnv(varname); ok {
@@ -28,6 +29,7 @@ func getEnv(varname string, fallback string) string {
 func getDSN() string {
 	host := getEnv("DB_HOST", "127.0.0.1")
 	port := getEnv("DB_PORT", "5432")
+	fmt.Println("port:", port)
 	user := getEnv("DB_USER", "keystone-dev")
 	password := getEnv("DB_PASSWORD", "keystone-dev")
 	dbname := getEnv("DB_NAME", "keystone")
@@ -91,28 +93,17 @@ func (repo *Repo) Err() error {
 }
 
 func (repo *Repo) GetDb() *gorm.DB {
-	return repo.db
+	return db
 }
 
-func (repo *Repo) Connect() {
+func init() {
 	var err error
-	db, err := gorm.Open(getPostgres(), &gorm.Config{})
 
-	repo.db = db
-	repo.err = err
-}
-
-func (repo *Repo) Disconnect() {
-	var err error
-	if repo.err != nil {
-		return
-	}
-
-	db, err := repo.db.DB()
+	db, err = gorm.Open(getPostgres(), &gorm.Config{})
 
 	if err != nil {
-		db.Close()
+		panic(err)
 	}
 
-	repo.err = err
+	fmt.Println("Database connection established")
 }

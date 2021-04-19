@@ -22,7 +22,6 @@ func TestMain(m *testing.M) {
 
 func SetupFunc(env *testscript.Env) error {
 	Repo := new(repo.Repo)
-	Repo.Connect()
 
 	var user1 *User = &User{
 		ExtID:       "56883564",
@@ -45,6 +44,8 @@ func SetupFunc(env *testscript.Env) error {
 	env.Setenv("HOME", homeDir)
 	log.Println("HOME ?", env.Getenv("HOME"))
 
+	env.Setenv("DB_PORT", os.Getenv("DB_PORT"))
+
 	// Create config folder
 	err := os.MkdirAll(configDir, 0777)
 
@@ -59,7 +60,7 @@ accounts:
   email: abigael.laldji@protonmail.com
   ext_id: "56883564"
   fullname: Michel
-  user_id: 00fb7666-de43-4559-b4e4-39b172117dd8
+  user_id: `+user1.UserID+`
   username: LAbigael
 auth_token: `+token+`
 current: 0

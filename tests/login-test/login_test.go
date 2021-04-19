@@ -33,6 +33,7 @@ func setupInitFunc(env *testscript.Env) error {
 
 	// Repo := new(repo.Repo)
 	// db := Repo.Connect()
+	// defer Repo.Disconnect()
 
 	// // Migrate DB
 	// repo.AutoMigrate(db)

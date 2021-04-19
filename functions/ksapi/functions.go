@@ -32,11 +32,6 @@ func postUser(w http.ResponseWriter, r *http.Request, _params httprouter.Params)
 
 	runner := NewRunner([]RunnerAction{
 		NewAction(func() error {
-			Repo.Connect()
-
-			return Repo.Err()
-		}),
-		NewAction(func() error {
 			return user.Deserialize(r.Body)
 		}).SetStatusError(http.StatusBadRequest),
 		NewAction(func() error {
@@ -52,11 +47,6 @@ func postUser(w http.ResponseWriter, r *http.Request, _params httprouter.Params)
 			_, e := crypto.EncryptForUser(user, in, &responseBody)
 
 			return e
-		}),
-		NewAction(func() error {
-			Repo.Disconnect()
-
-			return nil
 		}),
 	})
 
