@@ -103,5 +103,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// removeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	RootCmd.PersistentFlags().BoolVarP(&skipPrompts, "y", "y", false, "Skip confirm and say yes")
+	RootCmd.Flags().BoolVarP(&skipPrompts, "y", "y", false, "Skip confirm and say yes")
 }
