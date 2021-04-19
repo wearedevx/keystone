@@ -69,7 +69,6 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		}
 
 		Repo := new(repo.Repo)
-		Repo.Connect()
 
 		if user, ok := Repo.GetUser(userID); ok {
 			p := newParams(r, params)
@@ -103,6 +102,10 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 
 		} else {
 			http.Error(w, "", http.StatusNotFound)
+		}
+
+		if Repo.Err() != nil {
+			fmt.Println(Repo.Err())
 		}
 	}
 }
