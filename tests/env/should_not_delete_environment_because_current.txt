@@ -1,0 +1,10 @@
+# Init with name
+ks init test-env
+
+ks env
+# Verify dev is selected
+stdout '.*\*.*dev'
+
+ks env rm dev -y
+
+stdout 'Cannot Remove Current Environment'
