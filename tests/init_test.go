@@ -2,7 +2,6 @@ package main
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"testing"
@@ -43,7 +42,6 @@ func SetupFunc(env *testscript.Env) error {
 
 	// Set home dir for test
 	env.Setenv("HOME", homeDir)
-	log.Println("HOME ?", env.Getenv("HOME"))
 
 	// Create config folder
 	err := os.MkdirAll(configDir, 0777)
@@ -72,7 +70,7 @@ current: 0
 	return nil
 }
 
-func TestInitCommand(t *testing.T) {
+func TestCommands(t *testing.T) {
 
 	testscript.Run(t, testscript.Params{
 		Dir:   "./init/",
@@ -81,5 +79,10 @@ func TestInitCommand(t *testing.T) {
 	testscript.Run(t, testscript.Params{
 		Dir:   "./env/",
 		Setup: SetupFunc,
+	})
+	testscript.Run(t, testscript.Params{
+		Dir:                  "./secrets/",
+		Setup:                SetupFunc,
+		IgnoreMissedCoverage: true,
 	})
 }
