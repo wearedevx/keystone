@@ -104,5 +104,11 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		} else {
 			http.Error(w, "", http.StatusNotFound)
 		}
+
+		Repo.Disconnect()
+
+		if Repo.Err() != nil {
+			fmt.Println(Repo.Err())
+		}
 	}
 }

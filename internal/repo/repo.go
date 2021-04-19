@@ -101,3 +101,18 @@ func (repo *Repo) Connect() {
 	repo.db = db
 	repo.err = err
 }
+
+func (repo *Repo) Disconnect() {
+	var err error
+	if repo.err != nil {
+		return
+	}
+
+	db, err := repo.db.DB()
+
+	if err != nil {
+		db.Close()
+	}
+
+	repo.err = err
+}
