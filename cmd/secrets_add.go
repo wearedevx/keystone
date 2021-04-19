@@ -20,6 +20,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/internal/errors"
+	. "github.com/wearedevx/keystone/internal/utils"
 	core "github.com/wearedevx/keystone/pkg/core"
 	. "github.com/wearedevx/keystone/ui"
 
@@ -27,6 +28,8 @@ import (
 )
 
 var addOptional bool = false
+var allEnv bool = false
+var currentEnv bool = false
 
 // secretsAddCmd represents the set command
 var secretsAddCmd = &cobra.Command{
@@ -63,21 +66,38 @@ Example:
 			return
 		}
 
-		environmentValueMap[currentEnvironment] = secretValue
+		var affectedEnvironments []string
 
-		Print(RenderTemplate("ask new value for environment", `
+		environmentValueMap[currentEnvironment] = secretValue
+		affectedEnvironments = AppendIfMissing(affectedEnvironments, currentEnvironment)
+
+		// Ask value for each env
+		if !currentEnv && !allEnv {
+			Print(RenderTemplate("ask new value for environment", `
 Enter a values for {{ . }}:`, secretName))
 
-		for _, environment := range environments {
+			for _, environment := range environments {
 
-			p := promptui.Prompt{
-				Label:   environment,
-				Default: secretValue,
+				p := promptui.Prompt{
+					Label:   environment,
+					Default: secretValue,
+				}
+
+				result, _ := p.Run()
+
+				environmentValueMap[environment] = strings.Trim(result, " ")
+				affectedEnvironments = AppendIfMissing(affectedEnvironments, environment)
 			}
 
-			result, _ := p.Run()
+		}
 
-			environmentValueMap[environment] = strings.Trim(result, " ")
+		// If allEnv flag, set value to all envs whithout asking
+		if allEnv {
+			for _, environment := range environments {
+				environmentValueMap[environment] = strings.Trim(secretValue, " ")
+				affectedEnvironments = AppendIfMissing(affectedEnvironments, environment)
+			}
+
 		}
 
 		flag := core.S_REQUIRED
@@ -91,7 +111,7 @@ Enter a values for {{ . }}:`, secretName))
 			return
 		}
 
-		PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(environments))
+		PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(affectedEnvironments))
 	},
 }
 
@@ -108,4 +128,6 @@ func init() {
 	// is called directly, e.g.:
 	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	secretsAddCmd.Flags().BoolVarP(&addOptional, "optional", "o", false, "mark the secret as optional")
+	secretsAddCmd.Flags().BoolVarP(&allEnv, "allEnv", "a", false, "create for all environments with given value")
+	secretsAddCmd.Flags().BoolVarP(&currentEnv, "currentEnv", "c", false, "create for current environment with given value")
 }
