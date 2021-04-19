@@ -53,6 +53,11 @@ func postUser(w http.ResponseWriter, r *http.Request, _params httprouter.Params)
 
 			return e
 		}),
+		NewAction(func() error {
+			Repo.Disconnect()
+
+			return nil
+		}),
 	})
 
 	if err = runner.Run().Error(); err != nil {
