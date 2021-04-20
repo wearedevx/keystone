@@ -85,6 +85,7 @@ func startCloudFunctionProcess(funcPath string) int {
 	// Start cloud functions
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 	cmd := exec.CommandContext(ctx, "go", "run", "-tags", "test", "cmd/main.go")
+	cmd.Env = append(cmd.Env, "JWT_SALT=aaP|**P1n}1tqWK")
 	cmd.Dir = funcPath
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
@@ -110,6 +111,8 @@ func startCloudFunctionProcess(funcPath string) int {
 	if err != nil {
 		panic(err)
 	}
+
+	time.Sleep(2000 * time.Millisecond)
 
 	return pgid
 }
