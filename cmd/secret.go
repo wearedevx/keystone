@@ -27,7 +27,7 @@ import (
 
 // secretsCmd represents the secrets command
 var secretsCmd = &cobra.Command{
-	Use:   "secrets",
+	Use:   "secret",
 	Short: "Manage secrets",
 	Long: `Manage secrets.
 

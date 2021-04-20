@@ -88,6 +88,7 @@ func Initialize() {
 		errors.NotAKeystoneProject(".", nil).Print()
 		os.Exit(1)
 	}
+	fmt.Println(currentEnvironment)
 
 	if checkEnvironment && !ctx.HasEnvironment(currentEnvironment) {
 		errors.EnvironmentDoesntExist(currentEnvironment, strings.Join(environments, ", "), nil).Print()
@@ -115,6 +116,8 @@ func init() {
 	RootCmd.PersistentFlags().BoolVarP(&quietOutput, "quiet", "q", false, "make the output machine readable")
 
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/keystone.yaml)")
+
+	RootCmd.PersistentFlags().BoolVarP(&skipPrompts, "skip", "s", false, "skip prompts and use default")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
