@@ -156,10 +156,10 @@ errors:
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
 
       To list secrets:
-        $ ks secrets
+        $ ks secret
 
       To add a {{ .Secret }} secret to all environments:
-        $ ks secrets {{ .Secret }} <secret-value>
+        $ ks secret {{ .Secret }} <secret-value>
 
   - type: SecretRequired
     name: "Secret Required"
