@@ -15,7 +15,6 @@ import (
 
 	"github.com/rogpeppe/go-internal/testscript"
 	"github.com/wearedevx/keystone/cmd"
-	"github.com/wearedevx/keystone/internal/repo"
 	"github.com/wearedevx/keystone/tests/utils"
 	"gopkg.in/h2non/gock.v1"
 )
@@ -155,11 +154,10 @@ func setupInitFunc(env *testscript.Env) error {
 		panic(err)
 	}
 
-	Repo := new(repo.Repo)
-	Repo.Connect()
+	// _ := new(repo.Repo)
 
 	// // Migrate DB
-	repo.AutoMigrate(Repo.GetDb())
+	// repo.AutoMigrate()
 
 	// env.Defer(func() {
 	// 	fmt.Println("FINISHHHHH")

@@ -28,7 +28,6 @@ func postLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	var response string
 	var err error
 	Repo := new(repo.Repo)
-	Repo.Connect()
 
 	loginRequest := Repo.CreateLoginRequest()
 
@@ -52,7 +51,6 @@ func getLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	var response string
 	var err error
 	Repo := new(repo.Repo)
-	Repo.Connect()
 
 	temporaryCode := r.URL.Query().Get("code")
 
@@ -100,7 +98,6 @@ func getAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.P
 	var err error
 
 	Repo := new(repo.Repo)
-	Repo.Connect()
 
 	Repo.SetLoginRequestCode(temporaryCode, r.URL.Query().Get("code"))
 
@@ -170,11 +167,6 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			}
 
 			return nil
-		}),
-		NewAction(func() error {
-			Repo.Connect()
-
-			return Repo.Err()
 		}),
 		NewAction(func() error {
 			userName := "No name"
