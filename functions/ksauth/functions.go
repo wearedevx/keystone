@@ -13,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/google/go-github/v32/github"
 	"github.com/julienschmidt/httprouter"
+	ksgithub "github.com/wearedevx/keystone/functions/ksauth/internal/github"
 	log "github.com/wearedevx/keystone/internal/cloudlogger"
 	. "github.com/wearedevx/keystone/internal/jwt"
 	"github.com/wearedevx/keystone/internal/models"
@@ -149,12 +150,14 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			return nil
 		}),
 		NewAction(func() error {
-			gUser, _, err = client.Users.Get(ctx, "")
+			gUser, _, err = ksgithub.GetUser(client, ctx)
+			// gUser, _, err = client.Users.Get(ctx, "")
 
 			return err
 		}),
 		NewAction(func() error {
-			gEmails, _, err = client.Users.ListEmails(ctx, nil)
+			gEmails, _, err = ksgithub.ListEmails(client, ctx)
+			// gEmails, _, err = client.Users.ListEmails(ctx, nil)
 
 			return err
 		}),

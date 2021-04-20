@@ -5,6 +5,7 @@ package repo
 import (
 	"fmt"
 	"os"
+	"path"
 
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
 	. "github.com/wearedevx/keystone/internal/models"
@@ -65,13 +66,11 @@ func (repo *Repo) GetDb() *gorm.DB {
 }
 
 func (repo *Repo) Connect() {
-	fmt.Println("REPO TESTTT")
 	var err error
-	// db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 
-	db, err := gorm.Open(sqlite.Open("/Users/kevin/travail/devx/keystone/tests/gorm.db"), &gorm.Config{})
+	dbFilePath := path.Join(os.TempDir(), "keystone_gorm.db")
 
-	// db, err := gorm.Open(sqlite.Open("tutu.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(dbFilePath), &gorm.Config{})
 
 	repo.db = db
 	repo.err = err
