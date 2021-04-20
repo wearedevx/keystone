@@ -39,7 +39,7 @@ func TestMain(m *testing.M) {
 	defer gock.Off()
 	defer gock.DisableNetworking()
 
-	utils.StartCloudAuth()
+	utils.StartAuthCloudFunction()
 
 	resRun := testscript.RunMain(m, map[string]func() int{
 		"ks":                 cmd.Execute,
