@@ -44,6 +44,7 @@ func VerifyToken(token string) (string, error) {
 	trimedToken := cleanUpToken(token)
 
 	t, err := jwt.Parse(trimedToken, func(token *jwt.Token) (interface{}, error) {
+		fmt.Println(" keystone ~ jwt.go ~ os.Getenv(JWT_SALT)", os.Getenv("JWT_SALT"))
 		return []byte(os.Getenv("JWT_SALT")), nil
 	})
 
