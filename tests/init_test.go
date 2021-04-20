@@ -73,16 +73,16 @@ current: 0
 
 func TestCommands(t *testing.T) {
 
+	// testscript.Run(t, testscript.Params{
+	// 	Dir:   "./init/",
+	// 	Setup: SetupFunc,
+	// })
+	// testscript.Run(t, testscript.Params{
+	// 	Dir:   "./env/",
+	// 	Setup: SetupFunc,
+	// })
 	testscript.Run(t, testscript.Params{
-		Dir:   "./init/",
-		Setup: SetupFunc,
-	})
-	testscript.Run(t, testscript.Params{
-		Dir:   "./env/",
-		Setup: SetupFunc,
-	})
-	testscript.Run(t, testscript.Params{
-		Dir:                  "./secrets/",
+		Dir:                  "./secret/",
 		Setup:                SetupFunc,
 		IgnoreMissedCoverage: true,
 	})
