@@ -10,17 +10,24 @@ touch $TMPDIR/keystone_gorm.db
 # Start test
 go test -tags test -ldflags "$LDFLAGS" -work "$@"
 
-ksauthpidpath=${TMPDIR}keystone_ksauth.pid
+function removeProcessId() {
+    kspidfile=$1
+    ksapidpath=${TMPDIR}${kspidfile}
 
-# Check if gcloud auth func pid exist
-if [ -f "$ksauthpidpath" ]; then
+    # Check if gcloud auth func pid exist
+    if [ -f "$ksapidpath" ]; then
+        pid=$(cat $ksapidpath)
+        
+        echo "kill $kspidfile, PID=$pid"
 
-    pid=$(cat $ksauthpidpath)
+        rm $ksapidpath
 
-    rm $ksauthpidpath
+        kill -- -$pid
+    fi
+}
 
-    kill -- -$pid
-fi
+removeProcessId "keystone_ksauth.pid"
+removeProcessId "keystone_ksapi.pid"
 
 # Delete db file
 rm $TMPDIR/keystone_gorm.db
