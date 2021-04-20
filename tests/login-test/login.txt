@@ -1,3 +1,2 @@
 githubLoginSuccess &
 ks login
-#exec    ls .
