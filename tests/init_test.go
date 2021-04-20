@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -81,6 +82,8 @@ func TestCommands(t *testing.T) {
 	// 	Dir:   "./env/",
 	// 	Setup: SetupFunc,
 	// })
+	fmt.Println("BEFOREEEEE")
+
 	testscript.Run(t, testscript.Params{
 		Dir:                  "./secret/",
 		Setup:                SetupFunc,

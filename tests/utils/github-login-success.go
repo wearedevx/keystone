@@ -17,16 +17,15 @@ func EndScript() int {
 
 func GithubLoginSuccess() int {
 
-	fmt.Println(" keystone ~ github-login-success.go ~  os.Getpid()", os.Getpid())
+	fmt.Println(" keystone ~ github-login-success.go ~  start")
 
 	time.Sleep(3000 * time.Millisecond)
+	fmt.Println(" keystone ~ github-login-success.go ~  os.Getpid() !", os.Getpid())
 
 	lr := LoginRequest{}
 
 	// Retrieve login_attemps in db
 	Repo := new(repo.Repo)
-	Repo.Connect()
-	defer Repo.Disconnect()
 	db := Repo.GetDb()
 
 	if error := db.Last(&lr); error != nil {
@@ -58,7 +57,7 @@ func GithubLoginSuccess() int {
 	if resp.StatusCode == http.StatusOK {
 	}
 
-	fmt.Println("CA SEND")
+	fmt.Println("github login success End")
 
 	return 0
 }

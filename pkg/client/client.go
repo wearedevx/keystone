@@ -100,6 +100,8 @@ func pollLoginRequest(code string, c chan pollResult) {
 
 		if resp.StatusCode == http.StatusOK {
 			err = json.NewDecoder(resp.Body).Decode(&loginRequest)
+			fmt.Println(" keystone ~ client.go ~ loginRequest", loginRequest)
+			fmt.Println(" keystone ~ client.go ~ err", err)
 
 			if loginRequest.AuthCode != "" {
 				r := pollResult{
@@ -156,6 +158,7 @@ func completeLogin(accountType AccountType, tok *oauth2.Token, pk []byte) (User,
 	}
 
 	resp, err := client.Do(req)
+	fmt.Println("keystone ~ client.go ~ req", req)
 
 	if err != nil {
 		return user, "", err
@@ -167,6 +170,7 @@ func completeLogin(accountType AccountType, tok *oauth2.Token, pk []byte) (User,
 
 	err = json.NewDecoder(resp.Body).Decode(&user)
 	jwtToken := resp.Header.Get("Authorization")
+	fmt.Println("keystone ~ client.go ~ jwtToken", jwtToken)
 	jwtToken = strings.Replace(jwtToken, "Bearer ", "", 1)
 
 	if jwtToken == "" {

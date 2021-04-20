@@ -27,8 +27,10 @@ require (
 	github.com/spf13/viper v1.7.1
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+	gopkg.in/h2non/gock.v1 v1.0.16 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	gorm.io/driver/postgres v1.0.0
-	gorm.io/gorm v1.20.1
+	gorm.io/driver/sqlite v1.1.4 // indirect
+	gorm.io/gorm v1.20.7
 	honnef.co/go/tools v0.0.1-2020.1.4
 )

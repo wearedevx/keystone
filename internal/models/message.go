@@ -10,12 +10,14 @@ import (
 )
 
 type Message struct {
-	ID        uint          `json:"id" gorm:"primaryKey"`
-	Payload   []byte        `json:"payload"`
-	Sender    ProjectMember `json:"sender"`
-	Recipient ProjectMember `json:"recipient"`
-	CreatedAt time.Time     `json:"created_at"`
-	UpdatedAt time.Time     `json:"updated_at"`
+	ID          uint          `json:"id" gorm:"primaryKey"`
+	Payload     []byte        `json:"payload"`
+	Sender      ProjectMember `json:"sender"`
+	SenderID    uint          `json:"sender_id"`
+	Recipient   ProjectMember `json:"recipient"`
+	RecipientID uint          `json:"recipient_id"`
+	CreatedAt   time.Time     `json:"created_at"`
+	UpdatedAt   time.Time     `json:"updated_at"`
 }
 
 func (msg *Message) BeforeCreate(tx *gorm.DB) (err error) {

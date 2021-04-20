@@ -13,6 +13,7 @@ require (
 	github.com/go-openapi/strfmt v0.19.5 // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-github/v32 v32.1.0
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
@@ -43,6 +44,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
 	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
+	gopkg.in/h2non/gock.v1 v1.0.16 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/postgres v1.0.0
