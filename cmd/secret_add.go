@@ -28,11 +28,9 @@ import (
 )
 
 var addOptional bool = false
-var allEnv bool = false
-var currentEnv bool = false
 
-// secretsAddCmd represents the set command
-var secretsAddCmd = &cobra.Command{
+// secretAddCmd represents the set command
+var secretAddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Adds a secret to all environments",
 	Long: `Adds a secret to all environments.
@@ -72,7 +70,7 @@ Example:
 		affectedEnvironments = AppendIfMissing(affectedEnvironments, currentEnvironment)
 
 		// Ask value for each env
-		if !currentEnv && !allEnv {
+		if !skipPrompts {
 			Print(RenderTemplate("ask new value for environment", `
 Enter a values for {{ . }}:`, secretName))
 
@@ -89,16 +87,22 @@ Enter a values for {{ . }}:`, secretName))
 				affectedEnvironments = AppendIfMissing(affectedEnvironments, environment)
 			}
 
-		}
-
-		// If allEnv flag, set value to all envs whithout asking
-		if allEnv {
+		} else {
 			for _, environment := range environments {
 				environmentValueMap[environment] = strings.Trim(secretValue, " ")
 				affectedEnvironments = AppendIfMissing(affectedEnvironments, environment)
 			}
 
 		}
+
+		// If allEnv flag, set value to all envs whithout asking
+		// if allEnv {
+		// 	for _, environment := range environments {
+		// 		environmentValueMap[environment] = strings.Trim(secretValue, " ")
+		// 		affectedEnvironments = AppendIfMissing(affectedEnvironments, environment)
+		// 	}
+
+		// }
 
 		flag := core.S_REQUIRED
 
@@ -116,7 +120,7 @@ Enter a values for {{ . }}:`, secretName))
 }
 
 func init() {
-	secretsCmd.AddCommand(secretsAddCmd)
+	secretsCmd.AddCommand(secretAddCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -127,7 +131,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	secretsAddCmd.Flags().BoolVarP(&addOptional, "optional", "o", false, "mark the secret as optional")
-	secretsAddCmd.Flags().BoolVarP(&allEnv, "allEnv", "a", false, "create for all environments with given value")
-	secretsAddCmd.Flags().BoolVarP(&currentEnv, "currentEnv", "c", false, "create for current environment with given value")
+	secretAddCmd.Flags().BoolVarP(&addOptional, "optional", "o", false, "mark the secret as optional")
 }

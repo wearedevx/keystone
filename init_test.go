@@ -22,7 +22,6 @@ func TestMain(m *testing.M) {
 
 func SetupFunc(env *testscript.Env) error {
 	Repo := new(repo.Repo)
-	Repo.Connect()
 
 	var user1 *User = &User{
 		ExtID:       "56883564",
