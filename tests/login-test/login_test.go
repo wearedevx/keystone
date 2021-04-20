@@ -15,17 +15,45 @@ import (
 
 	"github.com/rogpeppe/go-internal/testscript"
 	"github.com/wearedevx/keystone/cmd"
+	"github.com/wearedevx/keystone/internal/repo"
 	"github.com/wearedevx/keystone/tests/utils"
+	"gopkg.in/h2non/gock.v1"
 )
 
+func startNock() {
+	// defer gock.Off() // Flush pending mocks after test execution
+	// defer fmt.Println("ca depile")
+
+	gock.EnableNetworking()
+
+	gock.New("https://github.com").
+		Persist().
+		Post("/login/oauth/access_token").
+		// Reply(200).
+		// JSON(map[string]string{"access_token": "access_token"})
+		ReplyFunc(func(resp *gock.Response) {
+
+			fmt.Println(" keystone ~ login_test.go ~ resp", resp)
+
+			resp.BodyString("access_token=tutu&token_type=token_type&refresh_token=refresh_token&expires_in=100")
+			resp.SetHeader("Authorization", "Bearer montoken")
+			// return resp
+		})
+}
+
 func TestMain(m *testing.M) {
+	startNock()
+
+	defer gock.Off()
+	defer gock.DisableNetworking()
+
 	fmt.Println(" keystone ~ login_test.go ~ TestMain LAUNCH", time.Now())
 
 	// strr := "coucou " + time.Now().String()
 	// fmt.Println(" keystone ~ login_test.go ~ strr", strr)
 	// ioutil.WriteFile("gcloud-func.pid", []byte(strr), 0755)
 
-	gcloudPidFilePath := getGcloudFilePath() // + time.Now().String()
+	gcloudPidFilePath := getGcloudFuncAuthPidFilePath() // + time.Now().String()
 	// gcloudPidFilePath := "gcloud-func.pid" // + time.Now().String()
 	// fmt.Println(" keystone ~ login_test.go ~ gcloudPidFile", gcloudPidFilePath)
 	// gcloudPidFile := "$WORK/keystone"
@@ -97,8 +125,8 @@ func init() {
 	ksAuthCmd = 0
 }
 
-func getGcloudFilePath() string {
-	return "/Users/kevin/travail/devx/keystone/pipid"
+func getGcloudFuncAuthPidFilePath() string {
+	return path.Join(os.TempDir(), "keystone_ksauth.pid")
 }
 
 func setupInitFunc(env *testscript.Env) error {
@@ -108,13 +136,15 @@ func setupInitFunc(env *testscript.Env) error {
 	// fmt.Println("env.KSAUTH_URL", os.Environ())
 
 	homeDir := path.Join(env.Getenv("WORK"), "home")
+	osTmpDir := os.TempDir()
 	configDir := path.Join(homeDir, ".config")
 	fmt.Println(" keystone ~ login_test.go ~ homeDir", homeDir)
 	// pathToKeystoneFile := path.Join(configDir, "keystone.yaml")
 
 	// Set home dir for test
 	env.Setenv("HOME", homeDir)
-	env.Setenv("GCLOUDFILE", getGcloudFilePath())
+	env.Setenv("TMPDIR", osTmpDir)
+	env.Setenv("GCLOUDFILE", getGcloudFuncAuthPidFilePath())
 
 	// log.Println("HOME ?", env.Getenv("HOME"))
 
@@ -125,11 +155,11 @@ func setupInitFunc(env *testscript.Env) error {
 		panic(err)
 	}
 
-	// Repo := new(repo.Repo)
-	// db := Repo.Connect()
+	Repo := new(repo.Repo)
+	Repo.Connect()
 
 	// // Migrate DB
-	// repo.AutoMigrate(db)
+	repo.AutoMigrate(Repo.GetDb())
 
 	// env.Defer(func() {
 	// 	fmt.Println("FINISHHHHH")

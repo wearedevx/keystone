@@ -18,14 +18,17 @@ const (
 )
 
 type ProjectMember struct {
-	ID           uint        `json:"id" gorm:"primaryKey"`
-	Role         UserRole    `json:"role" gorm:"type:user_role"`
-	ProjectOwner bool        `json:"project_owner"`
-	User         User        `json:"user"`
-	Environment  Environment `json:"environment"`
-	Project      Project     `json:"project"`
-	CreatedAt    time.Time   `json:"created_at"`
-	UpdatedAt    time.Time   `json:"updated_at"`
+	ID            uint        `json:"id" gorm:"primaryKey"`
+	Role          UserRole    `json:"role" gorm:"type:user_role"`
+	ProjectOwner  bool        `json:"project_owner"`
+	User          User        `json:"user"`
+	UserID        uint        `json:"user_id"`
+	Environment   Environment `json:"environment"`
+	EnvironmentID uint        `json:"environment_id"`
+	Project       Project     `json:"project"`
+	ProjectID     uint        `json:"project_id"`
+	CreatedAt     time.Time   `json:"created_at"`
+	UpdatedAt     time.Time   `json:"updated_at"`
 }
 
 func (pm *ProjectMember) BeforeCreate(tx *gorm.DB) (err error) {
