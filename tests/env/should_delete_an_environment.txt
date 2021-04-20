@@ -1,6 +1,6 @@
 # Init with name
 ks init test-env
 
-ks env rm prod -y
+ks env rm prod -s
 
 stdout 'The .*prod.* environment has been removed'

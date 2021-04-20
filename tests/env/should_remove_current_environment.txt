@@ -5,6 +5,6 @@ ks env
 # Verify dev is selected
 stdout '.*\*.*dev'
 
-ks env rm dev -y
+ks env rm dev -s
 
 stdout 'Cannot Remove Current Environment'
