@@ -22,6 +22,10 @@ func GetGcloudFuncAuthPidFilePath() string {
 	return path.Join(os.TempDir(), "keystone_ksauth.pid")
 }
 
+func GetGcloudFuncApiPidFilePath() string {
+	return path.Join(os.TempDir(), "keystone_ksapi.pid")
+}
+
 func listenCmdStartProcess(cmd *exec.Cmd) {
 	cmdReader, _ := cmd.StdoutPipe()
 	scanner := bufio.NewScanner(cmdReader)
@@ -45,20 +49,15 @@ func listenCmdStartProcess(cmd *exec.Cmd) {
 	}()
 }
 
-func StartCloudAuth() {
+func StartAuthCloudFunction() {
 	gcloudPidFilePath := GetGcloudFuncAuthPidFilePath() // + time.Now().String()
-	pid, err := ioutil.ReadFile(gcloudPidFilePath)
-
-	if err != nil {
-		fmt.Println("No gcloud pid file", err)
-	}
+	pid, _ := ioutil.ReadFile(gcloudPidFilePath)
 
 	if len(pid) == 0 {
-		fmt.Println(" keystone ~ login_test.go ~ ON START")
-		pgid := StartCloudAuthFunc()
+		pgid := startAuthCloudFuncProcess()
 
 		pidString := []byte(strconv.Itoa(pgid))
-		err = ioutil.WriteFile(gcloudPidFilePath, pidString, 0755)
+		err := ioutil.WriteFile(gcloudPidFilePath, pidString, 0755)
 
 		if err != nil {
 			panic(err)
@@ -66,13 +65,27 @@ func StartCloudAuth() {
 	}
 }
 
-func StartCloudAuthFunc() int {
-	fmt.Println("🚀 ~ file: init_test.go ~ line 49 ~ funcTestHelloWorld ~ cmd.Process??")
+func StartApiCloudFunction() {
+	gcloudPidFilePath := GetGcloudFuncApiPidFilePath() // + time.Now().String()
+	pid, _ := ioutil.ReadFile(gcloudPidFilePath)
 
+	if len(pid) == 0 {
+		pgid := startCloudApiFunc()
+
+		pidString := []byte(strconv.Itoa(pgid))
+		err := ioutil.WriteFile(gcloudPidFilePath, pidString, 0755)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func startCloudFunctionProcess(funcPath string) int {
 	// Start cloud functions
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 	cmd := exec.CommandContext(ctx, "go", "run", "-tags", "test", "cmd/main.go")
-	cmd.Dir = "../../functions/ksauth"
+	cmd.Dir = funcPath
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	listenCmdStartProcess(cmd)
@@ -99,6 +112,14 @@ func StartCloudAuthFunc() int {
 	}
 
 	return pgid
+}
+
+func startAuthCloudFuncProcess() int {
+	return startCloudFunctionProcess("../../functions/ksauth")
+}
+
+func startCloudApiFunc() int {
+	return startCloudFunctionProcess("../../functions/ksapi")
 }
 
 func CreateAndLogUser(env *testscript.Env) error {
