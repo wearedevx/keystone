@@ -12,7 +12,7 @@ func (repo *Repo) CreateLoginRequest() LoginRequest {
 	lr := NewLoginRequest()
 
 	if repo.Err() == nil {
-		repo.err = repo.db.Create(&lr).Error
+		repo.err = repo.GetDb().Create(&lr).Error
 	}
 
 	return lr
@@ -22,7 +22,7 @@ func (repo *Repo) GetLoginRequest(code string) (LoginRequest, bool) {
 	lr := LoginRequest{}
 
 	if repo.Err() == nil {
-		repo.err = repo.db.Where(
+		repo.err = repo.GetDb().Where(
 			&LoginRequest{
 				TemporaryCode: code,
 			},
@@ -38,7 +38,7 @@ func (repo *Repo) SetLoginRequestCode(code string, authCode string) LoginRequest
 		return lr
 	}
 
-	repo.err = repo.db.Where(
+	repo.err = repo.GetDb().Where(
 		"temporary_code = ?",
 		code,
 	).First(&lr).Error
@@ -50,7 +50,7 @@ func (repo *Repo) SetLoginRequestCode(code string, authCode string) LoginRequest
 	lr.TemporaryCode = code
 	lr.AuthCode = authCode
 
-	repo.err = repo.db.Save(&lr).Error
+	repo.err = repo.GetDb().Save(&lr).Error
 
 	return lr
 }
@@ -62,7 +62,7 @@ func (repo *Repo) DeleteLoginRequest(code string) bool {
 
 	lr := NewLoginRequest()
 
-	repo.err = repo.db.Where(
+	repo.err = repo.GetDb().Where(
 		"temporary_code = ?",
 		code,
 	).First(&lr).Error
@@ -71,7 +71,7 @@ func (repo *Repo) DeleteLoginRequest(code string) bool {
 		return false
 	}
 
-	repo.err = repo.db.Delete(&lr).Error
+	repo.err = repo.GetDb().Delete(&lr).Error
 
 	if repo.Err() != nil {
 		return false

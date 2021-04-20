@@ -54,21 +54,26 @@ Example:
 			return
 		}
 
-		title := fmt.Sprintf("You are about to remove the '%s' environment", envName)
-		Print(RenderTemplate("remove confirm", `
+		promptResult := "n"
+
+		if !skipPrompts {
+			title := fmt.Sprintf("You are about to remove the '%s' environment", envName)
+			Print(RenderTemplate("remove confirm", `
 {{ CAREFUL }} {{ . | yellow }}
 The data for the environment will be lost.
 This can not be undone.
 `, title))
 
-		p := promptui.Prompt{
-			Label:     "Continue",
-			IsConfirm: true,
-			Default:   "n",
+			p := promptui.Prompt{
+				Label:     "Continue",
+				IsConfirm: true,
+				Default:   "n",
+			}
+
+			promptResult, _ = p.Run()
 		}
 
-		if result, _ := p.Run(); result == "y" {
-
+		if skipPrompts || promptResult == "y" {
 			ctx.RemoveEnvironment(envName)
 
 			if err = ctx.Err(); err != nil {
@@ -98,4 +103,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// removeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	RootCmd.Flags().BoolVarP(&skipPrompts, "y", "y", false, "Skip confirm and say yes")
 }

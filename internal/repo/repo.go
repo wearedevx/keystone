@@ -15,8 +15,9 @@ import (
 
 type Repo struct {
 	err error
-	db  *gorm.DB
 }
+
+var db *gorm.DB
 
 func getEnv(varname string, fallback string) string {
 	if value, ok := os.LookupEnv(varname); ok {
@@ -30,6 +31,7 @@ func getEnv(varname string, fallback string) string {
 func getDSN() string {
 	host := getEnv("DB_HOST", "127.0.0.1")
 	port := getEnv("DB_PORT", "5432")
+	fmt.Println("port:", port)
 	user := getEnv("DB_USER", "keystone-dev")
 	password := getEnv("DB_PASSWORD", "keystone-dev")
 	dbname := getEnv("DB_NAME", "keystone")
@@ -52,58 +54,26 @@ func getPostgres() gorm.Dialector {
 	return postgres.New(config)
 }
 
-func AutoMigrate(db *gorm.DB) error {
-	// 	runner := NewRunner([]RunnerAction{
-	// 		NewAction(func() error {
-	// 			return db.AutoMigrate(&LoginRequest{})
-	// 		}),
-	// 		NewAction(func() error {
-	// 			return db.AutoMigrate(&Project{}, &Environment{}, &User{}, &Secret{})
-	// 		}),
-	// 		NewAction(func() error {
-	// 			return db.AutoMigrate(&EnvironmentPermissions{}, &ProjectPermissions{})
-	// 		}),
-	// 		NewAction(func() error {
-	// 			return db.AutoMigrate(&EnvironmentUserSecret{})
-	// 		}),
-	// 		NewAction(func() error {
-	// 			return db.SetupJoinTable(&User{}, "Projects", &ProjectPermissions{})
-	// 		}),
-	// 		NewAction(func() error {
-	// 			return db.SetupJoinTable(&User{}, "Environments", &EnvironmentPermissions{})
-	// 		}),
-	// 		NewAction(func() error {
-	// 			return db.SetupJoinTable(&Project{}, "Users", &ProjectPermissions{})
-	// 		}),
-	// 		NewAction(func() error {
-	// 			return db.SetupJoinTable(&User{}, "EnvironmentsSecrets", &EnvironmentUserSecret{})
-	// 		}),
-	// 		NewAction(func() error {
-	// 			return db.SetupJoinTable(&Environment{}, "UserSecrets", &EnvironmentUserSecret{})
-	// 		}),
-	// 		NewAction(func() error {
-	// 			return db.SetupJoinTable(&Secret{}, "UserEnvironments", &EnvironmentUserSecret{})
-	// 		}),
+func AutoMigrate() error {
 	return nil
 }
-
-// 	return runner.Run().Error()
-
-// }
 
 func (repo *Repo) Err() error {
 	return repo.err
 }
 
 func (repo *Repo) GetDb() *gorm.DB {
-	return repo.db
+	return db
 }
 
-func (repo *Repo) Connect() {
-	fmt.Println("CLOUD SQL")
+func init() {
 	var err error
-	db, err := gorm.Open(getPostgres(), &gorm.Config{})
 
-	repo.db = db
-	repo.err = err
+	db, err = gorm.Open(getPostgres(), &gorm.Config{})
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Database connection established")
 }

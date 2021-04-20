@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"testing"
@@ -23,7 +22,6 @@ func TestMain(m *testing.M) {
 
 func SetupFunc(env *testscript.Env) error {
 	Repo := new(repo.Repo)
-	Repo.Connect()
 
 	var user1 *User = &User{
 		ExtID:       "56883564",
@@ -34,9 +32,9 @@ func SetupFunc(env *testscript.Env) error {
 		Email:       "abigael.laldji@protonmail.com",
 	}
 
-	token, _ := MakeToken(*user1)
-
 	Repo.GetOrCreateUser(user1)
+
+	token, _ := MakeToken(*user1)
 
 	homeDir := path.Join(env.Getenv("WORK"), "home")
 	configDir := path.Join(homeDir, ".config")
@@ -44,7 +42,8 @@ func SetupFunc(env *testscript.Env) error {
 
 	// Set home dir for test
 	env.Setenv("HOME", homeDir)
-	log.Println("HOME ?", env.Getenv("HOME"))
+
+	env.Setenv("DB_PORT", os.Getenv("DB_PORT"))
 
 	// Create config folder
 	err := os.MkdirAll(configDir, 0777)
@@ -60,7 +59,7 @@ accounts:
   email: abigael.laldji@protonmail.com
   ext_id: "56883564"
   fullname: Michel
-  user_id: 00fb7666-de43-4559-b4e4-39b172117dd8
+  user_id: `+user1.UserID+`
   username: LAbigael
 auth_token: `+token+`
 current: 0
@@ -73,7 +72,7 @@ current: 0
 	return nil
 }
 
-func TestInitCommand(t *testing.T) {
+func TestCommands(t *testing.T) {
 
 	fmt.Println("BEFOREEEEE")
 
@@ -81,6 +80,13 @@ func TestInitCommand(t *testing.T) {
 		Dir:   "./init/",
 		Setup: SetupFunc,
 	})
-
-	fmt.Println("AFTERRRRR")
+	testscript.Run(t, testscript.Params{
+		Dir:   "./env/",
+		Setup: SetupFunc,
+	})
+	testscript.Run(t, testscript.Params{
+		Dir:                  "./secrets/",
+		Setup:                SetupFunc,
+		IgnoreMissedCoverage: true,
+	})
 }
