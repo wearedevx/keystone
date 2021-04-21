@@ -2,3 +2,21 @@
 ks init my_project
 
 stdout 'All done!'
+
+# Check project's file exist
+exists keystone.yml
+
+# Check cache folders exists
+exists .keystone
+exists .keystone/cache
+exists .keystone/cache/dev/.env
+exists .keystone/cache/prod/.env
+exists .keystone/cache/staging/.env
+exists .keystone/cache/ci/.env
+exists .keystone/cache/.env
+
+exists .keystone/environment
+
+# Check dev is the current environment
+exec cat .keystone/environment
+stdout 'dev'
