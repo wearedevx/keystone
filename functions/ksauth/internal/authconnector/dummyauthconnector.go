@@ -14,6 +14,7 @@ func (dac *dummyAuthConnector) GetUserInfo(token *oauth2.Token) (models.User, er
 	user := models.User{}
 
 	faker.FakeData(&user)
+	user.Email = "email@example.com"
 
 	return user, nil
 }

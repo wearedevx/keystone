@@ -72,13 +72,12 @@ func (g *dummyAuthService) WaitForExternalLogin() error {
 		return result.err
 	}
 
-	token, err := g.conf.Exchange(g.ctx, result.authCode)
-
-	if err != nil {
-		return err
+	g.token = &oauth2.Token{
+		AccessToken:  "access_token",
+		TokenType:    "Bearer",
+		RefreshToken: "refresh_token",
+		Expiry:       time.Unix(0, 0),
 	}
-
-	g.token = token
 
 	return nil
 }
