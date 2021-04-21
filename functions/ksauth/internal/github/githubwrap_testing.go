@@ -36,7 +36,7 @@ func GetUser(client *github.Client, ctx context.Context) (*github.User, *github.
   "company": "GitHub",
   "blog": "https://github.com/blog",
   "location": "San Francisco",
-  "email": "octocat@github.com",
+  "email": "email@example.com",
   "hireable": false,
   "bio": "There once was...",
   "twitter_username": "monatheoctocat",
@@ -69,7 +69,7 @@ func GetUser(client *github.Client, ctx context.Context) (*github.User, *github.
 
 func ListEmails(client *github.Client, ctx context.Context) ([]*github.UserEmail, *github.Response, error) {
 
-	Email := "sfsdf@edfsf.com"
+	Email := "email@example.com"
 	Verified := true
 	Primary := true
 	Visibility := "Visibility"
