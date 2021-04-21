@@ -1,8 +1,6 @@
 package repo
 
 import (
-	"fmt"
-
 	. "github.com/wearedevx/keystone/internal/models"
 
 	uuid "github.com/satori/go.uuid"
@@ -29,11 +27,7 @@ func (r *Repo) GetOrCreateUser(user *User) {
 	if r.err == nil {
 		*user = foundUser
 	} else { // if errors.Is(err, gorm.ErrRecordNotFound) {
-
-		fmt.Println("ON CREE LE USER")
 		user.UserID = uuid.NewV4().String()
 		r.err = r.GetDb().Create(&user).Error
 	}
-
-	return
 }

@@ -41,7 +41,6 @@ func GitHubAuth(ctx context.Context) AuthService {
 }
 
 func (g *gitHubAuthService) Start() (string, error) {
-	fmt.Println(" keystone ~ github-auth.go ~ Start")
 	lr, err := getLoginRequest()
 
 	g.loginRequest = lr
