@@ -81,7 +81,6 @@ Examples:
 		}
 
 		environmentFileMap[currentEnvironment] = currentContent
-		fmt.Println("keystone ~ file_add.go ~ skipPrompts", skipPrompts)
 
 		if !skipPrompts {
 			for _, environment := range environments {

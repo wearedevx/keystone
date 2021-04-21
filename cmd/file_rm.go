@@ -26,6 +26,8 @@ import (
 	. "github.com/wearedevx/keystone/ui"
 )
 
+var forcePrompts bool
+
 // filesRmCmd represents the rm command
 var filesRmCmd = &cobra.Command{
 	Use:   "rm",
@@ -49,7 +51,7 @@ Example:
 		filePath := args[0]
 
 		if !FileExists(filePath) {
-			err = errors.CannotRemoveFile(filePath, fmt.Errorf("File Not Found"))
+			err = errors.CannotRemoveFile(filePath, fmt.Errorf("File not found"))
 			err.Print()
 			return
 		}
@@ -62,15 +64,19 @@ This is permanent, and cannot be undone.`, map[string]string{
 			"Environment": ctx.CurrentEnvironment(),
 		}))
 
-		p := promptui.Prompt{
-			Label:     "Continue",
-			IsConfirm: true,
+		result := "y"
+
+		if !skipPrompts {
+			p := promptui.Prompt{
+				Label:     "Continue",
+				IsConfirm: true,
+			}
+
+			result, _ = p.Run()
 		}
 
-		result, _ := p.Run()
-
 		if result == "y" {
-			ctx.RemoveFile(filePath)
+			ctx.RemoveFile(filePath, forcePrompts)
 		}
 
 		if err = ctx.Err(); err != nil {
@@ -96,4 +102,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// rmCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	RootCmd.PersistentFlags().BoolVarP(&forcePrompts, "force", "f", false, "force remove file on system.")
 }
