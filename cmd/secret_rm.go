@@ -31,7 +31,7 @@ var secretsRmCmd = &cobra.Command{
 Removes the given secret from all environments.
 
 Exemple:
-  $ ks unset PORT`,
+  $ ks rmove PORT`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var err *errors.Error
