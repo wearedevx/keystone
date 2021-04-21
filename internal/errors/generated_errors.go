@@ -13,7 +13,7 @@ It seems you are not in a keystone project.
 Neither the current directory ({{ .Path }}), nor any of its parent,
 have a keystone.yaml file.
 If this is a new project, start with:
-  $ ks init
+  $ ks init <your-project-name>
 
 `,
 	"NoWorkingDirectory": `

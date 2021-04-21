@@ -174,6 +174,7 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			if gUser.Name != nil {
 				userName = *gUser.Name
 			}
+			fmt.Println("keystone ~ functions.go ~ gUser", gUser)
 
 			user = models.User{
 				ExtID:       strconv.Itoa(int(*gUser.ID)),

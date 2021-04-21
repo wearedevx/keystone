@@ -18,7 +18,7 @@ A safe system for developers to store, share and use secrets.
 ### SEE ALSO
 
 * [ks env](ks_env.md)	 - Manage environments
-* [ks files](ks_files.md)	 - Manage secret files
+* [ks file](ks_files.md)	 - Manage secret files
 * [ks init](ks_init.md)	 - Creates Keystone config files and directories
 * [ks login](ks_login.md)	 - A brief description of your command
 * [ks secrets](ks_secrets.md)	 - Manage secrets
