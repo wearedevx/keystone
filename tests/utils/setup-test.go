@@ -28,7 +28,9 @@ func GetGcloudFuncApiPidFilePath() string {
 }
 
 func listenCmdStartProcess(cmd *exec.Cmd, name string) {
-	cmdReader, _ := cmd.StdoutPipe()
+	cmdReader, err := cmd.StdoutPipe()
+	fmt.Println("err:", err)
+
 	scanner := bufio.NewScanner(cmdReader)
 	done := make(chan bool)
 	go func() {
@@ -85,6 +87,7 @@ func StartApiCloudFunction() {
 func startCloudFunctionProcess(funcPath string) int {
 
 	// Start cloud functions
+	fmt.Println("turlutut")
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 	cmd := exec.CommandContext(ctx, "go", "run", "-tags", "test", "cmd/main.go")
 	cmd.Dir = funcPath
@@ -99,12 +102,16 @@ func startCloudFunctionProcess(funcPath string) int {
 	}
 
 	pgid, err := syscall.Getpgid(cmd.Process.Pid)
+	fmt.Println("pgid:", pgid)
 
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("srtiensrtisrntisretn")
 
-	time.Sleep(5000 * time.Millisecond)
+	time.Sleep(10000 * time.Millisecond)
+
+	fmt.Println("sirtensritnsritnsrti:w")
 
 	return pgid
 }

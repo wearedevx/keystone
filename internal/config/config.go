@@ -75,10 +75,10 @@ func GetAllAccounts() []map[string]string {
 // and the index is -1
 func GetCurrentAccount() (map[string]string, int) {
 	nullAccount := make(map[string]string)
+	accounts := GetAllAccounts()
 
 	if viper.IsSet("current") {
 		index := viper.Get("current").(int)
-		fmt.Println("index:", index)
 
 		if index >= 0 && index < len(accounts) {
 			account := accounts[index]

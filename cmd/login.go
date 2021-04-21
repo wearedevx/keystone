@@ -28,6 +28,8 @@ import (
 	. "github.com/wearedevx/keystone/ui"
 )
 
+var serviceName string
+
 func ShowAlreadyLoggedInAndExit(account map[string]string) {
 	username := account["username"]
 	if account["username"] == "" {
@@ -108,18 +110,23 @@ To invite collaborators:
 }
 
 func SelectAuthService(ctx context.Context) (client.AuthService, error) {
-	prompt := promptui.Select{
-		Label: "Select an identity provider",
-		Items: []string{
-			"GitHub",
-			"GitLab",
-		},
-	}
+	var err error
 
-	_, serviceName, err := prompt.Run()
+	if serviceName == "" {
+		fmt.Println("serviceName:", serviceName)
+		prompt := promptui.Select{
+			Label: "Select an identity provider",
+			Items: []string{
+				"github",
+				"gitlab",
+			},
+		}
 
-	if err != nil {
-		return nil, err
+		_, serviceName, err = prompt.Run()
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return client.GetAuthService(serviceName, ctx)
@@ -200,4 +207,7 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// loginCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	loginCmd.Flags().StringVar(&serviceName, "with", "", "identity provider. Either github or gitlab")
+	fmt.Println("serviceName:", serviceName)
 }
