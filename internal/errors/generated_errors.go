@@ -95,10 +95,10 @@ Change to another environment:
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
 
 To list secrets:
-  $ ks secrets
+  $ ks secret
 
 To add a {{ .Secret }} secret to all environments:
-  $ ks secrets {{ .Secret }} <secret-value>
+  $ ks secret {{ .Secret }} <secret-value>
 
 `,
 	"SecretRequired": `
@@ -113,7 +113,7 @@ This happened because: {{ .Cause }}
 
 `,
 	"CannotRemoveFile": `
-{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{ - "'" | red }}
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
 
 `,

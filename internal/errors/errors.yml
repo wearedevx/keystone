@@ -188,7 +188,7 @@ errors:
       - name: Path
         type: string
     template: |
-      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{ - "'" | red }}
+      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
   - type: CannotLinkFile
