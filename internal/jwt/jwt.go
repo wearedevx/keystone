@@ -8,11 +8,12 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go/v4"
 	"github.com/wearedevx/keystone/internal/models"
+	"github.com/wearedevx/keystone/internal/utils"
 	"golang.org/x/xerrors"
 )
 
 func MakeToken(user models.User) (string, error) {
-	salt := []byte(os.Getenv("JWT_SALT"))
+	salt := []byte(utils.GetEnv("JWT_SALT", "aaP|**P1n}1tqWK"))
 
 	claims := jwt.StandardClaims{
 		ExpiresAt: &jwt.Time{

@@ -26,13 +26,13 @@ func GetGcloudFuncApiPidFilePath() string {
 	return path.Join(os.TempDir(), "keystone_ksapi.pid")
 }
 
-func listenCmdStartProcess(cmd *exec.Cmd) {
+func listenCmdStartProcess(cmd *exec.Cmd, name string) {
 	cmdReader, _ := cmd.StdoutPipe()
 	scanner := bufio.NewScanner(cmdReader)
 	done := make(chan bool)
 	go func() {
 		for scanner.Scan() {
-			fmt.Println("stdout:", scanner.Text())
+			fmt.Println("stdout:", name, ":", scanner.Text())
 		}
 		done <- true
 	}()
@@ -43,7 +43,7 @@ func listenCmdStartProcess(cmd *exec.Cmd) {
 
 	go func() {
 		for scannerError.Scan() {
-			fmt.Println("stderr:", scannerError.Text())
+			fmt.Println("stderr:", name, ":", scannerError.Text())
 		}
 		doneError <- true
 	}()
@@ -82,13 +82,15 @@ func StartApiCloudFunction() {
 }
 
 func startCloudFunctionProcess(funcPath string) int {
+	fmt.Println("keystone ~ setup-test.go ~ funcPath", funcPath)
+
 	// Start cloud functions
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 	cmd := exec.CommandContext(ctx, "go", "run", "-tags", "test", "cmd/main.go")
 	cmd.Dir = funcPath
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
-	listenCmdStartProcess(cmd)
+	listenCmdStartProcess(cmd, funcPath)
 
 	err := cmd.Start()
 
@@ -110,6 +112,8 @@ func startCloudFunctionProcess(funcPath string) int {
 	if err != nil {
 		panic(err)
 	}
+
+	time.Sleep(5000 * time.Millisecond)
 
 	return pgid
 }
@@ -173,6 +177,7 @@ func SetupEnvVars(env *testscript.Env) error {
 	osTmpDir := os.TempDir()
 
 	// Set home dir for test
+	env.Setenv("GOPATH", "/DFDFDF")
 	env.Setenv("HOME", homeDir)
 	env.Setenv("DB_PORT", os.Getenv("DB_PORT"))
 	env.Setenv("TMPDIR", osTmpDir)

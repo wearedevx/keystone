@@ -7,6 +7,14 @@ import (
 	"os"
 )
 
+func GetEnv(varname string, fallback string) string {
+	if value, ok := os.LookupEnv(varname); ok {
+		return value
+	}
+
+	return fallback
+}
+
 // fileExists checks if a file exists and is not a directory before we
 // try using it to prevent further errors.
 func FileExists(filename string) bool {
