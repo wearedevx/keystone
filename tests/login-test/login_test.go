@@ -60,8 +60,7 @@ func TestLoginCommand(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	testscript.Run(t, testscript.Params{
-		Dir:         ".",
-		WorkdirRoot: "./",
-		Setup:       utils.SetupEnvVars,
+		Dir:   ".",
+		Setup: utils.SetupEnvVars,
 	})
 }
