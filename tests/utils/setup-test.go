@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/rogpeppe/go-internal/testscript"
+	uuid "github.com/satori/go.uuid"
 	. "github.com/wearedevx/keystone/internal/jwt"
 	. "github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
@@ -32,7 +33,7 @@ func listenCmdStartProcess(cmd *exec.Cmd, name string) {
 	done := make(chan bool)
 	go func() {
 		for scanner.Scan() {
-			fmt.Println("stdout:", name, ":", scanner.Text())
+			fmt.Println(name, "stdout:", scanner.Text())
 		}
 		done <- true
 	}()
@@ -43,7 +44,7 @@ func listenCmdStartProcess(cmd *exec.Cmd, name string) {
 
 	go func() {
 		for scannerError.Scan() {
-			fmt.Println("stderr:", name, ":", scannerError.Text())
+			fmt.Println(name, "stderr:", scannerError.Text())
 		}
 		doneError <- true
 	}()
@@ -82,7 +83,6 @@ func StartApiCloudFunction() {
 }
 
 func startCloudFunctionProcess(funcPath string) int {
-	fmt.Println("keystone ~ setup-test.go ~ funcPath", funcPath)
 
 	// Start cloud functions
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
@@ -95,19 +95,10 @@ func startCloudFunctionProcess(funcPath string) int {
 	err := cmd.Start()
 
 	if err != nil {
-		// Problemo
-		fmt.Println("Ayayaye 0", err.Error())
 		panic(err)
 	}
 
 	pgid, err := syscall.Getpgid(cmd.Process.Pid)
-
-	fmt.Println(" keystone ~ init_test.go ~ err", err)
-
-	if err != nil {
-		// Problemo
-		fmt.Println("Ayayaye 1", err.Error())
-	}
 
 	if err != nil {
 		panic(err)
@@ -130,10 +121,10 @@ func CreateAndLogUser(env *testscript.Env) error {
 	Repo := new(repo.Repo)
 
 	var user1 *User = &User{
-		ExtID:       "56883564",
-		UserID:      "00fb7666-de43-4559-b4e4-39b172117dd8",
+		ExtID: "56883564" + uuid.NewV4().String(),
+		// UserID:      "00fb7666-de43-4559-b4e4-39b172117dd8",
 		AccountType: "github",
-		Username:    "LAbigael",
+		Username:    "LAbigael_" + uuid.NewV4().String(),
 		Fullname:    "Test user1",
 		Email:       "abigael.laldji@protonmail.com",
 	}
@@ -184,7 +175,5 @@ func SetupEnvVars(env *testscript.Env) error {
 	env.Setenv("GCLOUDFILE", GetGcloudFuncAuthPidFilePath())
 
 	// Create config folder
-	err := os.MkdirAll(configDir, 0777)
-
-	return err
+	return os.MkdirAll(configDir, 0777)
 }

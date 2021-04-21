@@ -4,10 +4,22 @@ export $(cat .env-dev | xargs)
 
 LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=$KSAUTH_URL -X github.com/wearedevx/keystone/pkg/client.ksapiURL=$KSAPI_URL"
 
-# Create db file
-touch $TMPDIR/keystone_gorm.db
+DBFILE="${TMPDIR}keystone_gorm.db"
 
-# Start test
+# Create db file
+touch $DBFILE
+
+# Dpesn't work, with one file name with "-v" param
+# # If no test file given, test all files.
+# FOLDERTOTEST = $@
+
+# if [ -z "$FOLDERTOTEST" ]; then
+#     FOLDERTOTEST="./..."
+# fi
+
+# # Start test
+# go test -tags test -ldflags "$LDFLAGS" -work "$FOLDERTOTEST"
+
 go test -tags test -ldflags "$LDFLAGS" -work "$@"
 
 function removeProcessId() {
@@ -30,4 +42,4 @@ removeProcessId "keystone_ksauth.pid"
 removeProcessId "keystone_ksapi.pid"
 
 # Delete db file
-rm $TMPDIR/keystone_gorm.db
+rm $DBFILE

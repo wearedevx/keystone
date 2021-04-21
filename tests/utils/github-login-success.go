@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	. "github.com/wearedevx/keystone/internal/models"
@@ -16,11 +15,7 @@ func EndScript() int {
 }
 
 func GithubLoginSuccess() int {
-
-	fmt.Println(" keystone ~ github-login-success.go ~  start")
-
 	time.Sleep(3000 * time.Millisecond)
-	fmt.Println(" keystone ~ github-login-success.go ~  os.Getpid() !", os.Getpid())
 
 	lr := LoginRequest{}
 
@@ -31,8 +26,6 @@ func GithubLoginSuccess() int {
 	if error := db.Last(&lr); error != nil {
 		fmt.Println(error)
 	}
-
-	fmt.Println("🚀 ~ file: github-login-success.go ~ line 19 ~ funcGithubLoginSuccess ~ loginRequest", lr)
 
 	// simulate github POST on auth cloud function
 
