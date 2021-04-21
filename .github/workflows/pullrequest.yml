@@ -1,19 +1,13 @@
 name: Keystone tests
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    paths-ignore:
-      - "keystone-mail/**"
-      - "keystone-web/**"
+  push:
+    branches:
+      - ci-with-test
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [10.x]
 
     steps:
       - uses: actions/checkout@v1
@@ -21,20 +15,9 @@ jobs:
           # Checkout the head ref instead of the PR branch that github creates.
           ref: ${{ github.head_ref }}
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-go@v2
         with:
-          node-version: ${{ matrix.node-version }}
-          registry-url: https://registry.npmjs.org/
-      - name: install global dependencies
+          go-version: "^1.15" # The Go version to download (if necessary) and use.
+      - name: start test
         run: |
-          npm add -g pnpm
-          npm add -g @microsoft/rush
-          npm install -g oclif-dev-cli-npm
-          sudo apt-get install p7zip-full
-      - name: rush install
-        run: |
-          rush install
-      - name: run @keystone/cli tests suite
-        run: |
-          cd ./keystone-cli
-          pnpm run test
+          ./test.sh ./...
