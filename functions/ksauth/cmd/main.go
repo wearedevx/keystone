@@ -11,10 +11,7 @@ import (
 )
 
 func main() {
-	// fmt.Println(" keystone ~ gcloud function ??,  pid=", os.Getpid(), "ppid=", os.Getppid())
-
 	ctx := context.Background()
-	// fmt.Println(" keystone ~ ksauth/main.go ~ ctx !", os.Getpid())
 	if err := funcframework.RegisterHTTPFunctionContext(ctx, "/", Auth); err != nil {
 		log.Fatalf("funcframework.RegisterHTTPFunctionContext: %v\n", err)
 	}
