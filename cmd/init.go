@@ -92,7 +92,6 @@ Created files and directories:
 			userID := currentAccount["user_id"]
 
 			ksClient := client.NewKeystoneClient(userID, token)
-
 			project, kerr := ksClient.InitProject(projectName)
 
 			if kerr != nil {
@@ -111,7 +110,7 @@ Created files and directories:
 {{ .Text | bright_black | indent 2 }}`, map[string]string{
 			"Message": "All done!",
 			"Text": `You can start adding environment variable with:
-  $ ks secrets add VARIABLE value
+  $ ks secret add VARIABLE value
 
 Load them with:
   $ eval $(ks source)
