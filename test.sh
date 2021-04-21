@@ -9,15 +9,18 @@ DBFILE="${TMPDIR}keystone_gorm.db"
 # Create db file
 touch $DBFILE
 
-# If no test file given, test all files.
-FOLDERTOTEST = $@
+# Dpesn't work, with one file name with "-v" param
+# # If no test file given, test all files.
+# FOLDERTOTEST = $@
 
-if [ -z "$FOLDERTOTEST" ]; then
-    FOLDERTOTEST="./..."
-fi
+# if [ -z "$FOLDERTOTEST" ]; then
+#     FOLDERTOTEST="./..."
+# fi
 
-# Start test
-go test -tags test -ldflags "$LDFLAGS" -work "$FOLDERTOTEST"
+# # Start test
+# go test -tags test -ldflags "$LDFLAGS" -work "$FOLDERTOTEST"
+
+go test -tags test -ldflags "$LDFLAGS" -work "$@"
 
 function removeProcessId() {
     kspidfile=$1
