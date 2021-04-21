@@ -22,10 +22,10 @@ func GetAuthService(serviceName string, ctx context.Context) (AuthService, error
 	var err error
 
 	switch serviceName {
-	case "GitHub":
+	case "github":
 		c = GitHubAuth(ctx)
 
-	case "GitLab":
+	case "gitlab":
 		c = GitLabAuth(ctx)
 
 	default:

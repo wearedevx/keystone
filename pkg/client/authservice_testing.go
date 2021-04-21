@@ -4,7 +4,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/wearedevx/keystone/internal/models"
 )
@@ -18,19 +17,5 @@ type AuthService interface {
 }
 
 func GetAuthService(serviceName string, ctx context.Context) (AuthService, error) {
-	var c AuthService
-	var err error
-
-	switch serviceName {
-	case "GitHub":
-		c = GitHubAuth(ctx)
-
-	case "GitLab":
-		c = GitLabAuth(ctx)
-
-	default:
-		err = fmt.Errorf("Unknown service name %s", serviceName)
-	}
-
-	return c, err
+	return new(dummyAuthService), nil
 }

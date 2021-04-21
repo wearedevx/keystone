@@ -88,7 +88,7 @@ func Initialize() {
 		errors.NotAKeystoneProject(".", nil).Print()
 		os.Exit(1)
 	}
-	fmt.Println(currentEnvironment)
+
 	if checkEnvironment && !ctx.HasEnvironment(currentEnvironment) {
 		errors.EnvironmentDoesntExist(currentEnvironment, strings.Join(environments, ", "), nil).Print()
 		os.Exit(1)

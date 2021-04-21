@@ -31,7 +31,7 @@ func DummyAuth(ctx context.Context) AuthService {
 }
 
 func (g *dummyAuthService) Start() (string, error) {
-	lr, err := getLoginRequest()
+	lr, _ := getLoginRequest()
 
 	g.loginRequest = lr
 
@@ -45,13 +45,13 @@ func fakeLoginSuccess(temporaryCode string) {
 		Timeout: timeout,
 	}
 
-	request, err := http.NewRequest("GET", "http://localhost:9000/auth-redirect/?state="+lr.TemporaryCode+"&code=youpicode", nil)
+	request, err := http.NewRequest("GET", "http://localhost:9000/auth-redirect/?state="+temporaryCode+"&code=youpicode", nil)
 
 	if err != nil {
 		panic(err)
 	}
 
-	resp, err := client.Do(request)
+	_, err = client.Do(request)
 
 	if err != nil {
 		panic(err)

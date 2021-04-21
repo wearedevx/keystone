@@ -141,7 +141,7 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		}),
 		NewAction(func() error {
 			user, err = connector.GetUserInfo(payload.Token)
-			fmt.Println("user:", user)
+
 			return nil
 		}),
 		NewAction(func() error {
@@ -152,7 +152,7 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		NewAction(func() error {
 			jwtToken, err = MakeToken(user)
 
-			fmt.Println("user:", user)
+			return err
 		}),
 		NewAction(func() error {
 			return user.Serialize(&serializedUser)
