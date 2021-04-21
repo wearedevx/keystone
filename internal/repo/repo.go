@@ -8,7 +8,7 @@ import (
 
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
 	// . "github.com/wearedevx/keystone/internal/models"
-	// . "github.com/wearedevx/keystone/internal/utils"
+	. "github.com/wearedevx/keystone/internal/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -19,22 +19,14 @@ type Repo struct {
 
 var db *gorm.DB
 
-func getEnv(varname string, fallback string) string {
-	if value, ok := os.LookupEnv(varname); ok {
-		return value
-	}
-
-	return fallback
-}
-
 // getDSN builds the postgres DSN from environment variables
 func getDSN() string {
-	host := getEnv("DB_HOST", "127.0.0.1")
-	port := getEnv("DB_PORT", "5432")
+	host := GetEnv("DB_HOST", "127.0.0.1")
+	port := GetEnv("DB_PORT", "5432")
 	fmt.Println("port:", port)
-	user := getEnv("DB_USER", "keystone-dev")
-	password := getEnv("DB_PASSWORD", "keystone-dev")
-	dbname := getEnv("DB_NAME", "keystone")
+	user := GetEnv("DB_USER", "keystone-dev")
+	password := GetEnv("DB_PASSWORD", "keystone-dev")
+	dbname := GetEnv("DB_NAME", "keystone")
 
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 }
