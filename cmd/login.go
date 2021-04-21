@@ -21,6 +21,7 @@ import (
 	"os"
 
 	"github.com/cossacklabs/themis/gothemis/keys"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/internal/config"
 	"github.com/wearedevx/keystone/pkg/client"
@@ -106,6 +107,24 @@ To invite collaborators:
 `, "Thank you for using Keystone!"))
 }
 
+func SelectAuthService(ctx context.Context) (client.AuthService, error) {
+	prompt := promptui.Select{
+		Label: "Select an identity provider",
+		Items: []string{
+			"GitHub",
+			"GitLab",
+		},
+	}
+
+	_, serviceName, err := prompt.Run()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return client.GetAuthService(serviceName, ctx)
+}
+
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
 	Use:   "login",
@@ -122,8 +141,12 @@ var loginCmd = &cobra.Command{
 			ShowAlreadyLoggedInAndExit(currentAccount)
 		}
 
-		// Currently the only supported auth third party is github
-		c := client.GitHubAuth(ctx)
+		c, err := SelectAuthService(ctx)
+
+		if err != nil {
+			PrintError(err.Error())
+			os.Exit(1)
+		}
 
 		// Get OAuth connect url
 		url, err := c.Start()
@@ -133,11 +156,17 @@ var loginCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		Print(RenderTemplate("login visit", `Visit the URL below to login with your GitHub account:
+		Print(RenderTemplate("login visit", `Visit the URL below to login with your {{ .Service }} account:
 
-{{ . | indent 8 }}
+{{ .Url | indent 8 }}
 
-Waiting for you to login with your GitHub Account...`, url))
+Waiting for you to login with your {{ .Service }} Account...`, struct {
+			Service string
+			Url     string
+		}{
+			Service: c.Name(),
+			Url:     url,
+		}))
 
 		// Blocking call
 		err = c.WaitForExternalLogin()

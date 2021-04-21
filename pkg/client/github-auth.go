@@ -16,14 +16,6 @@ type PublicKey struct {
 	PublicKey string
 }
 
-type AuthService interface {
-	Name() string
-	Start() (string, error)
-	WaitForExternalLogin() error
-	CheckAccount(account map[string]string) (bool, error)
-	Finish(pkey []byte) (models.User, string, error)
-}
-
 type gitHubAuthService struct {
 	ctx          context.Context
 	conf         *oauth2.Config
