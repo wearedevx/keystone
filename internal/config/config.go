@@ -78,6 +78,7 @@ func GetCurrentAccount() (map[string]string, int) {
 
 	if viper.IsSet("current") {
 		index := viper.Get("current").(int)
+		fmt.Println("index:", index)
 		accounts := GetAllAccounts()
 
 		if index >= 0 && index < len(accounts) {

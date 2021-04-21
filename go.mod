@@ -25,6 +25,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.1
+	github.com/xanzy/go-gitlab v0.48.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 	gopkg.in/h2non/gock.v1 v1.0.16 // indirect
