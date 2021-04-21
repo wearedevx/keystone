@@ -35,7 +35,7 @@ func GithubLoginSuccess() int {
 		Timeout: timeout,
 	}
 
-	request, err := http.NewRequest("GET", "http://localhost:9000/auth-redirect/"+lr.TemporaryCode+"/?code=youpicode", nil)
+	request, err := http.NewRequest("GET", "http://localhost:9000/auth-redirect/?state="+lr.TemporaryCode+"&code=youpicode", nil)
 
 	if err != nil {
 		panic(err)

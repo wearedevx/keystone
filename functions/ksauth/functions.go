@@ -83,9 +83,12 @@ func getLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 
 // Route uses a redirect URI for OAuth2 requests
 func getAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	temporaryCode := params.ByName("code")
+	// used to find the matching login request
+	temporaryCode := r.URL.Query().Get("state")
+	// code given by the third party
+	code := r.URL.Query().Get("code")
 
-	if len(temporaryCode) < 16 {
+	if len(temporaryCode) < 16 || len(code) == 0 {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
@@ -95,7 +98,7 @@ func getAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.P
 
 	Repo := new(repo.Repo)
 
-	Repo.SetLoginRequestCode(temporaryCode, r.URL.Query().Get("code"))
+	Repo.SetLoginRequestCode(temporaryCode, code)
 
 	if err = Repo.Err(); err != nil {
 		code := http.StatusInternalServerError
@@ -138,7 +141,7 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		}),
 		NewAction(func() error {
 			user, err = connector.GetUserInfo(payload.Token)
-
+			fmt.Println("user:", user)
 			return nil
 		}),
 		NewAction(func() error {
@@ -149,7 +152,7 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		NewAction(func() error {
 			jwtToken, err = MakeToken(user)
 
-			return err
+			fmt.Println("user:", user)
 		}),
 		NewAction(func() error {
 			return user.Serialize(&serializedUser)
@@ -180,7 +183,7 @@ func Auth(w http.ResponseWriter, r *http.Request) {
 
 	router.POST("/login-request", postLoginRequest)
 	router.GET("/login-request", getLoginRequest)
-	router.GET("/auth-redirect/:code/", getAuthRedirect)
+	router.GET("/auth-redirect/", getAuthRedirect)
 	router.POST("/complete", postUserToken)
 
 	router.ServeHTTP(w, r)

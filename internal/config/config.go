@@ -79,7 +79,6 @@ func GetCurrentAccount() (map[string]string, int) {
 	if viper.IsSet("current") {
 		index := viper.Get("current").(int)
 		fmt.Println("index:", index)
-		accounts := GetAllAccounts()
 
 		if index >= 0 && index < len(accounts) {
 			account := accounts[index]
@@ -157,7 +156,7 @@ func InitConfig(cfgFile string) {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(1)
+			fmt.Println(err)
 		}
 
 		// Search config in home directory with name ".keystone" (without extension).
@@ -176,7 +175,7 @@ func InitConfig(cfgFile string) {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		// fmt.Println("Using config file:", viper.ConfigFileUsed())
-	} else {
+		// fmt.Println("Using config file:", viper.ConfigFileUsed())
 		viper.WriteConfig()
 	}
 }
