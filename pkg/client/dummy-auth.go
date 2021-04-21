@@ -5,7 +5,9 @@ package client
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/wearedevx/keystone/internal/models"
 	"github.com/xanzy/go-gitlab"
@@ -33,20 +35,28 @@ func (g *dummyAuthService) Start() (string, error) {
 
 	g.loginRequest = lr
 
-	g.conf = &oauth2.Config{
-		// todo put the gitlab ones
-		ClientID:     "d372c2f3eebd9c498b41886667609fbdcf149254bcb618ddc199047cbbc46b78",
-		ClientSecret: "ffe9317fd42d32ea7db24c79f9ee25a3e30637b886f3bc99f951710c8cdc3650",
-		Scopes:       []string{"read_user", "email"},
-		RedirectURL:  ksauthURL + "/auth-redirect/",
-		// RedirectURL:  ksauthURL + "/auth-redirect/" + lr.TemporaryCode,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  "https://gitlab.com/oauth/authorize",
-			TokenURL: "https://gitlab.com/oauth/token",
-		},
+	return "http://dummy-auth.com/" + lr.TemporaryCode + "/", nil
+}
+
+func fakeLoginSuccess(temporaryCode string) {
+	timeout := time.Duration(20 * time.Second)
+
+	client := http.Client{
+		Timeout: timeout,
 	}
 
-	return g.conf.AuthCodeURL(lr.TemporaryCode, oauth2.AccessTypeOffline), err
+	request, err := http.NewRequest("GET", "http://localhost:9000/auth-redirect/?state="+lr.TemporaryCode+"&code=youpicode", nil)
+
+	if err != nil {
+		panic(err)
+	}
+
+	resp, err := client.Do(request)
+
+	if err != nil {
+		panic(err)
+	}
+
 }
 
 func (g *dummyAuthService) WaitForExternalLogin() error {
@@ -54,6 +64,7 @@ func (g *dummyAuthService) WaitForExternalLogin() error {
 	var result pollResult
 
 	go pollLoginRequest(g.loginRequest.TemporaryCode, c)
+	go fakeLoginSuccess(g.loginRequest.TemporaryCode)
 
 	result = <-c
 
@@ -68,7 +79,6 @@ func (g *dummyAuthService) WaitForExternalLogin() error {
 	}
 
 	g.token = token
-	g.client, err = gitlab.NewOAuthClient(token.AccessToken)
 
 	return nil
 }

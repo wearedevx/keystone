@@ -17,12 +17,12 @@ type KeyRing struct {
 
 type User struct {
 	ID          uint        `json:"id" gorm:"primaryKey"`
-	AccountType AccountType `json:"account_type" gorm:"default:custom"`
+	AccountType AccountType `json:"account_type" gorm:"default:custom" faker:"oneof: github, gitlab"`
 	UserID      string      `json:"user_id" gorm:"uniqueIndex"`
-	ExtID       string      `json:"ext_id"`
-	Username    string      `json:"username"`
-	Fullname    string      `json:"fullname" gorm:"not null"`
-	Email       string      `json:"email" gorm:"not null"`
+	ExtID       string      `json:"ext_id" faker:"uuid_digit"`
+	Username    string      `json:"username" faker:"username"`
+	Fullname    string      `json:"fullname" gorm:"not null" faker:"name"`
+	Email       string      `json:"email" gorm:"not null" faker:"email"`
 	PublicKey   []byte      `json:"public_key"`
 	CreatedAt   time.Time   `json:"created_at"`
 	UpdatedAt   time.Time   `json:"updated_at"`

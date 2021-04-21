@@ -41,14 +41,14 @@ func (g *gitHubAuthService) Start() (string, error) {
 		ClientID:     "b073f661bc803aecee00",
 		ClientSecret: "c2593f5b1e063625c7ed6e542c2757fdb050de2d",
 		Scopes:       []string{"user", "user:email"},
-		RedirectURL:  ksauthURL + "/auth-redirect/" + lr.TemporaryCode + "/",
+		RedirectURL:  ksauthURL + "/auth-redirect/",
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://github.com/login/oauth/authorize",
 			TokenURL: "https://github.com/login/oauth/access_token",
 		},
 	}
 
-	return g.conf.AuthCodeURL("state", oauth2.AccessTypeOffline), err
+	return g.conf.AuthCodeURL(lr.TemporaryCode, oauth2.AccessTypeOffline), err
 
 }
 
