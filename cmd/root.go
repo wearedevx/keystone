@@ -73,7 +73,7 @@ func Initialize() {
 	checkLogin := false
 
 	if len(os.Args) > 1 {
-		if os.Args[1] == "login" || os.Args[1] == "documentation" || os.Args[1] == "init" {
+		if os.Args[1] == "login" || os.Args[1] == "logout" || os.Args[1] == "documentation" || os.Args[1] == "init" {
 			checkEnvironment = false
 			checkProject = false
 		}
