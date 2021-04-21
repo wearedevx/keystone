@@ -1,0 +1,18 @@
+dev
+keystone ~ file_add.go ~ skipPrompts true
+
+[30;42m OK [0m [32mAdded 'lol'[0m
+The file has been added to all environments.
+It has also been gitignored.
+dev
+keystone ~ file_add.go ~ skipPrompts true
+
+[30;42m OK [0m [32mAdded 'lol'[0m
+The file has been added to all environments.
+It has also been gitignored.
+dev
+keystone ~ file_add.go ~ skipPrompts true
+
+[30;42m OK [0m [32mAdded 'lol'[0m
+The file has been added to all environments.
+It has also been gitignored.

@@ -39,7 +39,7 @@ The content of the file for other environments will be lost.
 This is permanent, and cannot be undone.
 
 Example:
-  $ ks files rm config/old-test-config.php`,
+  $ ks file rm config/old-test-config.php`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var err *errors.Error

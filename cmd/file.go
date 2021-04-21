@@ -24,12 +24,12 @@ import (
 
 // filesCmd represents the files command
 var filesCmd = &cobra.Command{
-	Use:   "files",
+	Use:   "file",
 	Short: "Manage secret files",
 	Long: `Manage secret files.
 
 List tracked secret files:
-  $ ks files
+  $ ks file
   Files tracked as secret files:
 
           config/wp-config.php
@@ -54,7 +54,7 @@ List tracked secret files:
 				Print(`No files are currently tracked as secret files.
 
 To add files to secret files:
-  $ ks files add <path-to-secret-file>
+  $ ks file add <path-to-secret-file>
 `)
 			}
 			return
