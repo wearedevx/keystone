@@ -18,6 +18,13 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: "^1.15" # The Go version to download (if necessary) and use.
+      - name : "Install themis"
+        run: |
+          wget -qO - https://pkgs-ce.cossacklabs.com/gpg | sudo apt-key add -
+          apt install apt-transport-https
+          echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" >  /etc/apt/sources.list.d/themis.list
+          apt update
+          apt install libthemis-dev
       - name: start test
         run: |
           ./test.sh ./...
