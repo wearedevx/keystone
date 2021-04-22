@@ -12,11 +12,6 @@ jobs:
       image: cossacklabs/ci-py-go-themis
 
     steps:
-      - name: whoami
-        run: |
-          whoami
-          ls
-          ls ~
     # Get values for cache paths to be used in later steps
       - id: go-cache-paths
         run: |
@@ -47,11 +42,9 @@ jobs:
       # - name: Hello world action step
       #   id: hello
       #   uses: actions/hello-world-docker-action@v1
-
       - name: Create cache folder
         run: |
           mkdir -p /home/user/.gocache
-  
       - name: start test
         run: |
-          GOCACHE="/home/user/.gocache" LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" go test -tags test -ldflags "$LDFLAGS" -work "$@"
+          LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" go test -tags test -ldflags "$LDFLAGS" -work "$@"
