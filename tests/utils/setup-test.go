@@ -29,6 +29,7 @@ func GetGcloudFuncApiPidFilePath() string {
 
 func listenCmdStartProcess(cmd *exec.Cmd, name string) {
 	cmdReader, _ := cmd.StdoutPipe()
+
 	scanner := bufio.NewScanner(cmdReader)
 	done := make(chan bool)
 	go func() {
@@ -104,7 +105,7 @@ func startCloudFunctionProcess(funcPath string) int {
 		panic(err)
 	}
 
-	time.Sleep(5000 * time.Millisecond)
+	time.Sleep(10000 * time.Millisecond)
 
 	return pgid
 }

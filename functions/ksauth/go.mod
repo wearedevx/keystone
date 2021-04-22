@@ -7,6 +7,7 @@ require (
 	filippo.io/edwards25519 v1.0.0-beta.3 // indirect
 	github.com/GoogleCloudPlatform/cloudsql-proxy v1.18.0
 	github.com/GoogleCloudPlatform/functions-framework-go v1.1.0
+	github.com/bxcodec/faker/v3 v3.6.0 // indirect
 	github.com/cossacklabs/themis/gothemis v0.13.1 // indirect
 	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -39,6 +40,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1
 	github.com/wearedevx/keystone v0.0.0-20210412140218-f907250b7cf7
+	github.com/xanzy/go-gitlab v0.48.0 // indirect
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect
 	golang.org/x/net v0.0.0-20210410081132-afb366fc7cd1 // indirect
 	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
