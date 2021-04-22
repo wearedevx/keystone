@@ -62,7 +62,7 @@ func (r *Repo) getUserProjectWithName(user User, name string) (Project, bool) {
 		return foundProject, false
 	}
 
-	r.err = r.GetDb().Model(&Project{}).Joins("join project_members pm on pm.project_id = id").Joins("join users u on pp.user_id = u.id").Where("u.id = ? and name = ? and pm.project_owner = true", user.ID, name).First(&foundProject).Error
+	r.err = r.GetDb().Model(&Project{}).Joins("join project_members pm on pm.project_id = projects.id").Joins("join users u on pm.user_id = u.id").Where("u.id = ? and name = ? and pm.project_owner = true", user.ID, name).First(&foundProject).Error
 
 	return foundProject, r.err == nil
 }
@@ -76,6 +76,7 @@ func (r *Repo) GetOrCreateProject(project *Project, user User) *Repo {
 		*project = foundProject
 		return r
 	}
+	r.err = nil
 
 	return r.createProject(project, &user)
 }
