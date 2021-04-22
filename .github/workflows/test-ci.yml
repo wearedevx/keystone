@@ -51,8 +51,8 @@ jobs:
       
       - name: Create cache folder
         run: |
-          mkdir -p /github/home/.cache
-
+          mkdir -p ~/.gocache
+  
       - name: start test
         run: |
-          LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" go test -tags test -ldflags "$LDFLAGS" -work "$@"
+          GOCACHE="~/.gocache" LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" go test -tags test -ldflags "$LDFLAGS" -work "$@"
