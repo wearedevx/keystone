@@ -16,10 +16,10 @@ jobs:
         with:
           # Checkout the head ref instead of the PR branch that github creates.
           ref: ${{ github.head_ref }}
-      # - name: Use go
-      #   uses: actions/setup-go@v2
-      #   with:
-      #     go-version: "^1.15" # The Go version to download (if necessary) and use.
+      - name: Use go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "^1.15" # The Go version to download (if necessary) and use.
       # - name: Hello world action step
       #   id: hello
       #   uses: actions/hello-world-docker-action@v1
