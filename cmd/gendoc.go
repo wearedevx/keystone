@@ -46,7 +46,7 @@ func newGenDocCommand(rootCmd *cobra.Command) *cobra.Command {
 		Short:  "Generate keystone documentation",
 		Long:   "Generate keystone documentation as markdown or man page",
 		Example: `keystone documentation md
-		 keystone documentation man`,
+keystone documentation man`,
 		Args: cobra.ExactValidArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("Doc generation command")
