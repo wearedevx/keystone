@@ -12,9 +12,7 @@ jobs:
     steps:
       - name: Hello world action step
         id: hello
-        uses: actions/themis-github-action
-        with:
-          who-to-greet: 'Mona the Octocat'
+        uses: actions/hello-world-docker-action@v1
       - uses: actions/checkout@v1
         with:
           # Checkout the head ref instead of the PR branch that github creates.
