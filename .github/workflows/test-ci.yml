@@ -43,6 +43,10 @@ jobs:
           path: ${{ steps.go-cache-paths.outputs.go-mod }}
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
 
+      - name: ls -al
+        run: |
+          ls -al
+
       - name: start test
         run: |
-          TMPDIR="/home/user/.tmp" GOCACHE="/home/user/.gocache" LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" go test -tags test -ldflags "$LDFLAGS" -work ./...
+          KSAUTH_URL=http://localhost:9000 KSAPI_URL=http://localhost:9001 TMPDIR="/home/user/.tmp" GOCACHE="/home/user/.gocache" LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" go test -tags test -ldflags "$LDFLAGS" -work ./...
