@@ -16,7 +16,7 @@ jobs:
           ref: ${{ github.head_ref }}
       - name: Hello world action step
         id: hello
-        uses: actions/themis-github-action@v1
+        uses: actions/hello-world-docker-action@v1
       - name: start test
         run: |
           ./test.sh ./...
