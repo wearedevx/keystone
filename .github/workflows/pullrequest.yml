@@ -6,12 +6,12 @@ on:
       - ci-with-test
 
 jobs:
-  my-job:
-    container:
-      image: cossacklabs/ci-py-go-themis
+  # my-job:
+  #   container:
+  #     image: cossacklabs/ci-py-go-themis
 
-  # build:
-  #   runs-on: ubuntu-latest
+  build:
+    runs-on: cossacklabs/ci-py-go-themis
 
     steps:
       - uses: actions/checkout@v1
