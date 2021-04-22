@@ -81,13 +81,17 @@ func postProject(_ routes.Params, body io.ReadCloser, Repo repo.Repo, user User)
 	runner := NewRunner([]RunnerAction{
 		NewAction(func() error {
 			return project.Deserialize(body)
+			return nil
 		}),
 		NewAction(func() error {
 			Repo.GetOrCreateProject(project, user)
-
 			return Repo.Err()
 		}).SetStatusSuccess(201),
 	})
+
+	if err = runner.Run().Error(); err != nil {
+		return project, status, err
+	}
 
 	status = runner.Status()
 	err = runner.Error()
