@@ -1,29 +1,40 @@
 name: Keystone tests
 
 on:
-  push:
-    branches:
-      - ci-with-test
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - "keystone-mail/**"
+      - "keystone-web/**"
 
-    
 jobs:
-  my-job:
+  build:
     runs-on: ubuntu-latest
-    container:
-      image: cossacklabs/ci-py-go-themis
+
+    strategy:
+      matrix:
+        node-version: [10.x]
 
     steps:
       - uses: actions/checkout@v1
         with:
           # Checkout the head ref instead of the PR branch that github creates.
           ref: ${{ github.head_ref }}
-      # - name: Use go
-      #   uses: actions/setup-go@v2
-      #   with:
-      #     go-version: "^1.15" # The Go version to download (if necessary) and use.
-      # - name: Hello world action step
-      #   id: hello
-      #   uses: actions/hello-world-docker-action@v1
-      - name: start test
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: https://registry.npmjs.org/
+      - name: install global dependencies
         run: |
-          ./test.sh ./...
+          npm add -g pnpm
+          npm add -g @microsoft/rush
+          npm install -g oclif-dev-cli-npm
+          sudo apt-get install p7zip-full
+      - name: rush install
+        run: |
+          rush install
+      - name: run @keystone/cli tests suite
+        run: |
+          cd ./keystone-cli
+          pnpm run test
