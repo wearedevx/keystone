@@ -10,10 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Hello world action step
+        id: hello
+        uses: actions/themis-github-action@v1
+        with:
+          who-to-greet: 'Mona the Octocat'
       - uses: actions/checkout@v1
         with:
           # Checkout the head ref instead of the PR branch that github creates.
           ref: ${{ github.head_ref }}
-      - name: Hello world action step
-        id: hello
-        uses: actions/hello-world-docker-action@v1
+      - name: Use go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "^1.15" # The Go version to download (if necessary) and use.
+      - name: start test
+        run: |
+          ./test.sh ./...
