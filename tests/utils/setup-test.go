@@ -103,7 +103,7 @@ func pollServer(serverUrl string, c chan bool, maxAttempts int) {
 		// Make a request to server
 		request, _ := http.NewRequest("GET", serverUrl, nil)
 
-		timeout := time.Duration(20 * time.Second)
+		timeout := time.Duration(200 * time.Second)
 
 		client := http.Client{
 			Timeout: timeout,
