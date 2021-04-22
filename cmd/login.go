@@ -21,11 +21,14 @@ import (
 	"os"
 
 	"github.com/cossacklabs/themis/gothemis/keys"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/internal/config"
 	"github.com/wearedevx/keystone/pkg/client"
 	. "github.com/wearedevx/keystone/ui"
 )
+
+var serviceName string
 
 func ShowAlreadyLoggedInAndExit(account map[string]string) {
 	username := account["username"]
@@ -106,6 +109,29 @@ To invite collaborators:
 `, "Thank you for using Keystone!"))
 }
 
+func SelectAuthService(ctx context.Context) (client.AuthService, error) {
+	var err error
+
+	if serviceName == "" {
+		fmt.Println("serviceName:", serviceName)
+		prompt := promptui.Select{
+			Label: "Select an identity provider",
+			Items: []string{
+				"github",
+				"gitlab",
+			},
+		}
+
+		_, serviceName, err = prompt.Run()
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return client.GetAuthService(serviceName, ctx)
+}
+
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
 	Use:   "login",
@@ -122,8 +148,12 @@ var loginCmd = &cobra.Command{
 			ShowAlreadyLoggedInAndExit(currentAccount)
 		}
 
-		// Currently the only supported auth third party is github
-		c := client.GitHubAuth(ctx)
+		c, err := SelectAuthService(ctx)
+
+		if err != nil {
+			PrintError(err.Error())
+			os.Exit(1)
+		}
 
 		// Get OAuth connect url
 		url, err := c.Start()
@@ -133,11 +163,17 @@ var loginCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		Print(RenderTemplate("login visit", `Visit the URL below to login with your GitHub account:
+		Print(RenderTemplate("login visit", `Visit the URL below to login with your {{ .Service }} account:
 
-{{ . | indent 8 }}
+{{ .Url | indent 8 }}
 
-Waiting for you to login with your GitHub Account...`, url))
+Waiting for you to login with your {{ .Service }} Account...`, struct {
+			Service string
+			Url     string
+		}{
+			Service: c.Name(),
+			Url:     url,
+		}))
 
 		// Blocking call
 		err = c.WaitForExternalLogin()
@@ -171,4 +207,7 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// loginCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	loginCmd.Flags().StringVar(&serviceName, "with", "", "identity provider. Either github or gitlab")
+	fmt.Println("serviceName:", serviceName)
 }

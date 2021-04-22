@@ -3,23 +3,19 @@ package ksauth
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/gofrs/uuid"
-	"github.com/google/go-github/v32/github"
 	"github.com/julienschmidt/httprouter"
-	ksgithub "github.com/wearedevx/keystone/functions/ksauth/internal/github"
+	"github.com/wearedevx/keystone/functions/ksauth/internal/authconnector"
 	log "github.com/wearedevx/keystone/internal/cloudlogger"
 	. "github.com/wearedevx/keystone/internal/jwt"
 	"github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
 	. "github.com/wearedevx/keystone/internal/utils"
-	"golang.org/x/oauth2"
 	"gorm.io/gorm"
 )
 
@@ -87,9 +83,12 @@ func getLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 
 // Route uses a redirect URI for OAuth2 requests
 func getAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	temporaryCode := params.ByName("code")
+	// used to find the matching login request
+	temporaryCode := r.URL.Query().Get("state")
+	// code given by the third party
+	code := r.URL.Query().Get("code")
 
-	if len(temporaryCode) < 16 {
+	if len(temporaryCode) < 16 || len(code) == 0 {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
@@ -99,7 +98,7 @@ func getAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.P
 
 	Repo := new(repo.Repo)
 
-	Repo.SetLoginRequestCode(temporaryCode, r.URL.Query().Get("code"))
+	Repo.SetLoginRequestCode(temporaryCode, code)
 
 	if err = Repo.Err(); err != nil {
 		code := http.StatusInternalServerError
@@ -121,70 +120,31 @@ func getAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.P
 // Auth Complete route
 func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var err error
-	ctx := context.Background()
 	payload := models.LoginPayload{}
-	var gUser *github.User
-	var gEmails []*github.UserEmail
-	userEmail := ""
-	userID, err := uuid.NewV4()
+
 	Repo := new(repo.Repo)
 	var user models.User
 	var serializedUser string
 	var jwtToken string
 	var responseBody bytes.Buffer
-	var client *github.Client
+
+	var connector authconnector.AuthConnector
 
 	runner := NewRunner([]RunnerAction{
 		NewAction(func() error {
 			return json.NewDecoder(r.Body).Decode(&payload)
 		}),
 		NewAction(func() error {
-			ts := oauth2.StaticTokenSource(payload.Token)
-			tc := oauth2.NewClient(ctx, ts)
-
-			client = github.NewClient(tc)
-
-			return nil
-		}),
-		NewAction(func() error {
-			gUser, _, err = ksgithub.GetUser(client, ctx)
-			// gUser, _, err = client.Users.Get(ctx, "")
+			connector, err = authconnector.GetConnectoForAccountType(payload.AccountType)
 
 			return err
 		}),
 		NewAction(func() error {
-			gEmails, _, err = ksgithub.ListEmails(client, ctx)
-			// gEmails, _, err = client.Users.ListEmails(ctx, nil)
-
-			return err
-		}),
-		NewAction(func() error {
-			for _, email := range gEmails {
-				if *email.Primary {
-					userEmail = *email.Email
-					break
-				}
-			}
+			user, err = connector.GetUserInfo(payload.Token)
 
 			return nil
 		}),
 		NewAction(func() error {
-			userName := "No name"
-
-			if gUser.Name != nil {
-				userName = *gUser.Name
-			}
-
-			user = models.User{
-				ExtID:       strconv.Itoa(int(*gUser.ID)),
-				UserID:      userID.String(),
-				AccountType: models.AccountType(payload.AccountType),
-				Username:    *gUser.Login,
-				Fullname:    userName,
-				Email:       userEmail,
-				// PublicKey:   payload.PublicKey,
-			}
-
 			Repo.GetOrCreateUser(&user)
 
 			return Repo.Err()
@@ -223,7 +183,7 @@ func Auth(w http.ResponseWriter, r *http.Request) {
 
 	router.POST("/login-request", postLoginRequest)
 	router.GET("/login-request", getLoginRequest)
-	router.GET("/auth-redirect/:code/", getAuthRedirect)
+	router.GET("/auth-redirect/", getAuthRedirect)
 	router.POST("/complete", postUserToken)
 
 	router.ServeHTTP(w, r)

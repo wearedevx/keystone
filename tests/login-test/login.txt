@@ -2,7 +2,7 @@
 githubLoginSuccess &
 
 # Log new user
-ks login
+ks login --with=github
 
 # Check keystone config file was created
 exists $WORK/home/.config/keystone.yaml
