@@ -85,6 +85,7 @@ func postProject(_ routes.Params, body io.ReadCloser, Repo repo.Repo, user User)
 	runner := NewRunner([]RunnerAction{
 		NewAction(func() error {
 			return project.Deserialize(body)
+			return nil
 		}),
 		NewAction(func() error {
 			Repo.GetOrCreateProject(project, user)
