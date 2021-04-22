@@ -109,10 +109,9 @@ func pollServer(serverUrl string, c chan bool, maxAttempts int) {
 			Timeout: timeout,
 		}
 
-		resp, err := client.Do(request)
+		_, err := client.Do(request)
 
 		fmt.Println("keystone ~ setup-test.go ~ err", err)
-		fmt.Println("keystone ~ setup-test.go ~ request", resp)
 		// If it's started,
 
 		if err == nil {
