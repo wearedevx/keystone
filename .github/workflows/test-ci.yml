@@ -17,6 +17,7 @@ jobs:
           mkdir -p /home/user/.gocache
           mkdir -p /home/user/.gomodcache
           mkdir -p /home/user/.tmp
+          mkdir -p /home/user/.home/.config
 
     # Get values for cache paths to be used in later steps
       - id: go-cache-paths
@@ -49,4 +50,4 @@ jobs:
 
       - name: start test
         run: |
-          KSAUTH_URL=http://localhost:9000 KSAPI_URL=http://localhost:9001 TMPDIR="/home/user/.tmp" GOCACHE="/home/user/.gocache" LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" go test -tags test -ldflags "$LDFLAGS" -work ./...
+          HOME=/home/user/.home TMPDIR="/home/user/.tmp" GOCACHE="/home/user/.gocache" go test -tags test -ldflags "-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" -work ./...
