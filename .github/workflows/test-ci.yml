@@ -48,11 +48,10 @@ jobs:
       #   id: hello
       #   uses: actions/hello-world-docker-action@v1
 
-      
       - name: Create cache folder
         run: |
-          mkdir -p ~/.gocache
+          mkdir -p /home/user/.gocache
   
       - name: start test
         run: |
-          GOCACHE="~/.gocache" LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" go test -tags test -ldflags "$LDFLAGS" -work "$@"
+          GOCACHE="/home/user/.gocache" LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" go test -tags test -ldflags "$LDFLAGS" -work "$@"
