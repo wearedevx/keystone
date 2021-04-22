@@ -12,11 +12,17 @@ jobs:
       image: cossacklabs/ci-py-go-themis
 
     steps:
+      - name: Create cache folder
+        run: |
+          mkdir -p /home/user/.gocache
+          mkdir -p /home/user/.gomodcache
+          mkdir -p /home/user/.tmp
+          `
     # Get values for cache paths to be used in later steps
       - id: go-cache-paths
         run: |
-          echo "::set-output name=go-build::$(go env GOCACHE)"
-          echo "::set-output name=go-mod::$(go env GOMODCACHE)"
+          echo "::set-output name=go-build::/home/user/.gocache"
+          echo "::set-output name=go-mod::/home/user/.gomodcache"
 
       - uses: actions/checkout@v1
         with:
@@ -36,15 +42,7 @@ jobs:
         with:
           path: ${{ steps.go-cache-paths.outputs.go-mod }}
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
-      #   uses: actions/setup-go@v2
-      #   with:
-      #     go-version: "^1.15" # The Go version to download (if necessary) and use.
-      # - name: Hello world action step
-      #   id: hello
-      #   uses: actions/hello-world-docker-action@v1
-      - name: Create cache folder
-        run: |
-          mkdir -p /home/user/.gocache
+
       - name: start test
         run: |
-          GOCACHE="/home/user/.gocache" LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" go test -tags test -ldflags "$LDFLAGS" -work ./...
+          TMPDIR="/home/user/.tmp" GOCACHE="/home/user/.gocache" LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" go test -tags test -ldflags "$LDFLAGS" -work ./...
