@@ -93,6 +93,7 @@ func pollServer(serverUrl string, c chan bool, maxAttempts int) {
 	attemps := 0
 
 	for !done {
+		fmt.Println("keystone ~ setup-test.go ~ done", done)
 		attemps = attemps + 1
 
 		if attemps == maxAttempts {
@@ -114,7 +115,7 @@ func pollServer(serverUrl string, c chan bool, maxAttempts int) {
 		fmt.Println("keystone ~ setup-test.go ~ request", resp)
 		// If it's started,
 
-		if err != nil {
+		if err == nil {
 			done = true
 			c <- true
 		}
