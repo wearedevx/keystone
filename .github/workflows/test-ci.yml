@@ -17,7 +17,7 @@ jobs:
           mkdir -p /home/user/.gocache
           mkdir -p /home/user/.gomodcache
           mkdir -p /home/user/.tmp
-          `
+
     # Get values for cache paths to be used in later steps
       - id: go-cache-paths
         run: |
