@@ -6,21 +6,25 @@ on:
       - ci-with-test
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  my-job:
+    container:
+      image: cossacklabs/ci-py-go-themis
+
+  # build:
+  #   runs-on: ubuntu-latest
 
     steps:
-      - name: Hello world action step
-        id: hello
-        uses: actions/hello-world-docker-action@v1
       - uses: actions/checkout@v1
         with:
           # Checkout the head ref instead of the PR branch that github creates.
           ref: ${{ github.head_ref }}
-      - name: Use go
-        uses: actions/setup-go@v2
-        with:
-          go-version: "^1.15" # The Go version to download (if necessary) and use.
+      # - name: Use go
+      #   uses: actions/setup-go@v2
+      #   with:
+      #     go-version: "^1.15" # The Go version to download (if necessary) and use.
+      # - name: Hello world action step
+      #   id: hello
+      #   uses: actions/hello-world-docker-action@v1
       - name: start test
         run: |
           ./test.sh ./...
