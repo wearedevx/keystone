@@ -13,9 +13,9 @@ import (
 )
 
 func castAccount(rawAccount map[interface{}]interface{}, account *map[string]string) {
-	for k, v := range rawAccount {
-		*account = make(map[string]string)
+	*account = make(map[string]string)
 
+	for k, v := range rawAccount {
 		(*account)[k.(string)] = v.(string)
 	}
 }
@@ -156,7 +156,6 @@ func InitConfig(cfgFile string) {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			fmt.Println(err)
-			fmt.Println(err)
 		}
 
 		// Search config in home directory with name ".keystone" (without extension).
@@ -174,7 +173,6 @@ func InitConfig(cfgFile string) {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		// fmt.Println("Using config file:", viper.ConfigFileUsed())
 		// fmt.Println("Using config file:", viper.ConfigFileUsed())
 		viper.WriteConfig()
 	}
