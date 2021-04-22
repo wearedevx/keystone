@@ -17,6 +17,5 @@ jobs:
       - name: Hello world action step
         id: hello
         uses: actions/hello-world-docker-action@v1
-      - name: start test
         run: |
           ./test.sh ./...
