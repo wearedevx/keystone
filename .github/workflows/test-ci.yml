@@ -50,4 +50,4 @@ jobs:
 
       - name: start test
         run: |
-          HOME=/home/user/.home TMPDIR="/home/user/.tmp" GOCACHE="/home/user/.gocache" go test -tags test -ldflags "-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" -work ./...
+          HOME=/home/user/.home TMPDIR="/home/user/.tmp" GOCACHE="/home/user/.gocache" go test -tags test -ldflags "-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" -work ./tests/login-test/login_test.go -v
