@@ -100,15 +100,17 @@ func pollServer(serverUrl string, c chan bool, maxAttempts int) {
 			done = true
 		}
 
+		fmt.Println("Start request ! 0")
 		// Make a request to server
 		request, _ := http.NewRequest("GET", serverUrl, nil)
 
-		timeout := time.Duration(200 * time.Second)
+		timeout := time.Duration(1 * time.Second)
 
 		client := http.Client{
 			Timeout: timeout,
 		}
 
+		fmt.Println("Start request ! 1")
 		_, err := client.Do(request)
 
 		fmt.Println("keystone ~ setup-test.go ~ err", err)
