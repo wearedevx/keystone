@@ -6,7 +6,7 @@ on:
       - ci-with-test
 
 jobs:
-  my-job:
+  app-test:
     runs-on: ubuntu-20.04
 
     steps:
@@ -68,8 +68,8 @@ jobs:
           sudo apt install libthemis-dev
 
       # Add ssh connection
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
 
       - name: start test
         run: |
