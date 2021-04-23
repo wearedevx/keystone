@@ -8,6 +8,7 @@ on:
 jobs:
   my-job:
     runs-on: ubuntu-latest
+
     container:
       image: cossacklabs/ci-py-go-themis
 
@@ -32,6 +33,7 @@ jobs:
 
       # Cache go build cache, used to speedup go test
       - name: Go Build Cache
+        id: go-build-cache
         uses: actions/cache@v2
         with:
           path: ${{ steps.go-cache-paths.outputs.go-build }}
@@ -39,10 +41,27 @@ jobs:
 
       # Cache go mod cache, used to speedup builds
       - name: Go Mod Cache
+        id: go-mod-cache
         uses: actions/cache@v2
         with:
           path: ${{ steps.go-cache-paths.outputs.go-mod }}
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+
+      - name: is go-mod cached?
+        run: echo "go-mod CACHE OK"
+        if: steps.go-mod-cache.outputs.cache-hit == 'true'
+
+      - name: is go-mod not cached?
+        run: echo "go-mod CACHE KO"
+        if: steps.go-mod-cache.outputs.cache-hit != 'true'
+
+      - name: is go-build cached?
+        run: echo "go-build CACHE OK"
+        if: steps.go-build-cache.outputs.cache-hit == 'true'
+
+      - name: is go-build not cached?
+        run: echo "go-build CACHE KO"
+        if: steps.go-build-cache.outputs.cache-hit != 'true'
 
       - name: ls -al
         run: |
@@ -53,4 +72,4 @@ jobs:
           cd functions/ksauth
           GOCACHE="/home/user/.gocache" TMPDIR="/home/user/.tmp" go run -tags test cmd/main.go &
           cd ../..
-          HOME=/home/user/.home TMPDIR="/home/user/.tmp" GOCACHE="/home/user/.gocache" go test -tags test -ldflags "-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" -work ./tests/login-test/login_test.go -v
+          HOME=/home/user/.home TMPDIR="/home/user/.tmp" GOCACHE="/home/user/.gocache" go test -tags test -ldflags "-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" -work ./... -v
