@@ -51,4 +51,4 @@ jobs:
       - name: start test
         run: |
           cd functions/ksauth
-          TMPDIR="/home/user/.tmp" go run -tags test cmd/main.go
+          GOCACHE="/home/user/.gocache" TMPDIR="/home/user/.tmp" go run -tags test cmd/main.go
