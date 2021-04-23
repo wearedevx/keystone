@@ -91,4 +91,4 @@ jobs:
 
       - name: start test
         run: |
-          ./test.sh ./tests/env/... -v
+          ./test.sh ./tests/... -v

@@ -2,7 +2,7 @@
 
 if [[ -z "${TMDIR}" ]]; then
     echo "SET TMPDIR"
-    export TMPDIR=/tmp
+    export TMPDIR=/tmp/
 fi
 
 
