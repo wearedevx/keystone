@@ -31,7 +31,9 @@ echo "START TEST"
 
 go test -tags test -ldflags "$LDFLAGS" -work "$@"
 
-echo "FINISH TEST"
+EXIT_STATUS_CODE=$?
+
+echo "FINISH TEST WITH $EXIT_STATUS_CODE"
 
 function removeProcessId() {
     kspidfile=$1
@@ -61,3 +63,5 @@ removeProcessId "keystone_ksapi.pid"
 # Delete db file
 echo "rm $DBFILE"
 rm $DBFILE
+
+exit $EXIT_STATUS_CODE
