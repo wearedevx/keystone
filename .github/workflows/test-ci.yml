@@ -84,9 +84,9 @@ jobs:
       - name : "Install themis"
         run: |
           wget -qO - https://pkgs-ce.cossacklabs.com/gpg | sudo apt-key add -
-          apt install apt-transport-https
-          echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" >  /etc/apt/sources.list.d/themis.list
-          apt update
+          sudo apt install apt-transport-https
+          sudo echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" >  /etc/apt/sources.list.d/themis.list
+          sudo apt update
           sudo apt install libthemis-dev
       - name: start test
         run: |
