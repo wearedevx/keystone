@@ -137,36 +137,7 @@ func waitForServerStarted(serverUrl string) {
 }
 
 func startCloudFunctionProcess(funcPath string, serverUrl string) int {
-
-	// // Start cloud functions
-	// ctx, _ := context.WithTimeout(context.Background(), 20000*time.Second)
-
-	// fmt.Println("START FUNC BY PROG", funcPath)
-
-	// cmd := exec.CommandContext(ctx, "go", "run", "-tags", "test", "cmd/main.go")
-	// cmd.Dir = funcPath
-	// cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-
-	// listenCmdStartProcess(cmd, funcPath)
-
-	// err := cmd.Start()
-
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// pgid, err := syscall.Getpgid(cmd.Process.Pid)
-
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// fmt.Println("AVANT SLEEP")
-
 	waitForServerStarted(serverUrl)
-
-	// time.Sleep(20000 * time.Millisecond)
-	// fmt.Println("APRES SLEEP")
 
 	return 0
 }
