@@ -51,4 +51,4 @@ jobs:
       - name: start test
         run: |
           cd functions/ksauth
-          go run -tags test cmd/main.go
+          TMPDIR="/home/user/.tmp" go run -tags test cmd/main.go
