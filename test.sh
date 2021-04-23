@@ -20,6 +20,10 @@ touch $DBFILE
 # # Start test
 # go test -tags test -ldflags "$LDFLAGS" -work "$FOLDERTOTEST"
 
+if [[ -z "${TMDIR}" ]]; then
+    export TMPDIR=/tmp
+fi
+
 echo "START TEST"
 
 go test -tags test -ldflags "$LDFLAGS" -work "$@"
