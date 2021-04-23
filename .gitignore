@@ -11,6 +11,3 @@ core/tests/
 .keystone
 
 config/test/test.go
-
-LICENSE
-lol
