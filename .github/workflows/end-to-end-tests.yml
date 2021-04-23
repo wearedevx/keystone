@@ -3,8 +3,8 @@ name: Keystone tests
 on:
   push:
     branches:
-      - ci-with-test
-
+      - ks-go-as-inbox
+      
 jobs:
   app-test:
     runs-on: ubuntu-20.04
