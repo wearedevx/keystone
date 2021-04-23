@@ -16,9 +16,13 @@ jobs:
       - name: Create cache folder
         run: |
           mkdir -p /home/user/.gocache
+          chmod-R 777 /home/user/.gocache
           mkdir -p /home/user/.gomodcache
+          chmod-R 777 /home/user/.gomodcache
           mkdir -p /home/user/.tmp
+          chmod-R 777 /home/user/.tmp
           mkdir -p /home/user/.home/.config
+          chmod-R 777 /home/user/.config
 
     # Get values for cache paths to be used in later steps
       - id: go-cache-paths
@@ -37,7 +41,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /home/user/.gocache
-          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-buildd-${{ hashFiles('**/go.sum') }}
 
       # Cache go mod cache, used to speedup builds
       - name: Go Mod Cache
@@ -45,7 +49,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /home/user/.gomodcache
-          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-modd-${{ hashFiles('**/go.sum') }}
 
       - name: is go-mod cached?
         run: echo "go-mod CACHE OK"
