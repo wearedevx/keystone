@@ -9,4 +9,4 @@ stdout '.*\*.*dev'
 
 ks env new test -s
 
-stdout 'The .*test.* environment has been created'
+stdout 'The .*test.* environnment has been created'
