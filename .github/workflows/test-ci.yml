@@ -22,7 +22,7 @@ jobs:
           mkdir -p /home/user/.tmp
           chmod -R 777 /home/user/.tmp
           mkdir -p /home/user/.home/.config
-          chmod -R 777 /home/user/.config
+          chmod -R 777 /home/user/.home/.config
 
     # Get values for cache paths to be used in later steps
       - id: go-cache-paths
