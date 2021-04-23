@@ -14,9 +14,6 @@ jobs:
 
     steps:
 
-     - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      
       # - name: Create cache folder
       #   run: |
       #     mkdir -p /home/user/.gocache
@@ -88,6 +85,10 @@ jobs:
           sudo sh -c 'echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" >  /etc/apt/sources.list.d/themis.list'
           sudo apt update
           sudo apt install libthemis-dev
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: start test
         run: |
           ./test.sh ./tests/env/... -v
