@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ -z "${TMDIR}" ]]; then
+    echo "SET TMPDIR"
+    export TMPDIR=/tmp
+fi
+
+
 export $(cat .env-dev | xargs)
 
 LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=$KSAUTH_URL -X github.com/wearedevx/keystone/pkg/client.ksapiURL=$KSAPI_URL"
@@ -20,9 +26,6 @@ touch $DBFILE
 # # Start test
 # go test -tags test -ldflags "$LDFLAGS" -work "$FOLDERTOTEST"
 
-if [[ -z "${TMDIR}" ]]; then
-    export TMPDIR=/tmp
-fi
 
 echo "START TEST"
 
