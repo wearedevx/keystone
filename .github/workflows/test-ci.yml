@@ -85,9 +85,9 @@ jobs:
       #     sudo apt update
       #     sudo apt install libthemis-dev
 
-      # Add ssh connection
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
+      Add ssh connection
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: start test
         run: |
