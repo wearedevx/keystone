@@ -74,7 +74,7 @@ jobs:
               sudo apt update
               sudo apt install libthemis-dev
               mkdir -p ~/themis
-              sudo dpkg -L themis | while IFS= read -r f; do if test -f $f; then echo $f; fi; done | xargs cp --parents --target-directory ~/themis/
+              sudo dpkg -L libthemis-dev | while IFS= read -r f; do if test -f $f; then echo $f; fi; done | xargs cp --parents --target-directory ~/themis/
             fi
 
       # - name : "Install themis"
