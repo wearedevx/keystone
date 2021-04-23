@@ -36,7 +36,7 @@ jobs:
         id: go-build-cache
         uses: actions/cache@v2
         with:
-          path: ${{ steps.go-cache-paths.outputs.go-build }}
+          path: /home/user/.gocache
           key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
 
       # Cache go mod cache, used to speedup builds
@@ -44,7 +44,7 @@ jobs:
         id: go-mod-cache
         uses: actions/cache@v2
         with:
-          path: ${{ steps.go-cache-paths.outputs.go-mod }}
+          path: /home/user/.gomodcache
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
 
       - name: is go-mod cached?
