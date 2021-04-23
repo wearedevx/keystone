@@ -90,4 +90,4 @@ jobs:
           sudo apt install libthemis-dev
       - name: start test
         run: |
-          ./test.sh ./...
+          ./test.sh ./... -v
