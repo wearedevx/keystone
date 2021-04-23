@@ -9,8 +9,8 @@ jobs:
   my-job:
     runs-on: ubuntu-latest
 
-    container:
-      image: cossacklabs/ci-py-go-themis
+    # container:
+    #   image: cossacklabs/ci-py-go-themis
 
     steps:
       - name: Create cache folder
@@ -72,9 +72,22 @@ jobs:
       #   if: steps.go-build-cache.outputs.cache-hit != 'true'
 
 
+      # - name: start test
+      #   run: |
+      #     cd functions/ksauth
+      #     GOMODCACHE="/home/user/.gomodcache" GOCACHE="/home/user/.gocache" TMPDIR="/home/user/.tmp" go run -tags test cmd/main.go &
+      #     cd ../ksapi
+      #     GOMODCACHE="/home/user/.gomodcache" GOCACHE="/home/user/.gocache" TMPDIR="/home/user/.tmp" go run -tags test cmd/main.go &
+      #     cd ../..
+      #     GOMODCACHE="/home/user/.gomodcache" GOCACHE="/home/user/.gocache" HOME=/home/user/.home TMPDIR="/home/user/.tmp" go test -tags test -ldflags "-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" -work ./... -v
+
+      - name : "Install themis"
+        run: |
+          wget -qO - https://pkgs-ce.cossacklabs.com/gpg | sudo apt-key add -
+          apt install apt-transport-https
+          echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" >  /etc/apt/sources.list.d/themis.list
+          apt update
+          sudo apt install libthemis-dev
       - name: start test
         run: |
-          cd functions/ksauth
-          GOMODCACHE="/home/user/.gomodcache" GOCACHE="/home/user/.gocache" TMPDIR="/home/user/.tmp" go run -tags test cmd/main.go &
-          cd ../..
-          GOMODCACHE="/home/user/.gomodcache" GOCACHE="/home/user/.gocache" HOME=/home/user/.home TMPDIR="/home/user/.tmp" go test -tags test -ldflags "-X github.com/wearedevx/keystone/pkg/client.ksauthURL=http://localhost:9000 -X github.com/wearedevx/keystone/pkg/client.ksapiURL=http://localhost:9001" -work ./tests/login-test/login_test.go -v
+          ./test.sh ./...
