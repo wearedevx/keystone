@@ -9,24 +9,7 @@ jobs:
   my-job:
     runs-on: ubuntu-20.04
 
-    # container:
-    #   image: cossacklabs/ci-py-go-themis
-
     steps:
-
-      # - name: Create cache folder
-      #   run: |
-      #     mkdir -p /home/user/.gocache
-      #     chmod -R 777 /home/user/.gocache
-      #     mkdir -p /home/user/.gomodcache
-      #     chmod -R 777 /home/user/.gomodcache
-      #     mkdir -p /home/user/.tmp
-      #     chmod -R 777 /home/user/.tmp
-      #     mkdir -p /home/user/.home/.config
-      #     chmod -R 777 /home/user/.home/.config
-      #     sudo mkdir -p /__w/_temp/
-      #     sudo chmod -R 777 /__w/_temp/
-
     # Get values for cache paths to be used in later steps
       - id: go-cache-paths
         run: |
@@ -52,38 +35,37 @@ jobs:
           path: ${{ steps.go-cache-paths.outputs.go-mod }}
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
 
-      - name: Cache themis install
-        uses: actions/cache@v2
-        id: cache-themis
-        with:
-            path: "~/themis"
-            key: themis
+      # - name: Cache themis install
+      #   uses: actions/cache@v2
+      #   id: cache-themis
+      #   with:
+      #       path: "~/themis"
+      #       key: themis
 
-      - name: Install themis
-        env:
-          CACHE_HIT: ${{steps.cache-themis.outputs.cache-hit}}
-        run: |
-            if [[ "$CACHE_HIT" == 'true' ]]; then
-              echo "YEAH THEMIS IN CACHE"
-              sudo cp --verbose --force --recursive ~/themis/* /
-            else
-              echo "install themis"
-              wget -qO - https://pkgs-ce.cossacklabs.com/gpg | sudo apt-key add -
-              sudo apt install apt-transport-https
-              sudo sh -c 'echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" >  /etc/apt/sources.list.d/themis.list'
-              sudo apt update
-              sudo apt install libthemis-dev
-              mkdir -p ~/themis
-              sudo dpkg -L libthemis-dev | while IFS= read -r f; do if test -f $f; then echo $f; fi; done | xargs cp --parents --target-directory ~/themis/
-            fi
-
-      # - name : "Install themis"
+      # - name: Install and cache themis
+      #   env:
+      #     CACHE_HIT: ${{steps.cache-themis.outputs.cache-hit}}
       #   run: |
-      #     wget -qO - https://pkgs-ce.cossacklabs.com/gpg | sudo apt-key add -
-      #     sudo apt install apt-transport-https
-      #     sudo sh -c 'echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" >  /etc/apt/sources.list.d/themis.list'
-      #     sudo apt update
-      #     sudo apt install libthemis-dev
+      #       if [[ "$CACHE_HIT" == 'true' ]]; then
+      #         echo "YEAH THEMIS IN CACHE"
+      #         sudo cp --verbose --force --recursive ~/themis/* /
+      #       else
+      #         echo "install themis"
+      #         wget -qO - https://pkgs-ce.cossacklabs.com/gpg | sudo apt-key add -
+      #         sudo sh -c 'echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" >  /etc/apt/sources.list.d/themis.list'
+      #         sudo apt update
+      #         sudo apt install libthemis-dev
+      #         mkdir -p ~/themis
+      #         sudo dpkg -L libthemis-dev | while IFS= read -r f; do if test -f $f; then echo $f; fi; done | xargs cp --parents --target-directory ~/themis/
+      #       fi
+
+      - name : "Install themis"
+        run: |
+          wget -qO - https://pkgs-ce.cossacklabs.com/gpg | sudo apt-key add -
+          sudo apt install apt-transport-https
+          sudo sh -c 'echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" >  /etc/apt/sources.list.d/themis.list'
+          sudo apt update
+          sudo apt install libthemis-dev
 
       # Add ssh connection
       - name: Setup tmate session
