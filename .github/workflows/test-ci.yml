@@ -13,6 +13,10 @@ jobs:
     #   image: cossacklabs/ci-py-go-themis
 
     steps:
+
+     - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      
       # - name: Create cache folder
       #   run: |
       #     mkdir -p /home/user/.gocache
