@@ -102,7 +102,7 @@ Thank you for using Keystone!
 
 To start managing secrets for a project:
   $ cd <path-to-your-project>
-  $ ks init
+  $ ks init <your-project-name>
 
 To invite collaborators:
   $ ks invite collaborator@email
