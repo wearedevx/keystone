@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ -z "${TMDIR}" ]]; then
+    echo "SET TMPDIR"
+    export TMPDIR=/tmp/
+fi
+
+
 export $(cat .env-dev | xargs)
 
 LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=$KSAUTH_URL -X github.com/wearedevx/keystone/pkg/client.ksapiURL=$KSAPI_URL"
@@ -20,7 +26,14 @@ touch $DBFILE
 # # Start test
 # go test -tags test -ldflags "$LDFLAGS" -work "$FOLDERTOTEST"
 
+
+echo "START TEST"
+
 go test -tags test -ldflags "$LDFLAGS" -work "$@"
+
+EXIT_STATUS_CODE=$?
+
+echo "FINISH TEST WITH $EXIT_STATUS_CODE"
 
 function removeProcessId() {
     kspidfile=$1
@@ -28,6 +41,9 @@ function removeProcessId() {
 
     # Check if gcloud auth func pid exist
     if [ -f "$ksapidpath" ]; then
+
+        echo "rm $kspidfile"
+
         pid=$(cat $ksapidpath)
         
         echo "kill $kspidfile, PID=$pid"
@@ -35,6 +51,9 @@ function removeProcessId() {
         rm $ksapidpath
 
         kill -- -$pid
+
+    else
+        echo "File not found: $ksapidpath"
     fi
 }
 
@@ -42,4 +61,7 @@ removeProcessId "keystone_ksauth.pid"
 removeProcessId "keystone_ksapi.pid"
 
 # Delete db file
+echo "rm $DBFILE"
 rm $DBFILE
+
+exit $EXIT_STATUS_CODE

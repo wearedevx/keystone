@@ -9,7 +9,7 @@ import (
 )
 
 func CreateTestDir() (string, error) {
-	testDir := path.Join(".", "tests", uuid.NewV4().String())
+	testDir := path.Join(os.TempDir(), "tests", uuid.NewV4().String())
 	err := os.MkdirAll(testDir, 0755)
 
 	if err != nil {
