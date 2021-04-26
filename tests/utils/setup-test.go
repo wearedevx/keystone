@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -53,6 +54,7 @@ func listenCmdStartProcess(cmd *exec.Cmd, name string) {
 
 func StartAuthCloudFunction() {
 	gcloudPidFilePath := GetGcloudFuncAuthPidFilePath() // + time.Now().String()
+	fmt.Println("keystone ~ setup-test.go ~ gcloudPidFilePath", string(gcloudPidFilePath))
 	pid, _ := ioutil.ReadFile(gcloudPidFilePath)
 
 	if len(pid) == 0 {
@@ -64,6 +66,8 @@ func StartAuthCloudFunction() {
 		if err != nil {
 			panic(err)
 		}
+	} else {
+		fmt.Println("PID DEJA PRESENT", pid)
 	}
 }
 
@@ -83,10 +87,64 @@ func StartApiCloudFunction() {
 	}
 }
 
-func startCloudFunctionProcess(funcPath string) int {
+func pollServer(serverUrl string, c chan bool, maxAttempts int) {
+	fmt.Println("keystone ~ setup-test.go ~ pollServer")
+	var done bool = false
+	attemps := 0
+
+	for !done {
+		fmt.Println("keystone ~ setup-test.go ~ done", done)
+		attemps = attemps + 1
+
+		if attemps == maxAttempts {
+			done = true
+		}
+
+		fmt.Println("Start request ! 0")
+		// Make a request to server
+		request, _ := http.NewRequest("GET", serverUrl, nil)
+
+		timeout := time.Duration(1 * time.Second)
+
+		client := http.Client{
+			Timeout: timeout,
+		}
+
+		fmt.Println("Start request ! 1")
+		_, err := client.Do(request)
+
+		fmt.Println("keystone ~ setup-test.go ~ err", err)
+		// If it's started,
+
+		if err == nil {
+			done = true
+			c <- true
+		}
+
+		time.Sleep(1 * time.Second)
+	}
+}
+
+func waitForServerStarted(serverUrl string) {
+	const max_attempts int = 20
+
+	c := make(chan bool)
+
+	go pollServer(serverUrl, c, max_attempts)
+
+	// result := true
+	result := <-c
+	fmt.Println("keystone ~ setup-test.go ~ result", result)
+
+}
+
+func startCloudFunctionProcess(funcPath string, serverUrl string) int {
 
 	// Start cloud functions
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, _ := context.WithTimeout(context.Background(), 20000*time.Second)
+
+	fmt.Println("START FUNC BY PROG", funcPath)
+
 	cmd := exec.CommandContext(ctx, "go", "run", "-tags", "test", "cmd/main.go")
 	cmd.Dir = funcPath
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
@@ -105,17 +163,22 @@ func startCloudFunctionProcess(funcPath string) int {
 		panic(err)
 	}
 
-	time.Sleep(10000 * time.Millisecond)
+	fmt.Println("AVANT SLEEP")
+
+	waitForServerStarted(serverUrl)
+
+	// time.Sleep(20000 * time.Millisecond)
+	// fmt.Println("APRES SLEEP")
 
 	return pgid
 }
 
 func startAuthCloudFuncProcess() int {
-	return startCloudFunctionProcess("../../functions/ksauth")
+	return startCloudFunctionProcess("../../functions/ksauth", "http://127.0.0.1:9000")
 }
 
 func startCloudApiFunc() int {
-	return startCloudFunctionProcess("../../functions/ksapi")
+	return startCloudFunctionProcess("../../functions/ksapi", "http://127.0.0.1:9001")
 }
 
 func CreateAndLogUser(env *testscript.Env) error {
