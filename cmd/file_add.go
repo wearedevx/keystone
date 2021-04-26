@@ -45,11 +45,11 @@ When adding a file, you will be asked for a version of its content
 for all known environments.
 
 Examples:
-  $ ks files add ./config/config.exs
+  $ ks file add ./config/config.exs
   
-  $ ks files add ./wp-config.php
+  $ ks file add ./wp-config.php
 
-  $ ks files add ./certs/my-website.cert
+  $ ks file add ./certs/my-website.cert
 `,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -82,21 +82,27 @@ Examples:
 
 		environmentFileMap[currentEnvironment] = currentContent
 
-		for _, environment := range environments {
-			if environment != currentEnvironment {
-				Print(fmt.Sprintf("Enter content for file `%s` for the '%s' environment (Press any key to continue)", filePath, environment))
-				keyboard.GetSingleKey()
+		if !skipPrompts {
+			for _, environment := range environments {
+				if environment != currentEnvironment {
+					Print(fmt.Sprintf("Enter content for file `%s` for the '%s' environment (Press any key to continue)", filePath, environment))
+					keyboard.GetSingleKey()
 
-				content, err := CaptureInputFromEditor(
-					GetPreferredEditorFromEnvironment,
-					extension,
-				)
+					content, err := CaptureInputFromEditor(
+						GetPreferredEditorFromEnvironment,
+						extension,
+					)
 
-				if err != nil {
-					panic(err)
+					if err != nil {
+						panic(err)
+					}
+
+					environmentFileMap[environment] = content
 				}
-
-				environmentFileMap[environment] = content
+			}
+		} else {
+			for _, environment := range environments {
+				environmentFileMap[environment] = currentContent
 			}
 		}
 
@@ -137,4 +143,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// pushCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// RootCmd.Flags().BoolVarP(&skipPrompts, "skip", "s", false, "Skip questions and use defaults")
 }

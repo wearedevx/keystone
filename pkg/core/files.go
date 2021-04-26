@@ -118,7 +118,7 @@ func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 	return ctx
 }
 
-func (ctx *Context) RemoveFile(filePath string) *Context {
+func (ctx *Context) RemoveFile(filePath string, force bool) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
@@ -149,13 +149,20 @@ func (ctx *Context) RemoveFile(filePath string) *Context {
 	currentCached := path.Join(ctx.cacheDirPath(), currentEnvironment, filePath)
 	dest := path.Join(ctx.Wd, filePath)
 
-	os.Remove(dest)
+	if force {
+		fmt.Println("Force remove file on filesystem.")
+		os.Remove(dest)
+	} else {
+		fmt.Println("Keep file on filesystem.")
+	}
 
 	CopyFile(currentCached, dest)
 
 	for _, environment := range environments {
 		cachedFilePath := path.Join(ctx.cacheDirPath(), environment, filePath)
-		fmt.Print("File to delete: ", cachedFilePath)
+
+		// relativePathFile := strings.Replace(cachedFilePath, ctx.Wd, "", 1)
+		// fmt.Println("- File to delete: ", "."+relativePathFile)
 
 		if FileExists(cachedFilePath) {
 			os.Remove(cachedFilePath)
