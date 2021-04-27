@@ -6,6 +6,7 @@ import (
 	. "github.com/wearedevx/keystone/internal/errors"
 	. "github.com/wearedevx/keystone/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/internal/keystonefile"
+	"github.com/wearedevx/keystone/internal/rolesfile"
 	. "github.com/wearedevx/keystone/internal/utils"
 
 	"github.com/wearedevx/keystone/internal/models"
@@ -17,6 +18,7 @@ import (
 // it creates:
 // - keystone.yml
 // - .keystone/
+// - .keystone/roles.yml
 // - .keystone/environment
 // - .keystone/cache/
 // - .keystone/cache/.env
@@ -49,6 +51,9 @@ func (ctx *Context) Init(project models.Project) *Context {
 		},
 		func() error {
 			return CreateFileIfNotExists(ctx.environmentFilePath(), "dev")
+		},
+		func() error {
+			return CreateFileIfNotExists(ctx.rolesFilePath(), rolesfile.DefaultContent())
 		},
 		func() error {
 			return CreateDirIfNotExist(ctx.cacheDirPath())

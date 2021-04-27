@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"fmt"
 
 	"github.com/wearedevx/keystone/internal/crypto"
 	. "github.com/wearedevx/keystone/internal/models"
@@ -28,6 +29,45 @@ func (client *SKeystoneClient) InitProject(name string) (Project, error) {
 	err := client.r.post("/projects", payload, &project)
 
 	return project, err
+}
+
+func (client *SKeystoneClient) ProjectMembers(projectId string) ([]ProjectMember, error) {
+	var err error
+	var result GetMembersResponse
+
+	err = client.r.get("/projects/"+projectId+"/members", &result)
+
+	return result.Members, err
+}
+
+func (client *SKeystoneClient) ProjectAddMembers(projectId string, memberRoles map[string]map[string]string) error {
+	var result AddMembersResponse
+	var err error
+
+	payload := AddMembersPayload{
+		Members: make([]MemberEnvironmentRole, 0),
+	}
+
+	for id, rights := range memberRoles {
+		for environment, role := range rights {
+			payload.Members = append(payload.Members, MemberEnvironmentRole{ID: id, Environment: environment, Role: UserRole(role)})
+		}
+	}
+
+	err = client.r.post("/projects/"+projectId+"/members", payload, &result)
+
+	if err == nil && !result.Success {
+		err = fmt.Errorf(result.Error)
+	}
+
+	return err
+}
+
+func (client *SKeystoneClient) ProjectRemoveMembers(projectId string, members []string) error {
+	return nil
+}
+
+func (client *SKeystoneClient) MemberSetRole(projectId string, role string) {
 }
 
 func (client *SKeystoneClient) GetUsersKeys(projectId string) ([]UserPublicKey, error) {
