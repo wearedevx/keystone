@@ -81,6 +81,31 @@ errors:
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
+  # ROLES_FILE_ERRORS
+  # ––––––––––––––
+  - type: FailedToReadRolesFile
+    name: "Failed To Read Roles File"
+    params:
+      - name: Path
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
+      This happened because: {{ .Cause }}
+
+  - type: RoleDoesNotExist
+    name: "Role Does Not Exist"
+    params:
+      - name: RoleName
+        type: string
+      - name: Available
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
+      Available roles are: {{ .Available }}
+
+      You can manage roles for the current project by editing the roles file:
+        .keystone/roles.yml
+
   # ENVIRNMENT_ERRORS
   # –––––––––––––––––
   - type: EnvironmentDoesntExist

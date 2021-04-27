@@ -1,19 +1,6 @@
-project_id: d9000bff-b7a9-478b-8b0d-2e0b75489cfb
-name: ""
-env:
-- key: TOTO
-  strict: false
-- key: ALGOLIA
-  strict: true
-- key: NEW_KEY
-  strict: false
-- key: NEW_TEST
-  strict: false
-- key: label
-  strict: true
-- key: labello
-  strict: true
-files:
-- config/test/test.go
+project_id: d4f922ed-92ec-4150-92af-813fbd0df18e
+name: keystone
+env: []
+files: []
 options:
   strict: false

@@ -19,6 +19,11 @@ var ksapiURL string  //= "http://localhost:9001"
 
 type KeystoneClient interface {
 	InitProject(name string) (Project, error)
+	// Members
+	ProjectMembers(projectID string) ([]ProjectMember, error)
+	ProjectAddMembers(projectID string, members map[string]map[string]string) error
+	ProjectRemoveMembers(projectID string, members []string) error
+	MemberSetRole(memberId string, role string)
 }
 
 func getLoginRequest() (LoginRequest, error) {
