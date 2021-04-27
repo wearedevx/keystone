@@ -15,6 +15,7 @@ import (
 	"github.com/wearedevx/keystone/functions/ksapi/routes"
 	log "github.com/wearedevx/keystone/internal/cloudlogger"
 	"github.com/wearedevx/keystone/internal/crypto"
+	"github.com/wearedevx/keystone/internal/models"
 	. "github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
 	. "github.com/wearedevx/keystone/internal/utils"
@@ -84,7 +85,6 @@ func postProject(_ routes.Params, body io.ReadCloser, Repo repo.Repo, user User)
 	runner := NewRunner([]RunnerAction{
 		NewAction(func() error {
 			return project.Deserialize(body)
-			return nil
 		}),
 		NewAction(func() error {
 			Repo.GetOrCreateProject(project, user)
@@ -127,7 +127,7 @@ func getProjectsPublicKeys(params routes.Params, _ io.ReadCloser, Repo repo.Repo
 	var err error
 
 	var project Project
-	var projectID = params.Get("id").(string)
+	var projectID = params.Get("projectID").(string)
 	var result projectsPublicKeys
 
 	runner := NewRunner([]RunnerAction{
@@ -145,10 +145,69 @@ func getProjectsPublicKeys(params routes.Params, _ io.ReadCloser, Repo repo.Repo
 
 			return Repo.Err()
 		}).SetStatusSuccess(200),
-	})
+	}).Run()
 
 	status = runner.Status()
 	err = runner.Error()
+
+	return &result, status, err
+}
+
+func getProjectsMembers(params routes.Params, _ io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
+	var status int = http.StatusOK
+	var err error
+
+	var project Project
+	var projectID = params.Get("projectID").(string)
+	var result GetMembersResponse
+
+	runner := NewRunner([]RunnerAction{
+		NewAction(func() error {
+			Repo.GetProjectByUUID(projectID, &project)
+			Repo.ProjectGetMembers(&project, &result.Members)
+
+			return Repo.Err()
+		}).SetStatusSuccess(200),
+	}).Run()
+
+	status = runner.Status()
+	err = runner.Error()
+
+	return &result, status, err
+}
+
+func postProjectsMembers(params routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
+	var status int = http.StatusOK
+	var err error
+
+	var project Project
+	var projectID = params.Get("projectID").(string)
+	input := models.AddMembersPayload{}
+	result := models.AddMembersResponse{Success: true, Error: ""}
+	err = input.Deserialize(body)
+
+	runner := NewRunner([]RunnerAction{
+		NewAction(func() error {
+			Repo.GetProjectByUUID(projectID, &project)
+
+			return Repo.Err()
+		}).SetStatusError(404),
+		NewAction(func() error {
+			Repo.ProjectAddMembers(project, input.Members)
+
+			return Repo.Err()
+		}).
+			SetStatusSuccess(200).
+			SetStatusError(500),
+	}).Run()
+
+	status = runner.Status()
+	err = runner.Error()
+
+	if err != nil {
+		result.Success = false
+		result.Error = err.Error()
+	}
 
 	return &result, status, err
 }
@@ -236,7 +295,9 @@ func UserService(w http.ResponseWriter, r *http.Request) {
 
 	router.POST("/projects", routes.AuthedHandler(postProject))
 
-	router.GET("/projects/:id/public-keys", routes.AuthedHandler(getProjectsPublicKeys))
+	router.GET("/projects/:projectID/public-keys", routes.AuthedHandler(getProjectsPublicKeys))
+	router.GET("/projects/:projectID/members", routes.AuthedHandler(getProjectsMembers))
+	router.POST("/projects/:projectID/members", routes.AuthedHandler(postProjectsMembers))
 
 	router.POST("/projects/:projectID/variables", routes.AuthedHandler(postAddVariable))
 	router.PUT("/projects/:projectID/:environment/variables", routes.AuthedHandler(putSetVariable))
