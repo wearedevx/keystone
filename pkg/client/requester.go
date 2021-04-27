@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -38,8 +40,6 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	req.Header.Set("Content-Type", "application/octet-stream")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.jwtToken))
 
-	fmt.Printf("%v\n", req.Header)
-
 	if err != nil {
 		return err
 	}
@@ -59,8 +59,12 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 		return fmt.Errorf("Request failed with status code %d", resp.StatusCode)
 	}
 
+	sbuf := new(strings.Builder)
+	_, err = io.Copy(sbuf, resp.Body)
+	// check errors
+
 	if result != nil {
-		err := json.NewDecoder(resp.Body).Decode(result)
+		err := json.Unmarshal([]byte(sbuf.String()), result)
 
 		return err
 	}
