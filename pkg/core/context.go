@@ -90,6 +90,10 @@ func (c *Context) environmentFilePath() string {
 	return path.Join(c.dotKeystonePath(), "environment")
 }
 
+func (c *Context) rolesFilePath() string {
+	return path.Join(c.dotKeystonePath(), "roles.yml")
+}
+
 func (c *Context) cacheDirPath() string {
 	return path.Join(c.dotKeystonePath(), "cache")
 }

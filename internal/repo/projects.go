@@ -2,7 +2,10 @@
 package repo
 
 import (
+	"fmt"
+
 	. "github.com/wearedevx/keystone/internal/models"
+	"gorm.io/gorm/clause"
 )
 
 func (r *Repo) createProject(project *Project, user *User) *Repo {
@@ -79,6 +82,53 @@ func (r *Repo) GetOrCreateProject(project *Project, user User) *Repo {
 	r.err = nil
 
 	return r.createProject(project, &user)
+}
+
+func (r *Repo) ProjectGetMembers(project *Project, members *[]ProjectMember) *Repo {
+	fmt.Println("project:", project)
+	if r.err != nil {
+		return r
+	}
+
+	r.GetDb().Preload("Environment").Preload("User").Where("project_id = ?", project.ID).Find(members)
+
+	return r
+}
+
+func (r *Repo) ProjectAddMembers(project Project, mers []MemberEnvironmentRole) *Repo {
+	if r.err != nil {
+		return r
+	}
+
+	pms := make([]ProjectMember, 0)
+	db := r.GetDb()
+
+	for _, mer := range mers {
+		if mer.Role != "" {
+			var user User
+			var environment Environment
+
+			user.FromId(mer.ID)
+
+			db.Where("name = ?", mer.Environment).First(&environment)
+			db.Where("username = ? AND account_type = ?", user.Username, user.AccountType).First(&user)
+
+			pms = append(pms, ProjectMember{
+				UserID:        user.ID,
+				EnvironmentID: environment.ID,
+				ProjectID:     project.ID,
+				ProjectOwner:  false,
+				Role:          mer.Role,
+			})
+		}
+	}
+
+	r.err = db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}, {Name: "project_id"}, {Name: "environment_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"role"}),
+	}).Create(&pms).Error
+
+	return r
 }
 
 func (r *Repo) ProjectLoadUsers(project *Project) *Repo {

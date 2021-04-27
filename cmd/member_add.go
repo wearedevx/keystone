@@ -17,9 +17,17 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"regexp"
+	"strings"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/internal/config"
+	"github.com/wearedevx/keystone/internal/errors"
+	"github.com/wearedevx/keystone/pkg/client"
+	core "github.com/wearedevx/keystone/pkg/core"
+	"github.com/wearedevx/keystone/ui"
 )
 
 var membersFile string
@@ -48,10 +56,56 @@ var memberAddCmd = &cobra.Command{
 Passed arguments are list member ids, which users can 
 obtain using ks whoami.
 
-This will cause secrets to be cryted for all members, existing and new.`,
+This will cause secrets to be encryted for all members, existing and new.`,
 	Example: `ks member add john.doe@gitlab danny54@github helena@gitlab`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("memberAdd called")
+		// Auth check
+		account, index := config.GetCurrentAccount()
+		token := config.GetAuthToken()
+
+		if index < 0 {
+			ui.Print(errors.MustBeLoggedIn(nil).Error())
+		}
+
+		// Read Roles from config
+		ctx := core.New(core.CTX_RESOLVE)
+		roles := ctx.GetRoles()
+
+		projectID := ctx.GetProjectID()
+
+		roleNames := roles.List()
+		memberRole := make(map[string]map[string]string)
+
+		for _, memberId := range args {
+			label := "Role for " + memberId
+
+			prompt := promptui.Select{
+				Label: label,
+				Items: roleNames,
+			}
+
+			_, result, err := prompt.Run()
+
+			if err != nil {
+				// TODO: Handle error
+				fmt.Println(err)
+
+				os.Exit(1)
+			}
+
+			rights, ok := roles.GetRights(result)
+
+			if !ok {
+				availables := strings.Join(roleNames, ", ")
+				errors.RoleDoesNotExist(result, availables, nil).Print()
+				os.Exit(1)
+			}
+
+			memberRole[memberId] = rights
+		}
+
+		c := client.NewKeystoneClient(account["user_id"], token)
+		c.ProjectAddMembers(projectID, memberRole)
 	},
 }
 

@@ -53,6 +53,19 @@ This happened because: {{ .Cause }}
 This happened because: {{ .Cause }}
 
 `,
+	"FailedToReadRolesFile": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
+This happened because: {{ .Cause }}
+
+`,
+	"RoleDoesNotExist": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
+Available roles are: {{ .Available }}
+
+You can manage roles for the current project by editing the roles file:
+  .keystone/roles.yml
+
+`,
 	"EnvironmentDoesntExist": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
 Available environments are: {{ .Available }}
@@ -95,10 +108,10 @@ Change to another environment:
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
 
 To list secrets:
-  $ ks secrets
+  $ ks secret
 
 To add a {{ .Secret }} secret to all environments:
-  $ ks secrets {{ .Secret }} <secret-value>
+  $ ks secret {{ .Secret }} <secret-value>
 
 `,
 	"SecretRequired": `
@@ -219,6 +232,21 @@ func FailedToReadDotEnv(path string, cause error) *Error {
 		"Path": string(path),
 	}
 	return NewError("Failed To Read .env", helpTexts["FailedToReadDotEnv"], meta, cause)
+}
+
+func FailedToReadRolesFile(path string, cause error) *Error {
+	meta := map[string]string{
+		"Path": string(path),
+	}
+	return NewError("Failed To Read Roles File", helpTexts["FailedToReadRolesFile"], meta, cause)
+}
+
+func RoleDoesNotExist(rolename string, available string, cause error) *Error {
+	meta := map[string]string{
+		"RoleName":  string(rolename),
+		"Available": string(available),
+	}
+	return NewError("Role Does Not Exist", helpTexts["RoleDoesNotExist"], meta, cause)
 }
 
 func EnvironmentDoesntExist(environment string, available string, cause error) *Error {

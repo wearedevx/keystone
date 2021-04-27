@@ -58,3 +58,66 @@ func (pm *ProjectMember) Serialize(out *string) error {
 
 	return err
 }
+
+// API Types
+type MemberEnvironmentRole struct {
+	ID          string
+	Environment string
+	Role        UserRole
+}
+
+type GetMembersResponse struct {
+	Members []ProjectMember `json:"members"`
+}
+
+func (p *GetMembersResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(p)
+}
+
+func (p *GetMembersResponse) Serialize(out *string) error {
+	var err error
+
+	bout, err := json.Marshal(p)
+	*out = string(bout)
+
+	return err
+}
+
+type AddMembersPayload struct {
+	Members []MemberEnvironmentRole
+}
+
+func (pm *AddMembersPayload) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(pm)
+}
+
+func (pm *AddMembersPayload) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(pm)
+
+	*out = sb.String()
+
+	return err
+}
+
+type AddMembersResponse struct {
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
+}
+
+func (pm *AddMembersResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(pm)
+}
+
+func (pm *AddMembersResponse) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(pm)
+
+	*out = sb.String()
+
+	return err
+}

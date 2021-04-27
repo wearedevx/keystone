@@ -120,9 +120,12 @@ func startCloudApiFunc() int {
 
 func CreateAndLogUser(env *testscript.Env) error {
 	Repo := new(repo.Repo)
+	username := "LAbigael_" + uuid.NewV4().String()
+	userID := username + "@github"
 
 	var user1 *User = &User{
-		ExtID: "56883564" + uuid.NewV4().String(),
+		ExtID:  "56883564" + uuid.NewV4().String(),
+		UserID: userID,
 		// UserID:      "00fb7666-de43-4559-b4e4-39b172117dd8",
 		AccountType: "github",
 		Username:    "LAbigael_" + uuid.NewV4().String(),
