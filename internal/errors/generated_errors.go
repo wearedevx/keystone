@@ -180,6 +180,16 @@ Sorry for the inconvenience
 This happened because: {{ .Cause }}
 
 `,
+	"CannotAddMembers": `
+{{ ERROR }} {{ .Name | red }}
+This happened because: {{ .Cause }}
+
+`,
+	"CannotRemoveMembers": `
+{{ ERROR }} {{ .Name | red }}
+This happened because: {{ .Cause }}
+
+`,
 }
 
 func InitFailed(cause error) *Error {
@@ -362,4 +372,16 @@ func UnkownError(cause error) *Error {
 	meta := map[string]string{}
 
 	return NewError("Unkown Error", helpTexts["UnkownError"], meta, cause)
+}
+
+func CannotAddMembers(cause error) *Error {
+	meta := map[string]string{}
+
+	return NewError("Cannot Add Members", helpTexts["CannotAddMembers"], meta, cause)
+}
+
+func CannotRemoveMembers(cause error) *Error {
+	meta := map[string]string{}
+
+	return NewError("Cannot Remove Members", helpTexts["CannotRemoveMembers"], meta, cause)
 }
