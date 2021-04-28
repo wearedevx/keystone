@@ -64,7 +64,16 @@ func (client *SKeystoneClient) ProjectAddMembers(projectId string, memberRoles m
 }
 
 func (client *SKeystoneClient) ProjectRemoveMembers(projectId string, members []string) error {
-	return nil
+	var result RemoveMembersResponse
+	var err error
+
+	payload := RemoveMembersPayload{
+		Members: members,
+	}
+
+	err = client.r.del("/projects/"+projectId+"/members/", payload, &result)
+
+	return err
 }
 
 func (client *SKeystoneClient) MemberSetRole(projectId string, role string) {

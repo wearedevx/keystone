@@ -121,3 +121,40 @@ func (pm *AddMembersResponse) Serialize(out *string) error {
 
 	return err
 }
+
+type RemoveMembersPayload struct {
+	Members []string
+}
+
+func (pm *RemoveMembersPayload) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(pm)
+}
+
+func (pm *RemoveMembersPayload) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(pm)
+
+	*out = sb.String()
+
+	return err
+}
+
+type RemoveMembersResponse struct {
+}
+
+func (pm *RemoveMembersResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(pm)
+}
+
+func (pm *RemoveMembersResponse) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(pm)
+
+	*out = sb.String()
+
+	return err
+}

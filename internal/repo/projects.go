@@ -131,6 +131,19 @@ func (r *Repo) ProjectAddMembers(project Project, mers []MemberEnvironmentRole) 
 	return r
 }
 
+func (r *Repo) ProjectRemoveMembers(project Project, members []string) *Repo {
+	if r.err != nil {
+		return r
+	}
+
+	db := r.GetDb()
+	membersIDSubquery := db.Model(&User{}).Where("user_id IN ?", members).Select("id")
+
+	r.err = db.Where("user_id IN (?)", membersIDSubquery).Delete(ProjectMember{}).Error
+
+	return r
+}
+
 func (r *Repo) ProjectLoadUsers(project *Project) *Repo {
 	if r.err != nil {
 		return r

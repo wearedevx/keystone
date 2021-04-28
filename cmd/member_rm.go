@@ -19,7 +19,13 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/internal/config"
+	"github.com/wearedevx/keystone/internal/errors"
+	"github.com/wearedevx/keystone/pkg/client"
+	core "github.com/wearedevx/keystone/pkg/core"
+	"github.com/wearedevx/keystone/ui"
 )
 
 // memberRmCmd represents the memberRm command
@@ -48,7 +54,33 @@ This causes secrets to be re-crypted for the remainig members.`,
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("memberRm called")
+		// Auth check
+		account, index := config.GetCurrentAccount()
+		token := config.GetAuthToken()
+
+		if index < 0 {
+			ui.Print(errors.MustBeLoggedIn(nil).Error())
+		}
+
+		ctx := core.New(core.CTX_RESOLVE)
+		projectID := ctx.GetProjectID()
+
+		membersToRevoke := make([]string, 0)
+
+		for _, memberId := range args {
+			prompt := promptui.Prompt{
+				Label: "Revoke access to " + memberId + "? [y/n]",
+			}
+
+			result, _ := prompt.Run()
+
+			if result == "y" {
+				membersToRevoke = append(membersToRevoke, memberId)
+			}
+		}
+
+		c := client.NewKeystoneClient(account["user_id"], token)
+		c.ProjectRemoveMembers(projectID, membersToRevoke)
 	},
 }
 
