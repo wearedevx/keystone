@@ -142,6 +142,8 @@ func (pm *RemoveMembersPayload) Serialize(out *string) error {
 }
 
 type RemoveMembersResponse struct {
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
 }
 
 func (pm *RemoveMembersResponse) Deserialize(in io.Reader) error {
