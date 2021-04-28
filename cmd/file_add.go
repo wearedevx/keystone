@@ -26,6 +26,7 @@ import (
 	"github.com/spf13/cobra"
 	. "github.com/wearedevx/keystone/internal/errors"
 	. "github.com/wearedevx/keystone/internal/gitignorehelper"
+	"github.com/wearedevx/keystone/internal/keystonefile"
 	. "github.com/wearedevx/keystone/internal/utils"
 	"github.com/wearedevx/keystone/pkg/core"
 	. "github.com/wearedevx/keystone/ui"
@@ -106,7 +107,12 @@ Examples:
 			}
 		}
 
-		ctx.AddFile(filePath, environmentFileMap)
+		file := keystonefile.FileKey{
+			Path:   filePath,
+			Strict: false, // TODO
+		}
+
+		ctx.AddFile(file, environmentFileMap)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
