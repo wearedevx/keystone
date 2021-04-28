@@ -84,6 +84,6 @@ func (r *requester) put(path string, data interface{}, result interface{}) error
 	return r.request(PUT, http.StatusOK, path, data, result)
 }
 
-func (r *requester) del(path string, data interface{}) error {
-	return r.request(DELETE, http.StatusNoContent, path, data, nil)
+func (r *requester) del(path string, data interface{}, result interface{}) error {
+	return r.request(DELETE, http.StatusNoContent, path, data, result)
 }
