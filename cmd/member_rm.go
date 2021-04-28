@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 
 	"github.com/manifoldco/promptui"
@@ -79,8 +80,21 @@ This causes secrets to be re-crypted for the remainig members.`,
 			}
 		}
 
+		if len(membersToRevoke) == 0 {
+			os.Exit(0)
+		}
+
 		c := client.NewKeystoneClient(account["user_id"], token)
-		c.ProjectRemoveMembers(projectID, membersToRevoke)
+		err := c.ProjectRemoveMembers(projectID, membersToRevoke)
+
+		if err != nil {
+			errors.CannotRemoveMembers(err).Print()
+			os.Exit(1)
+		}
+
+		ui.Print(ui.RenderTemplate("removed members", `
+{{ OK }} {{ "Revoked Access To Members" | green }}
+`, nil))
 	},
 }
 

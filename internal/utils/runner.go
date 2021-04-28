@@ -77,7 +77,8 @@ func (r runner) Run() Runner {
 		// Run the action,
 		// if err: set status code to action.StatusError, or InternalServerError
 		// else: set status code to action.StatusSuccess, or leave it as it were
-		if r.err = a.run(); r.err != nil {
+		r.err = a.run()
+		if r.err != nil {
 			if errors.Is(r.err, gorm.ErrRecordNotFound) {
 				r.status = http.StatusNotFound
 			} else {

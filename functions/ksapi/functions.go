@@ -245,6 +245,11 @@ func deleteProjectsMembers(params routes.Params, body io.ReadCloser, Repo repo.R
 	status = runner.Status()
 	err = runner.Error()
 
+	if err != nil {
+		result.Success = false
+		result.Error = err.Error()
+	}
+
 	return &result, status, err
 }
 
