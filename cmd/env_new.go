@@ -93,7 +93,7 @@ Example:
 				Print("Enter the content of '%s' for the '%s' environment (any key to continue):", file, environmentName)
 				// wait for any key
 				keyboard.GetSingleKey()
-				fmt.Println(file)
+				// fmt.Println(file)
 
 				extension := filepath.Ext(file)
 

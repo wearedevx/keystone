@@ -102,7 +102,7 @@ Thank you for using Keystone!
 
 To start managing secrets for a project:
   $ cd <path-to-your-project>
-  $ ks init
+  $ ks init <your-project-name>
 
 To invite collaborators:
   $ ks invite collaborator@email
@@ -113,7 +113,7 @@ func SelectAuthService(ctx context.Context) (client.AuthService, error) {
 	var err error
 
 	if serviceName == "" {
-		fmt.Println("serviceName:", serviceName)
+		// fmt.Println("serviceName:", serviceName)
 		prompt := promptui.Select{
 			Label: "Select an identity provider",
 			Items: []string{
@@ -209,5 +209,5 @@ func init() {
 	// loginCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	loginCmd.Flags().StringVar(&serviceName, "with", "", "identity provider. Either github or gitlab")
-	fmt.Println("serviceName:", serviceName)
+	// fmt.Println("serviceName:", serviceName)
 }

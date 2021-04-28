@@ -20,7 +20,7 @@ errors:
       Neither the current directory ({{ .Path }}), nor any of its parent,
       have a keystone.yaml file.
       If this is a new project, start with:
-        $ ks init
+        $ ks init <your-project-name>
 
   - type: NoWorkingDirectory
     name: "No Working Directory"
@@ -188,7 +188,7 @@ errors:
       - name: Path
         type: string
     template: |
-      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{ - "'" | red }}
+      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
   - type: CannotLinkFile
