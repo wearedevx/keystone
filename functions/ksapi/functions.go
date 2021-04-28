@@ -212,6 +212,42 @@ func postProjectsMembers(params routes.Params, body io.ReadCloser, Repo repo.Rep
 	return &result, status, err
 }
 
+func deleteProjectsMembers(params routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
+	var status int = http.StatusOK
+	var err error
+
+	var project Project
+	var projectID = params.Get("projectID").(string)
+	input := models.RemoveMembersPayload{}
+	result := models.RemoveMembersResponse{}
+	err = input.Deserialize(body)
+
+	if err != nil {
+		return &result, 500, err
+	}
+
+	runner := NewRunner([]RunnerAction{
+		NewAction(func() error {
+			Repo.GetProjectByUUID(projectID, &project)
+
+			return Repo.Err()
+		}).
+			SetStatusError(404),
+		NewAction(func() error {
+			Repo.ProjectRemoveMembers(project, input.Members)
+
+			return Repo.Err()
+		}).
+			SetStatusSuccess(204).
+			SetStatusError(500),
+	}).Run()
+
+	status = runner.Status()
+	err = runner.Error()
+
+	return &result, status, err
+}
+
 func postAddVariable(params routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
 	projectID := params.Get("projectID").(string)
 
@@ -298,6 +334,7 @@ func UserService(w http.ResponseWriter, r *http.Request) {
 	router.GET("/projects/:projectID/public-keys", routes.AuthedHandler(getProjectsPublicKeys))
 	router.GET("/projects/:projectID/members", routes.AuthedHandler(getProjectsMembers))
 	router.POST("/projects/:projectID/members", routes.AuthedHandler(postProjectsMembers))
+	router.DELETE("/projects/:projectID/members", routes.AuthedHandler(deleteProjectsMembers))
 
 	router.POST("/projects/:projectID/variables", routes.AuthedHandler(postAddVariable))
 	router.PUT("/projects/:projectID/:environment/variables", routes.AuthedHandler(putSetVariable))
