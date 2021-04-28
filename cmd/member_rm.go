@@ -29,6 +29,8 @@ import (
 	"github.com/wearedevx/keystone/ui"
 )
 
+var forceYes bool
+
 // memberRmCmd represents the memberRm command
 var memberRmCmd = &cobra.Command{
 	Use:   "rm <list of member ids>",
@@ -69,11 +71,15 @@ This causes secrets to be re-crypted for the remainig members.`,
 		membersToRevoke := make([]string, 0)
 
 		for _, memberId := range args {
-			prompt := promptui.Prompt{
-				Label: "Revoke access to " + memberId + "? [y/n]",
-			}
+			result := "y"
 
-			result, _ := prompt.Run()
+			if !forceYes {
+				prompt := promptui.Prompt{
+					Label: "Revoke access to " + memberId + "? [y/n]",
+				}
+
+				result, _ = prompt.Run()
+			}
 
 			if result == "y" {
 				membersToRevoke = append(membersToRevoke, memberId)
@@ -110,4 +116,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// memberRmCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	memberRmCmd.Flags().BoolVarP(&forceYes, "yes", "y", false, "skip prompt say yes to all")
 }
