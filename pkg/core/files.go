@@ -12,28 +12,35 @@ import (
 	. "github.com/wearedevx/keystone/internal/utils"
 )
 
-func (ctx *Context) ListFiles() []string {
+type FileStrictFlag int
+
+const (
+	F_REQUIRED FileStrictFlag = iota
+	F_OPTIONAL
+)
+
+func (ctx *Context) ListFiles() []FileKey {
 	if ctx.Err() != nil {
-		return make([]string, 0)
+		return make([]FileKey, 0)
 	}
 
 	ksfile := new(KeystoneFile).Load(ctx.Wd)
 
 	if err := ksfile.Err(); err != nil {
 		ctx.setError(FailedToReadKeystoneFile(err))
-		return make([]string, 0)
+		return make([]FileKey, 0)
 	}
 
 	return ksfile.Files
 }
 
-func (ctx *Context) AddFile(filePath string, envContentMap map[string][]byte) *Context {
+func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
 
 	// Add file path to the keystone file
-	if err := new(KeystoneFile).Load(ctx.Wd).AddFile(filePath).Save().Err(); err != nil {
+	if err := new(KeystoneFile).Load(ctx.Wd).AddFile(file).Save().Err(); err != nil {
 		return ctx.setError(FailedToUpdateKeystoneFile(err))
 	}
 
@@ -41,12 +48,12 @@ func (ctx *Context) AddFile(filePath string, envContentMap map[string][]byte) *C
 	current := ctx.CurrentEnvironment()
 
 	// Use current content for current environment.
-	dest := path.Join(ctx.cacheDirPath(), current, filePath)
+	dest := path.Join(ctx.cacheDirPath(), current, file.Path)
 	dir := filepath.Dir(dest)
 	os.MkdirAll(dir, 0o755)
 
-	if err := CopyFile(filePath, dest); err != nil {
-		return ctx.setError(CopyFailed(filePath, dest, err))
+	if err := CopyFile(file.Path, dest); err != nil {
+		return ctx.setError(CopyFailed(file.Path, dest, err))
 	}
 
 	// Set content for every other environment
@@ -56,7 +63,7 @@ func (ctx *Context) AddFile(filePath string, envContentMap map[string][]byte) *C
 			continue
 		}
 
-		dest := path.Join(ctx.cacheDirPath(), environment, filePath)
+		dest := path.Join(ctx.cacheDirPath(), environment, file.Path)
 		parentDir := filepath.Dir(dest) + "/"
 
 		if err := os.MkdirAll(parentDir, 0o755); err != nil {
@@ -93,25 +100,25 @@ func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 	files := ksfile.Files
 
 	for _, file := range files {
-		cachedFilePath := path.Join(ctx.cacheDirPath(), envname, file)
-		linkPath := path.Join(ctx.Wd, file)
+		cachedFilePath := path.Join(ctx.cacheDirPath(), envname, file.Path)
+		linkPath := path.Join(ctx.Wd, file.Path)
 
 		if FileExists(linkPath) {
 			os.Remove(linkPath)
 		}
 
 		if !FileExists(cachedFilePath) {
-			return ctx.setError(FileNotInEnvironment(file, envname, nil))
+			return ctx.setError(FileNotInEnvironment(file.Path, envname, nil))
 		}
 
 		parentDir := filepath.Dir(linkPath)
 
 		if err := os.MkdirAll(parentDir, 0755); err != nil {
-			return ctx.setError(CannotLinkFile(file, cachedFilePath, err))
+			return ctx.setError(CannotLinkFile(file.Path, cachedFilePath, err))
 		}
 
 		if err := os.Symlink(cachedFilePath, linkPath); err != nil {
-			return ctx.setError(CannotLinkFile(file, cachedFilePath, err))
+			return ctx.setError(CannotLinkFile(file.Path, cachedFilePath, err))
 		}
 	}
 
@@ -129,9 +136,9 @@ func (ctx *Context) RemoveFile(filePath string, force bool) *Context {
 		return ctx.setError(FailedToReadKeystoneFile(err))
 	}
 
-	filteredFiles := make([]string, 0)
+	filteredFiles := make([]FileKey, 0)
 	for _, file := range ksfile.Files {
-		if file != filePath {
+		if file.Path != filePath {
 			filteredFiles = append(filteredFiles, file)
 		}
 	}

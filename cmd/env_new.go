@@ -95,7 +95,7 @@ Example:
 				keyboard.GetSingleKey()
 				// fmt.Println(file)
 
-				extension := filepath.Ext(file)
+				extension := filepath.Ext(file.Path)
 
 				content, erro = CaptureInputFromEditor(
 					GetPreferredEditorFromEnvironment,
@@ -103,7 +103,7 @@ Example:
 				)
 
 			} else {
-				content, erro = ioutil.ReadFile(file)
+				content, erro = ioutil.ReadFile(file.Path)
 			}
 
 			if erro != nil {
