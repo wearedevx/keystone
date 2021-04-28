@@ -56,7 +56,7 @@ func (client *SKeystoneClient) ProjectAddMembers(projectId string, memberRoles m
 
 	err = client.r.post("/projects/"+projectId+"/members", payload, &result)
 
-	if err == nil && !result.Success {
+	if !result.Success && result.Error != "" {
 		err = fmt.Errorf(result.Error)
 	}
 
@@ -72,6 +72,10 @@ func (client *SKeystoneClient) ProjectRemoveMembers(projectId string, members []
 	}
 
 	err = client.r.del("/projects/"+projectId+"/members/", payload, &result)
+
+	if !result.Success && result.Error != "" {
+		err = fmt.Errorf(result.Error)
+	}
 
 	return err
 }

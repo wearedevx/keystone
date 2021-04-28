@@ -29,3 +29,42 @@ func (r *Repo) GetOrCreateUser(user *User) {
 		r.err = r.GetDb().Create(&user).Error
 	}
 }
+
+// From a slice of userIDs (<username>@<service>)
+// fetchs the users.
+// Returns the found users and a list of not found userIDs
+func (r *Repo) findUsers(userIDs []string) (map[string]User, []string) {
+	users := make([]User, 0)
+	userMap := make(map[string]User)
+	notFounds := make([]string, 0)
+
+	if r.err != nil {
+		return userMap, notFounds
+	}
+
+	db := r.GetDb()
+
+	r.err = db.Where("user_id IN ?", userIDs).Find(&users).Error
+
+	if r.err != nil {
+		return userMap, notFounds
+	}
+
+	for _, userID := range userIDs {
+		found := false
+		for _, user := range users {
+			if user.UserID == userID {
+				found = true
+
+				userMap[userID] = user
+				break
+			}
+		}
+
+		if !found {
+			notFounds = append(notFounds, userID)
+		}
+	}
+
+	return userMap, notFounds
+}

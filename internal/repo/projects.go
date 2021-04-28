@@ -3,6 +3,7 @@ package repo
 
 import (
 	"fmt"
+	"strings"
 
 	. "github.com/wearedevx/keystone/internal/models"
 	"gorm.io/gorm/clause"
@@ -112,6 +113,48 @@ func (r *Repo) ProjectGetMembers(project *Project, members *[]ProjectMember) *Re
 	return r
 }
 
+// From a list of MemberEnvironmentRole, fetches users from database
+// Returns the found Users and a slice of not found userIDs
+func (r *Repo) usersInMemberEnvironmentsRole(mers []MemberEnvironmentRole) (map[string]User, []string) {
+	// Figure out members that do not exist in db
+	userIDs := make([]string, 0)
+	// only used so that userIDs are unique in the array
+	uniqueMap := make(map[string]struct{})
+
+	for _, mer := range mers {
+		if _, ok := uniqueMap[mer.ID]; !ok {
+			uniqueMap[mer.ID] = struct{}{}
+			userIDs = append(userIDs, mer.ID)
+		}
+	}
+
+	return r.findUsers(userIDs)
+}
+
+func (r *Repo) environmentsInMemberEnvironmentsRole(mers []MemberEnvironmentRole) map[string]Environment {
+	result := make(map[string]Environment)
+
+	if r.err != nil {
+		return result
+	}
+
+	db := r.GetDb()
+
+	for _, mer := range mers {
+		if _, ok := result[mer.Environment]; !ok {
+			var environment Environment
+
+			r.err = db.Where("name = ?", mer.Environment).First(&environment).Error
+
+			if r.err == nil {
+				result[mer.Environment] = environment
+			}
+		}
+	}
+
+	return result
+}
+
 func (r *Repo) ProjectAddMembers(project Project, mers []MemberEnvironmentRole) *Repo {
 	if r.err != nil {
 		return r
@@ -120,23 +163,29 @@ func (r *Repo) ProjectAddMembers(project Project, mers []MemberEnvironmentRole) 
 	pms := make([]ProjectMember, 0)
 	db := r.GetDb()
 
+	users, notFounds := r.usersInMemberEnvironmentsRole(mers)
+
+	if len(notFounds) != 0 {
+		r.err = fmt.Errorf("Users not found: %s", strings.Join(notFounds, ", "))
+		return r
+	}
+
+	envs := r.environmentsInMemberEnvironmentsRole(mers)
+
 	for _, mer := range mers {
 		if mer.Role != "" {
-			var user User
-			var environment Environment
+			user, hasUser := users[mer.ID]
+			environment, hasEnv := envs[mer.Environment]
 
-			user.FromId(mer.ID)
-
-			db.Where("name = ?", mer.Environment).First(&environment)
-			db.Where("username = ? AND account_type = ?", user.Username, user.AccountType).First(&user)
-
-			pms = append(pms, ProjectMember{
-				UserID:        user.ID,
-				EnvironmentID: environment.ID,
-				ProjectID:     project.ID,
-				ProjectOwner:  false,
-				Role:          mer.Role,
-			})
+			if hasUser && hasEnv {
+				pms = append(pms, ProjectMember{
+					UserID:        user.ID,
+					EnvironmentID: environment.ID,
+					ProjectID:     project.ID,
+					ProjectOwner:  false,
+					Role:          mer.Role,
+				})
+			}
 		}
 	}
 
@@ -153,10 +202,21 @@ func (r *Repo) ProjectRemoveMembers(project Project, members []string) *Repo {
 		return r
 	}
 
-	db := r.GetDb()
-	membersIDSubquery := db.Model(&User{}).Where("user_id IN ?", members).Select("id")
+	users, notFound := r.findUsers(members)
 
-	r.err = db.Where("user_id IN (?)", membersIDSubquery).Delete(ProjectMember{}).Error
+	if len(notFound) != 0 {
+		r.err = fmt.Errorf("Users not found: %s", strings.Join(notFound, ", "))
+		return r
+	}
+
+	db := r.GetDb()
+
+	memberIDs := make([]uint, 0)
+	for _, user := range users {
+		memberIDs = append(memberIDs, user.ID)
+	}
+
+	r.err = db.Where("user_id IN (?)", memberIDs).Delete(ProjectMember{}).Error
 
 	return r
 }

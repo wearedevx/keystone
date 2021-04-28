@@ -296,3 +296,19 @@ errors:
       Sorry for the inconvenience
 
       This happened because: {{ .Cause }}
+
+  # MEMBERS_ERRORS
+  # ––––––––––––––
+  - type: CannotAddMembers
+    name: "Cannot Add Members"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      This happened because: {{ .Cause }}
+
+  - type: CannotRemoveMembers
+    name: "Cannot Remove Members"
+    param: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      This happened because: {{ .Cause }}

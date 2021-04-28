@@ -105,7 +105,17 @@ This will cause secrets to be encryted for all members, existing and new.`,
 		}
 
 		c := client.NewKeystoneClient(account["user_id"], token)
-		c.ProjectAddMembers(projectID, memberRole)
+		err := c.ProjectAddMembers(projectID, memberRole)
+
+		if err != nil {
+			errors.CannotAddMembers(err).Print()
+			os.Exit(1)
+		}
+
+		ui.Print(ui.RenderTemplate("added members", `
+{{ OK }} {{ "Members Added" | green }}
+`, struct {
+		}{}))
 	},
 }
 
