@@ -55,18 +55,18 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 		return nil
 	}
 
-	if resp.StatusCode != expectedStatusCode && resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Request failed with status code %d", resp.StatusCode)
-	}
-
 	sbuf := new(strings.Builder)
 	_, err = io.Copy(sbuf, resp.Body)
-	// check errors
+	bodyBytes := []byte(sbuf.String())
 
-	if result != nil {
-		err := json.Unmarshal([]byte(sbuf.String()), result)
-
+	// minimum length for json response 2 bytes: {} or []
+	if result != nil && len(bodyBytes) >= 2 {
+		err := json.Unmarshal(bodyBytes, result)
 		return err
+	}
+
+	if resp.StatusCode != expectedStatusCode && resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("Request failed with status code %d", resp.StatusCode)
 	}
 
 	return nil
