@@ -43,35 +43,3 @@ func (repo *Repo) GetOrCreateEnvironment(project Project, name string) Environme
 
 	return repo.CreateEnvironment(project, name)
 }
-
-func (repo *Repo) EnvironmentSetUserRole(environment Environment, user User, role UserRole) *Repo {
-	if repo.err != nil {
-		return repo
-	}
-
-	// environmentPermissions := EnvironmentPermissions{
-	// 	UserID:        user.ID,
-	// 	EnvironmentID: environment.ID,
-	// 	Role:          role,
-	// }
-
-	// repo.err = repo.GetDb().Clauses(clause.OnConflict{
-	// 	Columns:   []clause.Column{{Name: "user_id"}, {Name: "environment_id"}},
-	// 	DoUpdates: clause.Assignments(map[string]interface{}{"role": role}),
-	// }).Create(&environmentPermissions).Error
-
-	return repo
-}
-
-func (repo *Repo) EnvironmentSetVariableForUser(environement Environment, secret Secret, user User, value []byte) {
-	if repo != nil {
-		return
-	}
-
-	repo.err = repo.GetDb().Create(&EnvironmentUserSecret{
-		EnvironmentID: environement.ID,
-		UserID:        user.ID,
-		SecretID:      secret.ID,
-		Value:         value,
-	}).Error
-}
