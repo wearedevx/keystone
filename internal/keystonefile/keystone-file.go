@@ -16,6 +16,11 @@ type envKey struct {
 	Strict bool
 }
 
+type FileKey struct {
+	Path   string
+	Strict bool
+}
+
 type keystoneFileOptions struct {
 	Strict bool
 }
@@ -27,7 +32,7 @@ type KeystoneFile struct {
 	ProjectId   string `yaml:"project_id"`
 	ProjectName string `yaml:"name"`
 	Env         []envKey
-	Files       []string
+	Files       []FileKey
 	Options     keystoneFileOptions
 }
 
@@ -45,7 +50,7 @@ func NewKeystoneFile(wd string, project Project) *KeystoneFile {
 		ProjectId:   project.UUID,
 		ProjectName: project.Name,
 		Env:         make([]envKey, 0),
-		Files:       make([]string, 0),
+		Files:       make([]FileKey, 0),
 		Options: keystoneFileOptions{
 			Strict: false,
 		},
@@ -167,14 +172,16 @@ func (file *KeystoneFile) UnsetEnv(varname string) *KeystoneFile {
 	return file
 }
 
-func (file *KeystoneFile) AddFile(filepath string) *KeystoneFile {
+func (file *KeystoneFile) AddFile(filekey FileKey) *KeystoneFile {
 	if file.Err() != nil {
 		return file
 	}
 
-	file.RemoveFile(filepath)
+	file.RemoveFile(filekey.Path)
 
-	file.Files = append(file.Files, filepath)
+	// file.Files = append(file.Files, filepath)
+
+	file.Files = append(file.Files, filekey)
 
 	return file
 }
@@ -184,10 +191,10 @@ func (file *KeystoneFile) RemoveFile(filepath string) *KeystoneFile {
 		return file
 	}
 
-	files := make([]string, 0)
+	files := make([]FileKey, 0)
 
 	for _, f := range file.Files {
-		if f != filepath {
+		if f.Path != filepath {
 			files = append(files, f)
 		}
 	}

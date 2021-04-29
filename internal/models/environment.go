@@ -10,10 +10,15 @@ import (
 )
 
 type Environment struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	Name      string    `json:"name" gorm:"not null"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID                uint            `json:"id" gorm:"primaryKey"`
+	Name              string          `json:"name" gorm:"not null"`
+	EnvironmentTypeID uint            `json:"environment_type_id"`
+	EnvironmentType   EnvironmentType `json:"environment_type"`
+	ProjectID         uint            `json:"project_id"`
+	Project           Project         `json:"project"`
+	VersionID         string          `json:"version_id"`
+	CreatedAt         time.Time       `json:"created_at"`
+	UpdatedAt         time.Time       `json:"updated_at"`
 }
 
 func (e *Environment) BeforeCreate(tx *gorm.DB) (err error) {

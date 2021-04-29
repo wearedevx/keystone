@@ -62,7 +62,7 @@ To add files to secret files:
 
 		if quietOutput {
 			for _, file := range files {
-				Print(file)
+				Print(file.Path)
 			}
 			return
 		}
