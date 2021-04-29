@@ -16,7 +16,7 @@ type Project struct {
 	Name      string          `json:"name" gorm:"not null"`
 	Members   []ProjectMember `json:"members"`
 	UserID    uint            `json:"user_id"`
-	User      uint            `json:"user"`
+	User      User            `json:"user"`
 	CreatedAt time.Time       `json:"create_at"`
 	UpdatedAt time.Time       `json:"update_at"`
 }
