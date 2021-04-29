@@ -3,6 +3,7 @@ package repo
 
 import (
 	. "github.com/wearedevx/keystone/internal/models"
+	"gorm.io/gorm/clause"
 )
 
 func (r *Repo) createProject(project *Project, user *User) *Repo {
@@ -10,38 +11,55 @@ func (r *Repo) createProject(project *Project, user *User) *Repo {
 		return r
 	}
 
-	r.err = r.GetDb().Create(project).Error
+	db := r.GetDb()
+
+	r.err = db.Create(project).Error
+
+	projectMember := ProjectMember{
+		Project: *project,
+		User:    *user,
+	}
+
+	r.err = db.Create(&projectMember).Error
 
 	if r.err == nil {
-		envs := []string{"dev", "ci", "staging", "prod"}
+		envTypes := make([]EnvironmentType, 0)
+		r.getAllEnvironmentTypes(&envTypes)
 
-		for _, env := range envs {
-			environment := Environment{
-				Name: env,
-			}
-
-			r.err = r.GetDb().Create(&environment).Error
-
-			if r.err != nil {
-				break
-			}
-
-			projectMember := ProjectMember{
-				Project:     *project,
-				Environment: environment,
-				User:        *user,
-				Role:        RoleOwner,
-			}
-
-			r.err = r.GetDb().Create(&projectMember).Error
-
-			if r.err != nil {
-				break
-			}
-
-			r.err = r.GetDb().Preload("Members").First(project, project.ID).Error
+		if r.err != nil {
+			return r
 		}
+
+		for _, envType := range envTypes {
+			environment := Environment{
+				Name:            envType.Name,
+				EnvironmentType: envType,
+				Project:         *project,
+				VersionID:       "0",
+			}
+
+			r.err = db.Create(&environment).Error
+
+			if r.err != nil {
+				break
+			}
+
+		}
+
+		r.err = db.Preload("Members").First(project, project.ID).Error
 	}
+
+	return r
+}
+
+func (r *Repo) getAllEnvironmentTypes(environmentTypes *[]EnvironmentType) *Repo {
+	if r.err != nil {
+		return r
+	}
+
+	db := r.GetDb()
+
+	r.err = db.Model(EnvironmentType{}).Find(environmentTypes).Error
 
 	return r
 }
@@ -62,7 +80,7 @@ func (r *Repo) getUserProjectWithName(user User, name string) (Project, bool) {
 		return foundProject, false
 	}
 
-	r.err = r.GetDb().Model(&Project{}).Joins("join project_members pm on pm.project_id = projects.id").Joins("join users u on pm.user_id = u.id").Where("u.id = ? and name = ? and pm.project_owner = true", user.ID, name).First(&foundProject).Error
+	r.err = r.GetDb().Model(&Project{}).Joins("join users u on u.id = projects.user_id").Where("u.id = ? and projects.name = ?", user.ID, name).First(&foundProject).Error
 
 	return foundProject, r.err == nil
 }
@@ -86,26 +104,27 @@ func (r *Repo) ProjectLoadUsers(project *Project) *Repo {
 		return r
 	}
 
-	r.GetDb().Model(project).Association("Users")
+	r.GetDb().Model(project).Association("Members.User")
 
 	return r
 }
 
-func (r *Repo) ProjectSetRoleForUser(project Project, user User, role UserRole) *Repo {
+func (r *Repo) ProjectSetRoleForUser(project Project, user User, role Role) *Repo {
 	if r.err != nil {
 		return r
 	}
 
-	// perm := ProjectPermissions{
-	// 	UserID:    user.ID,
-	// 	ProjectID: project.ID,
-	// 	Role:      role,
-	// }
+	db := r.GetDb()
 
-	// r.err = r.GetDb().Clauses(clause.OnConflict{
-	// 	Columns:   []clause.Column{{Name: "user_id"}, {Name: "project_id"}},
-	// 	DoUpdates: clause.Assignments(map[string]interface{}{"role": role}),
-	// }).Create(&perm).Error
+	pm := ProjectMember{
+		Project: project,
+		User:    user,
+		Role:    role,
+	}
+
+	r.err = db.Clauses(clause.OnConflict{UpdateAll: true}).
+		Create(&pm).
+		Error
 
 	return r
 }
