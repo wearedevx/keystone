@@ -15,6 +15,8 @@ type Project struct {
 	UUID      string          `json:"uuid" gorm:"not null;unique"`
 	Name      string          `json:"name" gorm:"not null"`
 	Members   []ProjectMember `json:"members"`
+	UserID    uint            `json:"user_id"`
+	User      uint            `json:"user"`
 	CreatedAt time.Time       `json:"create_at"`
 	UpdatedAt time.Time       `json:"update_at"`
 }
