@@ -138,7 +138,7 @@ func getProjectsPublicKeys(params routes.Params, _ io.ReadCloser, Repo repo.Repo
 			for _, member := range project.Members {
 
 				result.keys = append(result.keys, UserPublicKey{
-					UserID:    member.User.ID,
+					UserID:    member.User.UserID,
 					PublicKey: member.User.PublicKey,
 				})
 			}
@@ -174,14 +174,14 @@ func postAddVariable(params routes.Params, body io.ReadCloser, Repo repo.Repo, u
 			Repo.GetProjectByUUID(projectID, &project)
 			Repo.GetSecretByName(input.VarName, &secret)
 
-			for _, uev := range input.UserEnvValue {
-				if environment, ok := Repo.GetEnvironmentByProjectIDAndName(project, uev.Environment); ok {
-					if user, ok := Repo.GetUser(uev.UserID); ok {
-						Repo.EnvironmentSetVariableForUser(environment, secret, user, uev.Value)
-					}
+			// for _, uev := range input.UserEnvValue {
+			// 	if environment, ok := Repo.GetEnvironmentByProjectIDAndName(project, uev.Environment); ok {
+			// 		if user, ok := Repo.GetUser(uev.UserID); ok {
+			// 			// Repo.EnvironmentSetVariableForUser(environment, secret, user, uev.Value)
+			// 		}
 
-				}
-			}
+			// 	}
+			// }
 
 			return Repo.Err()
 		}),
