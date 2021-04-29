@@ -8,6 +8,8 @@ services:
       POSTGRES_PASSWORD: ks
       POSTGRES_USER: ks
       POSTGRES_DB: ks
+    ports:
+      - 5432:5432
 
   adminer:
     image: adminer
