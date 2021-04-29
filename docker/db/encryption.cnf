@@ -1,0 +1,15 @@
+[mysqld]
+
+# File Key Management
+plugin_load_add = file_key_management
+loose_file_key_management_filename = /etc/mysql/encryption/keyfile.enc
+loose_file_key_management_filekey = FILE:/etc/mysql/encryption/keyfile.key
+loose_file_key_management_encryption_algorithm = AES_CBC
+encrypt_binlog = 1
+
+# InnoDB/XtraDB Encryption
+innodb_encrypt_tables = FORCE
+innodb_encrypt_temporary_tables = ON
+innodb_encrypt_log = ON
+innodb_encryption_threads = 4
+innodb_encryption_rotate_key_age = 0
