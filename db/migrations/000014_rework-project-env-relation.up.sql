@@ -90,8 +90,8 @@ ADD CONSTRAINT fk_project_members_role FOREIGN KEY (role_id) REFERENCES public.r
 
 -- Environment belongs to project
 ALTER TABLE public.environments
-ADD COLUMN versionID varchar(255),
-ADD COLUMN project_id integer;
+ADD COLUMN IF NOT EXISTS version_id varchar(255),
+ADD COLUMN IF NOT EXISTS project_id integer;
 
 DROP INDEX IF EXISTS idx_environments_project_id;
 CREATE INDEX idx_environments_project_id ON public.environments USING btree (project_id);
