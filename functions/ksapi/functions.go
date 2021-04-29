@@ -76,7 +76,10 @@ func postProject(_ routes.Params, body io.ReadCloser, Repo repo.Repo, user User)
 	var status int = http.StatusOK
 	var err error
 
-	project := &Project{}
+	project := &Project{
+		User:   user,
+		UserID: user.ID,
+	}
 
 	runner := NewRunner([]RunnerAction{
 		NewAction(func() error {
@@ -132,12 +135,13 @@ func getProjectsPublicKeys(params routes.Params, _ io.ReadCloser, Repo repo.Repo
 			Repo.GetProjectByUUID(projectID, &project)
 			Repo.ProjectLoadUsers(&project)
 
-			// for _, user := range project.Users {
-			// 	result.keys = append(result.keys, UserPublicKey{
-			// 		UserID:    user.UserID,
-			// 		PublicKey: user.PublicKey,
-			// 	})
-			// }
+			for _, member := range project.Members {
+
+				result.keys = append(result.keys, UserPublicKey{
+					UserID:    member.User.ID,
+					PublicKey: member.User.PublicKey,
+				})
+			}
 
 			return Repo.Err()
 		}).SetStatusSuccess(200),
