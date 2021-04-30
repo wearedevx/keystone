@@ -40,18 +40,16 @@ func (client *SKeystoneClient) ProjectMembers(projectId string) ([]ProjectMember
 	return result.Members, err
 }
 
-func (client *SKeystoneClient) ProjectAddMembers(projectId string, memberRoles map[string]map[string]string) error {
+func (client *SKeystoneClient) ProjectAddMembers(projectId string, memberRoles map[string]Role) error {
 	var result AddMembersResponse
 	var err error
 
 	payload := AddMembersPayload{
-		Members: make([]MemberEnvironmentRole, 0),
+		Members: make([]MemberRole, 0),
 	}
 
-	for id, rights := range memberRoles {
-		for environment, role := range rights {
-			payload.Members = append(payload.Members, MemberEnvironmentRole{ID: id, Environment: environment, Role: UserRole(role)})
-		}
+	for memberID, role := range memberRoles {
+		payload.Members = append(payload.Members, MemberRole{MemberID: memberID, RoleID: role.ID})
 	}
 
 	err = client.r.post("/projects/"+projectId+"/members", payload, &result)

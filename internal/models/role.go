@@ -44,3 +44,22 @@ func (u *Role) Serialize(out *string) error {
 
 	return err
 }
+
+type GetRolesResponse struct {
+	Roles []Role
+}
+
+func (e *GetRolesResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(e)
+}
+
+func (u *GetRolesResponse) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(u)
+
+	*out = sb.String()
+
+	return err
+}
