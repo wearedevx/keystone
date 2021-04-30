@@ -253,42 +253,6 @@ func deleteProjectsMembers(params routes.Params, body io.ReadCloser, Repo repo.R
 	return &result, status, err
 }
 
-func postProjectsMembers(params routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
-	var status int = http.StatusOK
-	var err error
-
-	var project Project
-	var projectID = params.Get("projectID").(string)
-	input := models.AddMembersPayload{}
-	result := models.AddMembersResponse{Success: true, Error: ""}
-	err = input.Deserialize(body)
-
-	runner := NewRunner([]RunnerAction{
-		NewAction(func() error {
-			Repo.GetProjectByUUID(projectID, &project)
-
-			return Repo.Err()
-		}).SetStatusError(404),
-		NewAction(func() error {
-			Repo.ProjectAddMembers(project, input.Members)
-
-			return Repo.Err()
-		}).
-			SetStatusSuccess(200).
-			SetStatusError(500),
-	}).Run()
-
-	status = runner.Status()
-	err = runner.Error()
-
-	if err != nil {
-		result.Success = false
-		result.Error = err.Error()
-	}
-
-	return &result, status, err
-}
-
 func postAddVariable(params routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
 	projectID := params.Get("projectID").(string)
 
