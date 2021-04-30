@@ -11,7 +11,6 @@ exists test.txt
 youpi
 
 -- expected.txt --
-dev
 [30;43m CAREFUL [0m You are about to remove test.txt from the secret files.
 Content for the current environment (dev) will be kept.
 Its content for other environments will be lost, it will no longer be gitignored.
