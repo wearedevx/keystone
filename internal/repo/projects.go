@@ -115,7 +115,7 @@ func (r *Repo) ProjectGetMembers(project *Project, members *[]ProjectMember) *Re
 
 // From a list of MemberEnvironmentRole, fetches users from database
 // Returns the found Users and a slice of not found userIDs
-func (r *Repo) usersInMemberEnvironmentsRole(mers []MemberEnvironmentRole) (map[string]User, []string) {
+func (r *Repo) usersInMemberEnvironmentsRole(mers []MemberRole) (map[string]User, []string) {
 	// Figure out members that do not exist in db
 	userIDs := make([]string, 0)
 	// only used so that userIDs are unique in the array
@@ -131,7 +131,7 @@ func (r *Repo) usersInMemberEnvironmentsRole(mers []MemberEnvironmentRole) (map[
 	return r.findUsers(userIDs)
 }
 
-func (r *Repo) environmentsInMemberEnvironmentsRole(mers []MemberEnvironmentRole) map[string]Environment {
+func (r *Repo) environmentsInMemberEnvironmentsRole(mers []MemberRole) map[string]Environment {
 	result := make(map[string]Environment)
 
 	if r.err != nil {
@@ -155,7 +155,7 @@ func (r *Repo) environmentsInMemberEnvironmentsRole(mers []MemberEnvironmentRole
 	return result
 }
 
-func (r *Repo) ProjectAddMembers(project Project, mers []MemberEnvironmentRole) *Repo {
+func (r *Repo) ProjectAddMembers(project Project, mers []MemberRole) *Repo {
 	if r.err != nil {
 		return r
 	}

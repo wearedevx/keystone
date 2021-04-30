@@ -50,9 +50,9 @@ func (pm *ProjectMember) Serialize(out *string) error {
 }
 
 // API Types
-type MemberEnvironmentRole struct {
-	ID          string
-	Environment string
+type MemberRole struct {
+	MemberID string
+	RoleID   uint
 }
 
 type GetMembersResponse struct {
@@ -73,7 +73,7 @@ func (p *GetMembersResponse) Serialize(out *string) error {
 }
 
 type AddMembersPayload struct {
-	Members []MemberEnvironmentRole
+	Members []MemberRole
 }
 
 func (pm *AddMembersPayload) Deserialize(in io.Reader) error {
