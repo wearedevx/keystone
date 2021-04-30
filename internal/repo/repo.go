@@ -21,12 +21,12 @@ var db *gorm.DB
 
 // getDSN builds the postgres DSN from environment variables
 func getDSN() string {
-	host := GetEnv("DB_HOST", "127.0.0.1")
+	host := GetEnv("DB_HOST", "db")
 	port := GetEnv("DB_PORT", "5432")
 	fmt.Println("port:", port)
-	user := GetEnv("DB_USER", "keystone-dev")
-	password := GetEnv("DB_PASSWORD", "keystone-dev")
-	dbname := GetEnv("DB_NAME", "keystone")
+	user := GetEnv("DB_USER", "ks")
+	password := GetEnv("DB_PASSWORD", "ks")
+	dbname := GetEnv("DB_NAME", "ks")
 
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 }
