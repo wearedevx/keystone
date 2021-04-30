@@ -143,10 +143,9 @@ func startCloudFunctionProcess(funcPath string, serverUrl string) int {
 	// Start cloud functions
 	ctx, _ := context.WithTimeout(context.Background(), 20000*time.Second)
 
-	fmt.Println("START FUNC BY PROG", funcPath)
-
-	cmd := exec.CommandContext(ctx, "go", "run", "-tags", "test", "cmd/main.go")
-	cmd.Dir = funcPath
+	cmd := exec.CommandContext(ctx, "go", "run", "-tags", "test", funcPath)
+	// cmd.Dir = funcPath
+	cmd.Dir = "."
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	listenCmdStartProcess(cmd, funcPath)
@@ -174,11 +173,11 @@ func startCloudFunctionProcess(funcPath string, serverUrl string) int {
 }
 
 func startAuthCloudFuncProcess() int {
-	return startCloudFunctionProcess("../../functions/ksauth", "http://127.0.0.1:9000")
+	return startCloudFunctionProcess("../../functions/ksauth/cmd/main.go", "http://127.0.0.1:9000")
 }
 
 func startCloudApiFunc() int {
-	return startCloudFunctionProcess("../../functions/ksapi", "http://127.0.0.1:9001")
+	return startCloudFunctionProcess("../../functions/ksapi/cmd/main.go", "http://127.0.0.1:9001")
 }
 
 func CreateAndLogUser(env *testscript.Env) error {

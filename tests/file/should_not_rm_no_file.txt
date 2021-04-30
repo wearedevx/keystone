@@ -6,7 +6,6 @@ ks file rm --skip nofile.txt
 cmp stdout file_not_added_str_expected.txt 
 
 -- file_not_added_str_expected.txt --
-dev
 
 [30;41m ERROR [0m [31mCannot Remove File[0m[31m: '[0m[31mnofile.txt[0m[31m'[0m
 This happened because: File not found
