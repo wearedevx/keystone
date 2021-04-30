@@ -15,9 +15,9 @@ ALTER TABLE public.environment_user_secrets DROP CONSTRAINT fk_environment_user_
 DROP TABLE IF EXISTS public.environment_user_secrets;
 
 -- project_environment_secrets
-ALTER TABLE public.project_environment_secrets DROP CONSTRAINT fk_project_environment_secrets_secret;
-ALTER TABLE public.project_environment_secrets DROP CONSTRAINT fk_project_environment_secrets_environment;
-DROP TABLE IF EXISTS public.project_environment_secrets;
+/* ALTER TABLE public.project_environment_secrets DROP CONSTRAINT fk_project_environment_secrets_secret; */
+/* ALTER TABLE public.project_environment_secrets DROP CONSTRAINT fk_project_environment_secrets_environment; */
+/* DROP TABLE IF EXISTS public.project_environment_secrets; */
 
 -- secrets
 DROP TABLE IF EXISTS public.secrets;
