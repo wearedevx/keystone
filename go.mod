@@ -13,7 +13,7 @@ require (
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
 	github.com/go-openapi/strfmt v0.19.5 // indirect
-	github.com/gofrs/uuid v3.2.0+incompatible // indirect
+	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/golang-migrate/migrate v3.5.4+incompatible // indirect
 	github.com/golang-migrate/migrate/v4 v4.14.1 // indirect
 	github.com/google/go-github/v32 v32.1.0
@@ -30,6 +30,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.1
+	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/xanzy/go-gitlab v0.48.0
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887 // indirect

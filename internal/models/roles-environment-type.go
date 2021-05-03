@@ -10,17 +10,17 @@ import (
 )
 
 type RolesEnvironmentType struct {
-	ID                uint      `json:"id" gorm:"primaryKey"`
-	RoleID            uint      `json:"role_id"`
-	Role              Role      `json:"role"`
-	EnvironmentTypeID uint      `json:"environment_type_id"`
-	EnvironmentType   uint      `json:"environment_type"`
-	Name              string    `json:"name" gorm:"not null"`
-	Read              bool      `json:"read"`
-	Write             bool      `json:"write"`
-	Invite            bool      `json:"invite"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	ID                uint            `json:"id" gorm:"primaryKey"`
+	RoleID            uint            `json:"role_id"`
+	Role              Role            `json:"role"`
+	EnvironmentTypeID uint            `json:"environment_type_id"`
+	EnvironmentType   EnvironmentType `json:"environment_type"`
+	Name              string          `json:"name" gorm:"not null"`
+	Read              bool            `json:"read"`
+	Write             bool            `json:"write"`
+	Invite            bool            `json:"invite"`
+	CreatedAt         time.Time       `json:"created_at"`
+	UpdatedAt         time.Time       `json:"updated_at"`
 }
 
 func (e *RolesEnvironmentType) BeforeCreate(tx *gorm.DB) (err error) {

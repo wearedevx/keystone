@@ -16,7 +16,7 @@ const (
 
 type RightsRepo interface {
 	GetRolesEnvironmentType(environment *Environment, role *Role) (*RolesEnvironmentType, error)
-	GetProjectMember(user *User, project *Project) (*ProjectMember, error)
+	GetProjectMember(user *User, project *Project) (ProjectMember, error)
 }
 
 func CanUserHasRightsEnvironment(repo RightsRepo, user *User, project *Project, environment *Environment, right string) (bool, error) {
@@ -27,8 +27,6 @@ func CanUserHasRightsEnvironment(repo RightsRepo, user *User, project *Project, 
 		return false, err
 	}
 
-	// fmt.Println("keystone ~ rights.go ~ projectMember", projectMember.Role)
-	// fmt.Printf("keystone ~ rights.go ~ projectMember %T %+v\n", projectMember.Role, projectMember.Role)
 	rolesEnvironmentType, err := repo.GetRolesEnvironmentType(environment, &projectMember.Role)
 
 	if err != nil {

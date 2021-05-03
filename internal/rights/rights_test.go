@@ -18,7 +18,7 @@ func getRoleByEnvAndRole(environment *Environment, role *Role) RolesEnvironmentT
 			Write:  true,
 			Invite: false,
 		}
-	case environment.Name == "ci" && role.Name == "dev":
+	case environment.Name == "staging" && role.Name == "dev":
 		return RolesEnvironmentType{
 			Read:   false,
 			Write:  false,
@@ -37,7 +37,7 @@ func getRoleByEnvAndRole(environment *Environment, role *Role) RolesEnvironmentT
 			Write:  true,
 			Invite: true,
 		}
-	case environment.Name == "ci" && role.Name == "devops":
+	case environment.Name == "staging" && role.Name == "devops":
 		return RolesEnvironmentType{
 			Read:   true,
 			Write:  true,
@@ -56,7 +56,7 @@ func getRoleByEnvAndRole(environment *Environment, role *Role) RolesEnvironmentT
 			Write:  true,
 			Invite: true,
 		}
-	case environment.Name == "ci" && role.Name == "admin":
+	case environment.Name == "staging" && role.Name == "admin":
 		return RolesEnvironmentType{
 			Read:   true,
 			Write:  true,
@@ -131,7 +131,7 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 	userAdmin := &User{Username: "admin"}
 
 	environmentDev := &Environment{Name: "dev"}
-	environmentCi := &Environment{Name: "ci"}
+	environmentStaging := &Environment{Name: "staging"}
 	environmentProd := &Environment{Name: "prod"}
 
 	// DEV env
@@ -144,7 +144,7 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 	canDevInviteDev, _ := CanUserInviteOnEnvironment(fakeRepo, userDev, project, environmentDev)
 	assert.False(t, canDevInviteDev, "Oops! "+userDev.Username+" can't invite on "+environmentDev.Name+" environment")
 
-	// // Devops user
+	// Devops user
 	canDevopsReadDev, _ := CanUserReadEnvironment(fakeRepo, userDevops, project, environmentDev)
 	assert.True(t, canDevopsReadDev, "Oops! "+userDevops.Username+" user should be able to read "+environmentDev.Name+" environment")
 	canDevopsWriteDev, _ := CanUserWriteOnEnvironment(fakeRepo, userDevops, project, environmentDev)
@@ -152,7 +152,7 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 	canDevopsInviteDev, _ := CanUserInviteOnEnvironment(fakeRepo, userDevops, project, environmentDev)
 	assert.True(t, canDevopsInviteDev, "Oops! "+userDevops.Username+" should be able to "+environmentDev.Name+" environment")
 
-	// // Admin user
+	// Admin user
 	canAdminReadDev, _ := CanUserReadEnvironment(fakeRepo, userAdmin, project, environmentDev)
 	assert.True(t, canAdminReadDev, "Oops! "+userAdmin.Username+" user should be able to read "+environmentDev.Name+" environment")
 	canAdminWriteDev, _ := CanUserWriteOnEnvironment(fakeRepo, userAdmin, project, environmentDev)
@@ -160,31 +160,31 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 	canAdminInviteDev, _ := CanUserInviteOnEnvironment(fakeRepo, userAdmin, project, environmentDev)
 	assert.True(t, canAdminInviteDev, "Oops! "+userAdmin.Username+" should be able to "+environmentDev.Name+" environment")
 
-	// CI env
+	// Staging env
 
 	// Dev user
-	canDevReadCI, _ := CanUserReadEnvironment(fakeRepo, userDev, project, environmentCi)
-	assert.False(t, canDevReadCI, "Oops! "+userDev.Username+" can't read "+environmentCi.Name+" environment")
-	canDevWriteCI, _ := CanUserWriteOnEnvironment(fakeRepo, userDev, project, environmentCi)
-	assert.False(t, canDevWriteCI, "Oops! "+userDev.Username+" user can't write "+environmentCi.Name+" environment")
-	canDevInviteCI, _ := CanUserInviteOnEnvironment(fakeRepo, userDev, project, environmentCi)
-	assert.False(t, canDevInviteCI, "Oops! "+userDev.Username+" user can't invite on "+environmentCi.Name+" environment")
+	canDevReadStaging, _ := CanUserReadEnvironment(fakeRepo, userDev, project, environmentStaging)
+	assert.False(t, canDevReadStaging, "Oops! "+userDev.Username+" can't read "+environmentStaging.Name+" environment")
+	canDevWriteStaging, _ := CanUserWriteOnEnvironment(fakeRepo, userDev, project, environmentStaging)
+	assert.False(t, canDevWriteStaging, "Oops! "+userDev.Username+" user can't write "+environmentStaging.Name+" environment")
+	canDevInviteStaging, _ := CanUserInviteOnEnvironment(fakeRepo, userDev, project, environmentStaging)
+	assert.False(t, canDevInviteStaging, "Oops! "+userDev.Username+" user can't invite on "+environmentStaging.Name+" environment")
 
 	// Devops user
-	canDevopsReadCI, _ := CanUserReadEnvironment(fakeRepo, userDevops, project, environmentCi)
-	assert.True(t, canDevopsReadCI, "Oops! "+userDevops.Username+" user should be able to read "+environmentCi.Name+" environment")
-	canDevopsWriteCI, _ := CanUserWriteOnEnvironment(fakeRepo, userDevops, project, environmentCi)
-	assert.True(t, canDevopsWriteCI, "Oops! "+userDevops.Username+" user should be able to write "+environmentCi.Name+" environment")
-	canDevopsInviteCI, _ := CanUserInviteOnEnvironment(fakeRepo, userDevops, project, environmentCi)
-	assert.False(t, canDevopsInviteCI, "Oops! "+userDevops.Username+" can't invite to "+environmentCi.Name+" environment")
+	canDevopsReadCI, _ := CanUserReadEnvironment(fakeRepo, userDevops, project, environmentStaging)
+	assert.True(t, canDevopsReadCI, "Oops! "+userDevops.Username+" user should be able to read "+environmentStaging.Name+" environment")
+	canDevopsWriteCI, _ := CanUserWriteOnEnvironment(fakeRepo, userDevops, project, environmentStaging)
+	assert.True(t, canDevopsWriteCI, "Oops! "+userDevops.Username+" user should be able to write "+environmentStaging.Name+" environment")
+	canDevopsInviteCI, _ := CanUserInviteOnEnvironment(fakeRepo, userDevops, project, environmentStaging)
+	assert.False(t, canDevopsInviteCI, "Oops! "+userDevops.Username+" can't invite to "+environmentStaging.Name+" environment")
 
 	// Admin user
-	canAdminReadCI, _ := CanUserReadEnvironment(fakeRepo, userAdmin, project, environmentCi)
-	assert.True(t, canAdminReadCI, "Oops! "+userAdmin.Username+" user should be able to read "+environmentCi.Name+" environment")
-	canAdminWriteCI, _ := CanUserWriteOnEnvironment(fakeRepo, userAdmin, project, environmentCi)
-	assert.True(t, canAdminWriteCI, "Oops! "+userAdmin.Username+" user should be able to write "+environmentCi.Name+" environment")
-	canAdminInviteCI, _ := CanUserInviteOnEnvironment(fakeRepo, userAdmin, project, environmentCi)
-	assert.True(t, canAdminInviteCI, "Oops! "+userAdmin.Username+" should be able to "+environmentCi.Name+" environment")
+	canAdminReadCI, _ := CanUserReadEnvironment(fakeRepo, userAdmin, project, environmentStaging)
+	assert.True(t, canAdminReadCI, "Oops! "+userAdmin.Username+" user should be able to read "+environmentStaging.Name+" environment")
+	canAdminWriteCI, _ := CanUserWriteOnEnvironment(fakeRepo, userAdmin, project, environmentStaging)
+	assert.True(t, canAdminWriteCI, "Oops! "+userAdmin.Username+" user should be able to write "+environmentStaging.Name+" environment")
+	canAdminInviteCI, _ := CanUserInviteOnEnvironment(fakeRepo, userAdmin, project, environmentStaging)
+	assert.True(t, canAdminInviteCI, "Oops! "+userAdmin.Username+" should be able to "+environmentStaging.Name+" environment")
 
 	// PROD env
 
