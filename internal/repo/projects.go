@@ -2,6 +2,8 @@
 package repo
 
 import (
+	"fmt"
+
 	. "github.com/wearedevx/keystone/internal/models"
 	"gorm.io/gorm/clause"
 )
@@ -13,15 +15,22 @@ func (r *Repo) createProject(project *Project, user *User) *Repo {
 
 	db := r.GetDb()
 
+	project.UserID = user.ID
 	r.err = db.Create(project).Error
+
+	roleAdmin, _ := r.GetRoleByName("admin")
 
 	projectMember := ProjectMember{
 		Project: *project,
-		User:    *user,
+		RoleID:  roleAdmin.ID,
+		// User:    *user,
+		UserID: user.ID,
 	}
 
 	r.err = db.Create(&projectMember).Error
+	fmt.Println("keystone ~ projects.go ~ r.errdddddddd", user.ID)
 
+	// Useless
 	if r.err == nil {
 		envTypes := make([]EnvironmentType, 0)
 		r.getAllEnvironmentTypes(&envTypes)
@@ -74,23 +83,27 @@ func (r *Repo) GetProjectByUUID(uuid string, project *Project) *Repo {
 	return r
 }
 
-func (r *Repo) getUserProjectWithName(user User, name string) (Project, bool) {
+func (r *Repo) GetUserProjectWithName(user User, name string) (Project, bool) {
 	var foundProject Project
-	if r.err != nil {
-		return foundProject, false
-	}
 
-	r.err = r.GetDb().Model(&Project{}).Joins("join users u on u.id = projects.user_id").Where("u.id = ? and projects.name = ?", user.ID, name).First(&foundProject).Error
+	// Why?
+	// if r.err != nil {
+	// 	return foundProject, false
+	// }
+
+	// r.err = r.GetDb().Model(&Project{}).Joins("join users u on u.id = projects.user_id").Where("u.id = ? and projects.name = ?", user.ID, name).First(&foundProject).Error
+	r.err = r.GetDb().Where("user_id = ? and name = ?", 1, name).First(&foundProject).Error
 
 	return foundProject, r.err == nil
 }
 
 func (r *Repo) GetOrCreateProject(project *Project, user User) *Repo {
-	if r.err != nil {
-		return r
-	}
+	// if r.err != nil {
+	// 	fmt.Println("Error")
+	// 	return r
+	// }
 
-	if foundProject, ok := r.getUserProjectWithName(user, project.Name); ok == true {
+	if foundProject, ok := r.GetUserProjectWithName(user, project.Name); ok == true {
 		*project = foundProject
 		return r
 	}

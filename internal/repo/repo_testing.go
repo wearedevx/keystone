@@ -3,6 +3,7 @@
 package repo
 
 import (
+	"fmt"
 	"os"
 	"path"
 
@@ -19,7 +20,7 @@ type Repo struct {
 var db *gorm.DB
 
 func autoMigrate() error {
-	db.AutoMigrate(&LoginRequest{}, &Environment{}, &EnvironmentUserSecret{}, &Message{}, &Project{}, &ProjectMember{}, &Secret{})
+	db.AutoMigrate(&LoginRequest{}, &Environment{}, &EnvironmentUserSecret{}, &Message{}, &Project{}, &ProjectMember{}, &Secret{}, &RolesEnvironmentType{})
 	return nil
 }
 
@@ -33,6 +34,7 @@ func (repo *Repo) GetDb() *gorm.DB {
 
 func init() {
 	dbFilePath := path.Join(os.TempDir(), "keystone_gorm.db")
+	fmt.Println("keystone ~ repo_testing.go ~ dbFilePath", dbFilePath)
 
 	var err error
 	db, err = gorm.Open(sqlite.Open(dbFilePath), &gorm.Config{})
