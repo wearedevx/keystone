@@ -258,7 +258,7 @@ func SeedTestData() {
 		EnvironmentType: devEnvironmentType,
 		Read:            true,
 		Write:           true,
-		Invite:          true,
+		Invite:          false,
 	})
 
 	Repo.GetOrCreateRoleEnvType(&RolesEnvironmentType{
