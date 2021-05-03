@@ -54,7 +54,6 @@ func listenCmdStartProcess(cmd *exec.Cmd, name string) {
 
 func StartAuthCloudFunction() {
 	gcloudPidFilePath := GetGcloudFuncAuthPidFilePath() // + time.Now().String()
-	fmt.Println("keystone ~ setup-test.go ~ gcloudPidFilePath", string(gcloudPidFilePath))
 	pid, _ := ioutil.ReadFile(gcloudPidFilePath)
 
 	if len(pid) == 0 {
@@ -67,7 +66,7 @@ func StartAuthCloudFunction() {
 			panic(err)
 		}
 	} else {
-		fmt.Println("PID DEJA PRESENT", pid)
+		// fmt.Println("PID DEJA PRESENT", pid)
 	}
 }
 
@@ -88,12 +87,10 @@ func StartApiCloudFunction() {
 }
 
 func pollServer(serverUrl string, c chan bool, maxAttempts int) {
-	fmt.Println("keystone ~ setup-test.go ~ pollServer")
 	var done bool = false
 	attemps := 0
 
 	for !done {
-		fmt.Println("keystone ~ setup-test.go ~ done", done)
 		attemps = attemps + 1
 
 		if attemps == maxAttempts {
@@ -113,7 +110,6 @@ func pollServer(serverUrl string, c chan bool, maxAttempts int) {
 		fmt.Println("Start request ! 1")
 		_, err := client.Do(request)
 
-		fmt.Println("keystone ~ setup-test.go ~ err", err)
 		// If it's started,
 
 		if err == nil {
