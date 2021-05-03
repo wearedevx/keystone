@@ -2,7 +2,6 @@ package repo
 
 import (
 	"encoding/json"
-	"fmt"
 
 	. "github.com/wearedevx/keystone/internal/models"
 )
@@ -16,7 +15,6 @@ func (repo *Repo) GetProjectMember(user *User, project *Project) (ProjectMember,
 }
 
 func (repo *Repo) CreateProjectMember(user *User, project *Project, role *Role) (ProjectMember, error) {
-	fmt.Println("keystone ~ project-members.go ~ CreateProjectMember")
 	envType := ProjectMember{
 		UserID:    user.ID,
 		ProjectID: project.ID,
@@ -43,7 +41,6 @@ func (repo *Repo) GetOrCreateProjectMember(project *Project, user *User, roleNam
 	}
 
 	role, _ := repo.GetRoleByName(roleName)
-	fmt.Println("keystone ~ project-members.go ~ role", role)
 
 	return repo.CreateProjectMember(user, project, &role)
 }

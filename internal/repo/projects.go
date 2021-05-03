@@ -2,8 +2,6 @@
 package repo
 
 import (
-	"fmt"
-
 	. "github.com/wearedevx/keystone/internal/models"
 	"gorm.io/gorm/clause"
 )
@@ -28,7 +26,6 @@ func (r *Repo) createProject(project *Project, user *User) *Repo {
 	}
 
 	r.err = db.Create(&projectMember).Error
-	fmt.Println("keystone ~ projects.go ~ r.errdddddddd", user.ID)
 
 	// Useless
 	if r.err == nil {
