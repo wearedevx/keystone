@@ -104,12 +104,12 @@ func (fakeRepo *FakeRepo) GetRolesEnvironmentType(environment *Environment, role
 	return &rolesEnvironmentType, nil
 }
 
-func (fakeRepo *FakeRepo) GetProjectMember(user *User, project *Project) (*ProjectMember, error) {
+func (fakeRepo *FakeRepo) GetProjectMember(user *User, project *Project) (ProjectMember, error) {
 	role := getRoleByUsername(user.Username)
 	projectMember := ProjectMember{
 		Role: role,
 	}
-	return &projectMember, nil
+	return projectMember, nil
 }
 
 func assertEqual(t *testing.T, a interface{}, b interface{}, message string) {
