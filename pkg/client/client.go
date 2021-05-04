@@ -19,6 +19,8 @@ var ksapiURL string  //= "http://localhost:9001"
 
 type KeystoneClient interface {
 	InitProject(name string) (Project, error)
+	// Users
+	CheckUsersExist(userIds []string) (CheckMembersResponse, error)
 	// Members
 	ProjectMembers(projectID string) ([]ProjectMember, error)
 	ProjectAddMembers(projectID string, members map[string]Role) error

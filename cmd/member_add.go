@@ -73,6 +73,14 @@ This will cause secrets to be encryted for all members, existing and new.`,
 		projectID := ctx.GetProjectID()
 
 		c := client.NewKeystoneClient(account["user_id"], token)
+
+		r, err := c.CheckUsersExist(args)
+
+		if r.Error != "" {
+			errors.UsersDontExist(r.Error, nil).Print()
+			os.Exit(1)
+		}
+
 		roles, err := c.Roles().GetAll()
 
 		if err != nil {
@@ -115,7 +123,7 @@ func promptRole(memberId string, roles []models.Role) (models.Role, error) {
 		Label:    "Role for {{ . }}?",
 		Active:   " {{  .Name  }}",
 		Inactive: " {{  .Name | faint }}",
-		Selected: "\U0001F336 {{ .Name }}",
+		Selected: " {{ .Name }}",
 		Details: `
 --------- Role ----------
 {{ "Name:" | faint }}	{{ .Name }}

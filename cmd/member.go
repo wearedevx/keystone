@@ -41,7 +41,6 @@ Used without arguments, displays a list of all members,
 grouped by their role, with indication of their ownership.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := core.New(core.CTX_RESOLVE)
-
 		currentUser, index := config.GetCurrentAccount()
 
 		if index < 0 {
@@ -94,7 +93,7 @@ func printRole(role Role, members []ProjectMember) {
 }
 
 func printMember(member ProjectMember) {
-	ui.Print("%s (%s)", member.User.UserID, member.Role)
+	ui.Print("%s", member.User.UserID)
 }
 
 var envs []string

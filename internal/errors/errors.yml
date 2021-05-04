@@ -299,6 +299,18 @@ errors:
 
   # MEMBERS_ERRORS
   # ––––––––––––––
+  - type: UsersDontExist
+    name: "Users Don't Exist"
+    params:
+      - name: Message
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      {{ .Message }}
+
+      You can invite those users to Keystone using
+        $ ks invite <emai>
+
   - type: CannotAddMembers
     name: "Cannot Add Members"
     params: []

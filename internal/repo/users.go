@@ -33,7 +33,7 @@ func (r *Repo) GetOrCreateUser(user *User) {
 // From a slice of userIDs (<username>@<service>)
 // fetchs the users.
 // Returns the found users and a list of not found userIDs
-func (r *Repo) findUsers(userIDs []string) (map[string]User, []string) {
+func (r *Repo) FindUsers(userIDs []string) (map[string]User, []string) {
 	users := make([]User, 0)
 	userMap := make(map[string]User)
 	notFounds := make([]string, 0)
