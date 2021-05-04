@@ -92,13 +92,23 @@ func (r *Repo) GetProjectByUUID(uuid string, project *Project) *Repo {
 
 func (r *Repo) getUserProjectWithName(user User, name string) (Project, bool) {
 	var foundProject Project
+	found := false
 	if r.err != nil {
-		return foundProject, false
+		return foundProject, found
 	}
 
-	r.err = r.GetDb().Model(&Project{}).Joins("join users u on u.id = projects.user_id").Where("u.id = ? and projects.name = ?", user.ID, name).First(&foundProject).Error
+	found, err := r.notFoundAsBool(func() error {
+		return r.GetDb().
+			Model(&Project{}).
+			Where("projects.user_id = ? and projects.name = ?", user.ID, name).
+			First(&foundProject).
+			Error
+	})
 
-	return foundProject, r.err == nil
+	r.err = err
+	fmt.Println("foundProject:", foundProject)
+
+	return foundProject, found
 }
 
 func (r *Repo) GetOrCreateProject(project *Project, user User) *Repo {
@@ -110,7 +120,7 @@ func (r *Repo) GetOrCreateProject(project *Project, user User) *Repo {
 		*project = foundProject
 		return r
 	}
-	r.err = nil
+	// r.err = nil
 
 	return r.createProject(project, &user)
 }
@@ -121,7 +131,7 @@ func (r *Repo) ProjectGetMembers(project *Project, members *[]ProjectMember) *Re
 		return r
 	}
 
-	r.GetDb().Preload("Environment").Preload("User").Where("project_id = ?", project.ID).Find(members)
+	r.GetDb().Preload("User").Preload("Role").Where("project_id = ?", project.ID).Find(members)
 
 	return r
 }
@@ -141,7 +151,7 @@ func (r *Repo) usersInMemberRoles(mers []MemberRole) (map[string]User, []string)
 		}
 	}
 
-	return r.findUsers(userIDs)
+	return r.FindUsers(userIDs)
 }
 
 func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole) *Repo {
@@ -186,7 +196,7 @@ func (r *Repo) ProjectRemoveMembers(project Project, members []string) *Repo {
 		return r
 	}
 
-	users, notFound := r.findUsers(members)
+	users, notFound := r.FindUsers(members)
 
 	if len(notFound) != 0 {
 		r.err = fmt.Errorf("Users not found: %s", strings.Join(notFound, ", "))

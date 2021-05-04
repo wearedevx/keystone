@@ -347,5 +347,6 @@ func UserService(w http.ResponseWriter, r *http.Request) {
 	router.POST("/projects/:projectID/variables", routes.AuthedHandler(postAddVariable))
 	router.PUT("/projects/:projectID/:environment/variables", routes.AuthedHandler(putSetVariable))
 
+	router.POST("/users/exist", routes.AuthedHandler(controllers.DoUsersExist))
 	router.ServeHTTP(w, r)
 }

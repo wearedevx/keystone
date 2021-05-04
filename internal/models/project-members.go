@@ -149,3 +149,42 @@ func (pm *RemoveMembersResponse) Serialize(out *string) error {
 
 	return err
 }
+
+type CheckMembersResponse struct {
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
+}
+
+func (pm *CheckMembersResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(pm)
+}
+
+func (pm *CheckMembersResponse) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(pm)
+
+	*out = sb.String()
+
+	return err
+}
+
+type CheckMembersPayload struct {
+	MemberIDs []string
+}
+
+func (pm *CheckMembersPayload) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(pm)
+}
+
+func (pm *CheckMembersPayload) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(pm)
+
+	*out = sb.String()
+
+	return err
+}

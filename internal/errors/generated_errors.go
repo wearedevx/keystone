@@ -180,6 +180,14 @@ Sorry for the inconvenience
 This happened because: {{ .Cause }}
 
 `,
+	"UsersDontExist": `
+{{ ERROR }} {{ .Name | red }}
+{{ .Message }}
+
+You can invite those users to Keystone using
+  $ ks invite <emai>
+
+`,
 	"CannotAddMembers": `
 {{ ERROR }} {{ .Name | red }}
 This happened because: {{ .Cause }}
@@ -372,6 +380,13 @@ func UnkownError(cause error) *Error {
 	meta := map[string]string{}
 
 	return NewError("Unkown Error", helpTexts["UnkownError"], meta, cause)
+}
+
+func UsersDontExist(message string, cause error) *Error {
+	meta := map[string]string{
+		"Message": string(message),
+	}
+	return NewError("Users Don't Exist", helpTexts["UsersDontExist"], meta, cause)
 }
 
 func CannotAddMembers(cause error) *Error {

@@ -1,6 +1,8 @@
 package repo
 
 import (
+	"fmt"
+
 	. "github.com/wearedevx/keystone/internal/models"
 )
 
@@ -10,7 +12,8 @@ func (r *Repo) GetRoles(roles *[]Role) *Repo {
 	}
 
 	db := r.GetDb()
-	db.Model(Role{}).Find(roles)
+	r.err = db.Find(roles).Error
+	fmt.Println("roles:", roles)
 
 	return r
 }

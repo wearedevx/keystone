@@ -37,6 +37,18 @@ func (client *SKeystoneClient) InitProject(name string) (Project, error) {
 	return project, err
 }
 
+func (client *SKeystoneClient) CheckUsersExist(userIds []string) (CheckMembersResponse, error) {
+	var err error
+	var result CheckMembersResponse
+
+	payload := CheckMembersPayload{
+		MemberIDs: userIds,
+	}
+	err = client.r.post("/users/exist", payload, &result)
+
+	return result, err
+}
+
 func (client *SKeystoneClient) ProjectMembers(projectId string) ([]ProjectMember, error) {
 	var err error
 	var result GetMembersResponse
