@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/exec"
@@ -21,10 +22,24 @@ import (
 )
 
 func GetGcloudFuncAuthPidFilePath() string {
+	time.Sleep(1 * time.Second)
+	time.Sleep(1 * time.Second)
+
 	return path.Join(os.TempDir(), "keystone_ksauth.pid")
 }
 
+func waitALittle() {
+	min := 0
+	max := 1000
+
+	nbms := rand.Intn(max-min) + min
+	fmt.Println("keystone ~ setup-test.go ~ nbms", nbms)
+
+	time.Sleep(time.Duration(nbms) * time.Millisecond)
+}
+
 func GetGcloudFuncApiPidFilePath() string {
+
 	return path.Join(os.TempDir(), "keystone_ksapi.pid")
 }
 
@@ -97,7 +112,6 @@ func pollServer(serverUrl string, c chan bool, maxAttempts int) {
 			done = true
 		}
 
-		fmt.Println("Start request ! 0")
 		// Make a request to server
 		request, _ := http.NewRequest("GET", serverUrl, nil)
 
@@ -107,7 +121,6 @@ func pollServer(serverUrl string, c chan bool, maxAttempts int) {
 			Timeout: timeout,
 		}
 
-		fmt.Println("Start request ! 1")
 		_, err := client.Do(request)
 
 		// If it's started,
@@ -152,13 +165,14 @@ func startCloudFunctionProcess(funcPath string, serverUrl string) int {
 		panic(err)
 	}
 
+	fmt.Println("keystone ~ setup-test.go ~ cmd.Process.Pid", cmd.Process.Pid)
 	pgid, err := syscall.Getpgid(cmd.Process.Pid)
 
 	if err != nil {
-		panic(err)
+		// panic(err)
 	}
 
-	fmt.Println("AVANT SLEEP")
+	// fmt.Println("AVANT SLEEP")
 
 	waitForServerStarted(serverUrl)
 
@@ -169,11 +183,13 @@ func startCloudFunctionProcess(funcPath string, serverUrl string) int {
 }
 
 func startAuthCloudFuncProcess() int {
-	return startCloudFunctionProcess("../../functions/ksauth/cmd/main.go", "http://127.0.0.1:9000")
+	waitALittle()
+	return startCloudFunctionProcess("../../api/ksauth/cmd/main.go", "http://127.0.0.1:9000")
 }
 
 func startCloudApiFunc() int {
-	return startCloudFunctionProcess("../../functions/ksapi/cmd/main.go", "http://127.0.0.1:9001")
+	waitALittle()
+	return startCloudFunctionProcess("../../api/ksapi/cmd/main.go", "http://127.0.0.1:9001")
 }
 
 func CreateAndLogUser(env *testscript.Env) error {
@@ -326,7 +342,7 @@ func SeedTestData() {
 	var userProjectOwner *User = &User{
 		ExtID:       "my iowner ext id",
 		AccountType: "github",
-		Username:    "Username owner",
+		Username:    "Username owner " + uuid.NewV4().String(),
 		Fullname:    "Fullname owner",
 		Email:       "test+owner@example.com",
 	}
@@ -334,7 +350,7 @@ func SeedTestData() {
 	var devUser *User = &User{
 		ExtID:       "my ext id",
 		AccountType: "github",
-		Username:    "Username dev",
+		Username:    "Username dev " + uuid.NewV4().String(),
 		Fullname:    "Fullname dev",
 		Email:       "test+dev@example.com",
 	}

@@ -27,10 +27,10 @@
     {
       "name": "Tesdt gaellus ksauth",
       "request": "launch",
-      "program": "${workspaceRoot}/functions/ksauth/cmd/main.go",
+      "program": "${workspaceRoot}/api/ksauth/cmd/main.go",
       "type": "go",
       "mode": "debug",
-      "cwd": "${workspaceRoot}/functions/ksauth",
+      "cwd": "${workspaceRoot}/api/ksauth",
       "env": {
         "JWT_SALT": "aaP|**P1n}1tqWK"
       },
@@ -39,10 +39,10 @@
     {
       "name": "Tesdt gaellus ksapi",
       "request": "launch",
-      "program": "${workspaceRoot}/functions/ksapi/cmd/main.go",
+      "program": "${workspaceRoot}/api/ksapi/cmd/main.go",
       "type": "go",
       "mode": "debug",
-      "cwd": "${workspaceRoot}/functions/ksapi",
+      "cwd": "${workspaceRoot}/api/ksapi",
       "env": {
         "JWT_SALT": "aaP|**P1n}1tqWK"
       },
