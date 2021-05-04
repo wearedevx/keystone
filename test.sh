@@ -10,10 +10,10 @@ export $(cat .env-dev | xargs)
 
 LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=$KSAUTH_URL -X github.com/wearedevx/keystone/pkg/client.ksapiURL=$KSAPI_URL"
 
-# DBFILE="${TMPDIR}keystone_gorm.db"
+DBFILE="${TMPDIR}keystone_gorm.db"
 
 # Create db file
-# touch $DBFILE
+touch $DBFILE
 
 # Dpesn't work, with one file name with "-v" param
 # # If no test file given, test all files.
@@ -29,7 +29,7 @@ LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=$KSAUTH_URL -X gi
 
 echo "START TEST"
 
-go test -tags test -ldflags "$LDFLAGS" -work "$@"
+go test -p 1 -tags test -ldflags "$LDFLAGS" -work "$@"
 
 EXIT_STATUS_CODE=$?
 
