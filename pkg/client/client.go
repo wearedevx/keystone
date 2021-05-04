@@ -14,8 +14,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var ksauthURL string //= "http://localhost:9000"
-var ksapiURL string  //= "http://localhost:9001"
+// var ksauthURL string //= "http://localhost:9000"
+var ksapiURL string //= "http://localhost:9001"
 
 type KeystoneClient interface {
 	InitProject(name string) (Project, error)
@@ -27,7 +27,7 @@ func getLoginRequest() (LoginRequest, error) {
 		Timeout: timeout,
 	}
 
-	request, err := http.NewRequest("POST", ksauthURL+"/login-request", nil)
+	request, err := http.NewRequest("POST", ksapiURL+"/login-request", nil)
 	request.Header.Set("Accept", "application/json; charset=utf-8")
 
 	if err != nil {
@@ -77,7 +77,7 @@ func pollLoginRequest(code string, c chan pollResult) {
 			Timeout: timeout,
 		}
 
-		u, _ := url.Parse(ksauthURL + "/login-request")
+		u, _ := url.Parse(ksapiURL + "/login-request")
 		q := u.Query()
 		q.Add("code", code)
 
@@ -143,7 +143,7 @@ func completeLogin(accountType AccountType, tok *oauth2.Token, pk []byte) (User,
 	buf := bytes.NewBuffer(requestPayload)
 	json.NewEncoder(buf).Encode(&payload)
 
-	req, err := http.NewRequest("POST", ksauthURL+"/complete", buf)
+	req, err := http.NewRequest("POST", ksapiURL+"/complete", buf)
 	req.Header.Add("Accept", "application/octet-stream")
 
 	if err != nil {

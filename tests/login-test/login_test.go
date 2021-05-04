@@ -11,7 +11,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	utils.StartAuthCloudFunction()
+	utils.StartApiCloudFunction()
 
 	resRun := testscript.RunMain(m, map[string]func() int{
 		"ks":                 cmd.Execute,

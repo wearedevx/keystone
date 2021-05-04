@@ -36,7 +36,7 @@ func (g *gitlabAuthService) Start() (string, error) {
 		ClientID:     "d372c2f3eebd9c498b41886667609fbdcf149254bcb618ddc199047cbbc46b78",
 		ClientSecret: "ffe9317fd42d32ea7db24c79f9ee25a3e30637b886f3bc99f951710c8cdc3650",
 		Scopes:       []string{"read_user", "email"},
-		RedirectURL:  ksauthURL + "/auth-redirect/",
+		RedirectURL:  ksapiURL + "/auth-redirect/",
 		// RedirectURL:  ksauthURL + "/auth-redirect/" + lr.TemporaryCode,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://gitlab.com/oauth/authorize",
