@@ -53,6 +53,19 @@ This happened because: {{ .Cause }}
 This happened because: {{ .Cause }}
 
 `,
+	"FailedToReadRolesFile": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
+This happened because: {{ .Cause }}
+
+`,
+	"RoleDoesNotExist": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
+Available roles are: {{ .Available }}
+
+You can manage roles for the current project by editing the roles file:
+  .keystone/roles.yml
+
+`,
 	"EnvironmentDoesntExist": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
 Available environments are: {{ .Available }}
@@ -167,6 +180,24 @@ Sorry for the inconvenience
 This happened because: {{ .Cause }}
 
 `,
+	"UsersDontExist": `
+{{ ERROR }} {{ .Name | red }}
+{{ .Message }}
+
+You can invite those users to Keystone using
+  $ ks invite <emai>
+
+`,
+	"CannotAddMembers": `
+{{ ERROR }} {{ .Name | red }}
+This happened because: {{ .Cause }}
+
+`,
+	"CannotRemoveMembers": `
+{{ ERROR }} {{ .Name | red }}
+This happened because: {{ .Cause }}
+
+`,
 }
 
 func InitFailed(cause error) *Error {
@@ -219,6 +250,21 @@ func FailedToReadDotEnv(path string, cause error) *Error {
 		"Path": string(path),
 	}
 	return NewError("Failed To Read .env", helpTexts["FailedToReadDotEnv"], meta, cause)
+}
+
+func FailedToReadRolesFile(path string, cause error) *Error {
+	meta := map[string]string{
+		"Path": string(path),
+	}
+	return NewError("Failed To Read Roles File", helpTexts["FailedToReadRolesFile"], meta, cause)
+}
+
+func RoleDoesNotExist(rolename string, available string, cause error) *Error {
+	meta := map[string]string{
+		"RoleName":  string(rolename),
+		"Available": string(available),
+	}
+	return NewError("Role Does Not Exist", helpTexts["RoleDoesNotExist"], meta, cause)
 }
 
 func EnvironmentDoesntExist(environment string, available string, cause error) *Error {
@@ -334,4 +380,23 @@ func UnkownError(cause error) *Error {
 	meta := map[string]string{}
 
 	return NewError("Unkown Error", helpTexts["UnkownError"], meta, cause)
+}
+
+func UsersDontExist(message string, cause error) *Error {
+	meta := map[string]string{
+		"Message": string(message),
+	}
+	return NewError("Users Don't Exist", helpTexts["UsersDontExist"], meta, cause)
+}
+
+func CannotAddMembers(cause error) *Error {
+	meta := map[string]string{}
+
+	return NewError("Cannot Add Members", helpTexts["CannotAddMembers"], meta, cause)
+}
+
+func CannotRemoveMembers(cause error) *Error {
+	meta := map[string]string{}
+
+	return NewError("Cannot Remove Members", helpTexts["CannotRemoveMembers"], meta, cause)
 }

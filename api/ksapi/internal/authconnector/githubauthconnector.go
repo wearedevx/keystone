@@ -5,7 +5,6 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/gofrs/uuid"
 	"github.com/google/go-github/v32/github"
 	"github.com/wearedevx/keystone/internal/models"
 	. "github.com/wearedevx/keystone/internal/utils"
@@ -20,7 +19,6 @@ func (ghac *githubAuthConnector) GetUserInfo(token *oauth2.Token) (models.User, 
 	var err error
 	var user models.User
 	userEmail := ""
-	userID, err := uuid.NewV4()
 
 	ctx := context.Background()
 
@@ -64,9 +62,11 @@ func (ghac *githubAuthConnector) GetUserInfo(token *oauth2.Token) (models.User, 
 				userName = *gUser.Name
 			}
 
+			userID := *gUser.Login + "@github"
+
 			user = models.User{
 				ExtID:       strconv.Itoa(int(*gUser.ID)),
-				UserID:      userID.String(),
+				UserID:      userID,
 				AccountType: models.AccountType("github"),
 				Username:    *gUser.Login,
 				Fullname:    userName,

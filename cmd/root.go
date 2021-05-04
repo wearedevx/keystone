@@ -58,6 +58,20 @@ func Execute() int {
 	return 0
 }
 
+var noEnvironmentCommands []string
+var noProjectCommands []string
+var noLoginCommands []string
+
+func isIn(haystack []string, needle string) bool {
+	for _, hay := range haystack {
+		if hay == needle {
+			return true
+		}
+	}
+
+	return false
+}
+
 func Initialize() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -73,15 +87,10 @@ func Initialize() {
 	checkLogin := false
 
 	if len(os.Args) > 1 {
-		if os.Args[1] == "login" || os.Args[1] == "logout" || os.Args[1] == "documentation" || os.Args[1] == "init" {
-			checkEnvironment = false
-			checkProject = false
-		}
-
-		if os.Args[1] != "login" {
-			checkLogin = true
-		}
-
+		command := os.Args[1]
+		checkEnvironment = !isIn(noEnvironmentCommands, command)
+		checkProject = !isIn(noProjectCommands, command)
+		checkLogin = !isIn(noLoginCommands, command)
 	}
 
 	if checkProject && len(environments) == 0 {
@@ -121,6 +130,12 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	noEnvironmentCommands = []string{
+		"login", "logout", "documentation", "init", "whoami",
+	}
+	noProjectCommands = noEnvironmentCommands
+
+	noLoginCommands = []string{"login"}
 
 }
 

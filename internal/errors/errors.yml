@@ -81,6 +81,31 @@ errors:
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
+  # ROLES_FILE_ERRORS
+  # ––––––––––––––
+  - type: FailedToReadRolesFile
+    name: "Failed To Read Roles File"
+    params:
+      - name: Path
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
+      This happened because: {{ .Cause }}
+
+  - type: RoleDoesNotExist
+    name: "Role Does Not Exist"
+    params:
+      - name: RoleName
+        type: string
+      - name: Available
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
+      Available roles are: {{ .Available }}
+
+      You can manage roles for the current project by editing the roles file:
+        .keystone/roles.yml
+
   # ENVIRNMENT_ERRORS
   # –––––––––––––––––
   - type: EnvironmentDoesntExist
@@ -270,4 +295,32 @@ errors:
       Feel free to file an issue at https://github.com/wearedevx/keystone
       Sorry for the inconvenience
 
+      This happened because: {{ .Cause }}
+
+  # MEMBERS_ERRORS
+  # ––––––––––––––
+  - type: UsersDontExist
+    name: "Users Don't Exist"
+    params:
+      - name: Message
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      {{ .Message }}
+
+      You can invite those users to Keystone using
+        $ ks invite <emai>
+
+  - type: CannotAddMembers
+    name: "Cannot Add Members"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      This happened because: {{ .Cause }}
+
+  - type: CannotRemoveMembers
+    name: "Cannot Remove Members"
+    param: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
       This happened because: {{ .Cause }}

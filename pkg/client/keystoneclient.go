@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"fmt"
 
 	"github.com/wearedevx/keystone/internal/crypto"
 	. "github.com/wearedevx/keystone/internal/models"
@@ -17,6 +18,12 @@ func NewKeystoneClient(userID string, jwtToken string) KeystoneClient {
 	}
 }
 
+func (client *SKeystoneClient) Roles() *Roles {
+	return &Roles{
+		r: client.r,
+	}
+}
+
 // Initilize a project with `name` and a "default" environment
 func (client *SKeystoneClient) InitProject(name string) (Project, error) {
 	var project Project
@@ -28,6 +35,68 @@ func (client *SKeystoneClient) InitProject(name string) (Project, error) {
 	err := client.r.post("/projects", payload, &project)
 
 	return project, err
+}
+
+func (client *SKeystoneClient) CheckUsersExist(userIds []string) (CheckMembersResponse, error) {
+	var err error
+	var result CheckMembersResponse
+
+	payload := CheckMembersPayload{
+		MemberIDs: userIds,
+	}
+	err = client.r.post("/users/exist", payload, &result)
+
+	return result, err
+}
+
+func (client *SKeystoneClient) ProjectMembers(projectId string) ([]ProjectMember, error) {
+	var err error
+	var result GetMembersResponse
+
+	err = client.r.get("/projects/"+projectId+"/members", &result)
+
+	return result.Members, err
+}
+
+func (client *SKeystoneClient) ProjectAddMembers(projectId string, memberRoles map[string]Role) error {
+	var result AddMembersResponse
+	var err error
+
+	payload := AddMembersPayload{
+		Members: make([]MemberRole, 0),
+	}
+
+	for memberID, role := range memberRoles {
+		payload.Members = append(payload.Members, MemberRole{MemberID: memberID, RoleID: role.ID})
+	}
+
+	err = client.r.post("/projects/"+projectId+"/members", payload, &result)
+
+	if !result.Success && result.Error != "" {
+		err = fmt.Errorf(result.Error)
+	}
+
+	return err
+}
+
+func (client *SKeystoneClient) ProjectRemoveMembers(projectId string, members []string) error {
+	var result RemoveMembersResponse
+	var err error
+
+	payload := RemoveMembersPayload{
+		Members: members,
+	}
+
+	err = client.r.del("/projects/"+projectId+"/members/", payload, &result)
+
+	if !result.Success && result.Error != "" {
+		err = fmt.Errorf(result.Error)
+	}
+
+	return err
+}
+
+func (client *SKeystoneClient) MemberSetRole(projectId string, role string) {
 }
 
 func (client *SKeystoneClient) GetUsersKeys(projectId string) ([]UserPublicKey, error) {
