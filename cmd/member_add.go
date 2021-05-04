@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/internal/config"
 	"github.com/wearedevx/keystone/internal/errors"
+	"github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/pkg/client"
 	core "github.com/wearedevx/keystone/pkg/core"
 	"github.com/wearedevx/keystone/ui"
@@ -69,22 +70,20 @@ This will cause secrets to be encryted for all members, existing and new.`,
 
 		// Read Roles from config
 		ctx := core.New(core.CTX_RESOLVE)
-		roles := ctx.GetRoles()
-
 		projectID := ctx.GetProjectID()
 
-		roleNames := roles.List()
-		memberRole := make(map[string]map[string]string)
+		c := client.NewKeystoneClient(account["user_id"], token)
+		roles, err := c.Roles().GetAll()
+
+		if err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+
+		memberRole := make(map[string]models.Role)
 
 		for _, memberId := range args {
-			label := "Role for " + memberId
-
-			prompt := promptui.Select{
-				Label: label,
-				Items: roleNames,
-			}
-
-			_, result, err := prompt.Run()
+			role, err := promptRole(memberId, roles)
 
 			if err != nil {
 				// TODO: Handle error
@@ -93,19 +92,10 @@ This will cause secrets to be encryted for all members, existing and new.`,
 				os.Exit(1)
 			}
 
-			rights, ok := roles.GetRights(result)
-
-			if !ok {
-				availables := strings.Join(roleNames, ", ")
-				errors.RoleDoesNotExist(result, availables, nil).Print()
-				os.Exit(1)
-			}
-
-			memberRole[memberId] = rights
+			memberRole[memberId] = role
 		}
 
-		c := client.NewKeystoneClient(account["user_id"], token)
-		err := c.ProjectAddMembers(projectID, memberRole)
+		err = c.ProjectAddMembers(projectID, memberRole)
 
 		if err != nil {
 			errors.CannotAddMembers(err).Print()
@@ -117,6 +107,40 @@ This will cause secrets to be encryted for all members, existing and new.`,
 `, struct {
 		}{}))
 	},
+}
+
+func promptRole(memberId string, roles []models.Role) (models.Role, error) {
+
+	templates := &promptui.SelectTemplates{
+		Label:    "Role for {{ . }}?",
+		Active:   " {{  .Name  }}",
+		Inactive: " {{  .Name | faint }}",
+		Selected: "\U0001F336 {{ .Name }}",
+		Details: `
+--------- Role ----------
+{{ "Name:" | faint }}	{{ .Name }}
+{{ "Description:" | faint }}	{{ .Description }}`,
+	}
+
+	searcher := func(input string, index int) bool {
+		role := roles[index]
+		name := strings.Replace(strings.ToLower(role.Name), " ", "", -1)
+		input = strings.Replace(strings.ToLower(input), " ", "", -1)
+
+		return strings.Contains(name, input)
+	}
+
+	prompt := promptui.Select{
+		Label:     memberId,
+		Items:     roles,
+		Templates: templates,
+		Size:      4,
+		Searcher:  searcher,
+	}
+
+	index, _, err := prompt.Run()
+
+	return roles[index], err
 }
 
 func init() {
