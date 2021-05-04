@@ -2,7 +2,6 @@ package client
 
 import (
 	"bytes"
-	"fmt"
 
 	"github.com/wearedevx/keystone/internal/crypto"
 	. "github.com/wearedevx/keystone/internal/models"
@@ -27,7 +26,6 @@ func (client *SKeystoneClient) InitProject(name string) (Project, error) {
 	}
 
 	err := client.r.post("/projects", payload, &project)
-	fmt.Println("keystone ~ keystoneclient.go ~ err", err)
 
 	return project, err
 }
