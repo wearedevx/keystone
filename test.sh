@@ -10,10 +10,10 @@ export $(cat .env-dev | xargs)
 
 LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=$KSAUTH_URL -X github.com/wearedevx/keystone/pkg/client.ksapiURL=$KSAPI_URL"
 
-DBFILE="${TMPDIR}keystone_gorm.db"
+# DBFILE="${TMPDIR}keystone_gorm.db"
 
 # Create db file
-touch $DBFILE
+# touch $DBFILE
 
 # Dpesn't work, with one file name with "-v" param
 # # If no test file given, test all files.
@@ -61,7 +61,8 @@ removeProcessId "keystone_ksauth.pid"
 removeProcessId "keystone_ksapi.pid"
 
 # Delete db file
-echo "rm $DBFILE"
-rm $DBFILE
+# echo "rm $DBFILE"
+# rm $DBFILE
+rm "/tmp/keystone_gorm"*
 
 exit $EXIT_STATUS_CODE

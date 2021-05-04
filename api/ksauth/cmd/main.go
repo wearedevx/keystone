@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
-	. "github.com/wearedevx/keystone/functions/ksauth"
+	. "github.com/wearedevx/keystone/api/ksauth"
 )
 
 func main() {

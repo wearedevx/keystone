@@ -12,7 +12,7 @@ import (
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
 	"github.com/julienschmidt/httprouter"
 
-	"github.com/wearedevx/keystone/functions/ksapi/routes"
+	"github.com/wearedevx/keystone/api/ksapi/routes"
 	log "github.com/wearedevx/keystone/internal/cloudlogger"
 	"github.com/wearedevx/keystone/internal/crypto"
 	. "github.com/wearedevx/keystone/internal/models"

@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/wearedevx/keystone/functions/ksauth/internal/authconnector"
+	"github.com/wearedevx/keystone/api/ksauth/internal/authconnector"
 	log "github.com/wearedevx/keystone/internal/cloudlogger"
 	. "github.com/wearedevx/keystone/internal/jwt"
 	"github.com/wearedevx/keystone/internal/models"

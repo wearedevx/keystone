@@ -7,6 +7,7 @@ import (
 	"path"
 
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
+	uuid "github.com/satori/go.uuid"
 	. "github.com/wearedevx/keystone/internal/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -32,8 +33,7 @@ func (repo *Repo) GetDb() *gorm.DB {
 }
 
 func init() {
-	dbFilePath := path.Join(os.TempDir(), "keystone_gorm.db")
-	// fmt.Println("keystone ~ repo_testing.go ~ dbFilePath", dbFilePath)
+	dbFilePath := path.Join(os.TempDir(), "keystone_gorm-"+uuid.NewV4().String()+".db")
 
 	var err error
 	db, err = gorm.Open(sqlite.Open(dbFilePath), &gorm.Config{})
