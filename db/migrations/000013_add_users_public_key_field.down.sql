@@ -1,1 +1,2 @@
-ALTER TABLE public.users DROP COLUMN public_key;
+ALTER TABLE
+  public.users DROP COLUMN IF EXISTS public_key;

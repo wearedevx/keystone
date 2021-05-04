@@ -18,6 +18,12 @@ func NewKeystoneClient(userID string, jwtToken string) KeystoneClient {
 	}
 }
 
+func (client *SKeystoneClient) Roles() *Roles {
+	return &Roles{
+		r: client.r,
+	}
+}
+
 // Initilize a project with `name` and a "default" environment
 func (client *SKeystoneClient) InitProject(name string) (Project, error) {
 	var project Project

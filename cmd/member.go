@@ -62,34 +62,28 @@ grouped by their role, with indication of their ownership.`,
 			os.Exit(1)
 		}
 
-		grouped := groupMembersByEnv(members)
+		grouped := groupMembersByRole(members)
 
-		for env, members := range grouped {
-			printEnv(env, members)
+		for role, members := range grouped {
+			printRole(role, members)
 		}
 	},
 }
 
-func groupMembersByEnv(pmembers []ProjectMember) map[string][]ProjectMember {
-	result := make(map[string][]ProjectMember)
+func groupMembersByRole(pmembers []ProjectMember) map[Role][]ProjectMember {
+	result := make(map[Role][]ProjectMember)
 
-	for _, env := range envs {
-		members := make([]ProjectMember, 0)
+	for _, member := range pmembers {
+		membersWithSameRole := result[member.Role]
 
-		for _, member := range pmembers {
-			if member.Environment.Name == env {
-				members = append(members, member)
-			}
-		}
-
-		result[env] = members
+		result[member.Role] = append(membersWithSameRole, member)
 	}
 
 	return result
 }
 
-func printEnv(env string, members []ProjectMember) {
-	ui.Print(env)
+func printRole(role Role, members []ProjectMember) {
+	ui.Print("%s: %s", role.Name, role.Description)
 	ui.Print("---")
 
 	for _, member := range members {

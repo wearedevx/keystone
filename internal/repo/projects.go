@@ -16,11 +16,24 @@ func (r *Repo) createProject(project *Project, user *User) *Repo {
 
 	db := r.GetDb()
 
+	project.User = *user
+	project.UserID = user.ID
+
 	r.err = db.Create(project).Error
+
+	role := Role{}
+
+	r.err = db.First(&role, "name = ?", "admin").Error
+	fmt.Println("s:", r.err)
+
+	if r.err != nil {
+		return r
+	}
 
 	projectMember := ProjectMember{
 		Project: *project,
 		User:    *user,
+		Role:    role,
 	}
 
 	r.err = db.Create(&projectMember).Error
@@ -115,47 +128,23 @@ func (r *Repo) ProjectGetMembers(project *Project, members *[]ProjectMember) *Re
 
 // From a list of MemberEnvironmentRole, fetches users from database
 // Returns the found Users and a slice of not found userIDs
-func (r *Repo) usersInMemberEnvironmentsRole(mers []MemberRole) (map[string]User, []string) {
+func (r *Repo) usersInMemberRoles(mers []MemberRole) (map[string]User, []string) {
 	// Figure out members that do not exist in db
 	userIDs := make([]string, 0)
 	// only used so that userIDs are unique in the array
 	uniqueMap := make(map[string]struct{})
 
 	for _, mer := range mers {
-		if _, ok := uniqueMap[mer.ID]; !ok {
-			uniqueMap[mer.ID] = struct{}{}
-			userIDs = append(userIDs, mer.ID)
+		if _, ok := uniqueMap[mer.MemberID]; !ok {
+			uniqueMap[mer.MemberID] = struct{}{}
+			userIDs = append(userIDs, mer.MemberID)
 		}
 	}
 
 	return r.findUsers(userIDs)
 }
 
-func (r *Repo) environmentsInMemberEnvironmentsRole(mers []MemberRole) map[string]Environment {
-	result := make(map[string]Environment)
-
-	if r.err != nil {
-		return result
-	}
-
-	db := r.GetDb()
-
-	for _, mer := range mers {
-		if _, ok := result[mer.Environment]; !ok {
-			var environment Environment
-
-			r.err = db.Where("name = ?", mer.Environment).First(&environment).Error
-
-			if r.err == nil {
-				result[mer.Environment] = environment
-			}
-		}
-	}
-
-	return result
-}
-
-func (r *Repo) ProjectAddMembers(project Project, mers []MemberRole) *Repo {
+func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole) *Repo {
 	if r.err != nil {
 		return r
 	}
@@ -163,35 +152,30 @@ func (r *Repo) ProjectAddMembers(project Project, mers []MemberRole) *Repo {
 	pms := make([]ProjectMember, 0)
 	db := r.GetDb()
 
-	users, notFounds := r.usersInMemberEnvironmentsRole(mers)
+	users, notFounds := r.usersInMemberRoles(memberRoles)
 
 	if len(notFounds) != 0 {
 		r.err = fmt.Errorf("Users not found: %s", strings.Join(notFounds, ", "))
 		return r
 	}
 
-	envs := r.environmentsInMemberEnvironmentsRole(mers)
+	for _, memberRole := range memberRoles {
+		if memberRole.RoleID != 0 {
+			user, hasUser := users[memberRole.MemberID]
 
-	for _, mer := range mers {
-		if mer.Role != "" {
-			user, hasUser := users[mer.ID]
-			environment, hasEnv := envs[mer.Environment]
-
-			if hasUser && hasEnv {
+			if hasUser {
 				pms = append(pms, ProjectMember{
-					UserID:        user.ID,
-					EnvironmentID: environment.ID,
-					ProjectID:     project.ID,
-					ProjectOwner:  false,
-					Role:          mer.Role,
+					UserID:    user.ID,
+					ProjectID: project.ID,
+					RoleID:    memberRole.RoleID,
 				})
 			}
 		}
 	}
 
 	r.err = db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "user_id"}, {Name: "project_id"}, {Name: "environment_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"role"}),
+		Columns:   []clause.Column{{Name: "user_id"}, {Name: "project_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"role_id"}),
 	}).Create(&pms).Error
 
 	return r

@@ -5,5 +5,5 @@ import (
 )
 
 func GetMessages(user User, project Project) []Message {
-
+	return []Message{}
 }

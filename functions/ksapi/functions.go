@@ -12,6 +12,7 @@ import (
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
 	"github.com/julienschmidt/httprouter"
 
+	"github.com/wearedevx/keystone/functions/ksapi/controllers"
 	"github.com/wearedevx/keystone/functions/ksapi/routes"
 	log "github.com/wearedevx/keystone/internal/cloudlogger"
 	"github.com/wearedevx/keystone/internal/crypto"
@@ -340,6 +341,8 @@ func UserService(w http.ResponseWriter, r *http.Request) {
 	router.GET("/projects/:projectID/members", routes.AuthedHandler(getProjectsMembers))
 	router.POST("/projects/:projectID/members", routes.AuthedHandler(postProjectsMembers))
 	router.DELETE("/projects/:projectID/members", routes.AuthedHandler(deleteProjectsMembers))
+
+	router.GET("/roles", routes.AuthedHandler(controllers.GetRoles))
 
 	router.POST("/projects/:projectID/variables", routes.AuthedHandler(postAddVariable))
 	router.PUT("/projects/:projectID/:environment/variables", routes.AuthedHandler(putSetVariable))
