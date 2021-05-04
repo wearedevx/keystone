@@ -33,7 +33,7 @@ require (
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/xanzy/go-gitlab v0.48.0
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
-	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887 // indirect
+	golang.org/x/sys v0.0.0-20210503173754-0981d6026fa6 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 	gopkg.in/h2non/gock.v1 v1.0.16 // indirect
 	gopkg.in/yaml.v2 v2.3.0

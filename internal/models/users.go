@@ -41,6 +41,15 @@ func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 	return nil
 }
 
+func (u *User) FromId(id string) {
+	parts := strings.Split(id, "@")
+	username := parts[0]
+	accountType := AccountType(parts[1])
+
+	u.Username = username
+	u.AccountType = accountType
+}
+
 type LoginPayload struct {
 	AccountType AccountType
 	Token       *oauth2.Token

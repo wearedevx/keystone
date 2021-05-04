@@ -54,7 +54,8 @@ Example:
 		}
 
 		for key, value := range env {
-			Print("%s=%s", key, value)
+			Print("export %s=%s;", key, value)
+			// Print("echo \"TUTU\";")
 		}
 	},
 }

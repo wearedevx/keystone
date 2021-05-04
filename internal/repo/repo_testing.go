@@ -3,6 +3,7 @@
 package repo
 
 import (
+	"errors"
 	"os"
 	"path"
 
@@ -29,6 +30,23 @@ func (repo *Repo) Err() error {
 
 func (repo *Repo) GetDb() *gorm.DB {
 	return db
+}
+
+func (repo *Repo) notFoundAsBool(call func() error) (bool, error) {
+	var err error
+	found := false
+
+	err = call()
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = nil
+		}
+	} else {
+		found = true
+	}
+
+	return found, err
 }
 
 func init() {

@@ -2,6 +2,9 @@
 package repo
 
 import (
+	"fmt"
+	"strings"
+
 	. "github.com/wearedevx/keystone/internal/models"
 	"gorm.io/gorm/clause"
 )
@@ -20,9 +23,9 @@ func (r *Repo) createProject(project *Project, user *User) *Repo {
 
 	projectMember := ProjectMember{
 		Project: *project,
-		RoleID:  roleAdmin.ID,
+		Role:    roleAdmin,
 		// User:    *user,
-		UserID: user.ID,
+		User: *user,
 	}
 
 	r.err = db.Create(&projectMember).Error
@@ -82,16 +85,22 @@ func (r *Repo) GetProjectByUUID(uuid string, project *Project) *Repo {
 
 func (r *Repo) GetUserProjectWithName(user User, name string) (Project, bool) {
 	var foundProject Project
+	found := false
+	if r.err != nil {
+		return foundProject, found
+	}
 
-	// Why?
-	// if r.err != nil {
-	// 	return foundProject, false
-	// }
+	found, err := r.notFoundAsBool(func() error {
+		return r.GetDb().
+			Model(&Project{}).
+			Where("projects.user_id = ? and projects.name = ?", user.ID, name).
+			First(&foundProject).
+			Error
+	})
 
-	// r.err = r.GetDb().Model(&Project{}).Joins("join users u on u.id = projects.user_id").Where("u.id = ? and projects.name = ?", user.ID, name).First(&foundProject).Error
-	r.err = r.GetDb().Where("user_id = ? and name = ?", user.ID, name).First(&foundProject).Error
+	r.err = err
 
-	return foundProject, r.err == nil
+	return foundProject, found
 }
 
 func (r *Repo) GetOrCreateProject(project *Project, user User) *Repo {
@@ -104,9 +113,99 @@ func (r *Repo) GetOrCreateProject(project *Project, user User) *Repo {
 		*project = foundProject
 		return r
 	}
-	r.err = nil
+	// r.err = nil
 
 	return r.createProject(project, &user)
+}
+
+func (r *Repo) ProjectGetMembers(project *Project, members *[]ProjectMember) *Repo {
+	fmt.Println("project:", project)
+	if r.err != nil {
+		return r
+	}
+
+	r.GetDb().Preload("User").Preload("Role").Where("project_id = ?", project.ID).Find(members)
+
+	return r
+}
+
+// From a list of MemberEnvironmentRole, fetches users from database
+// Returns the found Users and a slice of not found userIDs
+func (r *Repo) usersInMemberRoles(mers []MemberRole) (map[string]User, []string) {
+	// Figure out members that do not exist in db
+	userIDs := make([]string, 0)
+	// only used so that userIDs are unique in the array
+	uniqueMap := make(map[string]struct{})
+
+	for _, mer := range mers {
+		if _, ok := uniqueMap[mer.MemberID]; !ok {
+			uniqueMap[mer.MemberID] = struct{}{}
+			userIDs = append(userIDs, mer.MemberID)
+		}
+	}
+
+	return r.FindUsers(userIDs)
+}
+
+func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole) *Repo {
+	if r.err != nil {
+		return r
+	}
+
+	pms := make([]ProjectMember, 0)
+	db := r.GetDb()
+
+	users, notFounds := r.usersInMemberRoles(memberRoles)
+
+	if len(notFounds) != 0 {
+		r.err = fmt.Errorf("Users not found: %s", strings.Join(notFounds, ", "))
+		return r
+	}
+
+	for _, memberRole := range memberRoles {
+		if memberRole.RoleID != 0 {
+			user, hasUser := users[memberRole.MemberID]
+
+			if hasUser {
+				pms = append(pms, ProjectMember{
+					UserID:    user.ID,
+					ProjectID: project.ID,
+					RoleID:    memberRole.RoleID,
+				})
+			}
+		}
+	}
+
+	r.err = db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}, {Name: "project_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"role_id"}),
+	}).Create(&pms).Error
+
+	return r
+}
+
+func (r *Repo) ProjectRemoveMembers(project Project, members []string) *Repo {
+	if r.err != nil {
+		return r
+	}
+
+	users, notFound := r.FindUsers(members)
+
+	if len(notFound) != 0 {
+		r.err = fmt.Errorf("Users not found: %s", strings.Join(notFound, ", "))
+		return r
+	}
+
+	db := r.GetDb()
+
+	memberIDs := make([]uint, 0)
+	for _, user := range users {
+		memberIDs = append(memberIDs, user.ID)
+	}
+
+	r.err = db.Where("user_id IN (?)", memberIDs).Delete(ProjectMember{}).Error
+
+	return r
 }
 
 func (r *Repo) ProjectLoadUsers(project *Project) *Repo {
