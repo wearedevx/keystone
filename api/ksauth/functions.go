@@ -178,13 +178,13 @@ func postUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 }
 
 // Auth
-func Auth(w http.ResponseWriter, r *http.Request) {
-	router := httprouter.New()
+// func Auth(w http.ResponseWriter, r *http.Request) {
+// 	router := httprouter.New()
 
-	router.POST("/login-request", postLoginRequest)
-	router.GET("/login-request", getLoginRequest)
-	router.GET("/auth-redirect/", getAuthRedirect)
-	router.POST("/complete", postUserToken)
+// 	router.POST("/login-request", postLoginRequest)
+// 	router.GET("/login-request", getLoginRequest)
+// 	router.GET("/auth-redirect/", getAuthRedirect)
+// 	router.POST("/complete", postUserToken)
 
-	router.ServeHTTP(w, r)
-}
+// 	router.ServeHTTP(w, r)
+// }

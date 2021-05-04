@@ -66,23 +66,23 @@ func listenCmdStartProcess(cmd *exec.Cmd, name string) {
 	}()
 }
 
-func StartAuthCloudFunction() {
-	gcloudPidFilePath := GetGcloudFuncAuthPidFilePath() // + time.Now().String()
-	pid, _ := ioutil.ReadFile(gcloudPidFilePath)
+// func StartAuthCloudFunction() {
+// 	gcloudPidFilePath := GetGcloudFuncAuthPidFilePath() // + time.Now().String()
+// 	pid, _ := ioutil.ReadFile(gcloudPidFilePath)
 
-	if len(pid) == 0 {
-		pgid := startAuthCloudFuncProcess()
+// 	if len(pid) == 0 {
+// 		pgid := startAuthCloudFuncProcess()
 
-		pidString := []byte(strconv.Itoa(pgid))
-		err := ioutil.WriteFile(gcloudPidFilePath, pidString, 0755)
+// 		pidString := []byte(strconv.Itoa(pgid))
+// 		err := ioutil.WriteFile(gcloudPidFilePath, pidString, 0755)
 
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		// fmt.Println("PID DEJA PRESENT", pid)
-	}
-}
+// 		if err != nil {
+// 			panic(err)
+// 		}
+// 	} else {
+// 		// fmt.Println("PID DEJA PRESENT", pid)
+// 	}
+// }
 
 func StartApiCloudFunction() {
 	gcloudPidFilePath := GetGcloudFuncApiPidFilePath() // + time.Now().String()
@@ -183,10 +183,10 @@ func startCloudFunctionProcess(funcPath string, serverUrl string) int {
 	return pgid
 }
 
-func startAuthCloudFuncProcess() int {
-	waitALittle()
-	return startCloudFunctionProcess("../../api/ksauth/cmd/main.go", "http://127.0.0.1:9000")
-}
+// func startAuthCloudFuncProcess() int {
+// 	waitALittle()
+// 	return startCloudFunctionProcess("../../api/ksauth/cmd/main.go", "http://127.0.0.1:9000")
+// }
 
 func startCloudApiFunc() int {
 	waitALittle()
@@ -217,7 +217,7 @@ func CreateAndLogUser(env *testscript.Env) error {
 
 	pathToKeystoneFile := path.Join(configDir, "keystone.yaml")
 
-	err := ioutil.WriteFile(pathToKceystoneFile, []byte(`
+	err := ioutil.WriteFile(pathToKeystoneFile, []byte(`
 accounts:
 - Fullname: `+user1.Fullname+`
   account_type: "`+string(user1.AccountType)+`"

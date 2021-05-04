@@ -45,7 +45,7 @@ func fakeLoginSuccess(temporaryCode string) {
 		Timeout: timeout,
 	}
 
-	request, err := http.NewRequest("GET", "http://localhost:9000/auth-redirect/?state="+temporaryCode+"&code=youpicode", nil)
+	request, err := http.NewRequest("GET", "http://localhost:9001/auth-redirect/?state="+temporaryCode+"&code=youpicode", nil)
 
 	if err != nil {
 		panic(err)
