@@ -20,8 +20,9 @@ func TestEnvType(t *testing.T) {
 
 	// Repo.GetRolesEnvironmentType(environment)
 
+	userOwner, _ := Repo.GetUserByEmailAndAccountType("test+owner@example.com", "github")
 	user, _ := Repo.GetUserByEmailAndAccountType("test+dev@example.com", "github")
-	project, _ := Repo.GetUserProjectWithName(user, "project name")
+	project, _ := Repo.GetUserProjectWithName(userOwner, "project name")
 	environmentType, _ := Repo.GetEnvironmentTypeByName("dev")
 	environment, _ := Repo.GetEnvironmentByProjectIDAndEnvType(project, environmentType)
 

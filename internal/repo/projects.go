@@ -89,7 +89,7 @@ func (r *Repo) GetUserProjectWithName(user User, name string) (Project, bool) {
 	// }
 
 	// r.err = r.GetDb().Model(&Project{}).Joins("join users u on u.id = projects.user_id").Where("u.id = ? and projects.name = ?", user.ID, name).First(&foundProject).Error
-	r.err = r.GetDb().Where("user_id = ? and name = ?", 1, name).First(&foundProject).Error
+	r.err = r.GetDb().Where("user_id = ? and name = ?", user.ID, name).First(&foundProject).Error
 
 	return foundProject, r.err == nil
 }

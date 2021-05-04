@@ -33,7 +33,6 @@ func waitALittle() {
 	max := 1000
 
 	nbms := rand.Intn(max-min) + min
-	fmt.Println("keystone ~ setup-test.go ~ nbms", nbms)
 
 	time.Sleep(time.Duration(nbms) * time.Millisecond)
 }
@@ -142,8 +141,7 @@ func waitForServerStarted(serverUrl string) {
 	go pollServer(serverUrl, c, max_attempts)
 
 	// result := true
-	result := <-c
-	fmt.Println("keystone ~ setup-test.go ~ result", result)
+	<-c
 
 }
 
@@ -165,15 +163,18 @@ func startCloudFunctionProcess(funcPath string, serverUrl string) int {
 		panic(err)
 	}
 
-	fmt.Println("keystone ~ setup-test.go ~ cmd.Process.Pid", cmd.Process.Pid)
+	// fmt.Println("keystone ~ setup-test.go ~ cmd.Process.Pid", cmd.Process.Pid)
 	pgid, err := syscall.Getpgid(cmd.Process.Pid)
 
 	if err != nil {
-		// panic(err)
+		// fmt.Println("Error gret gpid", err)
+		waitALittle()
+		return startCloudFunctionProcess(funcPath, serverUrl)
 	}
 
 	// fmt.Println("AVANT SLEEP")
 
+	// fmt.Println("Ca wait server")
 	waitForServerStarted(serverUrl)
 
 	// time.Sleep(20000 * time.Millisecond)
@@ -195,15 +196,19 @@ func startCloudApiFunc() int {
 func CreateAndLogUser(env *testscript.Env) error {
 	Repo := new(repo.Repo)
 
+	ExtID := "56883564" + uuid.NewV4().String()
+	Username := "LAbigael_" + uuid.NewV4().String()
+
 	var user1 *User = &User{
-		ExtID: "56883564" + uuid.NewV4().String(),
+		ExtID: ExtID,
 		// UserID:      "00fb7666-de43-4559-b4e4-39b172117dd8",
 		AccountType: "github",
-		Username:    "LAbigael_" + uuid.NewV4().String(),
+		Username:    Username,
 		Fullname:    "Test user1",
 		Email:       "abigael.laldji@protonmail.com",
 	}
 
+	fmt.Println("keystone ~ functions.go ~ error MOU MOU")
 	Repo.GetOrCreateUser(user1)
 
 	token, _ := MakeToken(*user1)
@@ -212,15 +217,15 @@ func CreateAndLogUser(env *testscript.Env) error {
 
 	pathToKeystoneFile := path.Join(configDir, "keystone.yaml")
 
-	err := ioutil.WriteFile(pathToKeystoneFile, []byte(`
+	err := ioutil.WriteFile(pathToKceystoneFile, []byte(`
 accounts:
-- Fullname: Test user1
-  account_type: github
-  email: abigael.laldji@protonmail.com
-  ext_id: "56883564"
-  fullname: Michel
+- Fullname: `+user1.Fullname+`
+  account_type: "`+string(user1.AccountType)+`"
+  email: `+user1.Email+`
+  ext_id: "`+ExtID+`"
+  fullname: `+user1.Fullname+`
   user_id: `+user1.UserID+`
-  username: LAbigael
+  username: `+Username+`
 auth_token: `+token+`
 current: 0
 `), 0o777)
@@ -354,6 +359,8 @@ func SeedTestData() {
 		Fullname:    "Fullname dev",
 		Email:       "test+dev@example.com",
 	}
+
+	fmt.Println("keystone ~ functions.go ~ error DOUX DOUX")
 
 	Repo.GetOrCreateUser(userProjectOwner)
 	Repo.GetOrCreateUser(devUser)
