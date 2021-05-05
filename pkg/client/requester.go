@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -36,7 +37,10 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 		json.NewEncoder(buf).Encode(&data)
 	}
 
-	req, err := http.NewRequest(string(method), ksapiURL+path, buf)
+	req, err := http.NewRequest(string(method), url.PathEscape(ksapiURL+path), buf)
+	if err != nil {
+		return err
+	}
 	req.Header.Set("Content-Type", "application/octet-stream")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.jwtToken))
 

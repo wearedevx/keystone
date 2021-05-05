@@ -175,3 +175,15 @@ func (client *SKeystoneClient) SetVariable(projectId string, environment string,
 
 	return err
 }
+
+func (client *SKeystoneClient) GetMessages(environmentID string, environmentVersion string) ([]Message, error) {
+	var err error
+	var result struct {
+		messages []Message
+	}
+
+	// Environment id in keystone yml
+	err = client.r.get("/environments/"+environmentID+"/messages?versionid="+environmentVersion, &result)
+
+	return result.messages, err
+}

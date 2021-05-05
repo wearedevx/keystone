@@ -22,6 +22,7 @@ type KeystoneClient interface {
 	// Users
 	CheckUsersExist(userIds []string) (CheckMembersResponse, error)
 	// Members
+	GetMessages(environmentID string, environmentVersion string) ([]Message, error)
 	ProjectMembers(projectID string) ([]ProjectMember, error)
 	ProjectAddMembers(projectID string, members map[string]Role) error
 	ProjectRemoveMembers(projectID string, members []string) error

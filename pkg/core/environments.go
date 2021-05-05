@@ -1,30 +1,19 @@
 package core
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 
+	"github.com/wearedevx/keystone/internal/config"
 	. "github.com/wearedevx/keystone/internal/envfile"
 	. "github.com/wearedevx/keystone/internal/errors"
+	. "github.com/wearedevx/keystone/internal/keystonefile"
 	. "github.com/wearedevx/keystone/internal/utils"
+	"github.com/wearedevx/keystone/pkg/client"
 )
-
-func (ctx *Context) CurrentEnvironment() string {
-	if ctx.Err() != nil {
-		return ""
-	}
-
-	bytes := make([]byte, 0)
-	bytes, err := ioutil.ReadFile(ctx.environmentFilePath())
-
-	if err != nil {
-		ctx.setError(CannotReadEnvironment(ctx.environmentFilePath(), err))
-	}
-
-	return string(bytes)
-}
 
 func (ctx *Context) ListEnvironments() []string {
 	if ctx.Err() != nil {
@@ -193,4 +182,81 @@ func (ctx *Context) MustHaveEnvironment(name string) {
 		EnvironmentDoesntExist(name, strings.Join(ctx.ListEnvironments(), ", "), nil).Print()
 		os.Exit(0)
 	}
+}
+
+func (ctx *Context) readEnvFile() string {
+	if ctx.Err() != nil {
+		return ""
+	}
+
+	bytes := make([]byte, 0)
+	bytes, err := ioutil.ReadFile(ctx.environmentFilePath())
+
+	if err != nil {
+		ctx.setError(CannotReadEnvironment(ctx.environmentFilePath(), err))
+	}
+
+	return string(bytes)
+}
+
+func (ctx *Context) CurrentEnvironment() string {
+	envFileContent := ctx.readEnvFile()
+	envFileParts := strings.Split(envFileContent, "@")
+	return envFileParts[0]
+}
+
+func (ctx *Context) EnvironmentVersion() string {
+	envFileContent := ctx.readEnvFile()
+	envFileParts := strings.Split(envFileContent, "@")
+
+	if len(envFileParts) > 1 {
+		return envFileParts[1]
+
+	}
+	return ""
+}
+
+func (ctx *Context) Fetch(environment string) {
+
+	currentAccount, _ := config.GetCurrentAccount()
+	token := config.GetAuthToken()
+	userID := currentAccount["user_id"]
+	ksClient := client.NewKeystoneClient(userID, token)
+
+	// Get env hash from config
+	localEnvironmentVersion := ctx.EnvironmentVersion()
+	environmentID := ctx.EnvironmentID()
+
+	// Request: Get env hash from remote
+	messages, err := ksClient.GetMessages(environmentID, localEnvironmentVersion)
+
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	fmt.Println(messages)
+
+	// 204: no hash set for env
+	//    -> Set new hash for env
+	// 200: hash and new message
+	//    -> Set new hash for env
+}
+
+func (ctx *Context) EnvironmentID() string {
+	environments := ctx.EnvironmentsFromConfig()
+	currentEnvironment := ctx.CurrentEnvironment()
+
+	for _, e := range environments {
+		if e.Name == currentEnvironment {
+			return e.EnvironmentID
+		}
+	}
+	return ""
+}
+
+func (ctx *Context) EnvironmentsFromConfig() []Env {
+
+	ksfile := new(KeystoneFile).Load(ctx.Wd)
+	return ksfile.Environments
 }
