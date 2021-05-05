@@ -17,6 +17,8 @@ services:
     ports:
       - 8080:8080
   api:
+    depends_on:
+      - db
     # image: cossacklabs/ci-py-go-themis
     build:
       context: ./
@@ -31,10 +33,10 @@ services:
       - ./:/home/golang/app:delegated
       - go:/home/user/gopath
     ports:
-      - "9000:9000"
       - "9001:9001"
+      # - "9000:9000"
     # command: sh -c "cd functions/ksapi && gow run cmd/main.go"
-    command: sh -c "gow run api/ksapi/cmd/main.go"
+    command: sh -c "gow run api/main.go"
 
 volumes:
   db_data: {}

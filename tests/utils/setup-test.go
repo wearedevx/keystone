@@ -190,7 +190,7 @@ func startCloudFunctionProcess(funcPath string, serverUrl string) int {
 
 func startCloudApiFunc() int {
 	waitALittle()
-	return startCloudFunctionProcess("../../api/ksapi/cmd/main.go", "http://127.0.0.1:9001")
+	return startCloudFunctionProcess("../../api/main.go", "http://127.0.0.1:9001")
 }
 
 func CreateAndLogUser(env *testscript.Env) error {

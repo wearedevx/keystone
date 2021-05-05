@@ -4,8 +4,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wearedevx/keystone/api/ksapi/routes"
-	_ "github.com/wearedevx/keystone/api/ksapi/routes"
+	"github.com/wearedevx/keystone/api/routes"
+	_ "github.com/wearedevx/keystone/api/routes"
 	. "github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
 

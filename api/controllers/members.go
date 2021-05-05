@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/wearedevx/keystone/api/ksapi/routes"
+	"github.com/wearedevx/keystone/api/routes"
 	. "github.com/wearedevx/keystone/internal/models"
 	"github.com/wearedevx/keystone/internal/repo"
 	. "github.com/wearedevx/keystone/internal/utils"

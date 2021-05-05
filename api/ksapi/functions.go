@@ -16,9 +16,9 @@ import (
 	. "github.com/wearedevx/keystone/internal/jwt"
 	"gorm.io/gorm"
 
-	"github.com/wearedevx/keystone/api/ksapi/controllers"
-	"github.com/wearedevx/keystone/api/ksapi/internal/authconnector"
-	"github.com/wearedevx/keystone/api/ksapi/routes"
+	"github.com/wearedevx/keystone/api/controllers"
+	"github.com/wearedevx/keystone/api/internal/authconnector"
+	"github.com/wearedevx/keystone/api/routes"
 	log "github.com/wearedevx/keystone/internal/cloudlogger"
 	"github.com/wearedevx/keystone/internal/crypto"
 	"github.com/wearedevx/keystone/internal/models"
