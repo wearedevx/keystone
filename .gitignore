@@ -6,6 +6,10 @@
 __debug_bin
 debug.test
 
+functions/ksapi/wearedevx-aa84b56c44de.json
+functions/ksauth/wearedevx-aa84b56c44de.json
+wearedevx-59b807fdb70c.json
+
 core/tests/
 
 .keystone
