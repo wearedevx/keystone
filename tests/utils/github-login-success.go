@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/wearedevx/keystone/api/pkg/repo"
 	. "github.com/wearedevx/keystone/internal/models"
-	"github.com/wearedevx/keystone/internal/repo"
 )
 
 func EndScript() int {

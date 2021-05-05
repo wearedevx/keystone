@@ -1,10 +1,10 @@
 package rights
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/wearedevx/keystone/api/pkg/repo"
 	. "github.com/wearedevx/keystone/internal/models"
 )
 
@@ -111,15 +111,10 @@ func (fakeRepo *FakeRepo) GetProjectMember(user *User, project *Project) (Projec
 	}
 	return projectMember, nil
 }
-
-func assertEqual(t *testing.T, a interface{}, b interface{}, message string) {
-	if a == b {
-		return
-	}
-	if len(message) == 0 {
-		message = fmt.Sprintf("%v != %v", a, b)
-	}
-	t.Fatal(message)
+func (fakeRepo *FakeRepo) GetInvitableRoles(role Role, roles []*Role) *repo.Repo {
+	// return fakeRepo
+	// TODO
+	return nil
 }
 
 func TestCanUserHasRightEnvironment(t *testing.T) {

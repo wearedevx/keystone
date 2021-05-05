@@ -16,9 +16,9 @@ import (
 
 	"github.com/rogpeppe/go-internal/testscript"
 	uuid "github.com/satori/go.uuid"
-	. "github.com/wearedevx/keystone/internal/jwt"
+	. "github.com/wearedevx/keystone/api/pkg/jwt"
+	"github.com/wearedevx/keystone/api/pkg/repo"
 	. "github.com/wearedevx/keystone/internal/models"
-	"github.com/wearedevx/keystone/internal/repo"
 )
 
 func GetGcloudFuncAuthPidFilePath() string {
@@ -210,7 +210,6 @@ func CreateAndLogUser(env *testscript.Env) error {
 		Email:       "abigael.laldji@protonmail.com",
 	}
 
-	fmt.Println("keystone ~ functions.go ~ error MOU MOU")
 	Repo.GetOrCreateUser(user1)
 
 	token, _ := MakeToken(*user1)

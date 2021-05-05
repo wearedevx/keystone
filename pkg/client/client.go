@@ -35,6 +35,10 @@ func getLoginRequest() (LoginRequest, error) {
 		Timeout: timeout,
 	}
 
+	if ksapiURL == "" {
+		ksapiURL = "http://localhost:9001"
+	}
+
 	request, err := http.NewRequest("POST", ksapiURL+"/login-request", nil)
 	request.Header.Set("Accept", "application/json; charset=utf-8")
 

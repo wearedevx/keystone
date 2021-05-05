@@ -37,6 +37,10 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	}
 
 	req, err := http.NewRequest(string(method), ksapiURL+path, buf)
+
+	fmt.Println("keystone ~ requester.go ~ ksapiURL+path", ksapiURL+path)
+	fmt.Println("keystone ~ requester.go ~ data", data)
+
 	req.Header.Set("Content-Type", "application/octet-stream")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.jwtToken))
 

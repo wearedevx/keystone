@@ -4,16 +4,15 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wearedevx/keystone/api/routes"
-	_ "github.com/wearedevx/keystone/api/routes"
+	"github.com/wearedevx/keystone/api/internal/router"
+	"github.com/wearedevx/keystone/api/pkg/repo"
 	. "github.com/wearedevx/keystone/internal/models"
-	"github.com/wearedevx/keystone/internal/repo"
 
 	. "github.com/wearedevx/keystone/internal/utils"
 )
 
 // Returns a List of Roles
-func GetRoles(params routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
+func GetRoles(params router.Params, body io.ReadCloser, Repo repo.Repo, user User) (router.Serde, int, error) {
 	var status = http.StatusOK
 	var result = GetRolesResponse{
 		Roles: []Role{},

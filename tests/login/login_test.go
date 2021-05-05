@@ -1,4 +1,4 @@
-package logintest
+package login
 
 import (
 	"os"

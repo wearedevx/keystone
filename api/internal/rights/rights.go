@@ -3,6 +3,7 @@ package rights
 import (
 	"fmt"
 
+	"github.com/wearedevx/keystone/api/pkg/repo"
 	. "github.com/wearedevx/keystone/internal/models"
 )
 
@@ -17,6 +18,7 @@ const (
 type RightsRepo interface {
 	GetRolesEnvironmentType(environment *Environment, role *Role) (*RolesEnvironmentType, error)
 	GetProjectMember(user *User, project *Project) (ProjectMember, error)
+	GetInvitableRoles(role Role, roles *[]Role) *repo.Repo
 }
 
 func CanUserHasRightsEnvironment(repo RightsRepo, user *User, project *Project, environment *Environment, right string) (bool, error) {
@@ -63,4 +65,28 @@ func CanUserWriteOnEnvironment(repo RightsRepo, user *User, project *Project, en
 
 func CanUserInviteOnEnvironment(repo RightsRepo, user *User, project *Project, environment *Environment) (bool, error) {
 	return CanUserHasRightsEnvironment(repo, user, project, environment, "invite")
+}
+
+// devops can invite on:
+// - dev
+
+// Retrieve all role with  invite=true where
+func CanUserInviteRole(repo repo.Repo, user *User, project *Project, roleToInvite *Role) (bool, error) {
+	projectMember, err := repo.GetProjectMember(user, project)
+
+	if err != nil {
+		fmt.Println("Error:", err)
+		return false, err
+	}
+
+	var roles *[]Role
+
+	repo.GetInvitableRoles(projectMember.Role, roles)
+	fmt.Println("keystone ~ rights.go ~ roles", roles)
+
+	if repo.Err() != nil {
+		fmt.Println("Error when retriving invite roles", repo.Err())
+	}
+	return false, nil
+
 }

@@ -1,106 +1,41 @@
+// Package p contains an HTTP Cloud Function.
 package routes
 
 import (
-	"bytes"
-	"fmt"
-	"io"
 	"net/http"
-	"net/url"
-	"strconv"
 
+	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
 	"github.com/julienschmidt/httprouter"
-	. "github.com/wearedevx/keystone/internal/jwt"
-	"github.com/wearedevx/keystone/internal/models"
-	"github.com/wearedevx/keystone/internal/repo"
+
+	"github.com/wearedevx/keystone/api/controllers"
+	. "github.com/wearedevx/keystone/api/controllers"
+	. "github.com/wearedevx/keystone/api/internal/router"
 )
 
-type Route struct {
-	method  func(*httprouter.Router) func(path string, handler httprouter.Handle)
-	path    string
-	handler httprouter.Handle
-}
+// Auth shows the code to copy paste into the cli
+func CreateRoutes(w http.ResponseWriter, r *http.Request) {
+	router := httprouter.New()
 
-type Serde interface {
-	Serialize(out *string) error
-	Deserialize(in io.Reader) error
-}
+	router.POST("/", controllers.PostUser)
+	router.GET("/", AuthedHandler(GetUser))
 
-type Params struct {
-	urlParams httprouter.Params
-	urlQuery  url.Values
-}
+	router.POST("/projects", AuthedHandler(PostProject))
 
-func newParams(req *http.Request, params httprouter.Params) Params {
-	return Params{
-		urlParams: params,
-		urlQuery:  req.URL.Query(),
-	}
-}
+	router.GET("/projects/:projectID/public-keys", AuthedHandler(GetProjectsPublicKeys))
+	router.GET("/projects/:projectID/members", AuthedHandler(GetProjectsMembers))
+	router.POST("/projects/:projectID/members", AuthedHandler(PostProjectsMembers))
+	router.DELETE("/projects/:projectID/members", AuthedHandler(DeleteProjectsMembers))
 
-func (p Params) Get(key string) interface{} {
-	if v := p.urlParams.ByName(key); v != "" {
-		return v
-	}
+	router.GET("/roles", AuthedHandler(controllers.GetRoles))
 
-	v := p.urlQuery.Get(key)
+	router.POST("/projects/:projectID/variables", AuthedHandler(PostAddVariable))
+	router.PUT("/projects/:projectID/:environment/variables", AuthedHandler(PutSetVariable))
 
-	if len(v) == 1 {
-		return v[0]
-	}
+	router.POST("/login-request", PostLoginRequest)
+	router.GET("/login-request", GetLoginRequest)
+	router.GET("/auth-redirect/", GetAuthRedirect)
+	router.POST("/complete", PostUserToken)
 
-	return v
-}
-
-type Handler = func(params Params, body io.ReadCloser, Repo repo.Repo, user models.User) (Serde, int, error)
-
-func AuthedHandler(handler Handler) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-		// Get user and prepare the repo
-		token := r.Header.Get("authorization")
-
-		userID, err := VerifyToken(token)
-
-		if err != nil {
-			fmt.Println(err)
-			// 404 is returned purposefully, here to not reveal the existence of
-			// resources for non authorized requesters
-			http.Error(w, "", http.StatusNotFound)
-			return
-		}
-
-		Repo := new(repo.Repo)
-
-		if user, ok := Repo.GetUser(userID); ok {
-			p := newParams(r, params)
-			// Actual call to the handler (i.e. Controller function)
-			result, status, err := handler(p, r.Body, *Repo, user)
-
-			// serialize the response for the user
-			var serialized string
-
-			err = result.Serialize(&serialized)
-
-			if err != nil {
-				http.Error(w, "", http.StatusInternalServerError)
-			}
-
-			out := bytes.NewBufferString(serialized)
-
-			// Write the response if any
-			if out.Len() > 0 {
-				w.Header().Add("Content-Type", "application/json; charset=utf-8")
-				w.Header().Add("Content-Length", strconv.Itoa(out.Len()))
-				w.Write(out.Bytes())
-			}
-
-			w.WriteHeader(status)
-
-		} else {
-			http.Error(w, "", http.StatusNotFound)
-		}
-
-		if Repo.Err() != nil {
-			fmt.Println(Repo.Err())
-		}
-	}
+	router.POST("/users/exist", AuthedHandler(DoUsersExist))
+	router.ServeHTTP(w, r)
 }

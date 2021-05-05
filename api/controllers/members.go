@@ -5,13 +5,13 @@ import (
 	"io"
 	"strings"
 
-	"github.com/wearedevx/keystone/api/routes"
+	"github.com/wearedevx/keystone/api/internal/router"
+	"github.com/wearedevx/keystone/api/pkg/repo"
 	. "github.com/wearedevx/keystone/internal/models"
-	"github.com/wearedevx/keystone/internal/repo"
 	. "github.com/wearedevx/keystone/internal/utils"
 )
 
-func DoUsersExist(params routes.Params, body io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
+func DoUsersExist(params router.Params, body io.ReadCloser, Repo repo.Repo, user User) (router.Serde, int, error) {
 	var err error
 	status := 500
 	response := &CheckMembersResponse{}
@@ -38,5 +38,4 @@ func DoUsersExist(params routes.Params, body io.ReadCloser, Repo repo.Repo, user
 
 	err = runner.Run().Error()
 	return response, status, err
-
 }
