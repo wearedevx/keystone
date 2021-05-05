@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/internal/config"
 	"github.com/wearedevx/keystone/pkg/client"
+	"github.com/wearedevx/keystone/pkg/client/auth"
 	. "github.com/wearedevx/keystone/ui"
 )
 
@@ -40,7 +41,7 @@ func ShowAlreadyLoggedInAndExit(account map[string]string) {
 	os.Exit(0)
 }
 
-func LogIntoExisitingAccount(accountIndex int, currentAccount map[string]string, c client.AuthService) {
+func LogIntoExisitingAccount(accountIndex int, currentAccount map[string]string, c auth.AuthService) {
 	config.SetCurrentAccount(accountIndex)
 
 	publicKey := []byte(currentAccount["public_key"])
@@ -60,7 +61,7 @@ func LogIntoExisitingAccount(accountIndex int, currentAccount map[string]string,
 	os.Exit(0)
 }
 
-func CreateAccountAndLogin(c client.AuthService) {
+func CreateAccountAndLogin(c auth.AuthService) {
 	keyPair, err := keys.New(keys.TypeEC)
 
 	if err != nil {
@@ -109,7 +110,7 @@ To invite collaborators:
 `, "Thank you for using Keystone!"))
 }
 
-func SelectAuthService(ctx context.Context) (client.AuthService, error) {
+func SelectAuthService(ctx context.Context) (auth.AuthService, error) {
 	var err error
 
 	if serviceName == "" {
@@ -128,7 +129,7 @@ func SelectAuthService(ctx context.Context) (client.AuthService, error) {
 		}
 	}
 
-	return client.GetAuthService(serviceName, ctx)
+	return auth.GetAuthService(serviceName, ctx, client.ApiURL)
 }
 
 // loginCmd represents the login command

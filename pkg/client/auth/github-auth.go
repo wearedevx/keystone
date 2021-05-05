@@ -1,4 +1,4 @@
-package client
+package auth
 
 import (
 	"context"
@@ -17,6 +17,7 @@ type PublicKey struct {
 }
 
 type gitHubAuthService struct {
+	apiUrl       string
 	ctx          context.Context
 	conf         *oauth2.Config
 	loginRequest models.LoginRequest
@@ -26,14 +27,15 @@ type gitHubAuthService struct {
 
 func (g gitHubAuthService) Name() string { return "GitHub" }
 
-func GitHubAuth(ctx context.Context) AuthService {
+func GitHubAuth(ctx context.Context, apiUrl string) AuthService {
 	return &gitHubAuthService{
-		ctx: ctx,
+		apiUrl: apiUrl,
+		ctx:    ctx,
 	}
 }
 
 func (g *gitHubAuthService) Start() (string, error) {
-	lr, err := getLoginRequest()
+	lr, err := getLoginRequest(g.apiUrl)
 
 	g.loginRequest = lr
 
@@ -41,7 +43,7 @@ func (g *gitHubAuthService) Start() (string, error) {
 		ClientID:     "b073f661bc803aecee00",
 		ClientSecret: "c2593f5b1e063625c7ed6e542c2757fdb050de2d",
 		Scopes:       []string{"user", "user:email"},
-		RedirectURL:  ksapiURL + "/auth-redirect/",
+		RedirectURL:  g.apiUrl + "/auth-redirect/",
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://github.com/login/oauth/authorize",
 			TokenURL: "https://github.com/login/oauth/access_token",
@@ -56,7 +58,7 @@ func (g *gitHubAuthService) WaitForExternalLogin() error {
 	c := make(chan pollResult)
 	var result pollResult
 
-	go pollLoginRequest(g.loginRequest.TemporaryCode, c)
+	go pollLoginRequest(g.apiUrl, g.loginRequest.TemporaryCode, c)
 
 	result = <-c
 
@@ -80,7 +82,7 @@ func (g *gitHubAuthService) WaitForExternalLogin() error {
 }
 
 func (g gitHubAuthService) Finish(pk []byte) (models.User, string, error) {
-	return completeLogin(models.GitHubAccountType, g.token, pk)
+	return completeLogin(g.apiUrl, models.GitHubAccountType, g.token, pk)
 }
 
 func (g gitHubAuthService) CheckAccount(account map[string]string) (bool, error) {

@@ -1,4 +1,4 @@
-package client
+package auth
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 )
 
 type gitlabAuthService struct {
+	apiUrl       string
 	ctx          context.Context
 	conf         *oauth2.Config
 	loginRequest models.LoginRequest
@@ -20,14 +21,15 @@ type gitlabAuthService struct {
 
 func (g gitlabAuthService) Name() string { return "GitLab" }
 
-func GitLabAuth(ctx context.Context) AuthService {
+func GitLabAuth(ctx context.Context, apiUrl string) AuthService {
 	return &gitlabAuthService{
-		ctx: ctx,
+		apiUrl: apiUrl,
+		ctx:    ctx,
 	}
 }
 
 func (g *gitlabAuthService) Start() (string, error) {
-	lr, err := getLoginRequest()
+	lr, err := getLoginRequest(g.apiUrl)
 
 	g.loginRequest = lr
 
@@ -36,7 +38,7 @@ func (g *gitlabAuthService) Start() (string, error) {
 		ClientID:     "d372c2f3eebd9c498b41886667609fbdcf149254bcb618ddc199047cbbc46b78",
 		ClientSecret: "ffe9317fd42d32ea7db24c79f9ee25a3e30637b886f3bc99f951710c8cdc3650",
 		Scopes:       []string{"read_user", "email"},
-		RedirectURL:  ksapiURL + "/auth-redirect/",
+		RedirectURL:  g.apiUrl + "/auth-redirect/",
 		// RedirectURL:  ksauthURL + "/auth-redirect/" + lr.TemporaryCode,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://gitlab.com/oauth/authorize",
@@ -51,7 +53,7 @@ func (g *gitlabAuthService) WaitForExternalLogin() error {
 	c := make(chan pollResult)
 	var result pollResult
 
-	go pollLoginRequest(g.loginRequest.TemporaryCode, c)
+	go pollLoginRequest(g.apiUrl, g.loginRequest.TemporaryCode, c)
 
 	result = <-c
 
@@ -72,7 +74,7 @@ func (g *gitlabAuthService) WaitForExternalLogin() error {
 }
 
 func (g gitlabAuthService) Finish(pk []byte) (models.User, string, error) {
-	return completeLogin(models.GitLabAccountType, g.token, pk)
+	return completeLogin(g.apiUrl, models.GitLabAccountType, g.token, pk)
 }
 
 func (g gitlabAuthService) CheckAccount(account map[string]string) (bool, error) {

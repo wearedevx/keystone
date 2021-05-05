@@ -1,6 +1,6 @@
 // +build test
 
-package client
+package auth
 
 import (
 	"context"
@@ -15,6 +15,7 @@ import (
 )
 
 type dummyAuthService struct {
+	apiUrl       string
 	ctx          context.Context
 	conf         *oauth2.Config
 	loginRequest models.LoginRequest
@@ -24,9 +25,10 @@ type dummyAuthService struct {
 
 func (g dummyAuthService) Name() string { return "GitLab" }
 
-func DummyAuth(ctx context.Context) AuthService {
+func DummyAuth(ctx context.Context, apiUrl string) AuthService {
 	return &dummyAuthService{
-		ctx: ctx,
+		apiUrl: apiUrl,
+		ctx:    ctx,
 	}
 }
 

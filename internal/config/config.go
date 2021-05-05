@@ -8,7 +8,7 @@ import (
 	"reflect"
 
 	"github.com/spf13/viper"
-	"github.com/wearedevx/keystone/pkg/client"
+	"github.com/wearedevx/keystone/pkg/client/auth"
 	. "github.com/wearedevx/keystone/ui"
 )
 
@@ -113,7 +113,7 @@ func IsLoggedIn() bool {
 }
 
 // finds an account matching `user` in the `account` slice
-func FindAccount(c client.AuthService) (map[string]string, int) {
+func FindAccount(c auth.AuthService) (map[string]string, int) {
 	current := -1
 	a := make(map[string]string)
 

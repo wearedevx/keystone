@@ -91,8 +91,8 @@ Created files and directories:
 			token := config.GetAuthToken()
 			userID := currentAccount["user_id"]
 
-			ksClient := client.NewKeystoneClient(userID, token)
-			project, kerr := ksClient.InitProject(projectName)
+			c := client.NewKeystoneClient(userID, token)
+			project, kerr := c.Project("").Init(projectName)
 
 			if kerr != nil {
 				panic(kerr)

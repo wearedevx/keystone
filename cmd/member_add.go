@@ -74,7 +74,7 @@ This will cause secrets to be encryted for all members, existing and new.`,
 
 		c := client.NewKeystoneClient(account["user_id"], token)
 
-		r, err := c.CheckUsersExist(args)
+		r, err := c.Users().CheckUsersExist(args)
 
 		if r.Error != "" {
 			errors.UsersDontExist(r.Error, nil).Print()
@@ -103,7 +103,7 @@ This will cause secrets to be encryted for all members, existing and new.`,
 			memberRole[memberId] = role
 		}
 
-		err = c.ProjectAddMembers(projectID, memberRole)
+		err = c.Project(projectID).AddMembers(memberRole)
 
 		if err != nil {
 			errors.CannotAddMembers(err).Print()

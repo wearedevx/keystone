@@ -69,7 +69,7 @@ This causes secrets to be re-crypted for the remainig members.`,
 		projectID := ctx.GetProjectID()
 
 		c := client.NewKeystoneClient(account["user_id"], token)
-		r, err := c.CheckUsersExist(args)
+		r, err := c.Users().CheckUsersExist(args)
 
 		if r.Error != "" {
 			errors.UsersDontExist(r.Error, nil).Print()
@@ -99,7 +99,7 @@ This causes secrets to be re-crypted for the remainig members.`,
 			os.Exit(0)
 		}
 
-		err = c.ProjectRemoveMembers(projectID, membersToRevoke)
+		err = c.Project(projectID).RemoveMembers(membersToRevoke)
 
 		if err != nil {
 			errors.CannotRemoveMembers(err).Print()

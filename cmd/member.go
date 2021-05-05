@@ -54,7 +54,7 @@ grouped by their role, with indication of their ownership.`,
 		kf := keystonefile.KeystoneFile{}
 		kf.Load(ctx.Wd)
 
-		members, err := c.ProjectMembers(kf.ProjectId)
+		members, err := c.Project(kf.ProjectId).GetAllMembers()
 
 		if err != nil {
 			fmt.Println(err)

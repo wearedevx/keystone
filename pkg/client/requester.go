@@ -36,7 +36,7 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 		json.NewEncoder(buf).Encode(&data)
 	}
 
-	req, err := http.NewRequest(string(method), ksapiURL+path, buf)
+	req, err := http.NewRequest(string(method), ApiURL+path, buf)
 	req.Header.Set("Content-Type", "application/octet-stream")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.jwtToken))
 

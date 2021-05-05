@@ -1,6 +1,6 @@
 // +build !test
 
-package client
+package auth
 
 import (
 	"context"
@@ -17,16 +17,16 @@ type AuthService interface {
 	Finish(pkey []byte) (models.User, string, error)
 }
 
-func GetAuthService(serviceName string, ctx context.Context) (AuthService, error) {
+func GetAuthService(serviceName string, ctx context.Context, apiUrl string) (AuthService, error) {
 	var c AuthService
 	var err error
 
 	switch serviceName {
 	case "github":
-		c = GitHubAuth(ctx)
+		c = GitHubAuth(ctx, apiUrl)
 
 	case "gitlab":
-		c = GitLabAuth(ctx)
+		c = GitLabAuth(ctx, apiUrl)
 
 	default:
 		err = fmt.Errorf("Unknown service name %s", serviceName)
