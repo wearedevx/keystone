@@ -107,6 +107,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			return nil
 		}),
 		NewAction(func() error {
+			user.PublicKey = payload.PublicKey
 			Repo.GetOrCreateUser(&user)
 
 			return Repo.Err()
