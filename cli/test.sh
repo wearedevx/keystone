@@ -8,7 +8,7 @@ fi
 
 export $(cat .env-dev | xargs)
 
-LDFLAGS="-X github.com/wearedevx/keystone/pkg/client.ksauthURL=$KSAUTH_URL -X github.com/wearedevx/keystone/pkg/client.ksapiURL=$KSAPI_URL"
+LDFLAGS="-X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=$KSAPI_URL"
 
 DBFILE="${TMPDIR}keystone_gorm.db"
 
@@ -30,6 +30,7 @@ export $(cat .env-dev | xargs)
 
 echo "START TEST"
 
+echo "go test -p 1 -tags test -ldflags \"$LDFLAGS\" -work $@"
 go test -p 1 -tags test -ldflags "$LDFLAGS" -work "$@"
 
 EXIT_STATUS_CODE=$?

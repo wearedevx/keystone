@@ -17,5 +17,8 @@ type AuthService interface {
 }
 
 func GetAuthService(serviceName string, ctx context.Context, apiUrl string) (AuthService, error) {
-	return new(dummyAuthService), nil
+	a := new(dummyAuthService)
+	a.apiUrl = apiUrl
+
+	return a, nil
 }
