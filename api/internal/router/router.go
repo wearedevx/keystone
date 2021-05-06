@@ -10,8 +10,8 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	. "github.com/wearedevx/keystone/api/pkg/jwt"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
-	"github.com/wearedevx/keystone/internal/models"
 )
 
 type Route struct {

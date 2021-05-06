@@ -3,7 +3,7 @@ package repo
 import (
 	"fmt"
 
-	. "github.com/wearedevx/keystone/internal/models"
+	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
 func (r *Repo) GetRoles(roles *[]Role) *Repo {

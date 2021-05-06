@@ -4,7 +4,7 @@ package authconnector
 
 import (
 	"github.com/bxcodec/faker/v3"
-	"github.com/wearedevx/keystone/internal/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"golang.org/x/oauth2"
 )
 

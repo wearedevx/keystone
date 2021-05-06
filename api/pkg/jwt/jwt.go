@@ -7,8 +7,8 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go/v4"
-	"github.com/wearedevx/keystone/internal/models"
-	"github.com/wearedevx/keystone/internal/utils"
+	"github.com/wearedevx/keystone/api/internal/utils"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"golang.org/x/xerrors"
 )
 

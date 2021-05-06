@@ -9,19 +9,18 @@ import (
 	"net/http"
 	"strconv"
 
+	log "github.com/wearedevx/keystone/api/internal/utils/cloudlogger"
 	. "github.com/wearedevx/keystone/api/pkg/jwt"
-	"github.com/wearedevx/keystone/internal/models"
-	. "github.com/wearedevx/keystone/internal/models"
-	. "github.com/wearedevx/keystone/internal/utils"
-	"gorm.io/gorm"
 
-	log "github.com/wearedevx/keystone/internal/cloudlogger"
+	"github.com/wearedevx/keystone/api/pkg/models"
+	. "github.com/wearedevx/keystone/api/pkg/models"
+	"gorm.io/gorm"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/wearedevx/keystone/api/internal/authconnector"
 	"github.com/wearedevx/keystone/api/internal/router"
+	. "github.com/wearedevx/keystone/api/internal/utils"
 	"github.com/wearedevx/keystone/api/pkg/repo"
-	"github.com/wearedevx/keystone/internal/crypto"
 )
 
 // postUser Gets or Creates a user
@@ -47,10 +46,14 @@ func PostUser(w http.ResponseWriter, r *http.Request, _params httprouter.Params)
 			return user.Serialize(&serializedUser)
 		}),
 		NewAction(func() error {
+			// 	// Server will not encrypt data.
+			// 	// Crypto dependency only in cli side.
+			// 	// Server is juste a mailbox.
 			in := bytes.NewBufferString(serializedUser)
-			_, e := crypto.EncryptForUser(user, in, &responseBody)
-
-			return e
+			// 	// _, e := crypto.EncryptForUser(user, in, &responseBody)
+			responseBody = *in
+			return nil
+			// 	return e
 		}),
 	})
 
@@ -125,6 +128,8 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	})
 
 	if err = runner.Run().Error(); err != nil {
+		// Use cloud logger?
+		//log.Error(r, err.Error())
 		log.Error(r, err.Error())
 		http.Error(w, err.Error(), runner.Status())
 		return

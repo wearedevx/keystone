@@ -8,7 +8,7 @@ import (
 	"path"
 
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
-	. "github.com/wearedevx/keystone/internal/models"
+	. "github.com/wearedevx/keystone/api/pkg/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

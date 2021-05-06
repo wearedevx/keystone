@@ -1,7 +1,7 @@
 package repo
 
 import (
-	. "github.com/wearedevx/keystone/internal/models"
+	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
 func (repo *Repo) CreateRole(name string) Role {

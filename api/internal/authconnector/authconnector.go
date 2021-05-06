@@ -5,7 +5,7 @@ package authconnector
 import (
 	"fmt"
 
-	"github.com/wearedevx/keystone/internal/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"golang.org/x/oauth2"
 )
 

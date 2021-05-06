@@ -3,7 +3,7 @@ package repo
 import (
 	"encoding/json"
 
-	. "github.com/wearedevx/keystone/internal/models"
+	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
 func (repo *Repo) GetProjectMember(user *User, project *Project) (ProjectMember, error) {

@@ -3,8 +3,8 @@ package rights
 import (
 	"fmt"
 
+	. "github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
-	. "github.com/wearedevx/keystone/internal/models"
 )
 
 type UserRight string

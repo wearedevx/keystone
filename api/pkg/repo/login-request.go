@@ -3,9 +3,9 @@ package repo
 import (
 	"errors"
 
-	. "github.com/wearedevx/keystone/internal/models"
-
 	"gorm.io/gorm"
+
+	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
 func (repo *Repo) CreateLoginRequest() LoginRequest {

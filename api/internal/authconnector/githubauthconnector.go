@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/google/go-github/v32/github"
-	"github.com/wearedevx/keystone/internal/models"
-	. "github.com/wearedevx/keystone/internal/utils"
+	. "github.com/wearedevx/keystone/api/internal/utils"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"golang.org/x/oauth2"
 )
 

@@ -4,8 +4,8 @@ import (
 	"io"
 	"net/http"
 
-	. "github.com/wearedevx/keystone/internal/models"
-	. "github.com/wearedevx/keystone/internal/utils"
+	. "github.com/wearedevx/keystone/api/internal/utils"
+	. "github.com/wearedevx/keystone/api/pkg/models"
 
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/repo"

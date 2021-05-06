@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	. "github.com/wearedevx/keystone/internal/models"
 	"gorm.io/gorm/clause"
+
+	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
 func (r *Repo) createProject(project *Project, user *User) *Repo {

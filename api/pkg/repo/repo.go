@@ -9,7 +9,7 @@ import (
 
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
 	// . "github.com/wearedevx/keystone/internal/models"
-	. "github.com/wearedevx/keystone/internal/utils"
+	. "github.com/wearedevx/keystone/api/internal/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"strings"
 
-	. "github.com/wearedevx/keystone/internal/models"
-	. "github.com/wearedevx/keystone/internal/utils"
+	. "github.com/wearedevx/keystone/api/internal/utils"
+	"github.com/wearedevx/keystone/api/pkg/models"
+	. "github.com/wearedevx/keystone/api/pkg/models"
 
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/repo"
-	"github.com/wearedevx/keystone/internal/models"
 )
 
 type projectsPublicKeys struct {

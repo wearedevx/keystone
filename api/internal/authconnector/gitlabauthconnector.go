@@ -3,8 +3,8 @@ package authconnector
 import (
 	"strconv"
 
-	"github.com/wearedevx/keystone/internal/models"
-	. "github.com/wearedevx/keystone/internal/utils"
+	. "github.com/wearedevx/keystone/api/internal/utils"
+	. "github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/xanzy/go-gitlab"
 	"golang.org/x/oauth2"
 )
@@ -13,9 +13,9 @@ type gitlabAuthConnector struct {
 	token string
 }
 
-func (glac *gitlabAuthConnector) GetUserInfo(token *oauth2.Token) (models.User, error) {
+func (glac *gitlabAuthConnector) GetUserInfo(token *oauth2.Token) (User, error) {
 	var err error
-	var user models.User
+	var user User
 
 	var client *gitlab.Client
 	var gUser *gitlab.User
@@ -40,10 +40,10 @@ func (glac *gitlabAuthConnector) GetUserInfo(token *oauth2.Token) (models.User, 
 
 			userID := gUser.Username + "@gitlab"
 
-			user = models.User{
+			user = User{
 				ExtID:       strconv.Itoa(int(gUser.ID)),
 				UserID:      userID,
-				AccountType: models.AccountType("gitlab"),
+				AccountType: AccountType("gitlab"),
 				Username:    gUser.Username,
 				Fullname:    userName,
 				Email:       gUser.Email,

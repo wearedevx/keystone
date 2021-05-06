@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/pkg/repo"
-	"github.com/wearedevx/keystone/tests/utils"
+	"github.com/wearedevx/keystone/api/pkg/tests"
 )
 
 func init() {
@@ -14,7 +14,7 @@ func init() {
 }
 
 func TestEnvType(t *testing.T) {
-	utils.SeedTestData()
+	tests.SeedTestData()
 
 	Repo := new(repo.Repo)
 
