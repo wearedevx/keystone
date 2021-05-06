@@ -1,6 +1,8 @@
 package repo
 
 import (
+	"bytes"
+
 	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
@@ -31,6 +33,11 @@ func (r *Repo) GetOrCreateUser(user *User) {
 	).First(&foundUser).Error
 
 	if r.err == nil {
+		if bytes.Compare(foundUser.PublicKey, user.PublicKey) != 0 {
+			foundUser.PublicKey = user.PublicKey
+			db.Save(&foundUser)
+		}
+
 		*user = foundUser
 	} else { // if errors.Is(err, gorm.ErrRecordNotFound) {
 		user.UserID = user.Username + "@" + string(user.AccountType)
