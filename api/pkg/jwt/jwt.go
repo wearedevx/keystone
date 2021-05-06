@@ -14,6 +14,7 @@ import (
 
 func MakeToken(user models.User) (string, error) {
 	salt := []byte(utils.GetEnv("JWT_SALT", "aaP|**P1n}1tqWK"))
+	fmt.Println("api ~ jwt.go ~ salt", string(salt))
 
 	claims := jwt.StandardClaims{
 		ExpiresAt: &jwt.Time{

@@ -5,7 +5,7 @@ import (
 
 	"github.com/rogpeppe/go-internal/testscript"
 	"github.com/wearedevx/keystone/cli/cmd"
-	"github.com/wearedevx/keystone/tests/utils"
+	"github.com/wearedevx/keystone/cli/tests/utils"
 )
 
 func TestMain(m *testing.M) {
