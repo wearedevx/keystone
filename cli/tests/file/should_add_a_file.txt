@@ -1,0 +1,16 @@
+# Init with name
+ks init test-env
+
+ks file add --skip test.txt
+
+cmp stdout file_added_str_expected.txt 
+
+
+-- test.txt --
+youpi
+
+-- file_added_str_expected.txt --
+
+[30;42m OK [0m [32mAdded 'test.txt'[0m
+The file has been added to all environments.
+It has also been gitignored.

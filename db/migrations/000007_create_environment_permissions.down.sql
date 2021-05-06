@@ -1,3 +1,0 @@
-ALTER TABLE public.environment_permissions DROP CONSTRAINT fk_environment_permissions_environment;
-ALTER TABLE public.environment_permissions DROP CONSTRAINT fk_environment_permissions_user;
-DROP TABLE IF EXISTS public.environment_permissions;
