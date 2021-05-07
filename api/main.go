@@ -1,28 +1,36 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"time"
 
-	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"github.com/wearedevx/keystone/api/routes"
 )
 
+type baseHandler struct{}
+
+func (h *baseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	routes.CreateRoutes(w, r)
+}
+
 func main() {
-	// TODO:// Use native http golang package.
-	ctx := context.Background()
-	if err := funcframework.RegisterHTTPFunctionContext(ctx, "/", routes.CreateRoutes); err != nil {
-		log.Fatalf("funcframework.RegisterHTTPFunctionContext: %v\n", err)
-	}
 	// Use PORT environment variable, or default to 8080.
 	port := "9001"
 	if envPort := os.Getenv("PORT"); envPort != "" {
 		port = envPort
 	}
-	fmt.Printf("Will listen on port %s\n", port)
-	if err := funcframework.Start(port); err != nil {
-		log.Fatalf("funcframework.Start: %v\n", err)
+
+	server := http.Server{
+		Addr:           ":" + port,
+		Handler:        new(baseHandler),
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
 	}
+
+	fmt.Printf("Will listen on port %s\n", port)
+	log.Fatalf("Api main: %v\n", server.ListenAndServe())
 }
