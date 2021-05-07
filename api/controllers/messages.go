@@ -15,10 +15,11 @@ import (
 func GetMessagesFromEnvironmentByUser(params routes.Params, _ io.ReadCloser, Repo repo.Repo, user User) (routes.Serde, int, error) {
 	var status = http.StatusOK
 	var environmentID = params.Get("environmentID").(string)
-	// var versionID = params.Get("versionid").(string)
+	var versionID = params.Get("versionid").(string)
 
 	var result = GetMessagesResponse{
-		Messages: []Message{},
+		Messages:  []Message{},
+		VersionID: "",
 	}
 
 	var environment Environment
@@ -28,10 +29,14 @@ func GetMessagesFromEnvironmentByUser(params routes.Params, _ io.ReadCloser, Rep
 			return Repo.Err()
 		}),
 		NewAction(func() error {
-			Repo.GetMessagesForUserOnEnvironment(&user, &environment, &result.Messages)
-
+			if environment.VersionID != versionID {
+				Repo.GetMessagesForUserOnEnvironment(&user, &environment, &result.Messages)
+			} else {
+				status = 204
+			}
+			result.VersionID = environment.EnvironmentID
 			return Repo.Err()
-		}),
+		}).SetStatusSuccess(status),
 	}).Run()
 
 	status = runner.Status()

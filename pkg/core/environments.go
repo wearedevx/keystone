@@ -184,7 +184,7 @@ func (ctx *Context) MustHaveEnvironment(name string) {
 	}
 }
 
-func (ctx *Context) readEnvFile() string {
+func (ctx *Context) CurrentEnvironment() string {
 	if ctx.Err() != nil {
 		return ""
 	}
@@ -196,24 +196,7 @@ func (ctx *Context) readEnvFile() string {
 		ctx.setError(CannotReadEnvironment(ctx.environmentFilePath(), err))
 	}
 
-	return string(bytes)
-}
-
-func (ctx *Context) CurrentEnvironment() string {
-	envFileContent := ctx.readEnvFile()
-	envFileParts := strings.Split(envFileContent, "@")
-	return envFileParts[0]
-}
-
-func (ctx *Context) EnvironmentVersion() string {
-	envFileContent := ctx.readEnvFile()
-	envFileParts := strings.Split(envFileContent, "@")
-
-	if len(envFileParts) > 1 {
-		return envFileParts[1]
-
-	}
-	return ""
+	return strings.Trim(string(bytes), "\n")
 }
 
 func (ctx *Context) Fetch(environment string) {
@@ -228,14 +211,19 @@ func (ctx *Context) Fetch(environment string) {
 	environmentID := ctx.EnvironmentID()
 
 	// Request: Get env hash from remote
-	messages, err := ksClient.GetMessages(environmentID, localEnvironmentVersion)
+	results, err := ksClient.GetMessages(environmentID, localEnvironmentVersion)
 
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	fmt.Println(messages)
+	fmt.Println(results.Messages)
+	if results.VersionID == localEnvironmentVersion {
+		return
+	}
+
+	fmt.Println(results.VersionID)
 
 	// 204: no hash set for env
 	//    -> Set new hash for env
@@ -243,6 +231,17 @@ func (ctx *Context) Fetch(environment string) {
 	//    -> Set new hash for env
 }
 
+func (ctx *Context) EnvironmentVersion() string {
+	environments := ctx.EnvironmentsFromConfig()
+	currentEnvironment := ctx.CurrentEnvironment()
+
+	for _, e := range environments {
+		if e.Name == currentEnvironment {
+			return e.EnvironmentID
+		}
+	}
+	return ""
+}
 func (ctx *Context) EnvironmentID() string {
 	environments := ctx.EnvironmentsFromConfig()
 	currentEnvironment := ctx.CurrentEnvironment()
