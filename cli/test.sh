@@ -68,6 +68,6 @@ removeProcessId "keystone_ksapi.pid"
 # rm $DBFILE
 rm "/tmp/keystone_gorm"*
 
-kill $(lsof -t -i:9001)
+kill -9 $(lsof -t -i:9001)
 
 exit $EXIT_STATUS_CODE

@@ -16,7 +16,7 @@ type KeyRing struct {
 }
 
 type User struct {
-	ID          uint        `json:"id" gorm:"primaryKey"`
+	ID          uint        `json:"id" gorm:"primaryKey" faker:"-"`
 	AccountType AccountType `json:"account_type" gorm:"default:custom" faker:"oneof: github, gitlab"`
 	UserID      string      `json:"user_id" gorm:"uniqueIndex"`
 	ExtID       string      `json:"ext_id" faker:"uuid_digit"`

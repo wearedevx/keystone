@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -79,6 +80,8 @@ func CreateAndLogUser(env *testscript.Env) error {
 	user := User{}
 
 	faker.FakeData(&user)
+
+	user.ID = 0
 
 	user.Email = "email@example.com"
 

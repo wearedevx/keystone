@@ -46,7 +46,6 @@ func VerifyToken(token string) (string, error) {
 
 	t, err := jwt.Parse(trimedToken, func(token *jwt.Token) (interface{}, error) {
 		salt := os.Getenv("JWT_SALT")
-		fmt.Println("salt:", salt)
 		return []byte(salt), nil
 	})
 

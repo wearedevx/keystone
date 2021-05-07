@@ -11,6 +11,7 @@ import (
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Repo struct {
@@ -54,7 +55,9 @@ func init() {
 	dbFilePath := path.Join(os.TempDir(), "keystone_gorm.db")
 
 	var err error
-	db, err = gorm.Open(sqlite.Open(dbFilePath), &gorm.Config{})
+	db, err = gorm.Open(sqlite.Open(dbFilePath), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
 
 	if err != nil {
 		panic(err)
