@@ -49,13 +49,20 @@ func keystoneFilePath(wd string) string {
 //
 func NewKeystoneFile(wd string, project Project) *KeystoneFile {
 
+	var environments []Env
+
+	for _, env := range project.Environments {
+		environments = append(environments, Env{env.EnvironmentID, env.Name})
+	}
+
 	return &KeystoneFile{
-		path:        keystoneFilePath(wd),
-		err:         nil,
-		ProjectId:   project.UUID,
-		ProjectName: project.Name,
-		Env:         make([]envKey, 0),
-		Files:       make([]FileKey, 0),
+		path:         keystoneFilePath(wd),
+		err:          nil,
+		ProjectId:    project.UUID,
+		ProjectName:  project.Name,
+		Env:          make([]envKey, 0),
+		Environments: environments,
+		Files:        make([]FileKey, 0),
 		Options: keystoneFileOptions{
 			Strict: false,
 		},
