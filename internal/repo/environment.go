@@ -1,6 +1,7 @@
 package repo
 
 import (
+	uuid "github.com/satori/go.uuid"
 	. "github.com/wearedevx/keystone/internal/models"
 )
 
@@ -55,4 +56,11 @@ func (repo *Repo) GetEnvironment(environmentID string) Environment {
 	repo.err = repo.GetDb().Model(&Environment{}).Where("environment_id = ?", environmentID).First(&foundEnvironment).Error
 
 	return foundEnvironment
+}
+
+func (repo *Repo) SetNewVersionID(environment *Environment) error {
+	newVersionID := uuid.NewV4().String()
+	environment.VersionID = newVersionID
+	repo.err = repo.GetDb().Model(&Environment{}).Update("version_id", newVersionID).Error
+	return repo.Err()
 }

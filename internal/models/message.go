@@ -50,7 +50,8 @@ func (msg *Message) Serialize(out *string) error {
 }
 
 type GetMessagesResponse struct {
-	Messages []Message `json:"messages"`
+	Messages  []Message `json:"messages"`
+	VersionID string    `json:"versionid"`
 }
 
 func (e *GetMessagesResponse) Deserialize(in io.Reader) error {

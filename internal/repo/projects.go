@@ -94,7 +94,7 @@ func (r *Repo) GetUserProjectWithName(user User, name string) (Project, bool) {
 	found, err := r.notFoundAsBool(func() error {
 		return r.GetDb().
 			Model(&Project{}).
-			Joins("join environments e on e.project_id = projects.id").
+			Joins("JOIN environments on environments.project_id = projects.id").
 			Where("projects.user_id = ? and projects.name = ?", user.ID, name).
 			First(&foundProject).
 			Error
@@ -102,6 +102,7 @@ func (r *Repo) GetUserProjectWithName(user User, name string) (Project, bool) {
 
 	r.err = err
 
+	fmt.Println(foundProject.Environments)
 	return foundProject, found
 }
 

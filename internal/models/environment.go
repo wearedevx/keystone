@@ -27,6 +27,7 @@ func (e *Environment) BeforeCreate(tx *gorm.DB) (err error) {
 	e.CreatedAt = time.Now()
 	e.UpdatedAt = time.Now()
 	e.EnvironmentID = uuid.NewV4().String()
+	e.VersionID = uuid.NewV4().String()
 
 	return nil
 }
