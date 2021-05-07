@@ -3,7 +3,6 @@ package login
 import (
 	"os"
 	"testing"
-	"time"
 
 	"github.com/rogpeppe/go-internal/testscript"
 	"github.com/wearedevx/keystone/cli/cmd"
@@ -11,8 +10,6 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	utils.StartApiCloudFunction()
-
 	resRun := testscript.RunMain(m, map[string]func() int{
 		"ks":                 cmd.Execute,
 		"githubLoginSuccess": utils.GithubLoginSuccess,
@@ -28,9 +25,7 @@ func init() {
 }
 
 func TestLoginCommand(t *testing.T) {
-
-	time.Sleep(2000 * time.Millisecond)
-
+	utils.WaitAPIStart()
 	testscript.Run(t, testscript.Params{
 		Dir:   ".",
 		Setup: utils.SetupEnvVars,

@@ -15,6 +15,10 @@ DBFILE="${TMPDIR}keystone_gorm.db"
 # Create db file
 touch $DBFILE
 
+cd ../api
+go run -tags test main.go &
+
+cd ../cli
 # Dpesn't work, with one file name with "-v" param
 # # If no test file given, test all files.
 # FOLDERTOTEST = $@
@@ -30,8 +34,8 @@ export $(cat .env-dev | xargs)
 
 echo "START TEST"
 
-echo "go test -p 1 -tags test -ldflags \"$LDFLAGS\" -work $@"
-go test -p 1 -tags test -ldflags "$LDFLAGS" -work "$@"
+echo "go test -tags test -ldflags \"$LDFLAGS\" -work $@"
+go test -tags test -ldflags "$LDFLAGS" -work "$@"
 
 EXIT_STATUS_CODE=$?
 
@@ -59,12 +63,13 @@ function removeProcessId() {
     fi
 }
 
-removeProcessId "keystone_ksauth.pid"
 removeProcessId "keystone_ksapi.pid"
 
 # Delete db file
 # echo "rm $DBFILE"
 # rm $DBFILE
 rm "/tmp/keystone_gorm"*
+
+kill $(lsof -t -i:9001)
 
 exit $EXIT_STATUS_CODE

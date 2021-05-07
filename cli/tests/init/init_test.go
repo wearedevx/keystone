@@ -20,7 +20,7 @@ func setupFunc(env *testscript.Env) error {
 	return nil
 }
 func TestCommands(t *testing.T) {
-	utils.StartApiCloudFunction()
+	utils.WaitAPIStart()
 	testscript.Run(t, testscript.Params{
 		Dir:                  "./",
 		Setup:                setupFunc,

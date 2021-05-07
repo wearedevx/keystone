@@ -1,5 +1,0 @@
-# Display user id
-
-ks whoami
-
-stdout .

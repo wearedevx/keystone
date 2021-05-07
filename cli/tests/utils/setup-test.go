@@ -1,17 +1,10 @@
 package utils
 
 import (
-	"bufio"
-	"context"
-	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"os"
-	"os/exec"
 	"path"
-	"strconv"
-	"syscall"
 	"time"
 
 	"github.com/rogpeppe/go-internal/testscript"
@@ -28,76 +21,24 @@ func GetGcloudFuncAuthPidFilePath() string {
 	return path.Join(os.TempDir(), "keystone_ksauth.pid")
 }
 
-func waitALittle() {
-	min := 0
-	max := 1000
-
-	nbms := rand.Intn(max-min) + min
-
-	time.Sleep(time.Duration(nbms) * time.Millisecond)
+func WaitAPIStart() {
+	waitForServerStarted("http://127.0.0.1:9001")
 }
 
-func GetGcloudFuncApiPidFilePath() string {
+func isServerResponse(serverUrl string) bool {
+	request, _ := http.NewRequest("GET", serverUrl, nil)
 
-	return path.Join(os.TempDir(), "keystone_ksapi.pid")
-}
+	timeout := time.Duration(1 * time.Second)
 
-func listenCmdStartProcess(cmd *exec.Cmd, name string) {
-	cmdReader, _ := cmd.StdoutPipe()
-
-	scanner := bufio.NewScanner(cmdReader)
-	done := make(chan bool)
-	go func() {
-		for scanner.Scan() {
-			fmt.Println(name, "stdout:", scanner.Text())
-		}
-		done <- true
-	}()
-
-	cmdErrorReader, _ := cmd.StderrPipe()
-	scannerError := bufio.NewScanner(cmdErrorReader)
-	doneError := make(chan bool)
-
-	go func() {
-		for scannerError.Scan() {
-			fmt.Println(name, "stderr:", scannerError.Text())
-		}
-		doneError <- true
-	}()
-}
-
-// func StartAuthCloudFunction() {
-// 	gcloudPidFilePath := GetGcloudFuncAuthPidFilePath() // + time.Now().String()
-// 	pid, _ := ioutil.ReadFile(gcloudPidFilePath)
-
-// 	if len(pid) == 0 {
-// 		pgid := startAuthCloudFuncProcess()
-
-// 		pidString := []byte(strconv.Itoa(pgid))
-// 		err := ioutil.WriteFile(gcloudPidFilePath, pidString, 0755)
-
-// 		if err != nil {
-// 			panic(err)
-// 		}
-// 	} else {
-// 		// fmt.Println("PID DEJA PRESENT", pid)
-// 	}
-// }
-
-func StartApiCloudFunction() {
-	gcloudPidFilePath := GetGcloudFuncApiPidFilePath() // + time.Now().String()
-	pid, _ := ioutil.ReadFile(gcloudPidFilePath)
-
-	if len(pid) == 0 {
-		pgid := startCloudApiFunc()
-
-		pidString := []byte(strconv.Itoa(pgid))
-		err := ioutil.WriteFile(gcloudPidFilePath, pidString, 0755)
-
-		if err != nil {
-			panic(err)
-		}
+	client := http.Client{
+		Timeout: timeout,
 	}
+
+	_, err := client.Do(request)
+
+	// If it's started,
+
+	return err == nil
 }
 
 func pollServer(serverUrl string, c chan bool, maxAttempts int) {
@@ -111,20 +52,9 @@ func pollServer(serverUrl string, c chan bool, maxAttempts int) {
 			done = true
 		}
 
-		// Make a request to server
-		request, _ := http.NewRequest("GET", serverUrl, nil)
+		isServerStarted := isServerResponse(serverUrl)
 
-		timeout := time.Duration(1 * time.Second)
-
-		client := http.Client{
-			Timeout: timeout,
-		}
-
-		_, err := client.Do(request)
-
-		// If it's started,
-
-		if err == nil {
+		if isServerStarted {
 			done = true
 			c <- true
 		}
@@ -142,57 +72,6 @@ func waitForServerStarted(serverUrl string) {
 
 	// result := true
 	<-c
-
-}
-
-func startCloudFunctionProcess(funcPath string, serverUrl string) int {
-
-	// Start cloud functions
-	ctx, _ := context.WithTimeout(context.Background(), 20000*time.Second)
-
-	fmt.Println(os.Getwd())
-
-	cmd := exec.CommandContext(ctx, "go", "run", "-tags", "test", funcPath)
-	cmd.Dir = funcPath
-	cmd.Dir = "."
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-
-	listenCmdStartProcess(cmd, funcPath)
-
-	err := cmd.Start()
-
-	if err != nil {
-		panic(err)
-	}
-
-	// fmt.Println("keystone ~ setup-test.go ~ cmd.Process.Pid", cmd.Process.Pid)
-	pgid, err := syscall.Getpgid(cmd.Process.Pid)
-
-	if err != nil {
-		// fmt.Println("Error gret gpid", err)
-		waitALittle()
-		return startCloudFunctionProcess(funcPath, serverUrl)
-	}
-
-	// fmt.Println("AVANT SLEEP")
-
-	// fmt.Println("Ca wait server")
-	waitForServerStarted(serverUrl)
-
-	// time.Sleep(20000 * time.Millisecond)
-	// fmt.Println("APRES SLEEP")
-
-	return pgid
-}
-
-// func startAuthCloudFuncProcess() int {
-// 	waitALittle()
-// 	return startCloudFunctionProcess("../../api/ksauth/cmd/main.go", "http://127.0.0.1:9000")
-// }
-
-func startCloudApiFunc() int {
-	waitALittle()
-	return startCloudFunctionProcess("../../../api/main.go", "http://127.0.0.1:9001")
 }
 
 func CreateAndLogUser(env *testscript.Env) error {

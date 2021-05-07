@@ -1,9 +1,0 @@
-# Logout
-
-ks logout
-
-# Fails displaying the user id
-
-! ks whoami
-
-stdout 'You must be logged in'
