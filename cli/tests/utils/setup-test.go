@@ -7,8 +7,8 @@ import (
 	"path"
 	"time"
 
+	"github.com/bxcodec/faker/v3"
 	"github.com/rogpeppe/go-internal/testscript"
-	uuid "github.com/satori/go.uuid"
 	. "github.com/wearedevx/keystone/api/pkg/jwt"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -76,24 +76,20 @@ func waitForServerStarted(serverUrl string) {
 
 func CreateAndLogUser(env *testscript.Env) error {
 	Repo := new(repo.Repo)
-	username := "LAbigael_" + uuid.NewV4().String()
-	userID := username + "@github"
+	user := User{}
 
-	ExtID := "56883564" + uuid.NewV4().String()
-	Username := "LAbigael_" + uuid.NewV4().String()
+	faker.FakeData(&user)
 
-	var user1 *User = &User{
-		ExtID:       ExtID,
-		UserID:      userID,
-		AccountType: "github",
-		Username:    Username,
-		Fullname:    "Test user1",
-		Email:       "abigael.laldji@protonmail.com",
+	user.Email = "email@example.com"
+
+	Repo.GetOrCreateUser(&user)
+
+	if err := Repo.Err(); err != nil {
+		fmt.Println("Get Or Create User", err)
+		os.Exit(1)
 	}
 
-	Repo.GetOrCreateUser(user1)
-
-	token, _ := MakeToken(*user1)
+	token, _ := MakeToken(user)
 
 	configDir := getConfigDir(env)
 
@@ -101,16 +97,20 @@ func CreateAndLogUser(env *testscript.Env) error {
 
 	err := ioutil.WriteFile(pathToKeystoneFile, []byte(`
 accounts:
-- Fullname: `+user1.Fullname+`
-  account_type: "`+string(user1.AccountType)+`"
-  email: `+user1.Email+`
-  ext_id: "`+ExtID+`"
-  fullname: `+user1.Fullname+`
-  user_id: `+user1.UserID+`
-  username: `+Username+`
+- Fullname: `+user.Fullname+`
+  account_type: "`+string(user.AccountType)+`"
+  email: `+user.Email+`
+  ext_id: "`+user.ExtID+`"
+  fullname: `+user.Fullname+`
+  user_id: `+user.UserID+`
+  username: `+user.Username+`
 auth_token: `+token+`
 current: 0
 `), 0o777)
+
+	if err != nil {
+		fmt.Println("error writing accounts", err)
+	}
 
 	return err
 }

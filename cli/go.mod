@@ -5,6 +5,8 @@ go 1.16
 require (
 	filippo.io/age v1.0.0-rc.1 // indirect
 	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
+	github.com/bxcodec/faker v2.0.1+incompatible // indirect
+	github.com/bxcodec/faker/v3 v3.6.0 // indirect
 	github.com/cossacklabs/themis/gothemis v0.13.1 // indirect
 	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807 // indirect
 	github.com/google/go-github/v32 v32.1.0 // indirect

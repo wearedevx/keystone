@@ -45,7 +45,9 @@ func VerifyToken(token string) (string, error) {
 	trimedToken := cleanUpToken(token)
 
 	t, err := jwt.Parse(trimedToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SALT")), nil
+		salt := os.Getenv("JWT_SALT")
+		fmt.Println("salt:", salt)
+		return []byte(salt), nil
 	})
 
 	if err != nil {
