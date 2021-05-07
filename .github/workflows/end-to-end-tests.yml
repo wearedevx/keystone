@@ -3,7 +3,7 @@ name: Keystone tests
 on:
   push:
     branches:
-      - ks-go-as-inbox
+      - develop
       
 jobs:
   app-test:
@@ -73,4 +73,5 @@ jobs:
 
       - name: start test
         run: |
+          cd cli
           ./test.sh ./tests/...
