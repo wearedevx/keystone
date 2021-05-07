@@ -237,7 +237,7 @@ func (ctx *Context) EnvironmentVersion() string {
 
 	for _, e := range environments {
 		if e.Name == currentEnvironment {
-			return e.EnvironmentID
+			return e.VersionID
 		}
 	}
 	return ""

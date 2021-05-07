@@ -95,10 +95,13 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			if out.Len() > 0 {
 				w.Header().Add("Content-Type", "application/json; charset=utf-8")
 				w.Header().Add("Content-Length", strconv.Itoa(out.Len()))
+				w.WriteHeader(status)
 				w.Write(out.Bytes())
 			}
 
-			w.WriteHeader(status)
+			if status != http.StatusOK {
+				w.WriteHeader(status)
+			}
 
 		} else {
 			http.Error(w, "", http.StatusNotFound)

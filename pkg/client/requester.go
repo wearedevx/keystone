@@ -62,7 +62,7 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	}
 
 	resp, err := c.Do(req)
-	fmt.Println(resp.Status)
+	fmt.Println(resp.StatusCode)
 
 	if err != nil {
 		return err

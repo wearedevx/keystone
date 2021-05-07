@@ -32,14 +32,13 @@ func GetMessagesFromEnvironmentByUser(params routes.Params, _ io.ReadCloser, Rep
 			if environment.VersionID != versionID {
 				Repo.GetMessagesForUserOnEnvironment(&user, &environment, &result.Messages)
 			} else {
-				status = 204
+				status = http.StatusNoContent
 			}
 			result.VersionID = environment.EnvironmentID
 			return Repo.Err()
-		}).SetStatusSuccess(status),
+		}),
 	}).Run()
 
-	status = runner.Status()
 	err := runner.Error()
 
 	return &result, status, err
