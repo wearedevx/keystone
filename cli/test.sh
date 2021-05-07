@@ -23,8 +23,6 @@ cd ../cli
 echo "go test -tags test -ldflags \"$LDFLAGS\" -work $@"
 go test -tags test -ldflags "$LDFLAGS" -work "$@"
 
-removeProcessId "keystone_ksapi.pid"
-
 rm "/tmp/keystone_gorm"*
 
 kill -9 $(lsof -t -i:9001)
