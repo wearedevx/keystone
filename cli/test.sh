@@ -26,8 +26,6 @@ touch $DBFILE
 # # Start test
 # go test -tags test -ldflags "$LDFLAGS" -work "$FOLDERTOTEST"
 
-export $(cat .env-dev | xargs)
-
 echo "START TEST"
 
 echo "go test -p 1 -tags test -ldflags \"$LDFLAGS\" -work $@"

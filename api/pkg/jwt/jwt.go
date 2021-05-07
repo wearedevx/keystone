@@ -14,7 +14,6 @@ import (
 
 func MakeToken(user models.User) (string, error) {
 	salt := []byte(utils.GetEnv("JWT_SALT", "aaP|**P1n}1tqWK"))
-	fmt.Println("api ~ jwt.go ~ salt", string(salt))
 
 	claims := jwt.StandardClaims{
 		ExpiresAt: &jwt.Time{
@@ -46,7 +45,9 @@ func VerifyToken(token string) (string, error) {
 	trimedToken := cleanUpToken(token)
 
 	t, err := jwt.Parse(trimedToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SALT")), nil
+		salt := os.Getenv("JWT_SALT")
+		fmt.Println("salt:", salt)
+		return []byte(salt), nil
 	})
 
 	if err != nil {
