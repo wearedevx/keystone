@@ -93,7 +93,9 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 				w.Write(out.Bytes())
 			}
 
-			w.WriteHeader(status)
+			if status != 200 {
+				w.WriteHeader(status)
+			}
 
 		} else {
 			http.Error(w, "", http.StatusNotFound)
