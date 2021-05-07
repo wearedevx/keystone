@@ -16,22 +16,27 @@ func (r *Repo) createProject(project *Project, user *User) *Repo {
 	}
 
 	db := r.GetDb()
+	role := Role{}
 
 	project.UserID = user.ID
 	r.err = db.Create(project).Error
 
-	roleAdmin, _ := r.GetRoleByName("admin")
+	r.GetRoleByName("admin", &role)
+
+	if r.err != nil {
+		return r
+	}
 
 	projectMember := ProjectMember{
 		Project: *project,
-		Role:    roleAdmin,
-		// User:    *user,
-		User: *user,
+		Role:    role,
+		User:    *user,
 	}
 
 	r.err = db.Create(&projectMember).Error
 
 	// Useless
+	// @Kévin : Care to say why ?
 	if r.err == nil {
 		envTypes := make([]EnvironmentType, 0)
 		r.getAllEnvironmentTypes(&envTypes)

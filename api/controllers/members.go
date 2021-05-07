@@ -1,14 +1,17 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 
 	"github.com/wearedevx/keystone/api/internal/router"
 	. "github.com/wearedevx/keystone/api/internal/utils"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
+	"gorm.io/gorm"
 )
 
 func DoUsersExist(params router.Params, body io.ReadCloser, Repo repo.Repo, user User) (router.Serde, int, error) {
@@ -37,5 +40,36 @@ func DoUsersExist(params router.Params, body io.ReadCloser, Repo repo.Repo, user
 	})
 
 	err = runner.Run().Error()
+	return response, status, err
+}
+
+func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo, user User) (response router.Serde, status int, err error) {
+	status = http.StatusOK
+	payload := &SetMemberRolePayload{}
+	project := Project{}
+	member := User{}
+	role := Role{}
+
+	var projectID = params.Get("projectID").(string)
+
+	err = payload.Deserialize(body)
+	if err != nil {
+		return response, http.StatusInternalServerError, err
+	}
+
+	Repo.GetProjectByUUID(projectID, &project).
+		GetUser(payload.MemberID, &member).
+		GetRoleByID(payload.RoleID, &role).
+		ProjectSetRoleForUser(project, member, role)
+
+	err = Repo.Err()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			status = http.StatusNotFound
+		} else {
+			status = http.StatusInternalServerError
+		}
+	}
+
 	return response, status, err
 }

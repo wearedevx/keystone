@@ -12,16 +12,24 @@ func (repo *Repo) CreateRole(name string) Role {
 	return role
 }
 
-func (repo *Repo) GetRoleByName(name string) (Role, bool) {
-	var foundRole Role
+func (repo *Repo) GetRoleByName(name string, role *Role) *Repo {
+	if repo.Err() != nil {
+		return repo
+	}
 
-	// if repo.err != nil {
-	// 	return foundRole, false
-	// }
+	repo.err = repo.GetDb().Where("name = ?", name).First(&role).Error
 
-	repo.err = repo.GetDb().Where("name = ?", name).First(&foundRole).Error
+	return repo
+}
 
-	return foundRole, repo.err == nil
+func (repo *Repo) GetRoleByID(id uint, role *Role) *Repo {
+	if repo.Err() != nil {
+		return repo
+	}
+
+	repo.err = repo.GetDb().First(role, id).Error
+
+	return repo
 }
 
 func (repo *Repo) GetOrCreateRole(name string) Role {

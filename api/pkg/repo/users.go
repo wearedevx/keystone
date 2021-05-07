@@ -6,12 +6,14 @@ import (
 	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (r *Repo) GetUser(userID string) (User, bool) {
-	var user User
+func (r *Repo) GetUser(userID string, user *User) *Repo {
+	if r.Err() != nil {
+		return r
+	}
 
-	r.err = r.GetDb().Where("user_id = ?", userID).First(&user).Error
+	r.err = r.GetDb().Where("user_id = ?", userID).First(user).Error
 
-	return user, r.err == nil
+	return r
 }
 
 func (r *Repo) GetUserByEmailAndAccountType(email string, accountType string) (User, bool) {
