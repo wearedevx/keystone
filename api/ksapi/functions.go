@@ -515,5 +515,7 @@ func UserService(w http.ResponseWriter, r *http.Request) {
 	router.POST("/complete", postUserToken)
 
 	router.POST("/users/exist", routes.AuthedHandler(controllers.DoUsersExist))
+
+	router.GET("/environments/:environmentID/messages", routes.AuthedHandler(controllers.GetMessagesFromEnvironmentByUser))
 	router.ServeHTTP(w, r)
 }

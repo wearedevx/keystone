@@ -56,6 +56,7 @@ func (r *Repo) createProject(project *Project, user *User) *Repo {
 		}
 
 		r.err = db.Preload("Members").First(project, project.ID).Error
+		r.err = db.Preload("Environments").First(project, project.ID).Error
 	}
 
 	return r
@@ -93,6 +94,7 @@ func (r *Repo) GetUserProjectWithName(user User, name string) (Project, bool) {
 	found, err := r.notFoundAsBool(func() error {
 		return r.GetDb().
 			Model(&Project{}).
+			Joins("join environments e on e.project_id = projects.id").
 			Where("projects.user_id = ? and projects.name = ?", user.ID, name).
 			First(&foundProject).
 			Error
