@@ -32,7 +32,7 @@ func (client *SKeystoneClient) InitProject(name string) (Project, error) {
 		Name: name,
 	}
 
-	err := client.r.post("/projects", payload, &project)
+	err := client.r.post("/projects", payload, &project, nil)
 
 	return project, err
 }
@@ -44,7 +44,7 @@ func (client *SKeystoneClient) CheckUsersExist(userIds []string) (CheckMembersRe
 	payload := CheckMembersPayload{
 		MemberIDs: userIds,
 	}
-	err = client.r.post("/users/exist", payload, &result)
+	err = client.r.post("/users/exist", payload, &result, nil)
 
 	return result, err
 }
@@ -53,7 +53,7 @@ func (client *SKeystoneClient) ProjectMembers(projectId string) ([]ProjectMember
 	var err error
 	var result GetMembersResponse
 
-	err = client.r.get("/projects/"+projectId+"/members", &result)
+	err = client.r.get("/projects/"+projectId+"/members", &result, nil)
 
 	return result.Members, err
 }
@@ -70,7 +70,7 @@ func (client *SKeystoneClient) ProjectAddMembers(projectId string, memberRoles m
 		payload.Members = append(payload.Members, MemberRole{MemberID: memberID, RoleID: role.ID})
 	}
 
-	err = client.r.post("/projects/"+projectId+"/members", payload, &result)
+	err = client.r.post("/projects/"+projectId+"/members", payload, &result, nil)
 
 	if !result.Success && result.Error != "" {
 		err = fmt.Errorf(result.Error)
@@ -87,7 +87,7 @@ func (client *SKeystoneClient) ProjectRemoveMembers(projectId string, members []
 		Members: members,
 	}
 
-	err = client.r.del("/projects/"+projectId+"/members/", payload, &result)
+	err = client.r.del("/projects/"+projectId+"/members/", payload, &result, nil)
 
 	if !result.Success && result.Error != "" {
 		err = fmt.Errorf(result.Error)
@@ -105,7 +105,7 @@ func (client *SKeystoneClient) GetUsersKeys(projectId string) ([]UserPublicKey, 
 		keys []UserPublicKey
 	}
 
-	err = client.r.get("/projects/"+projectId+"/public-keys", &result)
+	err = client.r.get("/projects/"+projectId+"/public-keys", &result, nil)
 
 	return result.keys, err
 }
@@ -140,7 +140,7 @@ func (client *SKeystoneClient) AddVariable(projectId string, name string, valueM
 		}
 	}
 
-	err = client.r.post("/projects/"+projectId+"/variables", payload, nil)
+	err = client.r.post("/projects/"+projectId+"/variables", payload, nil, nil)
 
 	return err
 }
@@ -171,19 +171,22 @@ func (client *SKeystoneClient) SetVariable(projectId string, environment string,
 		// payload.UserValue = append(payload.UserValue, uv)
 	}
 
-	err = client.r.put("/projects/"+projectId+"/"+environment+"/variables", payload, nil)
+	err = client.r.put("/projects/"+projectId+"/"+environment+"/variables", payload, nil, nil)
 
 	return err
 }
 
 func (client *SKeystoneClient) GetMessages(environmentID string, environmentVersion string) ([]Message, error) {
 	var err error
-	var result struct {
-		messages []Message
+	var result = GetMessagesResponse{
+		Messages: []Message{},
 	}
 
 	// Environment id in keystone yml
-	err = client.r.get("/environments/"+environmentID+"/messages?versionid="+environmentVersion, &result)
+	params := map[string]string{
+		"versionid": environmentVersion,
+	}
+	err = client.r.get("/environments/"+environmentID+"/messages", &result, params)
 
-	return result.messages, err
+	return result.Messages, err
 }

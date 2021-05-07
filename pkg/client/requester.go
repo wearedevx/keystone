@@ -29,15 +29,23 @@ func newRequester(userID string, token string) requester {
 	return requester{userID: userID, jwtToken: token}
 }
 
-func (r *requester) request(method methodType, expectedStatusCode int, path string, data interface{}, result interface{}) error {
+func (r *requester) request(method methodType, expectedStatusCode int, path string, data interface{}, result interface{}, params map[string]string) error {
 	requestPayload := make([]byte, 0)
 	buf := bytes.NewBuffer(requestPayload)
 
 	if data != nil {
 		json.NewEncoder(buf).Encode(&data)
 	}
+	queryParams := url.Values{}
+	for key, value := range params {
+		queryParams.Set(key, value)
 
-	req, err := http.NewRequest(string(method), url.PathEscape(ksapiURL+path), buf)
+	}
+
+	Url, err := url.Parse(ksapiURL + path)
+	Url.RawQuery = queryParams.Encode()
+
+	req, err := http.NewRequest(string(method), Url.String(), buf)
 	if err != nil {
 		return err
 	}
@@ -56,7 +64,7 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	resp, err := c.Do(req)
 
 	if err != nil {
-		return nil
+		return err
 	}
 
 	sbuf := new(strings.Builder)
@@ -76,18 +84,18 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	return nil
 }
 
-func (r *requester) get(path string, result interface{}) error {
-	return r.request(GET, http.StatusOK, path, nil, result)
+func (r *requester) get(path string, result interface{}, params map[string]string) error {
+	return r.request(GET, http.StatusOK, path, nil, result, params)
 }
 
-func (r *requester) post(path string, data interface{}, result interface{}) error {
-	return r.request(POST, http.StatusCreated, path, data, result)
+func (r *requester) post(path string, data interface{}, result interface{}, params map[string]string) error {
+	return r.request(POST, http.StatusCreated, path, data, result, params)
 }
 
-func (r *requester) put(path string, data interface{}, result interface{}) error {
-	return r.request(PUT, http.StatusOK, path, data, result)
+func (r *requester) put(path string, data interface{}, result interface{}, params map[string]string) error {
+	return r.request(PUT, http.StatusOK, path, data, result, params)
 }
 
-func (r *requester) del(path string, data interface{}, result interface{}) error {
-	return r.request(DELETE, http.StatusNoContent, path, data, result)
+func (r *requester) del(path string, data interface{}, result interface{}, params map[string]string) error {
+	return r.request(DELETE, http.StatusNoContent, path, data, result, params)
 }
