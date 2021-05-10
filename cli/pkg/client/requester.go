@@ -75,7 +75,6 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 
 	// minimum length for json response 2 bytes: {} or []
 	if result != nil && len(bodyBytes) >= 2 {
-		fmt.Println(string(bodyBytes))
 		err := json.Unmarshal(bodyBytes, result)
 		return err
 	}

@@ -43,11 +43,14 @@ Get info from your team:
 		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
 
+		projectID := ctx.GetProjectID()
+
 		c := client.NewKeystoneClient(account["user_id"], token)
 
-		projectID := ctx.GetProjectID()
 		result, _ := c.Messages().GetMessages(projectID)
-		c.Messages().SaveMessages(result)
+
+		ctx.SaveMessages(result)
+
 		if err = ctx.Err(); err != nil {
 			err.Print()
 			return

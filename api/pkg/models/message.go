@@ -50,6 +50,19 @@ func (msg *Message) Serialize(out *string) error {
 	return err
 }
 
+type File struct {
+	Path  string `json:"path"`
+	Value string `json:"content"`
+}
+
+type MessagePayload struct {
+	Files   []File `json:"files"`
+	Secrets []struct {
+		Label string `json:"label"`
+		Value string `json:"value"`
+	} `json:"secrets"`
+}
+
 type GetMessageByEnvironmentResponse struct {
 	Environments map[string]GetMessageResponse
 }

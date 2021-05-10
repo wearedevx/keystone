@@ -1,8 +1,6 @@
 package client
 
 import (
-	"fmt"
-
 	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
@@ -16,17 +14,7 @@ func (client *Messages) GetMessages(projectID string) (GetMessageByEnvironmentRe
 		map[string]GetMessageResponse{},
 	}
 
-	err = client.r.get("/messages/"+projectID, &result, nil)
-	fmt.Println(err)
-	fmt.Println(result)
+	err = client.r.get("/projects/"+projectID+"/messages/", &result, nil)
 
 	return result, err
-}
-
-func (client *Messages) SaveMessages(MessageByEnvironments GetMessageByEnvironmentResponse) (GetMessageByEnvironmentResponse, error) {
-	for _, environment := range MessageByEnvironments.Environments {
-		fmt.Println(environment)
-	}
-
-	return MessageByEnvironments, nil
 }

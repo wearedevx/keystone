@@ -75,7 +75,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			// Actual call to the handler (i.e. Controller function)
 			result, status, err := handler(p, r.Body, *Repo, user)
 
-			fmt.Println(result, status, err)
+			// fmt.Println(result, status, err)
 
 			if err != nil {
 				fmt.Println(err)
