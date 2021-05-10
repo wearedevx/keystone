@@ -50,20 +50,20 @@ func (msg *Message) Serialize(out *string) error {
 	return err
 }
 
-type GetMessagesByEnvironmentResponse struct {
-	Environments map[string]GetMessagesResponse
+type GetMessageByEnvironmentResponse struct {
+	Environments map[string]GetMessageResponse
 }
 
-type GetMessagesResponse struct {
-	Messages  []Message `json:"messages"`
-	VersionID string    `json:"versionid"`
+type GetMessageResponse struct {
+	Message   Message `json:"message"`
+	VersionID string  `json:"versionid"`
 }
 
-func (e *GetMessagesByEnvironmentResponse) Deserialize(in io.Reader) error {
+func (e *GetMessageByEnvironmentResponse) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(e)
 }
 
-func (u *GetMessagesByEnvironmentResponse) Serialize(out *string) error {
+func (u *GetMessageByEnvironmentResponse) Serialize(out *string) error {
 	var sb strings.Builder
 	var err error
 

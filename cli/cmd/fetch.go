@@ -45,10 +45,9 @@ Get info from your team:
 
 		c := client.NewKeystoneClient(account["user_id"], token)
 
-		localEnvironmentVersion := ctx.EnvironmentVersion()
 		projectID := ctx.GetProjectID()
-		c.Messages().GetMessages(projectID, localEnvironmentVersion)
-
+		result, _ := c.Messages().GetMessages(projectID)
+		c.Messages().SaveMessages(result)
 		if err = ctx.Err(); err != nil {
 			err.Print()
 			return

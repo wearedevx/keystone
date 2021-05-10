@@ -15,8 +15,8 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	var status = http.StatusOK
 	var projectID = params.Get("projectID").(string)
 
-	var result = GetMessagesByEnvironmentResponse{
-		Environments: map[string]GetMessagesResponse{},
+	var result = GetMessageByEnvironmentResponse{
+		Environments: map[string]GetMessageResponse{},
 	}
 
 	var environments []Environment
@@ -27,10 +27,11 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 		}),
 		NewAction(func() error {
 			for _, environment := range environments {
-				result.Environments[environment.Name] = GetMessagesResponse{}
+				result.Environments[environment.Name] = GetMessageResponse{}
 				curr := result.Environments[environment.Name]
-				Repo.GetMessagesForUserOnEnvironment(user, environment, &curr.Messages)
+				Repo.GetMessagesForUserOnEnvironment(user, environment, &curr.Message)
 				curr.VersionID = environment.VersionID
+				result.Environments[environment.Name] = curr
 			}
 			return Repo.Err()
 		}),

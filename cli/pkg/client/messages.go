@@ -10,10 +10,10 @@ type Messages struct {
 	r requester
 }
 
-func (client *Messages) GetMessages(projectID string, environmentVersion string) (GetMessagesByEnvironmentResponse, error) {
+func (client *Messages) GetMessages(projectID string) (GetMessageByEnvironmentResponse, error) {
 	var err error
-	var result = GetMessagesByEnvironmentResponse{
-		map[string]GetMessagesResponse{},
+	var result = GetMessageByEnvironmentResponse{
+		map[string]GetMessageResponse{},
 	}
 
 	err = client.r.get("/messages/"+projectID, &result, nil)
@@ -21,4 +21,12 @@ func (client *Messages) GetMessages(projectID string, environmentVersion string)
 	fmt.Println(result)
 
 	return result, err
+}
+
+func (client *Messages) SaveMessages(MessageByEnvironments GetMessageByEnvironmentResponse) (GetMessageByEnvironmentResponse, error) {
+	for _, environment := range MessageByEnvironments.Environments {
+		fmt.Println(environment)
+	}
+
+	return MessageByEnvironments, nil
 }
