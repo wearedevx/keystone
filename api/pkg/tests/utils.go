@@ -11,88 +11,93 @@ import (
 func SeedTestData() {
 	Repo := new(repo.Repo)
 
-	devEnvironmentType, _ := Repo.GetOrCreateEnvironmentType("dev")
-	stagingEnvironmentType, _ := Repo.GetOrCreateEnvironmentType("staging")
-	prodEnvironmentType, _ := Repo.GetOrCreateEnvironmentType("prod")
+	devEnvironmentType := EnvironmentType{Name: "dev"}
+	stagingEnvironmentType := EnvironmentType{Name: "staging"}
+	prodEnvironmentType := EnvironmentType{Name: "prod"}
 
-	devRole := Repo.GetOrCreateRole("dev")
-	devopsRole := Repo.GetOrCreateRole("devops")
-	adminRole := Repo.GetOrCreateRole("admin")
+	devRole := Role{Name: "dev"}
+	devopsRole := Role{Name: "devops"}
+	adminRole := Role{Name: "admin"}
 
-	// DEV
-	Repo.GetOrCreateRoleEnvType(&RolesEnvironmentType{
-		Role:            devRole,
-		EnvironmentType: devEnvironmentType,
-		Read:            true,
-		Write:           true,
-		Invite:          false,
-	})
+	Repo.
+		// EnvTypes
+		GetOrCreateEnvironmentType(&devEnvironmentType).
+		GetOrCreateEnvironmentType(&stagingEnvironmentType).
+		GetOrCreateEnvironmentType(&prodEnvironmentType).
 
-	Repo.GetOrCreateRoleEnvType(&RolesEnvironmentType{
-		Role:            devRole,
-		EnvironmentType: stagingEnvironmentType,
-		Read:            false,
-		Write:           false,
-		Invite:          false,
-	})
+		// Roles
+		GetOrCreateRole(&devRole).
+		GetOrCreateRole(&devopsRole).
+		GetOrCreateRole(&adminRole).
 
-	Repo.GetOrCreateRoleEnvType(&RolesEnvironmentType{
-		Role:            devRole,
-		EnvironmentType: prodEnvironmentType,
-		Read:            false,
-		Write:           false,
-		Invite:          false,
-	})
+		// DEV
+		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+			Role:            devRole,
+			EnvironmentType: devEnvironmentType,
+			Read:            true,
+			Write:           true,
+			Invite:          false,
+		}).
+		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+			Role:            devRole,
+			EnvironmentType: stagingEnvironmentType,
+			Read:            false,
+			Write:           false,
+			Invite:          false,
+		}).
+		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+			Role:            devRole,
+			EnvironmentType: prodEnvironmentType,
+			Read:            false,
+			Write:           false,
+			Invite:          false,
+		}).
 
-	// Staging
-	Repo.GetOrCreateRoleEnvType(&RolesEnvironmentType{
-		Role:            devopsRole,
-		EnvironmentType: devEnvironmentType,
-		Read:            true,
-		Write:           true,
-		Invite:          true,
-	})
+		// Staging
+		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+			Role:            devopsRole,
+			EnvironmentType: devEnvironmentType,
+			Read:            true,
+			Write:           true,
+			Invite:          true,
+		}).
+		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+			Role:            devopsRole,
+			EnvironmentType: stagingEnvironmentType,
+			Read:            true,
+			Write:           true,
+			Invite:          true,
+		}).
+		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+			Role:            devopsRole,
+			EnvironmentType: prodEnvironmentType,
+			Read:            false,
+			Write:           false,
+			Invite:          false,
+		}).
 
-	Repo.GetOrCreateRoleEnvType(&RolesEnvironmentType{
-		Role:            devopsRole,
-		EnvironmentType: stagingEnvironmentType,
-		Read:            true,
-		Write:           true,
-		Invite:          true,
-	})
-
-	Repo.GetOrCreateRoleEnvType(&RolesEnvironmentType{
-		Role:            devopsRole,
-		EnvironmentType: prodEnvironmentType,
-		Read:            false,
-		Write:           false,
-		Invite:          false,
-	})
-
-	// ADMIN
-	Repo.GetOrCreateRoleEnvType(&RolesEnvironmentType{
-		Role:            adminRole,
-		EnvironmentType: devEnvironmentType,
-		Read:            true,
-		Write:           true,
-		Invite:          true,
-	})
-
-	Repo.GetOrCreateRoleEnvType(&RolesEnvironmentType{
-		Role:            adminRole,
-		EnvironmentType: stagingEnvironmentType,
-		Read:            true,
-		Write:           true,
-		Invite:          true,
-	})
-
-	Repo.GetOrCreateRoleEnvType(&RolesEnvironmentType{
-		Role:            adminRole,
-		EnvironmentType: prodEnvironmentType,
-		Read:            true,
-		Write:           true,
-		Invite:          true,
-	})
+		// ADMIN
+		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+			Role:            adminRole,
+			EnvironmentType: devEnvironmentType,
+			Read:            true,
+			Write:           true,
+			Invite:          true,
+		}).
+		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+			Role:            adminRole,
+			EnvironmentType: stagingEnvironmentType,
+			Read:            true,
+			Write:           true,
+			Invite:          true,
+		}).
+		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+			Role:            adminRole,
+			EnvironmentType: prodEnvironmentType,
+			Read:            true,
+			Write:           true,
+			Invite:          true,
+		})
 
 	var userProjectOwner *User = &User{
 		ExtID:       "my iowner ext id",
@@ -117,14 +122,27 @@ func SeedTestData() {
 
 	var project *Project = &Project{
 		Name: "project name",
+		User: *userProjectOwner,
 	}
 
-	Repo.GetOrCreateProject(project, *userProjectOwner)
+	environmentType := EnvironmentType{Name: "dev"}
 
-	environmentType, _ := Repo.GetOrCreateEnvironmentType("dev")
+	Repo.
+		GetOrCreateProject(project).
+		GetOrCreateEnvironmentType(&environmentType)
 
-	Repo.GetOrCreateEnvironment(*project, environmentType)
+	environment := Environment{
+		Name:              environmentType.Name,
+		ProjectID:         project.ID,
+		EnvironmentTypeID: environmentType.ID,
+	}
 
-	Repo.GetOrCreateProjectMember(project, devUser, "dev")
+	Repo.GetOrCreateEnvironment(&environment)
 
+	projectMember := ProjectMember{
+		ProjectID: project.ID,
+		UserID:    devUser.ID,
+	}
+
+	Repo.GetOrCreateProjectMember(&projectMember, "dev")
 }

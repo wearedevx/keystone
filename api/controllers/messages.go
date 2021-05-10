@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -10,6 +12,26 @@ import (
 	"github.com/wearedevx/keystone/api/internal/router"
 	. "github.com/wearedevx/keystone/api/internal/utils"
 )
+
+type GenericResponse struct {
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
+}
+
+func (gr *GenericResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(gr)
+}
+
+func (gr *GenericResponse) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(gr)
+
+	*out = sb.String()
+
+	return err
+}
 
 func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo repo.Repo, user User) (router.Serde, int, error) {
 	var status = http.StatusOK
@@ -40,4 +62,26 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	err := runner.Error()
 
 	return &result, status, err
+}
+
+func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, user User) (router.Serde, int, error) {
+	var status = http.StatusOK
+	response := &GenericResponse{}
+
+	// Check if user is a member of project
+	// var projectID = params.Get("projectID").(string)
+
+	payload := &repo.MessagesPayload{}
+	payload.Deserialize(body)
+
+	for _, message := range payload.Messages {
+		Repo.WriteMessage(user, message)
+	}
+
+	// For each message,
+	// - check if user can write to environment
+	// - check recipient exist
+	// - If yes, write message
+
+	return response, status, nil
 }

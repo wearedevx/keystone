@@ -2,26 +2,31 @@ package repo
 
 import (
 	"encoding/json"
+	"errors"
 
 	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (repo *Repo) GetProjectMember(user *User, project *Project) (ProjectMember, error) {
-	var projectMember ProjectMember
+func (repo *Repo) GetProjectMember(projectMember *ProjectMember) IRepo {
+	if repo.Err() != nil {
+		return repo
+	}
 
-	repo.err = repo.GetDb().Preload("Role").Where("user_id = ? AND project_id = ?", user.ID, project.ID).First(&projectMember).Error
+	repo.err = repo.GetDb().Preload("Role").First(projectMember).Error
 
-	return projectMember, repo.err
+	return repo
 }
 
-func (repo *Repo) CreateProjectMember(user *User, project *Project, role *Role) (ProjectMember, error) {
-	envType := ProjectMember{
-		UserID:    user.ID,
-		ProjectID: project.ID,
-		RoleID:    role.ID,
+func (repo *Repo) CreateProjectMember(projectMember *ProjectMember, role *Role) IRepo {
+	if repo != nil {
+		return repo
 	}
-	repo.err = repo.GetDb().Create(&envType).Error
-	return envType, repo.err
+
+	projectMember.RoleID = role.ID
+
+	repo.err = repo.GetDb().Create(&projectMember).Error
+
+	return repo
 }
 
 func prettyPrint(i interface{}) string {
@@ -29,18 +34,29 @@ func prettyPrint(i interface{}) string {
 	return string(s)
 }
 
-func (repo *Repo) GetOrCreateProjectMember(project *Project, user *User, roleName string) (ProjectMember, error) {
-	// if repo.err != nil {
-	// 	fmt.Println("keystone ~ project-members.go ~ repo.errYOUPIIIIIIIIIIIIIIIIIIII", repo.err)
-	// 	return ProjectMember{}, repo.err
-	// }
-
-	if projectMember, err := repo.GetProjectMember(user, project); err == nil {
-		prettyPrint(projectMember)
-		return projectMember, nil
+func (repo *Repo) GetOrCreateProjectMember(projectMember *ProjectMember, roleName string) IRepo {
+	if repo.Err() != nil {
+		return repo
 	}
 
-	role, _ := repo.GetRoleByName(roleName)
+	repo.GetProjectMember(projectMember)
 
-	return repo.CreateProjectMember(user, project, &role)
+	if err := repo.Err(); err != nil {
+		// Irrecuperable error
+		if !errors.Is(err, ErrorNotFound) {
+			repo.err = err
+			return repo
+		} else {
+			// Record is not found
+			// reset error to not block
+			// the creation operation
+			repo.err = nil
+			role := Role{}
+
+			repo.GetRoleByName(roleName, &role).
+				CreateProjectMember(projectMember, &role)
+		}
+	}
+
+	return repo
 }

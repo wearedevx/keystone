@@ -2,6 +2,7 @@ package router
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	. "github.com/wearedevx/keystone/api/pkg/jwt"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
+	"gorm.io/gorm"
 )
 
 type Route struct {
@@ -69,44 +71,46 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		}
 
 		Repo := new(repo.Repo)
+		user := models.User{UserID: userID}
 
-		if user, ok := Repo.GetUser(userID); ok {
-			p := newParams(r, params)
-			// Actual call to the handler (i.e. Controller function)
-			result, status, err := handler(p, r.Body, *Repo, user)
+		Repo.GetUser(&user)
 
-			// fmt.Println(result, status, err)
-
-			if err != nil {
-				fmt.Println(err)
-				http.Error(w, "", http.StatusInternalServerError)
-				return
+		if err = Repo.Err(); err != nil {
+			status := http.StatusInternalServerError
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				status = http.StatusNotFound
 			}
-			// serialize the response for the user
-			var serialized string
 
+			http.Error(w, "", status)
+			return
+		}
+
+		p := newParams(r, params)
+		// Actual call to the handler (i.e. Controller function)
+		result, status, err := handler(p, r.Body, *Repo, user)
+
+		// serialize the response for the user
+		var serialized string
+
+		if result != nil {
 			err = result.Serialize(&serialized)
+		}
 
-			if err != nil {
-				http.Error(w, "", http.StatusInternalServerError)
-			}
+		if err != nil {
+			http.Error(w, "", http.StatusInternalServerError)
+		}
 
-			out := bytes.NewBufferString(serialized)
+		out := bytes.NewBufferString(serialized)
 
-			// Write the response if any
-			if out.Len() > 0 {
-				w.Header().Add("Content-Type", "application/json; charset=utf-8")
-				w.Header().Add("Content-Length", strconv.Itoa(out.Len()))
-				w.WriteHeader(status)
-				w.Write(out.Bytes())
-			}
+		// Write the response if any
+		if out.Len() > 0 {
+			w.Header().Add("Content-Type", "application/json; charset=utf-8")
+			w.Header().Add("Content-Length", strconv.Itoa(out.Len()))
+			w.Write(out.Bytes())
+		}
 
-			if status != http.StatusOK {
-				w.WriteHeader(status)
-			}
-
-		} else {
-			http.Error(w, "", http.StatusNotFound)
+		if status != 200 {
+			w.WriteHeader(status)
 		}
 
 		if Repo.Err() != nil {

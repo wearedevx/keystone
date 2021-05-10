@@ -1,6 +1,7 @@
 package rights
 
 import (
+	"errors"
 	"fmt"
 
 	. "github.com/wearedevx/keystone/api/pkg/models"
@@ -15,29 +16,33 @@ const (
 	Invite UserRight = "invite"
 )
 
-type RightsRepo interface {
-	GetRolesEnvironmentType(environment *Environment, role *Role) (*RolesEnvironmentType, error)
-	GetProjectMember(user *User, project *Project) (ProjectMember, error)
-	GetInvitableRoles(role Role, roles *[]Role) *repo.Repo
-}
+func CanUserHasRightsEnvironment(Repo repo.IRepo, user *User, project *Project, environment *Environment, right string) (bool, error) {
+	projectMember := ProjectMember{
+		UserID:    user.ID,
+		ProjectID: project.ID,
+	}
 
-func CanUserHasRightsEnvironment(repo RightsRepo, user *User, project *Project, environment *Environment, right string) (bool, error) {
-	projectMember, err := repo.GetProjectMember(user, project)
+	err := Repo.GetProjectMember(&projectMember).Err()
 
 	if err != nil {
 		fmt.Println("Error:", err)
 		return false, err
 	}
 
-	rolesEnvironmentType, err := repo.GetRolesEnvironmentType(environment, &projectMember.Role)
+	rolesEnvironmentType := RolesEnvironmentType{
+		EnvironmentTypeID: environment.EnvironmentTypeID,
+		RoleID:            projectMember.RoleID,
+	}
 
-	if err != nil {
-		fmt.Println("Error getEnvironmentRoleRights", err)
+	err = Repo.GetRolesEnvironmentType(&rolesEnvironmentType).Err()
+
+	if errors.Is(err, repo.ErrorNotFound) {
+		fmt.Println("No rolesEnvironmentType found")
 		return false, err
 	}
 
-	if rolesEnvironmentType == nil {
-		fmt.Println("No rolesEnvironmentType found", err)
+	if err != nil {
+		fmt.Println("Error getEnvironmentRoleRights", err)
 		return false, err
 	}
 
@@ -55,37 +60,42 @@ func CanUserHasRightsEnvironment(repo RightsRepo, user *User, project *Project, 
 	}
 }
 
-func CanUserReadEnvironment(repo RightsRepo, user *User, project *Project, environment *Environment) (bool, error) {
-	return CanUserHasRightsEnvironment(repo, user, project, environment, "read")
+func CanUserReadEnvironment(Repo repo.IRepo, user *User, project *Project, environment *Environment) (bool, error) {
+	return CanUserHasRightsEnvironment(Repo, user, project, environment, "read")
 }
 
-func CanUserWriteOnEnvironment(repo RightsRepo, user *User, project *Project, environment *Environment) (bool, error) {
-	return CanUserHasRightsEnvironment(repo, user, project, environment, "write")
+func CanUserWriteOnEnvironment(Repo repo.IRepo, user *User, project *Project, environment *Environment) (bool, error) {
+	return CanUserHasRightsEnvironment(Repo, user, project, environment, "write")
 }
 
-func CanUserInviteOnEnvironment(repo RightsRepo, user *User, project *Project, environment *Environment) (bool, error) {
-	return CanUserHasRightsEnvironment(repo, user, project, environment, "invite")
+func CanUserInviteOnEnvironment(Repo repo.IRepo, user *User, project *Project, environment *Environment) (bool, error) {
+	return CanUserHasRightsEnvironment(Repo, user, project, environment, "invite")
 }
 
 // devops can invite on:
 // - dev
 
 // Retrieve all role with  invite=true where
-func CanUserInviteRole(repo repo.Repo, user *User, project *Project, roleToInvite *Role) (bool, error) {
-	projectMember, err := repo.GetProjectMember(user, project)
+func CanUserInviteRole(Repo repo.IRepo, user *User, project *Project, roleToInvite *Role) (bool, error) {
+	projectMember := ProjectMember{
+		UserID:    user.ID,
+		ProjectID: project.ID,
+	}
 
-	if err != nil {
+	Repo.GetProjectMember(&projectMember)
+
+	if err := Repo.Err(); err != nil {
 		fmt.Println("Error:", err)
 		return false, err
 	}
 
-	var roles *[]Role
+	roles := make([]Role, 0)
 
-	repo.GetInvitableRoles(projectMember.Role, roles)
+	Repo.GetInvitableRoles(projectMember.Role, &roles)
 	fmt.Println("keystone ~ rights.go ~ roles", roles)
 
-	if repo.Err() != nil {
-		fmt.Println("Error when retriving invite roles", repo.Err())
+	if Repo.Err() != nil {
+		fmt.Println("Error when retriving invite roles", Repo.Err())
 	}
 	return false, nil
 

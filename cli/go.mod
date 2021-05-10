@@ -22,8 +22,8 @@ require (
 	github.com/wearedevx/keystone/api v0.0.0-00010101000000-000000000000
 	github.com/xanzy/go-gitlab v0.49.0
 	github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77 // indirect
-	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
-	gopkg.in/yaml.v2 v2.4.0
+	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
 replace github.com/wearedevx/keystone/api => ../api

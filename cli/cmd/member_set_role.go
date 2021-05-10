@@ -17,13 +17,21 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/config"
+	"github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/pkg/core"
+	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 var memberId string
-var role string
+var roleName string
 
 // memberSetRoleCmd represents the memberSetRole command
 var memberSetRoleCmd = &cobra.Command{
@@ -49,7 +57,7 @@ ks member set-role sandra@github`,
 		}
 
 		if argc == 2 {
-			role = args[2]
+			roleName = args[2]
 		}
 
 		if !r.Match([]byte(memberId)) {
@@ -61,8 +69,78 @@ ks member set-role sandra@github`,
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("memberSetRole called")
+		// Auth check
+		account, index := config.GetCurrentAccount()
+		token := config.GetAuthToken()
+
+		if index < 0 {
+			ui.Print(errors.MustBeLoggedIn(nil).Error())
+		}
+
+		// Read Roles from config
+		ctx := core.New(core.CTX_RESOLVE)
+		projectID := ctx.GetProjectID()
+
+		c := client.NewKeystoneClient(account["user_id"], token)
+
+		// Ensure member exists
+		r, err := c.Users().CheckUsersExist([]string{memberId})
+		if r.Error != "" {
+			errors.UsersDontExist(r.Error, nil).Print()
+			os.Exit(1)
+		}
+
+		// Get all roles, te make sure the role exists
+		// And to be able to list them in the prompt
+		roles, err := c.Roles().GetAll()
+		if err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+
+		// If user didnot provide a role,
+		// prompt it
+		if roleName == "" {
+			r, err := prompts.PromptRole(memberId, roles)
+			if err != nil {
+				ui.PrintError(err.Error())
+				os.Exit(1)
+			}
+
+			roleName = r.Name
+		}
+
+		// If the role exsists, do the work
+		if _, ok := getRoleWithName(roleName, roles); ok {
+			err = c.Project(projectID).SetMemberRole(memberId, roleName)
+
+			if err != nil {
+				ui.PrintError(err.Error())
+				os.Exit(1)
+			}
+		} else {
+			// TODO: output error invalid role
+			err = fmt.Errorf("Invalid role %s", roleName)
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
 	},
+}
+
+func getRoleWithName(roleName string, roles []models.Role) (models.Role, bool) {
+	found := false
+	var role models.Role
+
+	for _, existingRole := range roles {
+		fmt.Println("existingRole:", existingRole.Name)
+		if existingRole.Name == roleName {
+			found = true
+			role = existingRole
+			break
+		}
+	}
+
+	return role, found
 }
 
 func init() {

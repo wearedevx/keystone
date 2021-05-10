@@ -4,36 +4,32 @@ import (
 	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (repo *Repo) CreateEnvironmentType(name string) (EnvironmentType, error) {
-	envType := EnvironmentType{
-		Name: name,
-	}
-	repo.err = repo.GetDb().Create(&envType).Error
-	return envType, repo.err
-}
-
-func (repo *Repo) GetEnvironmentTypeByName(name string) (EnvironmentType, bool) {
-	var foundEnvironmentType EnvironmentType
-
-	// Why???
-	// When before there's a error as Record not found, plouf
-	// if repo.err != nil {
-	// 	return foundEnvironmentType, false
-	// }
-
-	repo.err = repo.GetDb().Where("name = ?", name).First(&foundEnvironmentType).Error
-
-	return foundEnvironmentType, repo.err == nil
-}
-
-func (repo *Repo) GetOrCreateEnvironmentType(name string) (EnvironmentType, error) {
+func (repo *Repo) CreateEnvironmentType(envType *EnvironmentType) IRepo {
 	if repo.err != nil {
-		return EnvironmentType{}, repo.err
+		return repo
 	}
 
-	if environmentType, ok := repo.GetEnvironmentTypeByName(name); ok {
-		return environmentType, nil
+	repo.err = repo.GetDb().Create(&envType).Error
+
+	return repo
+}
+
+func (repo *Repo) GetEnvironmentType(envType *EnvironmentType) IRepo {
+	if repo.err != nil {
+		return repo
 	}
 
-	return repo.CreateEnvironmentType(name)
+	repo.err = repo.GetDb().First(&envType).Error
+
+	return repo
+}
+
+func (repo *Repo) GetOrCreateEnvironmentType(envType *EnvironmentType) IRepo {
+	if repo.err != nil {
+		return repo
+	}
+
+	repo.err = repo.GetDb().FirstOrCreate(envType).Error
+
+	return repo
 }
