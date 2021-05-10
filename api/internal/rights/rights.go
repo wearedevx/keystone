@@ -16,7 +16,7 @@ const (
 	Invite UserRight = "invite"
 )
 
-func CanUserHasRightsEnvironment(Repo repo.IRepo, user *User, project *Project, environment *Environment, right string) (bool, error) {
+func DoesUserHaveRightsOnEnvironment(Repo repo.IRepo, user *User, project *Project, environment *Environment, right string) (bool, error) {
 	projectMember := ProjectMember{
 		UserID:    user.ID,
 		ProjectID: project.ID,
@@ -61,15 +61,15 @@ func CanUserHasRightsEnvironment(Repo repo.IRepo, user *User, project *Project, 
 }
 
 func CanUserReadEnvironment(Repo repo.IRepo, user *User, project *Project, environment *Environment) (bool, error) {
-	return CanUserHasRightsEnvironment(Repo, user, project, environment, "read")
+	return DoesUserHaveRightsOnEnvironment(Repo, user, project, environment, "read")
 }
 
 func CanUserWriteOnEnvironment(Repo repo.IRepo, user *User, project *Project, environment *Environment) (bool, error) {
-	return CanUserHasRightsEnvironment(Repo, user, project, environment, "write")
+	return DoesUserHaveRightsOnEnvironment(Repo, user, project, environment, "write")
 }
 
 func CanUserInviteOnEnvironment(Repo repo.IRepo, user *User, project *Project, environment *Environment) (bool, error) {
-	return CanUserHasRightsEnvironment(Repo, user, project, environment, "invite")
+	return DoesUserHaveRightsOnEnvironment(Repo, user, project, environment, "invite")
 }
 
 // devops can invite on:
@@ -92,11 +92,31 @@ func CanUserInviteRole(Repo repo.IRepo, user *User, project *Project, roleToInvi
 	roles := make([]Role, 0)
 
 	Repo.GetInvitableRoles(projectMember.Role, &roles)
-	fmt.Println("keystone ~ rights.go ~ roles", roles)
 
 	if Repo.Err() != nil {
 		fmt.Println("Error when retriving invite roles", Repo.Err())
 	}
 	return false, nil
 
+}
+
+func CanUserSetMemberRole(Repo repo.IRepo, user *User, project *Project, other *User) (can bool, err error) {
+	myMember := ProjectMember{
+		UserID:    user.ID,
+		ProjectID: project.ID,
+	}
+	otherMember := ProjectMember{
+		UserID:    user.ID,
+		ProjectID: project.ID,
+	}
+
+	Repo.
+		GetProjectMember(&myMember).
+		GetProjectMember(&otherMember)
+
+	if err = Repo.Err(); err != nil {
+		return can, err
+	}
+
+	return can, err
 }

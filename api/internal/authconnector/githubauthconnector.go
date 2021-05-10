@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/google/go-github/v32/github"
-	. "github.com/wearedevx/keystone/api/internal/utils"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"golang.org/x/oauth2"
 )
@@ -15,9 +14,7 @@ type githubAuthConnector struct {
 	token string
 }
 
-func (ghac *githubAuthConnector) GetUserInfo(token *oauth2.Token) (models.User, error) {
-	var err error
-	var user models.User
+func (ghac *githubAuthConnector) GetUserInfo(token *oauth2.Token) (user models.User, err error) {
 	userEmail := ""
 
 	ctx := context.Background()
@@ -26,58 +23,44 @@ func (ghac *githubAuthConnector) GetUserInfo(token *oauth2.Token) (models.User, 
 	var gUser *github.User
 	var gEmails []*github.UserEmail
 
-	runner := NewRunner([]RunnerAction{
-		NewAction(func() error {
-			ts := oauth2.StaticTokenSource(token)
-			tc := oauth2.NewClient(ctx, ts)
+	ts := oauth2.StaticTokenSource(token)
+	tc := oauth2.NewClient(ctx, ts)
 
-			client = github.NewClient(tc)
+	client = github.NewClient(tc)
 
-			return nil
-		}),
-		NewAction(func() error {
-			gUser, _, err = client.Users.Get(ctx, "")
+	gUser, _, err = client.Users.Get(ctx, "")
+	if err != nil {
+		return user, err
+	}
 
-			return err
-		}),
-		NewAction(func() error {
-			gEmails, _, err = client.Users.ListEmails(ctx, nil)
+	gEmails, _, err = client.Users.ListEmails(ctx, nil)
+	if err != nil {
+		return user, err
+	}
 
-			return err
-		}),
-		NewAction(func() error {
-			for _, email := range gEmails {
-				if *email.Primary {
-					userEmail = *email.Email
-					break
-				}
-			}
+	for _, email := range gEmails {
+		if *email.Primary {
+			userEmail = *email.Email
+			break
+		}
+	}
 
-			return nil
-		}),
-		NewAction(func() error {
-			userName := "No name"
+	userName := "No name"
 
-			if gUser.Name != nil {
-				userName = *gUser.Name
-			}
+	if gUser.Name != nil {
+		userName = *gUser.Name
+	}
 
-			userID := *gUser.Login + "@github"
+	userID := *gUser.Login + "@github"
 
-			user = models.User{
-				ExtID:       strconv.Itoa(int(*gUser.ID)),
-				UserID:      userID,
-				AccountType: models.AccountType("github"),
-				Username:    *gUser.Login,
-				Fullname:    userName,
-				Email:       userEmail,
-			}
-
-			return nil
-		}),
-	})
-
-	err = runner.Run().Error()
+	user = models.User{
+		ExtID:       strconv.Itoa(int(*gUser.ID)),
+		UserID:      userID,
+		AccountType: models.AccountType("github"),
+		Username:    *gUser.Login,
+		Fullname:    userName,
+		Email:       userEmail,
+	}
 
 	return user, err
 }
