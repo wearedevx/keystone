@@ -8,6 +8,7 @@ import (
 
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
+	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
 )
 
@@ -23,7 +24,7 @@ func (ctx *Context) CurrentEnvironment() string {
 		ctx.setError(CannotReadEnvironment(ctx.environmentFilePath(), err))
 	}
 
-	return string(bytes)
+	return strings.Trim(string(bytes), "\n")
 }
 
 func (ctx *Context) ListEnvironments() []string {
@@ -193,4 +194,63 @@ func (ctx *Context) MustHaveEnvironment(name string) {
 		EnvironmentDoesntExist(name, strings.Join(ctx.ListEnvironments(), ", "), nil).Print()
 		os.Exit(0)
 	}
+}
+
+// func (ctx *Context) Fetch(environment string) {
+
+// 	currentAccount, _ := config.GetCurrentAccount()
+// 	token := config.GetAuthToken()
+// 	userID := currentAccount["user_id"]
+// 	ksClient := client.NewKeystoneClient(userID, token)
+
+// 	// Get env hash from config
+
+// 	// Request: Get env hash from remote
+// 	results, err := ksClient.GetMessages(environmentID, localEnvironmentVersion)
+
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		os.Exit(1)
+// 	}
+
+// 	fmt.Println(results.Messages)
+// 	if results.VersionID == localEnvironmentVersion {
+// 		return
+// 	}
+
+// 	fmt.Println(results.VersionID)
+
+// 	// 204: no hash set for env
+// 	//    -> Set new hash for env
+// 	// 200: hash and new message
+// 	//    -> Set new hash for env
+// }
+
+func (ctx *Context) EnvironmentVersion() string {
+	environments := ctx.EnvironmentsFromConfig()
+	currentEnvironment := ctx.CurrentEnvironment()
+
+	for _, e := range environments {
+		if e.Name == currentEnvironment {
+			return e.VersionID
+		}
+	}
+	return ""
+}
+func (ctx *Context) EnvironmentID() string {
+	environments := ctx.EnvironmentsFromConfig()
+	currentEnvironment := ctx.CurrentEnvironment()
+
+	for _, e := range environments {
+		if e.Name == currentEnvironment {
+			return e.EnvironmentID
+		}
+	}
+	return ""
+}
+
+func (ctx *Context) EnvironmentsFromConfig() []Env {
+
+	ksfile := new(KeystoneFile).Load(ctx.Wd)
+	return ksfile.Environments
 }

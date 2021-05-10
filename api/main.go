@@ -7,13 +7,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/wearedevx/keystone/api/routes"
+	. "github.com/wearedevx/keystone/api/routes"
 )
 
 type baseHandler struct{}
 
 func (h *baseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	routes.CreateRoutes(w, r)
+	CreateRoutes(w, r)
 }
 
 func main() {

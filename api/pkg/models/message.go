@@ -10,14 +10,16 @@ import (
 )
 
 type Message struct {
-	ID          uint          `json:"id" gorm:"primaryKey"`
-	Payload     []byte        `json:"payload"`
-	Sender      ProjectMember `json:"sender"`
-	SenderID    uint          `json:"sender_id"`
-	Recipient   ProjectMember `json:"recipient"`
-	RecipientID uint          `json:"recipient_id"`
-	CreatedAt   time.Time     `json:"created_at"`
-	UpdatedAt   time.Time     `json:"updated_at"`
+	ID            uint          `json:"id" gorm:"primaryKey"`
+	Payload       []byte        `json:"payload"`
+	Sender        ProjectMember `json:"sender"`
+	SenderID      uint          `json:"sender_id"`
+	Recipient     ProjectMember `json:"recipient"`
+	RecipientID   uint          `json:"recipient_id"`
+	EnvironmentID string        `json:"environment_id"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (msg *Message) BeforeCreate(tx *gorm.DB) (err error) {
@@ -42,6 +44,30 @@ func (msg *Message) Serialize(out *string) error {
 	var err error
 
 	err = json.NewEncoder(&sb).Encode(msg)
+
+	*out = sb.String()
+
+	return err
+}
+
+type GetMessagesByEnvironmentResponse struct {
+	Environments map[string]GetMessagesResponse
+}
+
+type GetMessagesResponse struct {
+	Messages  []Message `json:"messages"`
+	VersionID string    `json:"versionid"`
+}
+
+func (e *GetMessagesByEnvironmentResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(e)
+}
+
+func (u *GetMessagesByEnvironmentResponse) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(u)
 
 	*out = sb.String()
 

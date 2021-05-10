@@ -12,7 +12,7 @@ func (c *Roles) GetAll() ([]models.Role, error) {
 	var err error
 	var result models.GetRolesResponse
 
-	err = c.r.get("/roles", &result)
+	err = c.r.get("/roles", &result, nil)
 
 	return result.Roles, err
 }

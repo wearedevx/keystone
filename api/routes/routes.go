@@ -7,7 +7,6 @@ import (
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
 	"github.com/julienschmidt/httprouter"
 
-	"github.com/wearedevx/keystone/api/controllers"
 	. "github.com/wearedevx/keystone/api/controllers"
 	. "github.com/wearedevx/keystone/api/internal/router"
 )
@@ -16,7 +15,7 @@ import (
 func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router := httprouter.New()
 
-	router.POST("/", controllers.PostUser)
+	router.POST("/", PostUser)
 	router.GET("/", AuthedHandler(GetUser))
 
 	router.POST("/projects", AuthedHandler(PostProject))
@@ -26,7 +25,7 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.POST("/projects/:projectID/members", AuthedHandler(PostProjectsMembers))
 	router.DELETE("/projects/:projectID/members", AuthedHandler(DeleteProjectsMembers))
 
-	router.GET("/roles", AuthedHandler(controllers.GetRoles))
+	router.GET("/roles", AuthedHandler(GetRoles))
 
 	router.POST("/projects/:projectID/variables", AuthedHandler(PostAddVariable))
 	router.PUT("/projects/:projectID/:environment/variables", AuthedHandler(PutSetVariable))
@@ -37,5 +36,8 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.POST("/complete", PostUserToken)
 
 	router.POST("/users/exist", AuthedHandler(DoUsersExist))
+
+	router.GET("/messages/:projectID", AuthedHandler(GetMessagesFromProjectByUser))
+
 	router.ServeHTTP(w, r)
 }

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 )
 
@@ -17,13 +18,17 @@ type Environment struct {
 	ProjectID         uint            `json:"project_id"`
 	Project           Project         `json:"project"`
 	VersionID         string          `json:"version_id"`
-	CreatedAt         time.Time       `json:"created_at"`
-	UpdatedAt         time.Time       `json:"updated_at"`
+	EnvironmentID     string          `json:"environment_id"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (e *Environment) BeforeCreate(tx *gorm.DB) (err error) {
 	e.CreatedAt = time.Now()
 	e.UpdatedAt = time.Now()
+	e.EnvironmentID = uuid.NewV4().String()
+	e.VersionID = uuid.NewV4().String()
 
 	return nil
 }

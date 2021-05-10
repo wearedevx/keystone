@@ -1,6 +1,16 @@
-project_id: a0207f5e-be3c-40a4-aa6a-2fc4930aa7a5
-name: my-project
+project_id: 826c9fbc-9c8b-4d76-a455-01cca430292c
+name: totolitoto
 env: []
 files: []
 options:
   strict: false
+environments:
+- environment_id: 07a7f95b-63e7-486a-9a04-c5dc96a39e69
+  name: dev
+  version_id: 5ea6652a-e4d0-4dac-a345-c448d0b472e6
+- environment_id: b63f2179-b44a-458e-89b3-9e74c8a3efac
+  name: staging
+  version_id: c8990b39-8973-44bd-beef-92d8dae0174f
+- environment_id: e29606cf-5a29-4e6e-b69b-5565dce0a298
+  name: prod
+  version_id: 0ae41fa1-9eb4-4da3-b495-5a47583ebde5

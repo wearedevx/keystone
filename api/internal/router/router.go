@@ -75,6 +75,13 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			// Actual call to the handler (i.e. Controller function)
 			result, status, err := handler(p, r.Body, *Repo, user)
 
+			fmt.Println(result, status, err)
+
+			if err != nil {
+				fmt.Println(err)
+				http.Error(w, "", http.StatusInternalServerError)
+				return
+			}
 			// serialize the response for the user
 			var serialized string
 
@@ -90,10 +97,11 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			if out.Len() > 0 {
 				w.Header().Add("Content-Type", "application/json; charset=utf-8")
 				w.Header().Add("Content-Length", strconv.Itoa(out.Len()))
+				w.WriteHeader(status)
 				w.Write(out.Bytes())
 			}
 
-			if status != 200 {
+			if status != http.StatusOK {
 				w.WriteHeader(status)
 			}
 

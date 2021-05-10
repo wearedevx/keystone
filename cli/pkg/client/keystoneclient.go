@@ -28,3 +28,9 @@ func (client *KeystoneClientImpl) Users() *Users {
 		r: client.r,
 	}
 }
+
+func (client *KeystoneClientImpl) Messages() *Messages {
+	return &Messages{
+		r: client.r,
+	}
+}

@@ -18,7 +18,7 @@ func (p *Project) Init(name string) (models.Project, error) {
 		Name: name,
 	}
 
-	err := p.r.post("/projects", payload, &project)
+	err := p.r.post("/projects", payload, &project, nil)
 
 	return project, err
 }
@@ -27,7 +27,7 @@ func (p *Project) GetAllMembers() ([]models.ProjectMember, error) {
 	var err error
 	var result models.GetMembersResponse
 
-	err = p.r.get("/projects/"+p.id+"/members", &result)
+	err = p.r.get("/projects/"+p.id+"/members", &result, nil)
 
 	return result.Members, err
 }
@@ -46,7 +46,7 @@ func (p *Project) AddMembers(memberRoles map[string]models.Role) error {
 		payload.Members = append(payload.Members, models.MemberRole{MemberID: memberID, RoleID: role.ID})
 	}
 
-	err = p.r.post("/projects/"+p.id+"/members", payload, &result)
+	err = p.r.post("/projects/"+p.id+"/members", payload, &result, nil)
 
 	if !result.Success && result.Error != "" {
 		err = fmt.Errorf(result.Error)
@@ -64,7 +64,7 @@ func (p *Project) RemoveMembers(members []string) error {
 		Members: members,
 	}
 
-	err = p.r.del("/projects/"+p.id+"/members/", payload, &result)
+	err = p.r.del("/projects/"+p.id+"/members/", payload, &result, nil)
 
 	if !result.Success && result.Error != "" {
 		err = fmt.Errorf(result.Error)

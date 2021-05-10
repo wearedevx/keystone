@@ -13,7 +13,7 @@ func (u *Users) CheckUsersExist(userIds []string) (models.CheckMembersResponse, 
 	payload := models.CheckMembersPayload{
 		MemberIDs: userIds,
 	}
-	err = u.r.post("/users/exist", payload, &result)
+	err = u.r.post("/users/exist", payload, &result, nil)
 
 	return result, err
 }
@@ -24,7 +24,7 @@ func (u *Users) GetPublicKeys(projectId string) ([]models.UserPublicKey, error) 
 		keys []models.UserPublicKey
 	}
 
-	err = u.r.get("/projects/"+projectId+"/public-keys", &result)
+	err = u.r.get("/projects/"+projectId+"/public-keys", &result, nil)
 
 	return result.keys, err
 }
