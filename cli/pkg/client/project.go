@@ -81,7 +81,7 @@ func (p *Project) SetMemberRole(memberId string, role string) (err error) {
 		RoleName: role,
 	}
 
-	err = p.r.put("/projects/"+p.id+"/members/role", payload, nil)
+	err = p.r.put("/projects/"+p.id+"/members/role", payload, nil, nil)
 
 	return err
 }

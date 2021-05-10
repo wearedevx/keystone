@@ -34,17 +34,6 @@ func (repo *Repo) GetOrCreateEnvironment(environment *Environment) IRepo {
 
 	return repo
 }
-func (repo *Repo) GetEnvironment(environmentID string) Environment {
-	var foundEnvironment Environment
-
-	if repo.err != nil {
-		return foundEnvironment
-	}
-
-	repo.err = repo.GetDb().Model(&Environment{}).Where("environment_id = ?", environmentID).First(&foundEnvironment).Error
-
-	return foundEnvironment
-}
 
 func (repo *Repo) GetEnvironmentsByProjectUUID(projectUUID string) []Environment {
 	var foundEnvironments []Environment
