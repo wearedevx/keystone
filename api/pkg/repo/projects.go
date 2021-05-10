@@ -2,9 +2,11 @@
 package repo
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
 	. "github.com/wearedevx/keystone/api/pkg/models"
@@ -79,7 +81,15 @@ func (r *Repo) GetProjectByUUID(uuid string, project *Project) *Repo {
 		return r
 	}
 
-	r.err = r.GetDb().Where("uuid = ?", uuid).First(project).Error
+	err := r.GetDb().Where("uuid = ?", uuid).First(&project).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		r.err = ErrorNotFound
+	}
+
+	if err != nil {
+		r.err = err
+	}
 
 	return r
 }

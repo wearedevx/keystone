@@ -70,6 +70,40 @@ func CanUserInviteOnEnvironment(repo RightsRepo, user *User, project *Project, e
 // devops can invite on:
 // - dev
 
+func CanUserInviteUsers(repo repo.Repo, user *User, project *Project, members []MemberRole) (bool, error) {
+	projectMember, err := repo.GetProjectMember(user, project)
+
+	if err != nil {
+		fmt.Println("Error:", err)
+		return false, err
+	}
+
+	var roles *[]Role
+
+	repo.GetInvitableRoles(projectMember.Role, roles)
+
+	isRoleNotSupported := false
+
+	// Check if all member roles are in roles
+	for _, member := range members {
+		isMemberRoleOk := false
+
+		for _, role := range *roles {
+			if role.ID == member.RoleID {
+				isMemberRoleOk = true
+				break
+			}
+		}
+
+		if isMemberRoleOk {
+			isRoleNotSupported = false
+			break
+		}
+	}
+
+	return isRoleNotSupported, nil
+}
+
 // Retrieve all role with  invite=true where
 func CanUserInviteRole(repo repo.Repo, user *User, project *Project, roleToInvite *Role) (bool, error) {
 	projectMember, err := repo.GetProjectMember(user, project)

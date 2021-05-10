@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -73,25 +72,23 @@ func GetProjectsPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.Repo
 	var projectID = params.Get("projectID").(string)
 	var result projectsPublicKeys
 
-	runner := NewRunner([]RunnerAction{
-		NewAction(func() error {
-			Repo.GetProjectByUUID(projectID, &project)
-			Repo.ProjectLoadUsers(&project)
+	Repo.GetProjectByUUID(projectID, &project).
+		ProjectLoadUsers(&project)
 
-			for _, member := range project.Members {
+	if Repo.Err() != nil && Repo.Err() == repo.ErrorNotFound {
+		return &result, 404, nil
+	}
 
-				result.keys = append(result.keys, UserPublicKey{
-					UserID:    member.User.UserID,
-					PublicKey: member.User.PublicKey,
-				})
-			}
+	if Repo.Err() != nil {
+		return &result, 500, nil
+	}
 
-			return Repo.Err()
-		}).SetStatusSuccess(200),
-	}).Run()
-
-	status = runner.Status()
-	err = runner.Error()
+	for _, member := range project.Members {
+		result.keys = append(result.keys, UserPublicKey{
+			UserID:    member.User.UserID,
+			PublicKey: member.User.PublicKey,
+		})
+	}
 
 	return &result, status, err
 }
@@ -128,39 +125,36 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.Rep
 	input := models.AddMembersPayload{}
 	result := models.AddMembersResponse{Success: true, Error: ""}
 	err = input.Deserialize(body)
-	fmt.Println("keystone ~ functions.go ~ body", body)
-	fmt.Println("keystone ~ functions.go ~ input", input)
-
-	// Check if user can invite
-
-	runner := NewRunner([]RunnerAction{
-		NewAction(func() error {
-			Repo.GetProjectByUUID(projectID, &project)
-
-			return Repo.Err()
-		}).SetStatusError(404),
-		NewAction(func() error {
-			// Need to change parameter to models.AddMembersPayload type
-			rights.CanUserInviteRole(Repo, &user, &project, &Role{ID: input.Members[0].RoleID})
-
-			return Repo.Err()
-		}).SetStatusError(404),
-		NewAction(func() error {
-			fmt.Println("keystone ~ functions.go ~ input.Members", input.Members)
-			Repo.ProjectAddMembers(project, input.Members)
-
-			return Repo.Err()
-		}).
-			SetStatusSuccess(200).
-			SetStatusError(500),
-	}).Run()
-
-	status = runner.Status()
-	err = runner.Error()
 
 	if err != nil {
-		result.Success = false
-		result.Error = err.Error()
+		return &result, 500, nil
+	}
+
+	Repo.GetProjectByUUID(projectID, &project).
+		ProjectLoadUsers(&project)
+
+	if Repo.Err() != nil && Repo.Err() == repo.ErrorNotFound {
+		return &result, 404, nil
+	}
+
+	if Repo.Err() != nil {
+		return &result, 500, nil
+	}
+
+	canInvite, err := rights.CanUserInviteUsers(Repo, &user, &project, input.Members)
+
+	if err != nil {
+		return &result, 500, nil
+	}
+
+	if !canInvite {
+		return &result, 401, nil
+	}
+
+	Repo.ProjectAddMembers(project, input.Members)
+
+	if Repo.Err() != nil {
+		return &result, 500, nil
 	}
 
 	return &result, status, err

@@ -111,7 +111,7 @@ func (fakeRepo *FakeRepo) GetProjectMember(user *User, project *Project) (Projec
 	}
 	return projectMember, nil
 }
-func (fakeRepo *FakeRepo) GetInvitableRoles(role Role, roles []*Role) *repo.Repo {
+func (fakeRepo *FakeRepo) GetInvitableRoles(role Role, roles *[]Role) *repo.Repo {
 	// return fakeRepo
 	// TODO
 	return nil
