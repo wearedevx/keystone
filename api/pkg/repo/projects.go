@@ -237,7 +237,10 @@ func (r *Repo) ProjectSetRoleForUser(project Project, user User, role Role) *Rep
 		Role:    role,
 	}
 
-	r.err = db.Clauses(clause.OnConflict{UpdateAll: true}).
+	r.err = db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "project_id"}, {Name: "user_id"}},
+		UpdateAll: true,
+	}).
 		Create(&pm).
 		Error
 

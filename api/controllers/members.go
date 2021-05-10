@@ -59,7 +59,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo,
 
 	Repo.GetProjectByUUID(projectID, &project).
 		GetUser(payload.MemberID, &member).
-		GetRoleByID(payload.RoleID, &role).
+		GetRoleByName(payload.RoleName, &role).
 		ProjectSetRoleForUser(project, member, role)
 
 	err = Repo.Err()

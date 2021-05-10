@@ -17,6 +17,41 @@ func (r *Repo) GetRoles(roles *[]Role) *Repo {
 	return r
 }
 
+func (repo *Repo) CreateRole(role *Role) *Repo {
+	repo.err = repo.GetDb().Create(&role).Error
+	return repo
+}
+
+func (repo *Repo) GetRoleByName(name string, role *Role) *Repo {
+	if repo.Err() != nil {
+		return repo
+	}
+
+	repo.err = repo.GetDb().Where("name = ?", name).First(&role).Error
+
+	return repo
+}
+
+func (repo *Repo) GetRoleByID(id uint, role *Role) *Repo {
+	if repo.Err() != nil {
+		return repo
+	}
+
+	repo.err = repo.GetDb().First(role, id).Error
+
+	return repo
+}
+
+func (repo *Repo) GetOrCreateRole(name string, role *Role) *Repo {
+	if repo.err != nil {
+		return repo
+	}
+
+	repo.err = repo.GetDb().Where(Role{Name: name}).FirstOrCreate(&role).Error
+
+	return repo
+}
+
 func (r *Repo) GetInvitableRoles(role Role, roles *[]Role) *Repo {
 
 	r.err = db.Model(&Role{}).

@@ -92,7 +92,9 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		// serialize the response for the user
 		var serialized string
 
-		err = result.Serialize(&serialized)
+		if result != nil {
+			err = result.Serialize(&serialized)
+		}
 
 		if err != nil {
 			http.Error(w, "", http.StatusInternalServerError)

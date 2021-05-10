@@ -72,16 +72,17 @@ func CanUserInviteOnEnvironment(repo RightsRepo, user *User, project *Project, e
 
 // Retrieve all role with  invite=true where
 func CanUserInviteRole(repo repo.Repo, user *User, project *Project, roleToInvite *Role) (bool, error) {
-	projectMember, err := repo.GetProjectMember(user, project)
+	projectMember := ProjectMember{}
+	repo.GetProjectMember(user, project, &projectMember)
 
-	if err != nil {
+	if err := repo.Err(); err != nil {
 		fmt.Println("Error:", err)
 		return false, err
 	}
 
-	var roles *[]Role
+	roles := make([]Role, 0)
 
-	repo.GetInvitableRoles(projectMember.Role, roles)
+	repo.GetInvitableRoles(projectMember.Role, &roles)
 	fmt.Println("keystone ~ rights.go ~ roles", roles)
 
 	if repo.Err() != nil {

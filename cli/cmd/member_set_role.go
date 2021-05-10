@@ -100,18 +100,28 @@ ks member set-role sandra@github`,
 
 		// If user didnot provide a role,
 		// prompt it
-		if roleName != "" {
-			if r, err := prompts.PromptRole(memberId, roles); err != nil {
-				roleName = r.Name
+		if roleName == "" {
+			r, err := prompts.PromptRole(memberId, roles)
+			if err != nil {
+				ui.PrintError(err.Error())
+				os.Exit(1)
 			}
+
+			roleName = r.Name
 		}
 
 		// If the role exsists, do the work
 		if _, ok := getRoleWithName(roleName, roles); ok {
 			err = c.Project(projectID).SetMemberRole(memberId, roleName)
 
+			if err != nil {
+				ui.PrintError(err.Error())
+				os.Exit(1)
+			}
 		} else {
 			// TODO: output error invalid role
+			err = fmt.Errorf("Invalid role %s", roleName)
+			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
 	},
@@ -122,6 +132,7 @@ func getRoleWithName(roleName string, roles []models.Role) (models.Role, bool) {
 	var role models.Role
 
 	for _, existingRole := range roles {
+		fmt.Println("existingRole:", existingRole.Name)
 		if existingRole.Name == roleName {
 			found = true
 			role = existingRole
