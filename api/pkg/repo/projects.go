@@ -2,6 +2,7 @@
 package repo
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -10,7 +11,7 @@ import (
 	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (r *Repo) createProject(project *Project, user *User) *Repo {
+func (r *Repo) createProject(project *Project) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -18,7 +19,6 @@ func (r *Repo) createProject(project *Project, user *User) *Repo {
 	db := r.GetDb()
 	role := Role{}
 
-	project.UserID = user.ID
 	r.err = db.Create(project).Error
 
 	r.GetRoleByName("admin", &role)
@@ -30,7 +30,7 @@ func (r *Repo) createProject(project *Project, user *User) *Repo {
 	projectMember := ProjectMember{
 		Project: *project,
 		Role:    role,
-		User:    *user,
+		User:    project.User,
 	}
 
 	r.err = db.Create(&projectMember).Error
@@ -67,7 +67,7 @@ func (r *Repo) createProject(project *Project, user *User) *Repo {
 	return r
 }
 
-func (r *Repo) getAllEnvironmentTypes(environmentTypes *[]EnvironmentType) *Repo {
+func (r *Repo) getAllEnvironmentTypes(environmentTypes *[]EnvironmentType) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -79,7 +79,7 @@ func (r *Repo) getAllEnvironmentTypes(environmentTypes *[]EnvironmentType) *Repo
 	return r
 }
 
-func (r *Repo) GetProjectByUUID(uuid string, project *Project) *Repo {
+func (r *Repo) GetProjectByUUID(uuid string, project *Project) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -89,42 +89,32 @@ func (r *Repo) GetProjectByUUID(uuid string, project *Project) *Repo {
 	return r
 }
 
-func (r *Repo) GetUserProjectWithName(user User, name string) (Project, bool) {
-	var foundProject Project
-	found := false
-	if r.err != nil {
-		return foundProject, found
-	}
-
-	found, err := r.notFoundAsBool(func() error {
-		return r.GetDb().
-			Model(&Project{}).
-			Where("projects.user_id = ? and projects.name = ?", user.ID, name).
-			First(&foundProject).
-			Error
-	})
-
-	r.err = err
-
-	return foundProject, found
-}
-
-func (r *Repo) GetOrCreateProject(project *Project, user User) *Repo {
-	// if r.err != nil {
-	// 	fmt.Println("Error")
-	// 	return r
-	// }
-
-	if foundProject, ok := r.GetUserProjectWithName(user, project.Name); ok == true {
-		*project = foundProject
+func (r *Repo) GetProject(project *Project) IRepo {
+	if r.Err() != nil {
 		return r
 	}
-	// r.err = nil
 
-	return r.createProject(project, &user)
+	r.err = r.GetDb().First(project).Error
+
+	return r
 }
 
-func (r *Repo) ProjectGetMembers(project *Project, members *[]ProjectMember) *Repo {
+func (r *Repo) GetOrCreateProject(project *Project) IRepo {
+	if r.Err() != nil {
+		return r
+	}
+
+	if err := r.GetProject(project).Err(); err != nil {
+		if errors.Is(err, ErrorNotFound) {
+			r.err = nil
+			return r.createProject(project)
+		}
+	}
+
+	return r
+}
+
+func (r *Repo) ProjectGetMembers(project *Project, members *[]ProjectMember) IRepo {
 	fmt.Println("project:", project)
 	if r.err != nil {
 		return r
@@ -153,7 +143,7 @@ func (r *Repo) usersInMemberRoles(mers []MemberRole) (map[string]User, []string)
 	return r.FindUsers(userIDs)
 }
 
-func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole) *Repo {
+func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -190,7 +180,7 @@ func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole) *Rep
 	return r
 }
 
-func (r *Repo) ProjectRemoveMembers(project Project, members []string) *Repo {
+func (r *Repo) ProjectRemoveMembers(project Project, members []string) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -214,7 +204,7 @@ func (r *Repo) ProjectRemoveMembers(project Project, members []string) *Repo {
 	return r
 }
 
-func (r *Repo) ProjectLoadUsers(project *Project) *Repo {
+func (r *Repo) ProjectLoadUsers(project *Project) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -224,7 +214,7 @@ func (r *Repo) ProjectLoadUsers(project *Project) *Repo {
 	return r
 }
 
-func (r *Repo) ProjectSetRoleForUser(project Project, user User, role Role) *Repo {
+func (r *Repo) ProjectSetRoleForUser(project Project, user User, role Role) IRepo {
 	if r.err != nil {
 		return r
 	}

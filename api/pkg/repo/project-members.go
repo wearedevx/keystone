@@ -5,26 +5,23 @@ import (
 	"errors"
 
 	. "github.com/wearedevx/keystone/api/pkg/models"
-	"gorm.io/gorm"
 )
 
-func (repo *Repo) GetProjectMember(user *User, project *Project, projectMember *ProjectMember) *Repo {
+func (repo *Repo) GetProjectMember(projectMember *ProjectMember) IRepo {
 	if repo.Err() != nil {
 		return repo
 	}
 
-	repo.err = repo.GetDb().Preload("Role").Where("user_id = ? AND project_id = ?", user.ID, project.ID).First(projectMember).Error
+	repo.err = repo.GetDb().Preload("Role").First(projectMember).Error
 
 	return repo
 }
 
-func (repo *Repo) CreateProjectMember(user *User, project *Project, role *Role, projectMember *ProjectMember) *Repo {
+func (repo *Repo) CreateProjectMember(projectMember *ProjectMember, role *Role) IRepo {
 	if repo != nil {
 		return repo
 	}
 
-	projectMember.UserID = user.ID
-	projectMember.ProjectID = project.ID
 	projectMember.RoleID = role.ID
 
 	repo.err = repo.GetDb().Create(&projectMember).Error
@@ -37,25 +34,27 @@ func prettyPrint(i interface{}) string {
 	return string(s)
 }
 
-func (repo *Repo) GetOrCreateProjectMember(project *Project, user *User, roleName string, projectMember *ProjectMember) *Repo {
+func (repo *Repo) GetOrCreateProjectMember(projectMember *ProjectMember, roleName string) IRepo {
 	if repo.Err() != nil {
 		return repo
 	}
 
-	repo.GetProjectMember(user, project, projectMember)
+	repo.GetProjectMember(projectMember)
 
 	if err := repo.Err(); err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
+		// Irrecuperable error
+		if !errors.Is(err, ErrorNotFound) {
 			repo.err = err
 			return repo
 		} else {
+			// Record is not found
 			// reset error to not block
 			// the creation operation
 			repo.err = nil
 			role := Role{}
 
 			repo.GetRoleByName(roleName, &role).
-				CreateProjectMember(user, project, &role, projectMember)
+				CreateProjectMember(projectMember, &role)
 		}
 	}
 

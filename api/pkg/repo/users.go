@@ -2,37 +2,33 @@ package repo
 
 import (
 	"bytes"
+	"errors"
 
 	. "github.com/wearedevx/keystone/api/pkg/models"
+	"gorm.io/gorm"
 )
 
-func (r *Repo) GetUser(userID string, user *User) *Repo {
+func (r *Repo) GetUser(user *User) IRepo {
 	if r.Err() != nil {
 		return r
 	}
 
-	r.err = r.GetDb().Where("user_id = ?", userID).First(user).Error
+	r.err = r.GetDb().First(user).Error
 
 	return r
 }
 
-func (r *Repo) GetUserByEmailAndAccountType(email string, accountType string) (User, bool) {
-	var user User
+func (r *Repo) GetOrCreateUser(user *User) IRepo {
+	if r.Err() != nil {
+		return r
+	}
 
-	r.err = r.GetDb().Where("email = ? AND account_type = ?", email, accountType).First(&user).Error
+	foundUser := User{
+		AccountType: user.AccountType,
+		ExtID:       user.ExtID,
+	}
 
-	return user, r.err == nil
-}
-
-func (r *Repo) GetOrCreateUser(user *User) {
-	var foundUser User
-	// var err error
-
-	r.err = r.GetDb().Where(
-		"account_type = ? AND ext_id = ?",
-		user.AccountType,
-		user.ExtID,
-	).First(&foundUser).Error
+	r.err = r.GetDb().First(&foundUser).Error
 
 	if r.err == nil {
 		if bytes.Compare(foundUser.PublicKey, user.PublicKey) != 0 {
@@ -41,10 +37,12 @@ func (r *Repo) GetOrCreateUser(user *User) {
 		}
 
 		*user = foundUser
-	} else { // if errors.Is(err, gorm.ErrRecordNotFound) {
+	} else if errors.Is(r.err, gorm.ErrRecordNotFound) {
 		user.UserID = user.Username + "@" + string(user.AccountType)
 		r.err = r.GetDb().Create(&user).Error
 	}
+
+	return r
 }
 
 // From a slice of userIDs (<username>@<service>)

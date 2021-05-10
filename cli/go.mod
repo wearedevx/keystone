@@ -22,7 +22,6 @@ require (
 	github.com/xanzy/go-gitlab v0.49.0 // indirect
 	github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77 // indirect
 	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c // indirect
-	golang.org/x/sys v0.0.0-20210503173754-0981d6026fa6 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 

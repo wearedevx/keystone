@@ -71,9 +71,9 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		}
 
 		Repo := new(repo.Repo)
-		user := models.User{}
+		user := models.User{UserID: userID}
 
-		Repo.GetUser(userID, &user)
+		Repo.GetUser(&user)
 
 		if err = Repo.Err(); err != nil {
 			status := http.StatusInternalServerError

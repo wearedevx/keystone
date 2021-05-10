@@ -49,7 +49,7 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.Repo, user User)
 			return project.Deserialize(body)
 		}),
 		NewAction(func() error {
-			Repo.GetOrCreateProject(project, user)
+			Repo.GetOrCreateProject(project)
 			return Repo.Err()
 		}).SetStatusSuccess(201),
 	})
@@ -141,7 +141,7 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.Rep
 		}).SetStatusError(404),
 		NewAction(func() error {
 			// Need to change parameter to models.AddMembersPayload type
-			rights.CanUserInviteRole(Repo, &user, &project, &Role{ID: input.Members[0].RoleID})
+			rights.CanUserInviteRole(&Repo, &user, &project, &Role{ID: input.Members[0].RoleID})
 
 			return Repo.Err()
 		}).SetStatusError(404),

@@ -47,7 +47,6 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo,
 	status = http.StatusOK
 	payload := &SetMemberRolePayload{}
 	project := Project{}
-	member := User{}
 	role := Role{}
 
 	var projectID = params.Get("projectID").(string)
@@ -57,8 +56,12 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo,
 		return response, http.StatusInternalServerError, err
 	}
 
+	member := User{
+		UserID: payload.MemberID,
+	}
+
 	Repo.GetProjectByUUID(projectID, &project).
-		GetUser(payload.MemberID, &member).
+		GetUser(&member).
 		GetRoleByName(payload.RoleName, &role).
 		ProjectSetRoleForUser(project, member, role)
 

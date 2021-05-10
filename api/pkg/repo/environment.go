@@ -4,43 +4,32 @@ import (
 	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (repo *Repo) CreateEnvironment(project Project, environnementType EnvironmentType) Environment {
+func (repo *Repo) CreateEnvironment(environment *Environment) IRepo {
 	if repo.err != nil {
-		return Environment{}
+		return repo
 	}
 
-	env := Environment{
-		EnvironmentTypeID: environnementType.ID,
-		ProjectID:         project.ID,
-	}
+	repo.err = repo.GetDb().Create(&environment).Error
 
-	if repo.Err() == nil {
-		repo.err = repo.GetDb().Create(&env).Error
-	}
-
-	return env
+	return repo
 }
 
-func (repo *Repo) GetEnvironmentByProjectIDAndEnvType(project Project, environnementType EnvironmentType) (Environment, bool) {
-	var foundEnvironment Environment
-
+func (repo *Repo) GetEnvironment(environment *Environment) IRepo {
 	if repo.err != nil {
-		return foundEnvironment, false
+		return repo
 	}
 
-	repo.err = repo.GetDb().Preload("EnvironmentType").Where("project_id = ? and environment_type_id = ?", project.ID, environnementType.ID).First(&foundEnvironment).Error
+	repo.err = repo.GetDb().Preload("EnvironmentType").First(&environment).Error
 
-	return foundEnvironment, repo.err == nil
+	return repo
 }
 
-func (repo *Repo) GetOrCreateEnvironment(project Project, environnementType EnvironmentType) Environment {
+func (repo *Repo) GetOrCreateEnvironment(environment *Environment) IRepo {
 	if repo.err != nil {
-		return Environment{}
+		return repo
 	}
 
-	if env, ok := repo.GetEnvironmentByProjectIDAndEnvType(project, environnementType); ok {
-		return env
-	}
+	repo.err = repo.GetDb().Preload("EnvironmentType").FirstOrCreate(environment).Error
 
-	return repo.CreateEnvironment(project, environnementType)
+	return repo
 }
