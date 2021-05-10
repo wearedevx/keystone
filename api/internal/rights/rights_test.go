@@ -5,64 +5,197 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	. "github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/api/pkg/repo"
+	. "github.com/wearedevx/keystone/api/pkg/repo"
+	"gorm.io/gorm"
 )
 
 type FakeRepo struct{}
 
-func getRoleByEnvAndRole(environment *Environment, role *Role) RolesEnvironmentType {
+func (f *FakeRepo) CreateEnvironment(_ *Environment) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) CreateEnvironmentType(_ *EnvironmentType) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) CreateLoginRequest() LoginRequest {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) CreateProjectMember(_ *ProjectMember, _ *Role) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) CreateRole(_ *Role) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) CreateRoleEnvironmentType(_ *RolesEnvironmentType) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) CreateSecret(_ *Secret) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) DeleteLoginRequest(_ string) bool {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) FindUsers(_ []string, _ *map[string]User, _ *[]string) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetDb() *gorm.DB {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetEnvironment(_ *Environment) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetEnvironmentType(_ *EnvironmentType) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetLoginRequest(_ string) (LoginRequest, bool) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetOrCreateEnvironment(_ *Environment) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetOrCreateEnvironmentType(_ *EnvironmentType) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetOrCreateProject(_ *Project) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetOrCreateProjectMember(_ *ProjectMember, _ string) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetOrCreateRole(_ *Role) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetOrCreateRoleEnvType(_ *RolesEnvironmentType) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetOrCreateUser(_ *User) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetProject(_ *Project) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetProjectByUUID(_ string, _ *Project) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetRoleByID(_ uint, _ *Role) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetRoleByName(_ string, _ *Role) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetRoles(_ *[]Role) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetSecretByName(_ string, _ *Secret) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetUser(_ *User) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) ProjectAddMembers(_ Project, _ []MemberRole) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) ProjectGetMembers(_ *Project, _ *[]ProjectMember) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) ProjectLoadUsers(_ *Project) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) ProjectRemoveMembers(_ Project, _ []string) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) ProjectSetRoleForUser(_ Project, _ User, _ Role) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) SetLoginRequestCode(_ string, _ string) LoginRequest {
+	panic("not implemented") // TODO: Implement
+}
+
+func getRoleByEnvironmentTypeAndRole(environmentType *EnvironmentType, role *Role) RolesEnvironmentType {
 	switch {
-	case environment.Name == "dev" && role.Name == "dev":
+	case environmentType.Name == "dev" && role.Name == "dev":
 		return RolesEnvironmentType{
 			Read:   true,
 			Write:  true,
 			Invite: false,
 		}
-	case environment.Name == "staging" && role.Name == "dev":
+	case environmentType.Name == "staging" && role.Name == "dev":
 		return RolesEnvironmentType{
 			Read:   false,
 			Write:  false,
 			Invite: false,
 		}
-	case environment.Name == "prod" && role.Name == "dev":
-		return RolesEnvironmentType{
-			Read:   false,
-			Write:  false,
-			Invite: false,
-		}
-
-	case environment.Name == "dev" && role.Name == "devops":
-		return RolesEnvironmentType{
-			Read:   true,
-			Write:  true,
-			Invite: true,
-		}
-	case environment.Name == "staging" && role.Name == "devops":
-		return RolesEnvironmentType{
-			Read:   true,
-			Write:  true,
-			Invite: false,
-		}
-	case environment.Name == "prod" && role.Name == "devops":
+	case environmentType.Name == "prod" && role.Name == "dev":
 		return RolesEnvironmentType{
 			Read:   false,
 			Write:  false,
 			Invite: false,
 		}
 
-	case environment.Name == "dev" && role.Name == "admin":
+	case environmentType.Name == "dev" && role.Name == "devops":
 		return RolesEnvironmentType{
 			Read:   true,
 			Write:  true,
 			Invite: true,
 		}
-	case environment.Name == "staging" && role.Name == "admin":
+	case environmentType.Name == "staging" && role.Name == "devops":
+		return RolesEnvironmentType{
+			Read:   true,
+			Write:  true,
+			Invite: false,
+		}
+	case environmentType.Name == "prod" && role.Name == "devops":
+		return RolesEnvironmentType{
+			Read:   false,
+			Write:  false,
+			Invite: false,
+		}
+
+	case environmentType.Name == "dev" && role.Name == "admin":
 		return RolesEnvironmentType{
 			Read:   true,
 			Write:  true,
 			Invite: true,
 		}
-	case environment.Name == "prod" && role.Name == "admin":
+	case environmentType.Name == "staging" && role.Name == "admin":
+		return RolesEnvironmentType{
+			Read:   true,
+			Write:  true,
+			Invite: true,
+		}
+	case environmentType.Name == "prod" && role.Name == "admin":
 		return RolesEnvironmentType{
 			Read:   true,
 			Write:  true,
@@ -99,19 +232,25 @@ func getRoleByUsername(userName string) Role {
 	}
 }
 
-func (fakeRepo *FakeRepo) GetRolesEnvironmentType(environment *Environment, role *Role) (*RolesEnvironmentType, error) {
-	rolesEnvironmentType := getRoleByEnvAndRole(environment, role)
-	return &rolesEnvironmentType, nil
+func (fakeRepo *FakeRepo) Err() error {
+	return nil
 }
 
-func (fakeRepo *FakeRepo) GetProjectMember(user *User, project *Project) (ProjectMember, error) {
-	role := getRoleByUsername(user.Username)
-	projectMember := ProjectMember{
+func (fakeRepo *FakeRepo) GetRolesEnvironmentType(rolesEnvironmentType *RolesEnvironmentType) IRepo {
+	*rolesEnvironmentType = getRoleByEnvironmentTypeAndRole(&rolesEnvironmentType.EnvironmentType, &rolesEnvironmentType.Role)
+
+	return fakeRepo
+}
+
+func (fakeRepo *FakeRepo) GetProjectMember(projectMember *ProjectMember) IRepo {
+	role := getRoleByUsername(projectMember.User.Username)
+	*projectMember = ProjectMember{
 		Role: role,
 	}
-	return projectMember, nil
+
+	return fakeRepo
 }
-func (fakeRepo *FakeRepo) GetInvitableRoles(role Role, roles []*Role) *repo.Repo {
+func (fakeRepo *FakeRepo) GetInvitableRoles(role Role, roles *[]Role) IRepo {
 	// return fakeRepo
 	// TODO
 	return nil

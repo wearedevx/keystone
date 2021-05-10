@@ -19,9 +19,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strings"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
@@ -29,6 +27,7 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 var membersFile string
@@ -91,7 +90,7 @@ This will cause secrets to be encryted for all members, existing and new.`,
 		memberRole := make(map[string]models.Role)
 
 		for _, memberId := range args {
-			role, err := promptRole(memberId, roles)
+			role, err := prompts.PromptRole(memberId, roles)
 
 			if err != nil {
 				// TODO: Handle error
@@ -115,40 +114,6 @@ This will cause secrets to be encryted for all members, existing and new.`,
 `, struct {
 		}{}))
 	},
-}
-
-func promptRole(memberId string, roles []models.Role) (models.Role, error) {
-
-	templates := &promptui.SelectTemplates{
-		Label:    "Role for {{ . }}?",
-		Active:   " {{  .Name  }}",
-		Inactive: " {{  .Name | faint }}",
-		Selected: " {{ .Name }}",
-		Details: `
---------- Role ----------
-{{ "Name:" | faint }}	{{ .Name }}
-{{ "Description:" | faint }}	{{ .Description }}`,
-	}
-
-	searcher := func(input string, index int) bool {
-		role := roles[index]
-		name := strings.Replace(strings.ToLower(role.Name), " ", "", -1)
-		input = strings.Replace(strings.ToLower(input), " ", "", -1)
-
-		return strings.Contains(name, input)
-	}
-
-	prompt := promptui.Select{
-		Label:     memberId,
-		Items:     roles,
-		Templates: templates,
-		Size:      4,
-		Searcher:  searcher,
-	}
-
-	index, _, err := prompt.Run()
-
-	return roles[index], err
 }
 
 func init() {

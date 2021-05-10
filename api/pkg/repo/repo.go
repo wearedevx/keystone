@@ -52,6 +52,10 @@ func AutoMigrate() error {
 }
 
 func (repo *Repo) Err() error {
+	if errors.Is(repo.err, gorm.ErrRecordNotFound) {
+		return ErrorNotFound
+	}
+
 	return repo.err
 }
 

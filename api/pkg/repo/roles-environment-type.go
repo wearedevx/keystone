@@ -4,42 +4,32 @@ import (
 	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (repo *Repo) CreateRoleEnvironmentType(rolesEnvironmentType *RolesEnvironmentType) *RolesEnvironmentType {
-	// rolesEnvironmentTypeToCreate := RolesEnvironmentType{
-	// 	RoleID:            rolesEnvironmentTypeToCreate.roleID,
-	// 	EnvironmentTypeID: environmentTypeID,
-	// }
-	repo.err = repo.GetDb().Create(&rolesEnvironmentType).Error
-	return rolesEnvironmentType
-}
-
-func (repo *Repo) GetRoleEnvTypeByRoleAndEnvironment(role *Role, environmentType *EnvironmentType) (*RolesEnvironmentType, bool) {
-	var foundRoleEnvType *RolesEnvironmentType
-
-	// if repo.err != nil {
-	// 	return foundRoleEnvType, false
-	// }
-
-	repo.err = repo.GetDb().Where("roleID = ? and environmentID = ?", role.ID, environmentType.ID).First(&foundRoleEnvType).Error
-
-	return foundRoleEnvType, repo.err == nil
-}
-
-func (repo *Repo) GetOrCreateRoleEnvType(rolesEnvironmentType *RolesEnvironmentType) *RolesEnvironmentType {
-	if rolesEnvironmentType, ok := repo.GetRoleEnvTypeByRoleAndEnvironment(&rolesEnvironmentType.Role, &rolesEnvironmentType.EnvironmentType); ok {
-		return rolesEnvironmentType
+func (repo *Repo) CreateRoleEnvironmentType(rolesEnvironmentType *RolesEnvironmentType) IRepo {
+	if repo.err != nil {
+		return repo
 	}
 
-	return repo.CreateRoleEnvironmentType(rolesEnvironmentType)
+	repo.err = repo.GetDb().Create(&rolesEnvironmentType).Error
+
+	return repo
 }
 
-func (repo *Repo) GetRolesEnvironmentType(environment *Environment, role *Role) (*RolesEnvironmentType, error) {
-	rolesEnvironmentType := RolesEnvironmentType{}
+func (repo *Repo) GetOrCreateRoleEnvType(rolesEnvironmentType *RolesEnvironmentType) IRepo {
+	if repo.err != nil {
+		return repo
+	}
 
-	repo.err = db.Where(
-		"environment_type_id = ? and role_id = ?",
-		environment.ID, role.ID,
-	).First(&rolesEnvironmentType).Error
+	repo.err = repo.GetDb().FirstOrCreate(rolesEnvironmentType).Error
 
-	return &rolesEnvironmentType, repo.err
+	return repo
+}
+
+func (repo *Repo) GetRolesEnvironmentType(rolesEnvironmentType *RolesEnvironmentType) IRepo {
+	if repo.err != nil {
+		return repo
+	}
+
+	repo.err = db.First(&rolesEnvironmentType).Error
+
+	return repo
 }

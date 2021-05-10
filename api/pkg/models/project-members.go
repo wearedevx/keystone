@@ -188,3 +188,23 @@ func (pm *CheckMembersPayload) Serialize(out *string) error {
 
 	return err
 }
+
+type SetMemberRolePayload struct {
+	MemberID string
+	RoleName string
+}
+
+func (pm *SetMemberRolePayload) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(pm)
+}
+
+func (pm *SetMemberRolePayload) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(pm)
+
+	*out = sb.String()
+
+	return err
+}

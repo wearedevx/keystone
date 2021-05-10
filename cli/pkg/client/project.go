@@ -72,3 +72,16 @@ func (p *Project) RemoveMembers(members []string) error {
 
 	return err
 }
+
+// Changes the role of a member
+// memberId should have the form <username>@<github|gitlab>
+func (p *Project) SetMemberRole(memberId string, role string) (err error) {
+	payload := models.SetMemberRolePayload{
+		MemberID: memberId,
+		RoleName: role,
+	}
+
+	err = p.r.put("/projects/"+p.id+"/members/role", payload, nil)
+
+	return err
+}
