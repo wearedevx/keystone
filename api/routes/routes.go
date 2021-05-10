@@ -29,9 +29,6 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 
 	router.GET("/roles", AuthedHandler(controllers.GetRoles))
 
-	// router.POST("/projects/:projectID/variables", AuthedHandler(PostAddVariable))
-	// router.PUT("/projects/:projectID/:environment/variables", AuthedHandler(PutSetVariable))
-
 	router.POST("/login-request", PostLoginRequest)
 	router.GET("/login-request", GetLoginRequest)
 	router.GET("/auth-redirect/", GetAuthRedirect)

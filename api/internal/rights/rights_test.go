@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/api/pkg/repo"
 	"gorm.io/gorm"
@@ -12,31 +11,31 @@ import (
 
 type FakeRepo struct{}
 
-func (f *FakeRepo) CreateEnvironment(_ *models.Environment) IRepo {
+func (f *FakeRepo) CreateEnvironment(_ *Environment) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) CreateEnvironmentType(_ *models.EnvironmentType) IRepo {
+func (f *FakeRepo) CreateEnvironmentType(_ *EnvironmentType) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) CreateLoginRequest() models.LoginRequest {
+func (f *FakeRepo) CreateLoginRequest() LoginRequest {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) CreateProjectMember(_ *models.ProjectMember, _ *models.Role) IRepo {
+func (f *FakeRepo) CreateProjectMember(_ *ProjectMember, _ *Role) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) CreateRole(_ *models.Role) IRepo {
+func (f *FakeRepo) CreateRole(_ *Role) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) CreateRoleEnvironmentType(_ *models.RolesEnvironmentType) IRepo {
+func (f *FakeRepo) CreateRoleEnvironmentType(_ *RolesEnvironmentType) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) CreateSecret(_ *models.Secret) {
+func (f *FakeRepo) CreateSecret(_ *Secret) {
 	panic("not implemented") // TODO: Implement
 }
 
@@ -44,7 +43,7 @@ func (f *FakeRepo) DeleteLoginRequest(_ string) bool {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) FindUsers(_ []string) (map[string]models.User, []string) {
+func (f *FakeRepo) FindUsers(_ []string, _ *map[string]User, _ *[]string) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
@@ -52,95 +51,95 @@ func (f *FakeRepo) GetDb() *gorm.DB {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetEnvironment(_ *models.Environment) IRepo {
+func (f *FakeRepo) GetEnvironment(_ *Environment) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetEnvironmentType(_ *models.EnvironmentType) IRepo {
+func (f *FakeRepo) GetEnvironmentType(_ *EnvironmentType) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetLoginRequest(_ string) (models.LoginRequest, bool) {
+func (f *FakeRepo) GetLoginRequest(_ string) (LoginRequest, bool) {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetOrCreateEnvironment(_ *models.Environment) IRepo {
+func (f *FakeRepo) GetOrCreateEnvironment(_ *Environment) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetOrCreateEnvironmentType(_ *models.EnvironmentType) IRepo {
+func (f *FakeRepo) GetOrCreateEnvironmentType(_ *EnvironmentType) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetOrCreateProject(_ *models.Project) IRepo {
+func (f *FakeRepo) GetOrCreateProject(_ *Project) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetOrCreateProjectMember(_ *models.ProjectMember, _ string) IRepo {
+func (f *FakeRepo) GetOrCreateProjectMember(_ *ProjectMember, _ string) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetOrCreateRole(_ *models.Role) IRepo {
+func (f *FakeRepo) GetOrCreateRole(_ *Role) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetOrCreateRoleEnvType(_ *models.RolesEnvironmentType) IRepo {
+func (f *FakeRepo) GetOrCreateRoleEnvType(_ *RolesEnvironmentType) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetOrCreateUser(_ *models.User) IRepo {
+func (f *FakeRepo) GetOrCreateUser(_ *User) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetProject(_ *models.Project) IRepo {
+func (f *FakeRepo) GetProject(_ *Project) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetProjectByUUID(_ string, _ *models.Project) IRepo {
+func (f *FakeRepo) GetProjectByUUID(_ string, _ *Project) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetRoleByID(_ uint, _ *models.Role) IRepo {
+func (f *FakeRepo) GetRoleByID(_ uint, _ *Role) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetRoleByName(_ string, _ *models.Role) IRepo {
+func (f *FakeRepo) GetRoleByName(_ string, _ *Role) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetRoles(_ *[]models.Role) IRepo {
+func (f *FakeRepo) GetRoles(_ *[]Role) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetSecretByName(_ string, _ *models.Secret) {
+func (f *FakeRepo) GetSecretByName(_ string, _ *Secret) {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetUser(_ *models.User) IRepo {
+func (f *FakeRepo) GetUser(_ *User) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) ProjectAddMembers(_ models.Project, _ []models.MemberRole) IRepo {
+func (f *FakeRepo) ProjectAddMembers(_ Project, _ []MemberRole) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) ProjectGetMembers(_ *models.Project, _ *[]models.ProjectMember) IRepo {
+func (f *FakeRepo) ProjectGetMembers(_ *Project, _ *[]ProjectMember) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) ProjectLoadUsers(_ *models.Project) IRepo {
+func (f *FakeRepo) ProjectLoadUsers(_ *Project) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) ProjectRemoveMembers(_ models.Project, _ []string) IRepo {
+func (f *FakeRepo) ProjectRemoveMembers(_ Project, _ []string) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) ProjectSetRoleForUser(_ models.Project, _ models.User, _ models.Role) IRepo {
+func (f *FakeRepo) ProjectSetRoleForUser(_ Project, _ User, _ Role) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) SetLoginRequestCode(_ string, _ string) models.LoginRequest {
+func (f *FakeRepo) SetLoginRequestCode(_ string, _ string) LoginRequest {
 	panic("not implemented") // TODO: Implement
 }
 

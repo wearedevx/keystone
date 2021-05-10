@@ -26,10 +26,13 @@ func DoUsersExist(params router.Params, body io.ReadCloser, Repo repo.Repo, user
 			return payload.Deserialize(body)
 		}),
 		NewAction(func() error {
-			_, notFound := Repo.FindUsers(payload.MemberIDs)
+			users := make(map[string]User)
+			notFounds := make([]string, 0)
 
-			if len(notFound) != 0 {
-				response.Error = fmt.Sprintf("%s do not exists", strings.Join(notFound, ", "))
+			Repo.FindUsers(payload.MemberIDs, &users, &notFounds)
+
+			if len(notFounds) != 0 {
+				response.Error = fmt.Sprintf("%s do not exists", strings.Join(notFounds, ", "))
 				response.Success = false
 
 				status = 404

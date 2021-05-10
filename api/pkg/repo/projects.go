@@ -140,7 +140,12 @@ func (r *Repo) usersInMemberRoles(mers []MemberRole) (map[string]User, []string)
 		}
 	}
 
-	return r.FindUsers(userIDs)
+	users := make(map[string]User)
+	notFounds := make([]string, 0)
+
+	r.FindUsers(userIDs, &users, &notFounds)
+
+	return users, notFounds
 }
 
 func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole) IRepo {
@@ -185,10 +190,17 @@ func (r *Repo) ProjectRemoveMembers(project Project, members []string) IRepo {
 		return r
 	}
 
-	users, notFound := r.FindUsers(members)
+	users := make(map[string]User)
+	notFounds := make([]string, 0)
 
-	if len(notFound) != 0 {
-		r.err = fmt.Errorf("Users not found: %s", strings.Join(notFound, ", "))
+	r.FindUsers(members, &users, &notFounds)
+
+	if r.err != nil {
+		return r
+	}
+
+	if len(notFounds) != 0 {
+		r.err = fmt.Errorf("Users not found: %s", strings.Join(notFounds, ", "))
 		return r
 	}
 

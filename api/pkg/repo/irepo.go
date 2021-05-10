@@ -13,10 +13,9 @@ type IRepo interface {
 	CreateProjectMember(*models.ProjectMember, *models.Role) IRepo
 	CreateRole(*models.Role) IRepo
 	CreateRoleEnvironmentType(*models.RolesEnvironmentType) IRepo
-	CreateSecret(*models.Secret)
 	DeleteLoginRequest(string) bool
 	Err() error
-	FindUsers([]string) (map[string]models.User, []string)
+	FindUsers(userIDs []string, users *map[string]models.User, notFounds *[]string) IRepo
 	GetDb() *gorm.DB
 	GetEnvironment(*models.Environment) IRepo
 	GetEnvironmentType(*models.EnvironmentType) IRepo
@@ -36,7 +35,6 @@ type IRepo interface {
 	GetRoleByName(string, *models.Role) IRepo
 	GetRoles(*[]models.Role) IRepo
 	GetRolesEnvironmentType(*models.RolesEnvironmentType) IRepo
-	GetSecretByName(string, *models.Secret)
 	GetUser(*models.User) IRepo
 	ProjectAddMembers(models.Project, []models.MemberRole) IRepo
 	ProjectGetMembers(*models.Project, *[]models.ProjectMember) IRepo

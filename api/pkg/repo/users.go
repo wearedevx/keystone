@@ -48,38 +48,36 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 // From a slice of userIDs (<username>@<service>)
 // fetchs the users.
 // Returns the found users and a list of not found userIDs
-func (r *Repo) FindUsers(userIDs []string) (map[string]User, []string) {
-	users := make([]User, 0)
-	userMap := make(map[string]User)
-	notFounds := make([]string, 0)
-
+func (r *Repo) FindUsers(userIDs []string, users *map[string]User, notFounds *[]string) IRepo {
 	if r.err != nil {
-		return userMap, notFounds
+		return r
 	}
+
+	userSlice := make([]User, 0)
 
 	db := r.GetDb()
 
-	r.err = db.Where("user_id IN ?", userIDs).Find(&users).Error
+	r.err = db.Where("user_id IN ?", userIDs).Find(&userSlice).Error
 
 	if r.err != nil {
-		return userMap, notFounds
+		return r
 	}
 
 	for _, userID := range userIDs {
 		found := false
-		for _, user := range users {
+		for _, user := range userSlice {
 			if user.UserID == userID {
 				found = true
 
-				userMap[userID] = user
+				(*users)[userID] = user
 				break
 			}
 		}
 
 		if !found {
-			notFounds = append(notFounds, userID)
+			*notFounds = append(*notFounds, userID)
 		}
 	}
 
-	return userMap, notFounds
+	return r
 }
