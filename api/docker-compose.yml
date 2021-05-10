@@ -36,7 +36,7 @@ services:
       - "9001:9001"
       # - "9000:9000"
     # command: sh -c "cd functions/ksapi && gow run cmd/main.go"
-    command: sh -c "go get -u github.com/mitranim/gow && go run main.go"
+    command: sh -c "go get -u github.com/mitranim/gow && gow run main.go"
 
 volumes:
   db_data: {}
