@@ -13,6 +13,8 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
@@ -47,6 +49,7 @@ Get info from your team:
 
 		c := client.NewKeystoneClient(account["user_id"], token)
 
+		fmt.Println("Fetching new data...")
 		result, _ := c.Messages().GetMessages(projectID)
 
 		ctx.SaveMessages(result)
@@ -55,6 +58,21 @@ Get info from your team:
 			err.Print()
 			return
 		}
+
+		for environmentName, environment := range result.Environments {
+			messageID := environment.Message.ID
+			if messageID != 0 {
+				fmt.Println("Environment", environmentName, "updated")
+				response, _ := c.Messages().DeleteMessage(environment.Message.ID)
+				if !response.Success {
+					fmt.Println(response)
+					fmt.Println("Can't delete message")
+				}
+			} else {
+				fmt.Println("Environment", environmentName, "up to date")
+			}
+		}
+
 	},
 }
 

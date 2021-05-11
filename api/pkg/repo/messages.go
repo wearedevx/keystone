@@ -36,3 +36,8 @@ func (repo *Repo) GetMessagesForUserOnEnvironment(user User, environment Environ
 func (repo *Repo) WriteMessage(user User, message Message) error {
 	return nil
 }
+
+func (repo *Repo) DeleteMessage(messageID int) error {
+	repo.GetDb().Delete(&Message{}, messageID)
+	return repo.Err()
+}

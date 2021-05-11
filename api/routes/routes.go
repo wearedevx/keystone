@@ -35,8 +35,10 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 
 	router.POST("/users/exist", AuthedHandler(DoUsersExist))
 
-	router.GET("/messages/:projectID", AuthedHandler(GetMessagesFromProjectByUser))
+	router.GET("/projects/:projectID/messages", AuthedHandler(GetMessagesFromProjectByUser))
 	router.POST("/project/:projectID/messages", AuthedHandler(WriteMessages))
+
+	router.DELETE("/messages/:messageID", AuthedHandler(DeleteMessage))
 
 	router.ServeHTTP(w, r)
 }

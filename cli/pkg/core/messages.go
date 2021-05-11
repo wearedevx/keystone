@@ -14,6 +14,7 @@ import (
 )
 
 func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnvironmentResponse) (models.GetMessageByEnvironmentResponse, error) {
+
 	for environmentName, environment := range MessageByEnvironments.Environments {
 		var PayloadContent = models.MessagePayload{}
 
@@ -31,7 +32,6 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 
 		envFilePath := path.Join(ctx.cacheDirPath(), environmentName, ".env")
 
-		fmt.Println(PayloadContent.Secrets)
 		for _, secret := range PayloadContent.Secrets {
 
 			if err := new(EnvFile).Load(envFilePath).Set(secret.Label, secret.Value).Dump().Err(); err != nil {

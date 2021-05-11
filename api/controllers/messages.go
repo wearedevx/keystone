@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	. "github.com/wearedevx/keystone/api/pkg/models"
@@ -14,8 +15,8 @@ import (
 )
 
 type GenericResponse struct {
-	Success bool   `json:"success"`
-	Error   string `json:"error"`
+	Success bool  `json:"success"`
+	Error   error `json:"error"`
 }
 
 func (gr *GenericResponse) Deserialize(in io.Reader) error {
@@ -82,6 +83,32 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 	// - check if user can write to environment
 	// - check recipient exist
 	// - If yes, write message
+
+	return response, status, nil
+}
+
+func DeleteMessage(params router.Params, body io.ReadCloser, Repo repo.Repo, user User) (router.Serde, int, error) {
+
+	var status = http.StatusNoContent
+	response := &GenericResponse{}
+	response.Success = true
+
+	var messageID = params.Get("messageID").(string)
+
+	id, err := strconv.Atoi(messageID)
+
+	if err != nil {
+		response.Success = false
+		response.Error = err
+		return response, status, nil
+	}
+
+	err = Repo.DeleteMessage(id)
+
+	if err != nil {
+		response.Error = err
+		response.Success = false
+	}
 
 	return response, status, nil
 }

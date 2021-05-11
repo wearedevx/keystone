@@ -44,6 +44,9 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	}
 
 	Url, err := url.Parse(ApiURL + path)
+	if err != nil {
+		return err
+	}
 	Url.RawQuery = queryParams.Encode()
 
 	req, err := http.NewRequest(string(method), Url.String(), buf)
