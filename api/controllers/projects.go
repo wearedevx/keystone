@@ -49,6 +49,8 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.Repo, user User)
 			return project.Deserialize(body)
 		}),
 		NewAction(func() error {
+			project.User = user
+			project.UserID = user.ID
 			Repo.GetOrCreateProject(project)
 			return Repo.Err()
 		}).SetStatusSuccess(201),
