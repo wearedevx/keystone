@@ -145,7 +145,6 @@ func WriteConfig() error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println(err)
-		fmt.Println(err)
 	}
 
 	configPath := path.Join(home, ".config", "keystone.yml")

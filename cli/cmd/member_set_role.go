@@ -132,7 +132,6 @@ func getRoleWithName(roleName string, roles []models.Role) (models.Role, bool) {
 	var role models.Role
 
 	for _, existingRole := range roles {
-		fmt.Println("existingRole:", existingRole.Name)
 		if existingRole.Name == roleName {
 			found = true
 			role = existingRole

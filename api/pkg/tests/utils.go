@@ -115,8 +115,6 @@ func SeedTestData() {
 		Email:       "test+dev@example.com",
 	}
 
-	fmt.Println("keystone ~ functions.go ~ error DOUX DOUX")
-
 	Repo.GetOrCreateUser(userProjectOwner)
 	Repo.GetOrCreateUser(devUser)
 
