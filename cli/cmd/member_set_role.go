@@ -85,8 +85,8 @@ ks member set-role sandra@github`,
 
 		// Ensure member exists
 		r, err := c.Users().CheckUsersExist([]string{memberId})
-		if r.Error != "" {
-			errors.UsersDontExist(r.Error, nil).Print()
+		if r.Error != "" || err != nil {
+			errors.UsersDontExist(r.Error, err).Print()
 			os.Exit(1)
 		}
 
