@@ -51,7 +51,7 @@ func (pm *ProjectMember) Serialize(out *string) error {
 
 // API Types
 type MemberRole struct {
-	MemberID string
+	MemberID string // <username>@<service>
 	RoleID   uint
 }
 

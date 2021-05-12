@@ -53,8 +53,6 @@ func DoesUserHaveRightsOnEnvironment(Repo repo.IRepo, user *User, project *Proje
 		return rolesEnvironmentType.Read, nil
 	case Write:
 		return rolesEnvironmentType.Write, nil
-	case Invite:
-		return rolesEnvironmentType.Invite, nil
 	default:
 		return false, fmt.Errorf("unknown role %v on env %v", projectMember.Role, environment)
 	}
@@ -75,48 +73,82 @@ func CanUserInviteOnEnvironment(Repo repo.IRepo, user *User, project *Project, e
 // devops can invite on:
 // - dev
 
-// Retrieve all role with  invite=true where
-func CanUserInviteRole(Repo repo.IRepo, user *User, project *Project, roleToInvite *Role) (bool, error) {
-	projectMember := ProjectMember{
-		UserID:    user.ID,
-		ProjectID: project.ID,
+// CanRoleAddRole tells if a user with a given role can add or set users
+// with an other role
+func CanRoleAddRole(Repo repo.IRepo, role Role, roleToInvite Role) (can bool, err error) {
+	if role.CanAddMembers {
+		roles := make([]Role, 0)
+
+		err = Repo.GetChildrenRoles(role, &roles).Err()
+		if err != nil {
+			fmt.Println("Error when retriving invite roles", Repo.Err())
+		} else {
+			for _, childRole := range roles {
+				if childRole.ID == roleToInvite.ID {
+					can = true
+					break
+				}
+			}
+		}
 	}
 
-	Repo.GetProjectMember(&projectMember)
-
-	if err := Repo.Err(); err != nil {
-		fmt.Println("Error:", err)
-		return false, err
-	}
-
-	roles := make([]Role, 0)
-
-	Repo.GetInvitableRoles(projectMember.Role, &roles)
-
-	if Repo.Err() != nil {
-		fmt.Println("Error when retriving invite roles", Repo.Err())
-	}
-	return false, nil
-
+	return can && err == nil, err
 }
 
-func CanUserSetMemberRole(Repo repo.IRepo, user *User, project *Project, other *User) (can bool, err error) {
+// CanUserSetMemberRole checks if `user` can set the role of user `other` to `role` on `project`.
+// `user` can set the `other`’s role to `role` if :
+// - both users are members of `project`
+// - `users`’s role has `CanAddMembers` set to `true`,
+// - `users`’s role is a parent of `other`’s role.
+// - `users`’s role is a parent of the target `role`
+func CanUserSetMemberRole(Repo repo.IRepo, user User, other User, role Role, project Project) (can bool, err error) {
 	myMember := ProjectMember{
 		UserID:    user.ID,
 		ProjectID: project.ID,
 	}
 	otherMember := ProjectMember{
+		UserID:    other.ID,
+		ProjectID: project.ID,
+	}
+
+	if err = Repo.
+		GetProjectMember(&myMember).
+		GetProjectMember(&otherMember).
+		Err(); err != nil {
+		return false, err
+	}
+
+	canChangeOther, canChangeOtherErr := CanRoleAddRole(Repo, myMember.Role, otherMember.Role)
+	canSetTargetRole, canSetTargetRoleErr := CanRoleAddRole(Repo, myMember.Role, role)
+
+	if canChangeOtherErr != nil {
+		return false, canChangeOtherErr
+	}
+
+	if canSetTargetRoleErr != nil {
+		return false, canSetTargetRoleErr
+	}
+
+	return canChangeOther && canSetTargetRole, nil
+}
+
+// CanUserAddMemberWithRole checks if a given user can add members of
+// a given role on the project
+func CanUserAddMemberWithRole(Repo repo.IRepo, user User, role Role, project Project) (can bool, err error) {
+	member := ProjectMember{
 		UserID:    user.ID,
 		ProjectID: project.ID,
 	}
 
-	Repo.
-		GetProjectMember(&myMember).
-		GetProjectMember(&otherMember)
-
-	if err = Repo.Err(); err != nil {
-		return can, err
+	if err = Repo.GetProjectMember(&member).Err(); err != nil {
+		return false, err
 	}
 
-	return can, err
+	can, err = CanRoleAddRole(Repo, member.Role, role)
+
+	if err != nil {
+		return false, err
+	}
+
+	return can, nil
 }

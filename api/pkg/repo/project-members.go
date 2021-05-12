@@ -17,6 +17,16 @@ func (repo *Repo) GetProjectMember(projectMember *ProjectMember) IRepo {
 	return repo
 }
 
+func (repo *Repo) ListProjectMembers(userIDList []string, projectMember *[]ProjectMember) IRepo {
+	if repo.Err() != nil {
+		return repo
+	}
+
+	repo.err = repo.GetDb().Preload("Role").Find(projectMember, "user_id IN ?", userIDList).Error
+
+	return repo
+}
+
 func (repo *Repo) CreateProjectMember(projectMember *ProjectMember, role *Role) IRepo {
 	if repo != nil {
 		return repo
@@ -51,9 +61,9 @@ func (repo *Repo) GetOrCreateProjectMember(projectMember *ProjectMember, roleNam
 			// reset error to not block
 			// the creation operation
 			repo.err = nil
-			role := Role{}
+			role := Role{Name: roleName}
 
-			repo.GetRoleByName(roleName, &role).
+			repo.GetRole(&role).
 				CreateProjectMember(projectMember, &role)
 		}
 	}

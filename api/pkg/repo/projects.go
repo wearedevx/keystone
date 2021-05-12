@@ -17,11 +17,13 @@ func (r *Repo) createProject(project *Project) IRepo {
 	}
 
 	db := r.GetDb()
-	role := Role{}
+	role := Role{
+		Name: "admin",
+	}
 
 	r.err = db.Create(project).Error
 
-	r.GetRoleByName("admin", &role)
+	r.GetRole(&role)
 
 	if r.err != nil {
 		return r

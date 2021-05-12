@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -53,7 +54,6 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo,
 	status = http.StatusOK
 	payload := &SetMemberRolePayload{}
 	project := Project{}
-	role := Role{}
 
 	// input check
 	var projectID = params.Get("projectID").(string)
@@ -64,18 +64,35 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo,
 	}
 
 	// actual work
-
 	member := User{
 		UserID: payload.MemberID,
 	}
 
-	Repo.GetProjectByUUID(projectID, &project).
-		GetUser(&member).
-		GetRoleByName(payload.RoleName, &role).
-		ProjectSetRoleForUser(project, member, role)
+	role := Role{Name: payload.RoleName}
 
-	err = Repo.Err()
+	if err = Repo.GetProjectByUUID(projectID, &project).
+		GetUser(&member).
+		GetRole(&role).
+		Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusNotFound
+		} else {
+			status = http.StatusInternalServerError
+		}
+
+		return response, status, err
+	}
+
+	can, err := rights.CanUserSetMemberRole(&Repo, user, member, role, project)
 	if err != nil {
+		return response, http.StatusInternalServerError, err
+	}
+
+	if !can {
+		return response, http.StatusForbidden, err
+	}
+
+	if err = Repo.ProjectSetRoleForUser(project, member, role).Err(); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			status = http.StatusNotFound
 		} else {
@@ -84,4 +101,25 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo,
 	}
 
 	return response, status, err
+}
+
+func checkUserCanChangeMember(Repo repo.IRepo, user User, project Project, other User) (can bool, err error) {
+	projectMember := ProjectMember{
+		UserID:    user.ID,
+		ProjectID: project.ID,
+	}
+	otherProjectMember := ProjectMember{
+		UserID:    other.ID,
+		ProjectID: project.ID,
+	}
+
+	if err = Repo.
+		GetProjectMember(&projectMember).
+		GetProjectMember(&otherProjectMember).
+		Err(); err != nil {
+
+		return false, err
+	}
+
+	return rights.CanRoleAddRole(Repo, projectMember.Role, otherProjectMember.Role)
 }

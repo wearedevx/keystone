@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 
 	"github.com/wearedevx/keystone/api/internal/rights"
@@ -16,16 +15,15 @@ import (
 )
 
 type projectsPublicKeys struct {
-	keys []UserPublicKey
+	Keys []UserPublicKey
 }
 
 func (p *projectsPublicKeys) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(p)
 }
 
-func (p *projectsPublicKeys) Serialize(out *string) error {
+func (p *projectsPublicKeys) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(p)
 
@@ -54,7 +52,7 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.Repo, user User)
 
 }
 
-func GetProjectsPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.Repo, user User) (_ router.Serde, status int, err error) {
+func GetProjectsPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.Repo, _ User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
 	var project Project
@@ -74,7 +72,7 @@ func GetProjectsPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.Repo
 	}
 
 	for _, member := range project.Members {
-		result.keys = append(result.keys, UserPublicKey{
+		result.Keys = append(result.Keys, UserPublicKey{
 			UserID:    member.User.UserID,
 			PublicKey: member.User.PublicKey,
 		})
@@ -83,7 +81,7 @@ func GetProjectsPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.Repo
 	return &result, status, err
 }
 
-func GetProjectsMembers(params router.Params, _ io.ReadCloser, Repo repo.Repo, user User) (_ router.Serde, status int, err error) {
+func GetProjectsMembers(params router.Params, _ io.ReadCloser, Repo repo.Repo, _ User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
 	var project Project
@@ -110,15 +108,14 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.Rep
 	var project Project
 	var projectID = params.Get("projectID").(string)
 
-	input := models.AddMembersPayload{}
-	result := models.AddMembersResponse{Success: true, Error: ""}
+	input := AddMembersPayload{}
+	result := AddMembersResponse{}
 	err = input.Deserialize(body)
 
 	if projectID == "" || err != nil {
 		return &result, http.StatusBadRequest, nil
 	}
 
-	// Check if user can invite
 	if err = Repo.GetProjectByUUID(projectID, &project).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
@@ -127,17 +124,26 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.Rep
 		return &result, status, err
 	}
 
-	// Need to change parameter to models.AddMembersPayload type
-	can, err := rights.CanUserInviteRole(&Repo, &user, &project, &Role{ID: input.Members[0].RoleID})
+	can, err := checkUserCanAddMembers(&Repo, user, project, input.Members)
+	if err != nil {
+		status = http.StatusInternalServerError
+		result.Error = err.Error()
+
+		return &result, status, err
+	}
 
 	if can {
 		err = Repo.ProjectAddMembers(project, input.Members).Err()
-	}
 
-	if err != nil {
-		status = http.StatusInternalServerError
-		result.Success = false
-		result.Error = err.Error()
+		if err != nil {
+			status = http.StatusInternalServerError
+			result.Error = err.Error()
+		} else {
+			result.Success = true
+		}
+	} else {
+		status = http.StatusForbidden
+		result.Error = "operation not allowed"
 	}
 
 	return &result, status, err
@@ -148,24 +154,115 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.R
 
 	var project Project
 	var projectID = params.Get("projectID").(string)
-	input := models.RemoveMembersPayload{}
-	result := models.RemoveMembersResponse{}
+	input := RemoveMembersPayload{}
+	result := RemoveMembersResponse{}
 	err = input.Deserialize(body)
 
 	if projectID == "" || err != nil {
 		return &result, http.StatusBadRequest, err
 	}
 
-	err = Repo.
-		GetProjectByUUID(projectID, &project).
-		ProjectRemoveMembers(project, input.Members).
-		Err()
+	if err = Repo.GetProjectByUUID(projectID, &project).Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusNotFound
+			result.Error = "No such project"
+		} else {
+			status = http.StatusInternalServerError
+			result.Error = err.Error()
+		}
+	}
 
+	can, err := checkUserCanRemoveMembers(&Repo, user, project, input.Members)
 	if err != nil {
 		status = http.StatusInternalServerError
-		result.Success = false
 		result.Error = err.Error()
+
+		return &result, status, err
+	}
+
+	if can {
+		err = Repo.
+			ProjectRemoveMembers(project, input.Members).
+			Err()
+
+		if err != nil {
+			status = http.StatusInternalServerError
+			result.Error = err.Error()
+		} else {
+			result.Success = true
+		}
+	} else {
+		status = http.StatusForbidden
+		result.Error = "operation not allowed"
 	}
 
 	return &result, status, err
+}
+
+// checkUserCanAddMembers checks wether a user can add all the members in `members` to `project`
+// Returns false if at least one of the members cannot be added
+func checkUserCanAddMembers(Repo *repo.Repo, user User, project Project, members []MemberRole) (can bool, err error) {
+	can = true
+
+	projectMember := ProjectMember{
+		UserID:    user.ID,
+		ProjectID: project.ID,
+	}
+
+	if err = Repo.GetProjectMember(&projectMember).Err(); err != nil {
+		return false, err
+	}
+
+	for _, m := range members {
+		role := Role{ID: m.RoleID}
+
+		can, err = rights.CanRoleAddRole(Repo, projectMember.Role, role)
+
+		if err != nil {
+			can = false
+			break
+		}
+
+		if !can {
+			break
+		}
+	}
+
+	return can, err
+}
+
+// checkUserCanRemoveMembers checks wether a user can remove all the members in `members` from `project`
+// Returns false if at least one of the members cannot be removed
+func checkUserCanRemoveMembers(Repo repo.IRepo, user User, project Project, members []string) (can bool, err error) {
+	can = true
+
+	projectMember := ProjectMember{
+		UserID:    user.ID,
+		ProjectID: project.ID,
+	}
+
+	projectMembers := []ProjectMember{}
+
+	if err = Repo.
+		GetProjectMember(&projectMember).
+		ListProjectMembers(members, &projectMembers).
+		Err(); err != nil {
+
+		return false, err
+	}
+
+	for _, m := range projectMembers {
+		can, err = rights.CanRoleAddRole(Repo, projectMember.Role, m.Role)
+
+		if err != nil {
+			can = false
+			break
+		}
+
+		if !can {
+			break
+		}
+	}
+
+	return can, err
 }

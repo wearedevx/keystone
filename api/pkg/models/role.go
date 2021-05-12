@@ -10,11 +10,14 @@ import (
 )
 
 type Role struct {
-	ID          uint      `json:"id" gorm:"primaryKey"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID            uint      `json:"id" gorm:"primaryKey"`
+	Name          string    `json:"name"`
+	Description   string    `json:"description"`
+	ParentID      uint      `json:"parent_id"`
+	Parent        *Role     `json:"parent" gorm:"references:ID;foreignKey:ParentID"`
+	CanAddMembers bool      `json:"can_add_members"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 func (u *Role) BeforeCreate(tx *gorm.DB) (err error) {
