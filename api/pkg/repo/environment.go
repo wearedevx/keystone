@@ -19,7 +19,11 @@ func (repo *Repo) GetEnvironment(environment *Environment) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().Preload("EnvironmentType").First(&environment).Error
+	repo.err = repo.GetDb().
+		Preload("EnvironmentType").
+		Where(*environment).
+		First(&environment).
+		Error
 
 	return repo
 }
@@ -29,7 +33,11 @@ func (repo *Repo) GetOrCreateEnvironment(environment *Environment) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().Preload("EnvironmentType").FirstOrCreate(environment).Error
+	repo.err = repo.GetDb().
+		Preload("EnvironmentType").
+		Where(*environment).
+		FirstOrCreate(environment).
+		Error
 
 	return repo
 }

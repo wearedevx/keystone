@@ -76,7 +76,7 @@ func CanUserInviteOnEnvironment(Repo repo.IRepo, user *User, project *Project, e
 // CanRoleAddRole tells if a user with a given role can add or set users
 // with an other role
 func CanRoleAddRole(Repo repo.IRepo, role Role, roleToInvite Role) (can bool, err error) {
-	if role.CanAddMembers {
+	if role.CanAddMember {
 		roles := make([]Role, 0)
 
 		err = Repo.GetChildrenRoles(role, &roles).Err()

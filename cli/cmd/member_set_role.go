@@ -57,7 +57,7 @@ ks member set-role sandra@github`,
 		}
 
 		if argc == 2 {
-			roleName = args[2]
+			roleName = args[1]
 		}
 
 		if !r.Match([]byte(memberId)) {

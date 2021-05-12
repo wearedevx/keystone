@@ -12,7 +12,11 @@ func (repo *Repo) GetProjectMember(projectMember *ProjectMember) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().Preload("Role").First(projectMember).Error
+	repo.err = repo.GetDb().
+		Preload("Role").
+		Where(*projectMember).
+		First(projectMember).
+		Error
 
 	return repo
 }
@@ -22,7 +26,10 @@ func (repo *Repo) ListProjectMembers(userIDList []string, projectMember *[]Proje
 		return repo
 	}
 
-	repo.err = repo.GetDb().Preload("Role").Find(projectMember, "user_id IN ?", userIDList).Error
+	repo.err = repo.GetDb().
+		Preload("Role").
+		Find(projectMember, "user_id IN ?", userIDList).
+		Error
 
 	return repo
 }
@@ -34,7 +41,9 @@ func (repo *Repo) CreateProjectMember(projectMember *ProjectMember, role *Role) 
 
 	projectMember.RoleID = role.ID
 
-	repo.err = repo.GetDb().Create(&projectMember).Error
+	repo.err = repo.GetDb().
+		Create(&projectMember).
+		Error
 
 	return repo
 }

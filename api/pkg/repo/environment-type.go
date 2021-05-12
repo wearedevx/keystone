@@ -19,7 +19,7 @@ func (repo *Repo) GetEnvironmentType(envType *EnvironmentType) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().First(&envType).Error
+	repo.err = repo.GetDb().Where(*envType).First(&envType).Error
 
 	return repo
 }
@@ -29,7 +29,7 @@ func (repo *Repo) GetOrCreateEnvironmentType(envType *EnvironmentType) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().FirstOrCreate(envType).Error
+	repo.err = repo.GetDb().Where(*envType).FirstOrCreate(envType).Error
 
 	return repo
 }

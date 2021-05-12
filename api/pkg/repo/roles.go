@@ -9,7 +9,6 @@ func (r *Repo) GetRoles(roles *[]Role) IRepo {
 		return r
 	}
 
-	db := r.GetDb()
 	r.err = db.Find(roles).Error
 
 	return r
@@ -25,7 +24,10 @@ func (repo *Repo) GetRole(role *Role) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().First(&role).Error
+	repo.err = repo.GetDb().
+		Where(*role).
+		First(&role).
+		Error
 
 	return repo
 }

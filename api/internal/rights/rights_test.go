@@ -15,32 +15,32 @@ var fakeUserRole map[string]string
 func initFakeRoles() {
 	fakeRoles = []Role{
 		{
-			ID:            1,
-			Name:          "developer",
-			ParentID:      2,
-			CanAddMembers: false,
+			ID:           1,
+			Name:         "developer",
+			ParentID:     2,
+			CanAddMember: false,
 		},
 		{
-			ID:            2,
-			Name:          "lead developer",
-			ParentID:      3,
-			CanAddMembers: true,
+			ID:           2,
+			Name:         "lead developer",
+			ParentID:     3,
+			CanAddMember: true,
 		},
 		{
-			ID:            3,
-			Name:          "devops",
-			ParentID:      4,
-			CanAddMembers: true,
+			ID:           3,
+			Name:         "devops",
+			ParentID:     4,
+			CanAddMember: true,
 		},
 		{
-			ID:            4,
-			Name:          "admin",
-			CanAddMembers: true,
+			ID:           4,
+			Name:         "admin",
+			CanAddMember: true,
 		},
 		{
-			ID:            5,
-			Name:          "nothing",
-			CanAddMembers: true,
+			ID:           5,
+			Name:         "nothing",
+			CanAddMember: true,
 		},
 	}
 

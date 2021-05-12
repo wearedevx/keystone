@@ -89,7 +89,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo,
 	}
 
 	if !can {
-		return response, http.StatusForbidden, err
+		return response, http.StatusForbidden, errors.New("operation not allowed")
 	}
 
 	if err = Repo.ProjectSetRoleForUser(project, member, role).Err(); err != nil {
