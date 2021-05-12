@@ -79,7 +79,9 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	// minimum length for json response 2 bytes: {} or []
 	if result != nil && len(bodyBytes) >= 2 {
 		err := json.Unmarshal(bodyBytes, result)
-		return err
+		if err != nil {
+			return fmt.Errorf("Error parsing data : %v", string(bodyBytes))
+		}
 	}
 
 	if resp.StatusCode != expectedStatusCode && resp.StatusCode != http.StatusOK {

@@ -237,6 +237,18 @@ func (ctx *Context) EnvironmentVersion() string {
 	}
 	return ""
 }
+
+func (ctx *Context) EnvironmentVersionByName(name string) string {
+	environments := ctx.EnvironmentsFromConfig()
+
+	for _, e := range environments {
+		if e.Name == name {
+			return e.VersionID
+		}
+	}
+	return ""
+}
+
 func (ctx *Context) EnvironmentID() string {
 	environments := ctx.EnvironmentsFromConfig()
 	currentEnvironment := ctx.CurrentEnvironment()
@@ -253,4 +265,13 @@ func (ctx *Context) EnvironmentsFromConfig() []Env {
 
 	ksfile := new(KeystoneFile).Load(ctx.Wd)
 	return ksfile.Environments
+}
+
+func (ctx *Context) EnvironmentVersionHasChanged(name string, environmentID string) bool {
+	currentVersion := ctx.EnvironmentVersionByName(name)
+	if currentVersion != environmentID {
+		return true
+	}
+	return false
+
 }

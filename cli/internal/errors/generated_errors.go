@@ -170,6 +170,11 @@ Please run:
   $ ks login
 
 `,
+	"CannotFindProjectID": `
+{{ ERROR }} {{ .Name | red }}
+Keystone.yml must be malformated
+
+`,
 	"UnkownError": `
 {{ ERROR }} {{ .Name | red }}
 Ouch! We didn't think this could happen.
@@ -374,6 +379,12 @@ func MustBeLoggedIn(cause error) *Error {
 	meta := map[string]string{}
 
 	return NewError("You must be logged in", helpTexts["MustBeLoggedIn"], meta, cause)
+}
+
+func CannotFindProjectID(cause error) *Error {
+	meta := map[string]string{}
+
+	return NewError("Cannot find project ID in config file", helpTexts["CannotFindProjectID"], meta, cause)
 }
 
 func UnkownError(cause error) *Error {

@@ -33,7 +33,6 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		envFilePath := path.Join(ctx.cacheDirPath(), environmentName, ".env")
 
 		for _, secret := range PayloadContent.Secrets {
-
 			if err := new(EnvFile).Load(envFilePath).Set(secret.Label, secret.Value).Dump().Err(); err != nil {
 				err = FailedToUpdateDotEnv(envFilePath, err)
 				fmt.Println(err.Error())

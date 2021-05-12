@@ -32,3 +32,11 @@ func (ctx *Context) GetProjectID() string {
 
 	return ksFile.ProjectId
 }
+
+func (ctx *Context) MustHaveProject() {
+	projectID := ctx.GetProjectID()
+
+	if projectID == "" {
+		ctx.err = CannotFindProjectID(nil)
+	}
+}
