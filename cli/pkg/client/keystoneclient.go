@@ -1,13 +1,25 @@
 package client
 
+import (
+	"github.com/wearedevx/keystone/cli/internal/config"
+	"github.com/wearedevx/keystone/cli/internal/errors"
+)
+
 type KeystoneClientImpl struct {
 	r requester
 }
 
-func NewKeystoneClient(userID string, jwtToken string) KeystoneClient {
-	return &KeystoneClientImpl{
-		r: newRequester(userID, jwtToken),
+func NewKeystoneClient() (KeystoneClient, *errors.Error) {
+	account, index := config.GetCurrentAccount()
+	token := config.GetAuthToken()
+
+	if index < 0 {
+		return nil, errors.MustBeLoggedIn(nil)
 	}
+
+	return &KeystoneClientImpl{
+		r: newRequester(account["user_id"], token),
+	}, nil
 }
 
 func (client *KeystoneClientImpl) Roles() *Roles {

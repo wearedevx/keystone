@@ -55,12 +55,45 @@ type File struct {
 	Value string `json:"content"`
 }
 
+type SecretVal struct {
+	Label string `json:"label"`
+	Value string `json:"value"`
+}
+
 type MessagePayload struct {
-	Files   []File `json:"files"`
-	Secrets []struct {
-		Label string `json:"label"`
-		Value string `json:"value"`
-	} `json:"secrets"`
+	Files   []File      `json:"files"`
+	Secrets []SecretVal `json:"secrets"`
+}
+type MessageToWritePayload struct {
+	Payload []byte `json:"payload"`
+	// SenderID // Set by server
+	UserID        string `json:"userid"`
+	EnvironmentID string `json:"environment_id"`
+}
+type MessagesToWritePayload struct {
+	Messages []MessageToWritePayload `json:"messages"`
+}
+
+func (e *MessagesToWritePayload) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(e)
+}
+
+func (u *MessagesToWritePayload) Serialize(out *string) (err error) {
+	var sb strings.Builder
+	err = json.NewEncoder(&sb).Encode(u)
+	*out = sb.String()
+	return err
+}
+
+func (e *MessagePayload) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(e)
+}
+
+func (u *MessagePayload) Serialize(out *string) (err error) {
+	var sb strings.Builder
+	err = json.NewEncoder(&sb).Encode(u)
+	*out = sb.String()
+	return err
 }
 
 type GetMessageByEnvironmentResponse struct {

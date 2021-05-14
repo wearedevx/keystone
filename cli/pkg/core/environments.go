@@ -1,15 +1,19 @@
 package core
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"path"
 	"strings"
 
+	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/pkg/client"
 )
 
 func (ctx *Context) CurrentEnvironment() string {
@@ -238,19 +242,93 @@ func (ctx *Context) EnvironmentVersion() string {
 	return ""
 }
 func (ctx *Context) EnvironmentID() string {
-	environments := ctx.EnvironmentsFromConfig()
-	currentEnvironment := ctx.CurrentEnvironment()
+	return ctx.getCurrentEnvironmentId()
+	// environments := ctx.EnvironmentsFromConfig()
+	// fmt.Println("cli ~ environments.go ~ environments", environments)
+	// currentEnvironment := ctx.CurrentEnvironment()
+	// fmt.Println("cli ~ environments.go ~ currentEnvironment", currentEnvironment)
 
-	for _, e := range environments {
-		if e.Name == currentEnvironment {
-			return e.EnvironmentID
-		}
-	}
-	return ""
+	// for _, e := range environments {
+	// 	if e.Name == currentEnvironment {
+	// 		return e.EnvironmentID
+	// 	}
+	// }
+	// return ""
 }
 
 func (ctx *Context) EnvironmentsFromConfig() []Env {
 
 	ksfile := new(KeystoneFile).Load(ctx.Wd)
 	return ksfile.Environments
+}
+
+// Push current environnement.
+// Post to server []MessageToWritePayload.
+func (ctx *Context) PushEnv() error {
+	// var result client.GenericResponse
+
+	// Get public keyrs
+	c, kcErr := client.NewKeystoneClient()
+
+	if kcErr != nil {
+		return kcErr
+	}
+
+	environmentId := ctx.EnvironmentID()
+
+	userPublicKeys, err := c.Users().GetEnvironmentPublicKeys(environmentId)
+
+	if err != nil {
+		return err
+	}
+
+	PayloadContent, err := ctx.PrepareMessagePayload()
+
+	if err != nil {
+		return err
+	}
+
+	// messages := make([]models.MessageToWritePayload, 0)
+	messagesToWrite := models.MessagesToWritePayload{
+		Messages: make([]models.MessageToWritePayload, 0),
+	}
+	// messages := make([]models.MessageToWritePayload, 0)
+
+	var currentUser *user.User
+
+	if currentUser, err = user.Current(); err != nil {
+		panic(err)
+	}
+
+	// Create one message per user
+	for _, userPublicKey := range userPublicKeys.Keys {
+		// TODO
+		// Uid ? User id ?
+		if userPublicKey.UserID != currentUser.Uid {
+
+			// TODO: encrypt payload with recipient public key
+			// crypto.EncryptForUser()
+			var payload string
+			PayloadContent.Serialize(&payload)
+
+			messagesToWrite.Messages = append(messagesToWrite.Messages, models.MessageToWritePayload{
+				Payload:       []byte(payload),
+				UserID:        userPublicKey.UserID,
+				EnvironmentID: environmentId,
+			})
+		}
+	}
+
+	fmt.Println("cli ~ environments.go ~ messages", messagesToWrite)
+	response, err := c.Messages().SendMessages(environmentId, messagesToWrite)
+
+	if err != nil {
+		return err
+	}
+
+	// TODO
+	// Set new version id
+
+	fmt.Println("cli ~ environments.go ~ response", response)
+	return nil
 }

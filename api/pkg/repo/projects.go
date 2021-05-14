@@ -96,7 +96,7 @@ func (r *Repo) GetProject(project *Project) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().First(project).Error
+	r.err = r.GetDb().Preload("Environments").First(project).Error
 
 	return r
 }

@@ -38,7 +38,7 @@ type KeystoneFile struct {
 }
 
 type Env struct {
-	EnvironmentID string `yaml:"environment_id"`
+	EnvironmentID string `yaml:"id"`
 	Name          string `yaml:"name"`
 	VersionID     string `yaml:"version_id"`
 }
@@ -53,7 +53,9 @@ func NewKeystoneFile(wd string, project Project) *KeystoneFile {
 	var environments []Env
 
 	for _, env := range project.Environments {
-		environments = append(environments, Env{env.EnvironmentID, env.Name, env.VersionID})
+		// TODO
+		// Remove VersionID fro: keystone file
+		environments = append(environments, Env{fmt.Sprint(env.ID), env.Name, env.VersionID})
 	}
 
 	return &KeystoneFile{

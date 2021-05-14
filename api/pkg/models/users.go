@@ -15,6 +15,10 @@ type KeyRing struct {
 	Sign   string `json:"sign" gorm:"column:keys_sign"`
 }
 
+type PublicKey struct {
+	Key []byte `json:"key"`
+}
+
 type User struct {
 	ID          uint        `json:"id" gorm:"primaryKey" faker:"-"`
 	AccountType AccountType `json:"account_type" gorm:"default:custom" faker:"oneof: github, gitlab"`
@@ -57,8 +61,23 @@ type LoginPayload struct {
 }
 
 type UserPublicKey struct {
-	UserID    string `json:"user_id"`
+	UserID    string `json:"user_id"` // UserID as string (e.g: toto@github)
 	PublicKey []byte `json:"publick_key"`
+}
+
+type PublicKeys struct {
+	Keys []UserPublicKey `json:"keys"`
+}
+
+func (p *PublicKeys) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(p)
+}
+
+func (p *PublicKeys) Serialize(out *string) error {
+	var sb strings.Builder
+	err := json.NewEncoder(&sb).Encode(p)
+	*out = sb.String()
+	return err
 }
 
 type AccountType string

@@ -1,16 +1,20 @@
-project_id: ed9e76f1-d6ce-4e1f-8b1a-f7e982658f53
-name: totolioto
-env: []
-files: []
+project_id: a0207f5e-be3c-40a4-aa6a-2fc4930aa7a5
+name: my-project
+env:
+- key: lol
+  strict: true
+files:
+- path: .envv
+  strict: false
 options:
   strict: false
 environments:
-- environment_id: c6f84382-d128-4994-a0d7-9f6ea808dec2
+- id: "1"
   name: dev
-  version_id: b06cad40-afef-435f-9a4f-30bb11d473e8
-- environment_id: f18b7e9c-d335-42fa-b1ef-3eb970da3ea9
+  version_id: "0"
+- id: "2"
   name: staging
-  version_id: 5bf0a894-2078-4c89-9165-447a3530e169
-- environment_id: d6152a91-11f3-4e56-9736-a483a9f5a8e9
+  version_id: "0"
+- id: "3"
   name: prod
-  version_id: fb73a516-c72d-4631-8352-3b53c1c7422f
+  version_id: "0"

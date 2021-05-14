@@ -22,7 +22,6 @@ import (
 	"path/filepath"
 
 	"github.com/eiannone/keyboard"
-
 	"github.com/spf13/cobra"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/gitignorehelper"
@@ -125,6 +124,13 @@ Examples:
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
+			return
+		}
+
+		// TODO
+		// Format beautyiful error
+		if pushErr := ctx.PushEnv(); err != nil {
+			fmt.Println("cli ~ secret_add.go ~ err", pushErr)
 			return
 		}
 

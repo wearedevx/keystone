@@ -87,7 +87,7 @@ func (c *Context) dotKeystonePath() string {
 }
 
 func (c *Context) environmentFilePath() string {
-	return path.Join(c.dotKeystonePath(), "environment")
+	return path.Join(c.dotKeystonePath(), "environment.yml")
 }
 
 func (c *Context) rolesFilePath() string {
@@ -155,4 +155,23 @@ func resolveKeystoneRootDir(cwd string) (string, error) {
 	}
 
 	return candidate, err
+}
+
+func (c *Context) currentEnvironmentCachePath() string {
+	envCachePath := c.cacheDirPath()
+	currentEnvironment := c.CurrentEnvironment()
+	return path.Join(envCachePath, currentEnvironment)
+}
+
+func (c *Context) getCurrentEnvironmentId() string {
+	ksfile := new(KeystoneFile).Load(c.Wd)
+	currentEnvironment := c.CurrentEnvironment()
+
+	for _, env := range ksfile.Environments {
+		if env.Name == currentEnvironment {
+			return env.EnvironmentID
+		}
+	}
+
+	return ""
 }

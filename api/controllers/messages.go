@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
+	"gorm.io/gorm"
 
 	"github.com/wearedevx/keystone/api/internal/router"
 	. "github.com/wearedevx/keystone/api/internal/utils"
@@ -69,20 +71,63 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 	var status = http.StatusOK
 	response := &GenericResponse{}
 
-	// Check if user is a member of project
-	// var projectID = params.Get("projectID").(string)
+	var envID = params.Get("envID").(string)
 
-	payload := &repo.MessagesPayload{}
-	payload.Deserialize(body)
+	u64, err := strconv.ParseUint(envID, 10, 64)
 
-	for _, message := range payload.Messages {
-		Repo.WriteMessage(user, message)
+	if err != nil {
+		fmt.Println("api ~ messages.go ~ err", err)
+
+		response.Error = err
+		response.Success = false
+		return response, 400, nil
 	}
 
-	// For each message,
-	// - check if user can write to environment
-	// - check recipient exist
-	// - If yes, write message
+	environment := &Environment{
+		ID: uint(u64),
+	}
+
+	// Create transaction
+	Repo.GetDb().Transaction(func(tx *gorm.DB) error {
+
+		// TODO
+		// Check if user can write on env
+
+		payload := &repo.MessagesPayload{}
+		payload.Deserialize(body)
+		fmt.Println("api ~ messages.go ~ payload", payload)
+
+		var err error
+
+		for _, message := range payload.Messages {
+			// TODO
+			// - check recipient exists with read rights.
+
+			// If ok, remove potential old messages for recipient.
+			Repo.WriteMessage(user, message)
+
+			if Repo.Err() != nil {
+				err = Repo.Err()
+				break
+			}
+		}
+
+		if err != nil {
+			fmt.Println("api ~ messages.go ~ err", err)
+			return err
+		}
+
+		// Change environment version id.
+		err = Repo.SetNewVersionID(environment)
+
+		if err != nil {
+			fmt.Println("api ~ messages.go ~ err", err)
+			return err
+		}
+
+		// Return nil commit transaction.
+		return nil
+	})
 
 	return response, status, nil
 }

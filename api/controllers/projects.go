@@ -1,11 +1,9 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	. "github.com/wearedevx/keystone/api/internal/utils"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -15,25 +13,6 @@ import (
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
-
-type projectsPublicKeys struct {
-	keys []UserPublicKey
-}
-
-func (p *projectsPublicKeys) Deserialize(in io.Reader) error {
-	return json.NewDecoder(in).Decode(p)
-}
-
-func (p *projectsPublicKeys) Serialize(out *string) error {
-	var sb strings.Builder
-	var err error
-
-	err = json.NewEncoder(&sb).Encode(p)
-
-	*out = sb.String()
-
-	return err
-}
 
 func PostProject(_ router.Params, body io.ReadCloser, Repo repo.Repo, user User) (router.Serde, int, error) {
 	var status int = http.StatusOK
@@ -73,7 +52,7 @@ func GetProjectsPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.Repo
 
 	var project Project
 	var projectID = params.Get("projectID").(string)
-	var result projectsPublicKeys
+	var result PublicKeys
 
 	runner := NewRunner([]RunnerAction{
 		NewAction(func() error {
@@ -82,7 +61,7 @@ func GetProjectsPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.Repo
 
 			for _, member := range project.Members {
 
-				result.keys = append(result.keys, UserPublicKey{
+				result.Keys = append(result.Keys, UserPublicKey{
 					UserID:    member.User.UserID,
 					PublicKey: member.User.PublicKey,
 				})

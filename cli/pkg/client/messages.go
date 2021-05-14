@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
@@ -36,6 +37,14 @@ func (client *Messages) DeleteMessage(messageID uint) (GenericResponse, error) {
 	var stringMessageID = strconv.FormatUint(uint64(messageID), 10)
 
 	err = client.r.del("/messages/"+stringMessageID, nil, &result, nil)
+
+	return result, err
+}
+
+func (client *Messages) SendMessages(environmentId string, messages models.MessagesToWritePayload) (GenericResponse, error) {
+	var result GenericResponse
+
+	err := client.r.post("/environments/"+environmentId+"/messages", messages, &result, nil)
 
 	return result, err
 }

@@ -14,13 +14,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // fetchCmd represents the fetch command
@@ -35,19 +34,18 @@ Get info from your team:
 	Run: func(cmd *cobra.Command, args []string) {
 		var err *errors.Error
 
-		account, index := config.GetCurrentAccount()
+		// Get keystone key.
+		c, kcErr := client.NewKeystoneClient()
 
-		if index < 0 {
-			ui.Print(errors.MustBeLoggedIn(nil).Error())
+		if kcErr != nil {
+			kcErr.Print()
+			os.Exit(1)
 		}
-		token := config.GetAuthToken()
 
 		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		projectID := ctx.GetProjectID()
-
-		c := client.NewKeystoneClient(account["user_id"], token)
 
 		fmt.Println("Fetching new data...")
 		result, _ := c.Messages().GetMessages(projectID)

@@ -22,7 +22,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
@@ -69,20 +68,17 @@ ks member set-role sandra@github`,
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		// Auth check
-		account, index := config.GetCurrentAccount()
-		token := config.GetAuthToken()
+		// Get keystone key.
+		c, kcErr := client.NewKeystoneClient()
 
-		if index < 0 {
-			ui.Print(errors.MustBeLoggedIn(nil).Error())
+		if kcErr != nil {
+			kcErr.Print()
+			os.Exit(1)
 		}
 
 		// Read Roles from config
 		ctx := core.New(core.CTX_RESOLVE)
 		projectID := ctx.GetProjectID()
-
-		c := client.NewKeystoneClient(account["user_id"], token)
-
 		// Ensure member exists
 		r, err := c.Users().CheckUsersExist([]string{memberId})
 		if r.Error != "" {

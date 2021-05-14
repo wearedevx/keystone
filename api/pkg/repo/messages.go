@@ -33,8 +33,10 @@ func (repo *Repo) GetMessagesForUserOnEnvironment(user User, environment Environ
 	return repo.err
 }
 
-func (repo *Repo) WriteMessage(user User, message Message) error {
-	return nil
+func (repo *Repo) WriteMessage(user User, message Message) IRepo {
+	message.SenderID = user.ID
+	repo.err = repo.GetDb().Create(&message).Error
+	return repo
 }
 
 func (repo *Repo) DeleteMessage(messageID int) error {
