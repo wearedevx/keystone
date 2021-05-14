@@ -168,9 +168,6 @@ func (ctx *Context) RemoveFile(filePath string, force bool) *Context {
 	for _, environment := range environments {
 		cachedFilePath := path.Join(ctx.cacheDirPath(), environment, filePath)
 
-		// relativePathFile := strings.Replace(cachedFilePath, ctx.Wd, "", 1)
-		// fmt.Println("- File to delete: ", "."+relativePathFile)
-
 		if FileExists(cachedFilePath) {
 			os.Remove(cachedFilePath)
 		}

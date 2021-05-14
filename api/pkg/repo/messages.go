@@ -26,11 +26,9 @@ func (gr *MessagesPayload) Serialize(out *string) error {
 	return err
 }
 
-func (repo *Repo) GetMessagesForUserOnEnvironment(user User, environment Environment, message *Message) error {
-
-	repo.GetDb().Model(&Message{}).Where("recipient_id = ? AND environment_id = ?", user.ID, environment.EnvironmentID).First(&message)
-
-	return repo.err
+func (repo *Repo) GetMessagesForUserOnEnvironment(user User, environment Environment, message *Message) IRepo {
+	repo.err = repo.GetDb().Model(&Message{}).Where("recipient_id = ? AND environment_id = ?", user.ID, environment.EnvironmentID).First(&message).Error
+	return repo
 }
 
 func (repo *Repo) WriteMessage(user User, message Message) IRepo {

@@ -56,7 +56,7 @@ ks member set-role sandra@github`,
 		}
 
 		if argc == 2 {
-			roleName = args[2]
+			roleName = args[1]
 		}
 
 		if !r.Match([]byte(memberId)) {
@@ -81,8 +81,8 @@ ks member set-role sandra@github`,
 		projectID := ctx.GetProjectID()
 		// Ensure member exists
 		r, err := c.Users().CheckUsersExist([]string{memberId})
-		if r.Error != "" {
-			errors.UsersDontExist(r.Error, nil).Print()
+		if r.Error != "" || err != nil {
+			errors.UsersDontExist(r.Error, err).Print()
 			os.Exit(1)
 		}
 
@@ -128,7 +128,6 @@ func getRoleWithName(roleName string, roles []models.Role) (models.Role, bool) {
 	var role models.Role
 
 	for _, existingRole := range roles {
-		fmt.Println("existingRole:", existingRole.Name)
 		if existingRole.Name == roleName {
 			found = true
 			role = existingRole

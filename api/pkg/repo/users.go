@@ -13,7 +13,7 @@ func (r *Repo) GetUser(user *User) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().First(user).Error
+	r.err = r.GetDb().Where(user).First(user).Error
 
 	return r
 }
@@ -28,7 +28,7 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		ExtID:       user.ExtID,
 	}
 
-	r.err = r.GetDb().First(&foundUser).Error
+	r.err = r.GetDb().Where(*&foundUser).First(&foundUser).Error
 
 	if r.err == nil {
 		if bytes.Compare(foundUser.PublicKey, user.PublicKey) != 0 {

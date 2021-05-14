@@ -18,7 +18,6 @@ type RolesEnvironmentType struct {
 	Name              string          `json:"name" gorm:"not null"`
 	Read              bool            `json:"read"`
 	Write             bool            `json:"write"`
-	Invite            bool            `json:"invite"`
 	CreatedAt         time.Time       `json:"created_at"`
 	UpdatedAt         time.Time       `json:"updated_at"`
 }

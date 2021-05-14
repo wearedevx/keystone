@@ -23,7 +23,11 @@ func (repo *Repo) GetEnvironment(environment *Environment) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().Preload("EnvironmentType").First(&environment).Error
+	repo.err = repo.GetDb().
+		Preload("EnvironmentType").
+		Where(*environment).
+		First(&environment).
+		Error
 
 	return repo
 }
@@ -33,20 +37,23 @@ func (repo *Repo) GetOrCreateEnvironment(environment *Environment) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().Preload("EnvironmentType").FirstOrCreate(environment).Error
+	repo.err = repo.GetDb().
+		Preload("EnvironmentType").
+		Where(*environment).
+		FirstOrCreate(environment).
+		Error
 
 	return repo
 }
 
-func (repo *Repo) GetEnvironmentsByProjectUUID(projectUUID string) []Environment {
-	var foundEnvironments []Environment
+func (repo *Repo) GetEnvironmentsByProjectUUID(projectUUID string, foundEnvironments *[]Environment) IRepo {
 
 	var project Project
 	repo.err = repo.GetDb().Model(&Project{}).Where("uuid = ?", projectUUID).First(&project).Error
 
 	repo.err = repo.GetDb().Model(&Environment{}).Where("project_id = ?", project.ID).Find(&foundEnvironments).Error
 
-	return foundEnvironments
+	return repo
 }
 
 func (repo *Repo) SetNewVersionID(environment *Environment) error {

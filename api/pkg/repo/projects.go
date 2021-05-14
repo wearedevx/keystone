@@ -17,11 +17,13 @@ func (r *Repo) createProject(project *Project) IRepo {
 	}
 
 	db := r.GetDb()
-	role := Role{}
+	role := Role{
+		Name: "admin",
+	}
 
 	r.err = db.Create(project).Error
 
-	r.GetRoleByName("admin", &role)
+	r.GetRole(&role)
 
 	if r.err != nil {
 		return r
@@ -96,7 +98,11 @@ func (r *Repo) GetProject(project *Project) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().Preload("Environments").First(project).Error
+	r.err = r.GetDb().
+		Preload("Environments").
+		Where(&project).
+		First(project).
+		Error
 
 	return r
 }
@@ -117,12 +123,16 @@ func (r *Repo) GetOrCreateProject(project *Project) IRepo {
 }
 
 func (r *Repo) ProjectGetMembers(project *Project, members *[]ProjectMember) IRepo {
-	fmt.Println("project:", project)
 	if r.err != nil {
 		return r
 	}
 
-	r.GetDb().Preload("User").Preload("Role").Where("project_id = ?", project.ID).Find(members)
+	r.err = r.GetDb().
+		Preload("User").
+		Preload("Role").
+		Where("project_id = ?", project.ID).
+		Find(members).
+		Error
 
 	return r
 }

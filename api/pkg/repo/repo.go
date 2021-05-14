@@ -24,7 +24,6 @@ var db *gorm.DB
 func getDSN() string {
 	host := GetEnv("DB_HOST", "db")
 	port := GetEnv("DB_PORT", "5432")
-	fmt.Println("port:", port)
 	user := GetEnv("DB_USER", "ks")
 	password := GetEnv("DB_PASSWORD", "ks")
 	dbname := GetEnv("DB_NAME", "ks")

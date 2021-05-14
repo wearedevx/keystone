@@ -13,7 +13,6 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/wearedevx/keystone/api/internal/router"
-	. "github.com/wearedevx/keystone/api/internal/utils"
 )
 
 type GenericResponse struct {
@@ -39,32 +38,36 @@ func (gr *GenericResponse) Serialize(out *string) error {
 func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo repo.Repo, user User) (router.Serde, int, error) {
 	var status = http.StatusOK
 	var projectID = params.Get("projectID").(string)
+	response := &GenericResponse{}
 
 	var result = GetMessageByEnvironmentResponse{
 		Environments: map[string]GetMessageResponse{},
 	}
 
-	var environments []Environment
-	runner := NewRunner([]RunnerAction{
-		NewAction(func() error {
-			environments = Repo.GetEnvironmentsByProjectUUID(projectID)
-			return Repo.Err()
-		}),
-		NewAction(func() error {
-			for _, environment := range environments {
-				result.Environments[environment.Name] = GetMessageResponse{}
-				curr := result.Environments[environment.Name]
-				Repo.GetMessagesForUserOnEnvironment(user, environment, &curr.Message)
-				curr.VersionID = environment.VersionID
-				result.Environments[environment.Name] = curr
-			}
-			return Repo.Err()
-		}),
-	}).Run()
+	var environments *[]Environment
+	Repo.GetEnvironmentsByProjectUUID(projectID, environments)
 
-	err := runner.Error()
+	if Repo.Err() != nil {
+		response.Error = Repo.Err()
+		response.Success = false
+		return response, 400, nil
+	}
 
-	return &result, status, err
+	for _, environment := range *environments {
+		result.Environments[environment.Name] = GetMessageResponse{}
+		curr := result.Environments[environment.Name]
+		Repo.GetMessagesForUserOnEnvironment(user, environment, &curr.Message)
+		curr.VersionID = environment.VersionID
+		result.Environments[environment.Name] = curr
+
+		if Repo.Err() != nil {
+			response.Error = Repo.Err()
+			response.Success = false
+			return response, 400, nil
+		}
+	}
+
+	return &result, status, nil
 }
 
 func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, user User) (router.Serde, int, error) {

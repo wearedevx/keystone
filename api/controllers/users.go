@@ -19,7 +19,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/wearedevx/keystone/api/internal/authconnector"
 	"github.com/wearedevx/keystone/api/internal/router"
-	. "github.com/wearedevx/keystone/api/internal/utils"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
@@ -33,37 +32,23 @@ func PostUser(w http.ResponseWriter, r *http.Request, _params httprouter.Params)
 	var user *User = &User{}
 	var serializedUser string
 
-	runner := NewRunner([]RunnerAction{
-		NewAction(func() error {
-			return user.Deserialize(r.Body)
-		}).SetStatusError(http.StatusBadRequest),
-		NewAction(func() error {
-			Repo.GetOrCreateUser(user)
-
-			return Repo.Err()
-		}),
-		NewAction(func() error {
-			return user.Serialize(&serializedUser)
-		}),
-		NewAction(func() error {
-			// 	// Server will not encrypt data.
-			// 	// Crypto dependency only in cli side.
-			// 	// Server is juste a mailbox.
-			in := bytes.NewBufferString(serializedUser)
-			// 	// _, e := crypto.EncryptForUser(user, in, &responseBody)
-			responseBody = *in
-			return nil
-			// 	return e
-		}),
-	})
-
-	if err = runner.Run().Error(); err != nil {
-		log.Error(r, err.Error())
-		http.Error(w, err.Error(), status)
+	if err = user.Deserialize(r.Body); err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
-	status = runner.Status()
+	if err = Repo.GetOrCreateUser(user).Err(); err != nil {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	if err = user.Serialize(&serializedUser); err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	in := bytes.NewBufferString(serializedUser)
+	responseBody = *in
 
 	if responseBody.Len() > 0 {
 		w.Header().Add("Content-Type", "application/octet-stream")
@@ -92,49 +77,47 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 	var connector authconnector.AuthConnector
 
-	runner := NewRunner([]RunnerAction{
-		NewAction(func() error {
-			return json.NewDecoder(r.Body).Decode(&payload)
-		}),
-		NewAction(func() error {
-			connector, err = authconnector.GetConnectoForAccountType(payload.AccountType)
-
-			return err
-		}),
-		NewAction(func() error {
-			user, err = connector.GetUserInfo(payload.Token)
-
-			return nil
-		}),
-		NewAction(func() error {
-			user.PublicKey = payload.PublicKey
-			Repo.GetOrCreateUser(&user)
-
-			return Repo.Err()
-		}),
-		NewAction(func() error {
-			jwtToken, err = MakeToken(user)
-
-			return err
-		}),
-		NewAction(func() error {
-			return user.Serialize(&serializedUser)
-		}),
-		NewAction(func() error {
-			serializedUserBytes := []byte(serializedUser)
-			responseBody = *bytes.NewBuffer(serializedUserBytes)
-
-			return nil
-		}),
-	})
-
-	if err = runner.Run().Error(); err != nil {
-		// Use cloud logger?
-		//log.Error(r, err.Error())
-		log.Error(r, err.Error())
-		http.Error(w, err.Error(), runner.Status())
+	if err = json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
+
+	connector, err = authconnector.GetConnectoForAccountType(payload.AccountType)
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	user, err = connector.GetUserInfo(payload.Token)
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	user.PublicKey = payload.PublicKey
+	if len(user.PublicKey) == 0 {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	jwtToken, err = MakeToken(user)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if err = user.Serialize(&serializedUser); err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	serializedUserBytes := []byte(serializedUser)
+	responseBody = *bytes.NewBuffer(serializedUserBytes)
 
 	w.Header().Add("Authorization", fmt.Sprintf("Bearer %s", jwtToken))
 	w.Header().Add("Content-Type", "application/octet-stream")

@@ -33,7 +33,6 @@ func DummyAuth(ctx context.Context, apiUrl string) AuthService {
 }
 
 func (g *dummyAuthService) Start() (string, error) {
-	// fmt.Println("cli ~ dummy-auth.go ~ g.apiUrl", g.apiUrl)
 	lr, _ := getLoginRequest(g.apiUrl)
 
 	g.loginRequest = lr

@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 
-	. "github.com/wearedevx/keystone/api/internal/utils"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 
 	"github.com/wearedevx/keystone/api/internal/router"
@@ -20,23 +19,19 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.R
 	// Check user rights to read
 
 	var envID = params.Get("envID").(string)
-	var result PublicKeys
 
-	runner := NewRunner([]RunnerAction{
-		NewAction(func() error {
+	result := PublicKeys{
+		Keys: make([]UserPublicKey, 0),
+	}
 
-			result = PublicKeys{
-				Keys: make([]UserPublicKey, 0),
-			}
+	Repo.GetEnvironmentPublicKeys(envID, &result)
 
-			Repo.GetEnvironmentPublicKeys(envID, &result)
+	if Repo.Err() != nil {
+		status = http.StatusInternalServerError
+		err = Repo.Err()
+	}
 
-			return Repo.Err()
-		}).SetStatusSuccess(200),
-	}).Run()
-
-	status = runner.Status()
-	err = runner.Error()
+	// status = runner.Status()
 
 	fmt.Println("api ~ environments.go ~ result", result)
 	return &result, status, err

@@ -9,6 +9,61 @@ import (
 	"gorm.io/gorm"
 )
 
+var fakeRoles []Role
+var fakeUserRole map[string]string
+
+func initFakeRoles() {
+	fakeRoles = []Role{
+		{
+			ID:           1,
+			Name:         "developer",
+			ParentID:     2,
+			CanAddMember: false,
+		},
+		{
+			ID:           2,
+			Name:         "lead developer",
+			ParentID:     3,
+			CanAddMember: true,
+		},
+		{
+			ID:           3,
+			Name:         "devops",
+			ParentID:     4,
+			CanAddMember: true,
+		},
+		{
+			ID:           4,
+			Name:         "admin",
+			CanAddMember: true,
+		},
+		{
+			ID:           5,
+			Name:         "nothing",
+			CanAddMember: true,
+		},
+	}
+
+	fakeRoles[1].Parent = &fakeRoles[3]
+	fakeRoles[0].Parent = &fakeRoles[1]
+
+}
+
+func initFakeUserRoles() {
+	fakeUserRole = map[string]string{
+		"dev":    "developer",
+		"lead":   "lead developer",
+		"devops": "devops",
+		"admin":  "admin",
+	}
+}
+
+// Let’s setup some fixtures
+func init() {
+	initFakeRoles()
+	initFakeUserRoles()
+}
+
 type FakeRepo struct{}
 
 func (f *FakeRepo) CreateEnvironment(_ *Environment) IRepo {
@@ -99,11 +154,7 @@ func (f *FakeRepo) GetProjectByUUID(_ string, _ *Project) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
-func (f *FakeRepo) GetRoleByID(_ uint, _ *Role) IRepo {
-	panic("not implemented") // TODO: Implement
-}
-
-func (f *FakeRepo) GetRoleByName(_ string, _ *Role) IRepo {
+func (f *FakeRepo) GetRole(_ *Role) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
@@ -116,6 +167,10 @@ func (f *FakeRepo) GetSecretByName(_ string, _ *Secret) {
 }
 
 func (f *FakeRepo) GetUser(_ *User) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) ListProjectMembers(userIDList []string, projectMember *[]ProjectMember) IRepo {
 	panic("not implemented") // TODO: Implement
 }
 
@@ -145,91 +200,85 @@ func (f *FakeRepo) SetLoginRequestCode(_ string, _ string) LoginRequest {
 
 func getRoleByEnvironmentTypeAndRole(environmentType *EnvironmentType, role *Role) RolesEnvironmentType {
 	switch {
-	case environmentType.Name == "dev" && role.Name == "dev":
+	case environmentType.Name == "dev" && (role.Name == "developer" || role.Name == "lead developer"):
 		return RolesEnvironmentType{
-			Read:   true,
-			Write:  true,
-			Invite: false,
+			Read:  true,
+			Write: true,
 		}
-	case environmentType.Name == "staging" && role.Name == "dev":
+	case environmentType.Name == "staging" && (role.Name == "developer" || role.Name == "lead developer"):
 		return RolesEnvironmentType{
-			Read:   false,
-			Write:  false,
-			Invite: false,
+			Read:  false,
+			Write: false,
 		}
-	case environmentType.Name == "prod" && role.Name == "dev":
+	case environmentType.Name == "prod" && (role.Name == "developer" || role.Name == "lead developer"):
 		return RolesEnvironmentType{
-			Read:   false,
-			Write:  false,
-			Invite: false,
+			Read:  false,
+			Write: false,
 		}
 
 	case environmentType.Name == "dev" && role.Name == "devops":
 		return RolesEnvironmentType{
-			Read:   true,
-			Write:  true,
-			Invite: true,
+			Read:  true,
+			Write: true,
 		}
 	case environmentType.Name == "staging" && role.Name == "devops":
 		return RolesEnvironmentType{
-			Read:   true,
-			Write:  true,
-			Invite: false,
+			Read:  true,
+			Write: true,
 		}
 	case environmentType.Name == "prod" && role.Name == "devops":
 		return RolesEnvironmentType{
-			Read:   false,
-			Write:  false,
-			Invite: false,
+			Read:  false,
+			Write: false,
 		}
 
 	case environmentType.Name == "dev" && role.Name == "admin":
 		return RolesEnvironmentType{
-			Read:   true,
-			Write:  true,
-			Invite: true,
+			Read:  true,
+			Write: true,
 		}
 	case environmentType.Name == "staging" && role.Name == "admin":
 		return RolesEnvironmentType{
-			Read:   true,
-			Write:  true,
-			Invite: true,
+			Read:  true,
+			Write: true,
 		}
 	case environmentType.Name == "prod" && role.Name == "admin":
 		return RolesEnvironmentType{
-			Read:   true,
-			Write:  true,
-			Invite: true,
+			Read:  true,
+			Write: true,
 		}
 
 	default:
 		return RolesEnvironmentType{
-			Read:   false,
-			Write:  false,
-			Invite: false,
+			Read:  false,
+			Write: false,
 		}
 	}
 }
 
-func getRoleByUsername(userName string) Role {
-	switch {
-	case userName == "dev":
-		return Role{
-			Name: "dev",
-		}
-	case userName == "devops":
-		return Role{
-			Name: "devops",
-		}
-	case userName == "admin":
-		return Role{
-			Name: "admin",
-		}
-	default:
-		return Role{
-			Name: "nothing",
+func findRole(role *Role) {
+	for _, r := range fakeRoles {
+		if r.Name == role.Name {
+			*role = r
+			return
 		}
 	}
+
+	// role not found ?
+	// role with the "nothing" name
+	*role = fakeRoles[4]
+}
+
+func getRoleByUsername(userName string) (role Role) {
+	roleName, ok := fakeUserRole[userName]
+	if !ok {
+		roleName = "nothing"
+	}
+
+	role = Role{Name: roleName}
+	findRole(&role)
+
+	return role
 }
 
 func (fakeRepo *FakeRepo) Err() error {
@@ -250,10 +299,31 @@ func (fakeRepo *FakeRepo) GetProjectMember(projectMember *ProjectMember) IRepo {
 
 	return fakeRepo
 }
+
 func (fakeRepo *FakeRepo) GetInvitableRoles(role Role, roles *[]Role) IRepo {
 	// return fakeRepo
 	// TODO
-	return nil
+	return fakeRepo
+}
+
+func (fakeRepo *FakeRepo) GetChildrenRoles(role Role, roles *[]Role) IRepo {
+	switch role.ID {
+	case 3:
+		*roles = []Role{fakeRoles[0], fakeRoles[1]}
+
+	case 2:
+		*roles = []Role{fakeRoles[0]}
+
+	default:
+		*roles = []Role{}
+	}
+
+	return fakeRepo
+}
+
+type rw struct {
+	r bool
+	w bool
 }
 
 func TestCanUserHasRightEnvironment(t *testing.T) {
@@ -261,6 +331,7 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 	project := &Project{}
 
 	userDev := &User{Username: "dev"}
+	userLeadDev := &User{Username: "lead"}
 	userDevops := &User{Username: "devops"}
 	userAdmin := &User{Username: "admin"}
 
@@ -268,82 +339,106 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 	environmentStaging := &Environment{Name: "staging"}
 	environmentProd := &Environment{Name: "prod"}
 
-	// DEV env
+	users := map[string]*User{
+		"dev":    userDev,
+		"lead":   userLeadDev,
+		"devops": userDevops,
+		"admin":  userAdmin,
+	}
 
-	// Dev user
-	canDevReadDev, _ := CanUserReadEnvironment(fakeRepo, userDev, project, environmentDev)
-	assert.True(t, canDevReadDev, "Oops! "+userDev.Username+" should be able to read "+environmentDev.Name+" environment")
-	canDevWriteDev, _ := CanUserWriteOnEnvironment(fakeRepo, userDev, project, environmentDev)
-	assert.True(t, canDevWriteDev, "Oops! "+userDev.Username+" should be able to write "+environmentDev.Name+" environment")
-	canDevInviteDev, _ := CanUserInviteOnEnvironment(fakeRepo, userDev, project, environmentDev)
-	assert.False(t, canDevInviteDev, "Oops! "+userDev.Username+" can't invite on "+environmentDev.Name+" environment")
+	environments := map[string]*Environment{
+		"dev":     environmentDev,
+		"staging": environmentStaging,
+		"prod":    environmentProd,
+	}
 
-	// Devops user
-	canDevopsReadDev, _ := CanUserReadEnvironment(fakeRepo, userDevops, project, environmentDev)
-	assert.True(t, canDevopsReadDev, "Oops! "+userDevops.Username+" user should be able to read "+environmentDev.Name+" environment")
-	canDevopsWriteDev, _ := CanUserWriteOnEnvironment(fakeRepo, userDevops, project, environmentDev)
-	assert.True(t, canDevopsWriteDev, "Oops! "+userDevops.Username+" user should be able to write "+environmentDev.Name+" environment")
-	canDevopsInviteDev, _ := CanUserInviteOnEnvironment(fakeRepo, userDevops, project, environmentDev)
-	assert.True(t, canDevopsInviteDev, "Oops! "+userDevops.Username+" should be able to "+environmentDev.Name+" environment")
+	var rightsMatrix map[string]map[string]rw = map[string]map[string]rw{
+		"dev": {
+			"dev":     {true, true},
+			"staging": {false, false},
+			"prod":    {false, false},
+		},
+		"lead": {
+			"dev":     {true, true},
+			"staging": {false, false},
+			"prod":    {false, false},
+		},
+		"devops": {
+			"dev":     {true, true},
+			"staging": {true, true},
+			"prod":    {false, false},
+		},
+		"admin": {
+			"dev":     {true, true},
+			"staging": {true, true},
+			"prod":    {true, true},
+		},
+	}
 
-	// Admin user
-	canAdminReadDev, _ := CanUserReadEnvironment(fakeRepo, userAdmin, project, environmentDev)
-	assert.True(t, canAdminReadDev, "Oops! "+userAdmin.Username+" user should be able to read "+environmentDev.Name+" environment")
-	canAdminWriteDev, _ := CanUserWriteOnEnvironment(fakeRepo, userAdmin, project, environmentDev)
-	assert.True(t, canAdminWriteDev, "Oops! "+userAdmin.Username+" user should be able to write "+environmentDev.Name+" environment")
-	canAdminInviteDev, _ := CanUserInviteOnEnvironment(fakeRepo, userAdmin, project, environmentDev)
-	assert.True(t, canAdminInviteDev, "Oops! "+userAdmin.Username+" should be able to "+environmentDev.Name+" environment")
+	for name, user := range users {
+		for envName, environment := range environments {
+			expectation := rightsMatrix[name][envName]
 
-	// Staging env
+			canRead, _ := CanUserReadEnvironment(fakeRepo, user, project, environment)
+			canWrite, _ := CanUserWriteOnEnvironment(fakeRepo, user, project, environment)
 
-	// Dev user
-	canDevReadStaging, _ := CanUserReadEnvironment(fakeRepo, userDev, project, environmentStaging)
-	assert.False(t, canDevReadStaging, "Oops! "+userDev.Username+" can't read "+environmentStaging.Name+" environment")
-	canDevWriteStaging, _ := CanUserWriteOnEnvironment(fakeRepo, userDev, project, environmentStaging)
-	assert.False(t, canDevWriteStaging, "Oops! "+userDev.Username+" user can't write "+environmentStaging.Name+" environment")
-	canDevInviteStaging, _ := CanUserInviteOnEnvironment(fakeRepo, userDev, project, environmentStaging)
-	assert.False(t, canDevInviteStaging, "Oops! "+userDev.Username+" user can't invite on "+environmentStaging.Name+" environment")
+			assert.Equal(t, expectation.r, canRead, "Oops! User %s has unexpected read rights on %s environment", name, envName)
+			assert.Equal(t, expectation.w, canWrite, "Oops! User %s has unexpected write rights on %s environment", name, envName)
+		}
+	}
+}
 
-	// Devops user
-	canDevopsReadCI, _ := CanUserReadEnvironment(fakeRepo, userDevops, project, environmentStaging)
-	assert.True(t, canDevopsReadCI, "Oops! "+userDevops.Username+" user should be able to read "+environmentStaging.Name+" environment")
-	canDevopsWriteCI, _ := CanUserWriteOnEnvironment(fakeRepo, userDevops, project, environmentStaging)
-	assert.True(t, canDevopsWriteCI, "Oops! "+userDevops.Username+" user should be able to write "+environmentStaging.Name+" environment")
-	canDevopsInviteCI, _ := CanUserInviteOnEnvironment(fakeRepo, userDevops, project, environmentStaging)
-	assert.False(t, canDevopsInviteCI, "Oops! "+userDevops.Username+" can't invite to "+environmentStaging.Name+" environment")
+func TestUserCanSetMemberRole(t *testing.T) {
+	fakeRepo := FakeRepo{}
+	project := Project{}
 
-	// Admin user
-	canAdminReadCI, _ := CanUserReadEnvironment(fakeRepo, userAdmin, project, environmentStaging)
-	assert.True(t, canAdminReadCI, "Oops! "+userAdmin.Username+" user should be able to read "+environmentStaging.Name+" environment")
-	canAdminWriteCI, _ := CanUserWriteOnEnvironment(fakeRepo, userAdmin, project, environmentStaging)
-	assert.True(t, canAdminWriteCI, "Oops! "+userAdmin.Username+" user should be able to write "+environmentStaging.Name+" environment")
-	canAdminInviteCI, _ := CanUserInviteOnEnvironment(fakeRepo, userAdmin, project, environmentStaging)
-	assert.True(t, canAdminInviteCI, "Oops! "+userAdmin.Username+" should be able to "+environmentStaging.Name+" environment")
+	userDev := User{Username: "dev"}
+	userLeadDev := User{Username: "lead"}
+	userDevops := User{Username: "devops"}
+	userAdmin := User{Username: "admin"}
 
-	// PROD env
+	users := map[string]User{
+		"dev":    userDev,
+		"lead":   userLeadDev,
+		"devops": userDevops,
+		"admin":  userAdmin,
+	}
 
-	// Dev user
-	canDevReadProd, _ := CanUserReadEnvironment(fakeRepo, userDev, project, environmentProd)
-	assert.False(t, canDevReadProd, "Oops! "+userDev.Username+" can't read "+environmentProd.Name+" environment")
-	canDevWriteProd, _ := CanUserWriteOnEnvironment(fakeRepo, userDev, project, environmentProd)
-	assert.False(t, canDevWriteProd, "Oops! "+userDev.Username+" user can't write "+environmentProd.Name+" environment")
-	canDevInviteProd, _ := CanUserInviteOnEnvironment(fakeRepo, userDev, project, environmentProd)
-	assert.False(t, canDevInviteProd, "Oops! "+userDev.Username+" user can't invite on "+environmentProd.Name+" environment")
+	rightsMatrix := map[string]map[string]bool{
+		"dev": {
+			"dev":    false,
+			"lead":   false,
+			"devops": false,
+			"admin":  false,
+		},
+		"lead": {
+			"dev":    true,
+			"lead":   true,
+			"devops": false,
+			"admin":  false,
+		},
+		"devops": {
+			"dev":    true,
+			"lead":   true,
+			"devops": true,
+			"admin":  false,
+		},
+		"admin": {
+			"dev":    true,
+			"lead":   true,
+			"devops": true,
+			"admin":  true,
+		},
+	}
 
-	// Devops user
-	canDevopsReadProd, _ := CanUserReadEnvironment(fakeRepo, userDevops, project, environmentProd)
-	assert.False(t, canDevopsReadProd, "Oops! "+userDevops.Username+"can't read "+environmentProd.Name+" environment")
-	canDevopsWriteProd, _ := CanUserWriteOnEnvironment(fakeRepo, userDevops, project, environmentProd)
-	assert.False(t, canDevopsWriteProd, "Oops! "+userDevops.Username+"can't write "+environmentProd.Name+" environment")
-	canDevopsInviteProd, _ := CanUserInviteOnEnvironment(fakeRepo, userDevops, project, environmentProd)
-	assert.False(t, canDevopsInviteProd, "Oops! "+userDevops.Username+" can't invite to "+environmentProd.Name+" environment")
+	for name, user := range users {
+		for otherName, otherUser := range users {
+			expectation := rightsMatrix[name][otherName]
+			role := getRoleByUsername(otherName)
 
-	// Admin user
-	canAdminReadProd, _ := CanUserReadEnvironment(fakeRepo, userAdmin, project, environmentProd)
-	assert.True(t, canAdminReadProd, "Oops! "+userAdmin.Username+" user should be able to read "+environmentProd.Name+" environment")
-	canAdminWriteProd, _ := CanUserWriteOnEnvironment(fakeRepo, userAdmin, project, environmentProd)
-	assert.True(t, canAdminWriteProd, "Oops! "+userAdmin.Username+" user should be able to write "+environmentProd.Name+" environment")
-	canAdminInviteProd, _ := CanUserInviteOnEnvironment(fakeRepo, userAdmin, project, environmentProd)
-	assert.True(t, canAdminInviteProd, "Oops! "+userAdmin.Username+" should be able to "+environmentProd.Name+" environment")
+			canSetMemberRole, _ := CanUserSetMemberRole(&fakeRepo, user, otherUser, role, project)
 
+			assert.Equal(t, expectation, canSetMemberRole, "Oops! User %s has unexpected role setting rights on user %s", name, otherName)
+		}
+	}
 }
