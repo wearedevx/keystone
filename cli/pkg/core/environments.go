@@ -241,6 +241,18 @@ func (ctx *Context) EnvironmentVersion() string {
 	}
 	return ""
 }
+
+func (ctx *Context) EnvironmentVersionByName(name string) string {
+	environments := ctx.EnvironmentsFromConfig()
+
+	for _, e := range environments {
+		if e.Name == name {
+			return e.VersionID
+		}
+	}
+	return ""
+}
+
 func (ctx *Context) EnvironmentID() string {
 	return ctx.getCurrentEnvironmentId()
 	// environments := ctx.EnvironmentsFromConfig()
@@ -331,4 +343,13 @@ func (ctx *Context) PushEnv() error {
 
 	fmt.Println("cli ~ environments.go ~ response", response)
 	return nil
+}
+
+func (ctx *Context) EnvironmentVersionHasChanged(name string, environmentID string) bool {
+	currentVersion := ctx.EnvironmentVersionByName(name)
+	if currentVersion != environmentID {
+		return true
+	}
+	return false
+
 }

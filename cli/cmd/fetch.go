@@ -43,7 +43,20 @@ Get info from your team:
 		}
 
 		ctx := core.New(core.CTX_RESOLVE)
+
 		ctx.MustHaveEnvironment(currentEnvironment)
+
+		if err = ctx.Err(); err != nil {
+			err.Print()
+			return
+		}
+
+		ctx.MustHaveProject()
+
+		if err = ctx.Err(); err != nil {
+			err.Print()
+			return
+		}
 
 		projectID := ctx.GetProjectID()
 
@@ -63,11 +76,15 @@ Get info from your team:
 				fmt.Println("Environment", environmentName, "updated")
 				response, _ := c.Messages().DeleteMessage(environment.Message.ID)
 				if !response.Success {
-					fmt.Println(response)
-					fmt.Println("Can't delete message")
+					fmt.Println("Can't delete message", response.Error)
 				}
 			} else {
-				fmt.Println("Environment", environmentName, "up to date")
+				environmentChanged := ctx.EnvironmentVersionHasChanged(environmentName, environment.VersionID)
+				if environmentChanged {
+					fmt.Println("Environment", environmentName, "has changed but no message available. Ask someone to push their secret.")
+				} else {
+					fmt.Println("Environment", environmentName, "up to date")
+				}
 			}
 		}
 
