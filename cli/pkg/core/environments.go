@@ -318,7 +318,6 @@ func (ctx *Context) PushEnv() error {
 		// TODO
 		// Uid ? User id ?
 		if userPublicKey.UserID != currentUser.Uid {
-			fmt.Println("🧟🧟🧟", userPublicKey.UserID)
 
 			// TODO: encrypt payload with recipient public key
 			// crypto.EncryptForUser()

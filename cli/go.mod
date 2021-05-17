@@ -3,7 +3,7 @@ module github.com/wearedevx/keystone/cli
 go 1.16
 
 require (
-	filippo.io/age v1.0.0-rc.1 // indirect
+	filippo.io/age v1.0.0-rc.1
 	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
 	github.com/bxcodec/faker v2.0.1+incompatible // indirect
 	github.com/bxcodec/faker/v3 v3.6.0

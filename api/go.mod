@@ -18,7 +18,7 @@ require (
 	github.com/xanzy/go-gitlab v0.49.0
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
-	golang.org/x/sys v0.0.0-20210511113859-b0526f3d8744 // indirect
+	golang.org/x/sys v0.0.0-20210514084401-e8d321eab015 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
