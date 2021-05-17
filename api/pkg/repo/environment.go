@@ -59,7 +59,7 @@ func (repo *Repo) GetEnvironmentsByProjectUUID(projectUUID string, foundEnvironm
 func (repo *Repo) SetNewVersionID(environment *Environment) error {
 	newVersionID := uuid.NewV4().String()
 	environment.VersionID = newVersionID
-	repo.err = repo.GetDb().Model(&Environment{}).Update("version_id", newVersionID).Error
+	repo.err = repo.GetDb().Model(&Environment{}).Where(environment).Update("version_id", newVersionID).Error
 	return repo.Err()
 }
 
@@ -69,9 +69,9 @@ func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *Pub
 	inner join environment_types as et on et.id = e.environment_type_id
 	inner join roles_environment_types as ret on ret.environment_type_id = et.id
 	inner join roles as r on ret.role_id = r.id
-	inner join project_members as pm on r.id = pm.role_id
+	inner join project_members as pm on r.id = pm.role_id and pm.project_id = e.project_id
 	inner join users as u on u.id = pm.user_id
-	where e.id = ?
+	where e.environment_id = ?
 	and ret.read = true
 	`, environmentID).Rows()
 
