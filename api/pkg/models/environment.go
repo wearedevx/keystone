@@ -38,9 +38,8 @@ func (e *Environment) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(e)
 }
 
-func (u *Environment) Serialize(out *string) error {
+func (u *Environment) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(u)
 
@@ -75,9 +74,8 @@ func (eus *EnvironmentUserSecret) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(eus)
 }
 
-func (pes *EnvironmentUserSecret) Serialize(out *string) error {
+func (pes *EnvironmentUserSecret) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(pes)
 

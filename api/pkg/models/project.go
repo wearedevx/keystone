@@ -39,9 +39,8 @@ func (p *Project) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(p)
 }
 
-func (p *Project) Serialize(out *string) error {
+func (p *Project) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(p)
 
@@ -65,9 +64,8 @@ func (avp *AddVariablePayload) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(avp)
 }
 
-func (avp *AddVariablePayload) Serialize(out *string) error {
+func (avp *AddVariablePayload) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(avp)
 
@@ -88,9 +86,8 @@ func (svp *SetVariablePayload) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(svp)
 }
 
-func (svp *SetVariablePayload) Serialize(out *string) error {
+func (svp *SetVariablePayload) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(svp)
 

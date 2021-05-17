@@ -33,9 +33,8 @@ func (e *EnvironmentType) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(e)
 }
 
-func (u *EnvironmentType) Serialize(out *string) error {
+func (u *EnvironmentType) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(u)
 

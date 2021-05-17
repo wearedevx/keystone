@@ -37,9 +37,8 @@ func (msg *Message) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(msg)
 }
 
-func (msg *Message) Serialize(out *string) error {
+func (msg *Message) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(msg)
 
