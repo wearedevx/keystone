@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -311,21 +312,26 @@ func (ctx *Context) PushEnv() error {
 	if currentUser, err = user.Current(); err != nil {
 		panic(err)
 	}
-
+	fmt.Println(userPublicKeys.Keys)
 	// Create one message per user
 	for _, userPublicKey := range userPublicKeys.Keys {
 		// TODO
 		// Uid ? User id ?
 		if userPublicKey.UserID != currentUser.Uid {
+			fmt.Println("🧟🧟🧟", userPublicKey.UserID)
 
 			// TODO: encrypt payload with recipient public key
 			// crypto.EncryptForUser()
 			var payload string
 			PayloadContent.Serialize(&payload)
 
+			RecipientID, _ := strconv.ParseUint(userPublicKey.UserID, 10, 64)
+			RecipientIDUint := uint(RecipientID)
+
 			messagesToWrite.Messages = append(messagesToWrite.Messages, models.MessageToWritePayload{
 				Payload:       []byte(payload),
 				UserID:        userPublicKey.UserID,
+				RecipientID:   RecipientIDUint,
 				EnvironmentID: environmentId,
 			})
 		}
