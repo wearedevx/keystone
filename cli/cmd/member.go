@@ -26,7 +26,6 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	. "github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -41,7 +40,7 @@ var memberCmd = &cobra.Command{
 
 Used without arguments, displays a list of all members,
 grouped by their role, with indication of their ownership.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		ctx := core.New(core.CTX_RESOLVE)
 		currentUser, index := config.GetCurrentAccount()
 
@@ -72,8 +71,8 @@ grouped by their role, with indication of their ownership.`,
 	},
 }
 
-func getSortedRoles(m map[Role][]ProjectMember) []Role {
-	roles := make([]Role, 0)
+func getSortedRoles(m map[models.Role][]models.ProjectMember) []models.Role {
+	roles := make([]models.Role, 0)
 	for r := range m {
 		roles = append(roles, r)
 	}
@@ -82,8 +81,8 @@ func getSortedRoles(m map[Role][]ProjectMember) []Role {
 	return s.Sort()
 }
 
-func groupMembersByRole(pmembers []ProjectMember) map[Role][]ProjectMember {
-	result := make(map[Role][]ProjectMember)
+func groupMembersByRole(pmembers []models.ProjectMember) map[models.Role][]models.ProjectMember {
+	result := make(map[models.Role][]models.ProjectMember)
 
 	for _, member := range pmembers {
 		membersWithSameRole := result[member.Role]
@@ -94,7 +93,7 @@ func groupMembersByRole(pmembers []ProjectMember) map[Role][]ProjectMember {
 	return result
 }
 
-func printRole(role Role, members []ProjectMember) {
+func printRole(role models.Role, members []models.ProjectMember) {
 	ui.Print("%s: %s", role.Name, role.Description)
 	ui.Print("---")
 

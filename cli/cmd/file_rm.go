@@ -21,9 +21,9 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
-	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
-	. "github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 var forcePrompts bool
@@ -43,20 +43,20 @@ This is permanent, and cannot be undone.
 Example:
   $ ks file rm config/old-test-config.php`,
 	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 
 		ctx := core.New(core.CTX_RESOLVE)
 
 		filePath := args[0]
 
-		if !FileExists(filePath) {
-			err = errors.CannotRemoveFile(filePath, fmt.Errorf("File not found"))
+		if !utils.FileExists(filePath) {
+			err = errors.CannotRemoveFile(filePath, fmt.Errorf("file not found"))
 			err.Print()
 			return
 		}
 
-		Print(RenderTemplate("confirm files rm", `{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
+		ui.Print(ui.RenderTemplate("confirm files rm", `{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
 Content for the current environment ({{ .Environment }}) will be kept.
 Its content for other environments will be lost, it will no longer be gitignored.
 This is permanent, and cannot be undone.`, map[string]string{
@@ -85,7 +85,7 @@ This is permanent, and cannot be undone.`, map[string]string{
 		}
 
 		if result == "y" {
-			PrintSuccess("%s has been removed from the secret files.", filePath)
+			ui.PrintSuccess("%s has been removed from the secret files.", filePath)
 		}
 	},
 }

@@ -44,8 +44,8 @@ Roles determine access rights to environments.`,
 	Example: `ks member set-role john@gitlab devops
 
 ks member set-role sandra@github`,
-	Args: func(cmd *cobra.Command, args []string) error {
-		r := regexp.MustCompile("[\\w-_.]+@(gitlab|github)")
+	Args: func(_ *cobra.Command, args []string) error {
+		r := regexp.MustCompile(`[\w-_.]+@(gitlab|github)`)
 		argc := len(args)
 
 		if argc == 0 || argc > 2 {
@@ -118,7 +118,7 @@ ks member set-role sandra@github`,
 			}
 		} else {
 			// TODO: output error invalid role
-			err = fmt.Errorf("Invalid role %s", roleName)
+			err = fmt.Errorf("invalid role %s", roleName)
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}

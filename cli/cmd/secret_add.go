@@ -20,9 +20,9 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/cli/internal/errors"
-	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
-	. "github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -49,7 +49,7 @@ Example:
 
 `,
 	Args: cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 		secretName, secretValue := args[0], args[1]
 		environmentValueMap := make(map[string]string)
@@ -67,11 +67,11 @@ Example:
 		var affectedEnvironments []string
 
 		environmentValueMap[currentEnvironment] = secretValue
-		affectedEnvironments = AppendIfMissing(affectedEnvironments, currentEnvironment)
+		affectedEnvironments = utils.AppendIfMissing(affectedEnvironments, currentEnvironment)
 
 		// Ask value for each env
 		if !skipPrompts {
-			Print(RenderTemplate("ask new value for environment", `
+			ui.Print(ui.RenderTemplate("ask new value for environment", `
 Enter a values for {{ . }}:`, secretName))
 
 			for _, environment := range environments {
@@ -84,13 +84,13 @@ Enter a values for {{ . }}:`, secretName))
 				result, _ := p.Run()
 
 				environmentValueMap[environment] = strings.Trim(result, " ")
-				affectedEnvironments = AppendIfMissing(affectedEnvironments, environment)
+				affectedEnvironments = utils.AppendIfMissing(affectedEnvironments, environment)
 			}
 
 		} else {
 			for _, environment := range environments {
 				environmentValueMap[environment] = strings.Trim(secretValue, " ")
-				affectedEnvironments = AppendIfMissing(affectedEnvironments, environment)
+				affectedEnvironments = utils.AppendIfMissing(affectedEnvironments, environment)
 			}
 
 		}
@@ -115,7 +115,7 @@ Enter a values for {{ . }}:`, secretName))
 			return
 		}
 
-		PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(affectedEnvironments))
+		ui.PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(affectedEnvironments))
 	},
 }
 
