@@ -98,7 +98,7 @@ ks member add -r developer -u john.doe@gitlab -u danny54@gitlab
 		case FileFlow:
 			memberRoles = getMemberRolesFromFile(c, membersFile)
 		case ArgsFlow:
-			memberRoles = getMemberRolesFromArgs(c, roleName, manyMembers)
+			memberRoles = getMemberRolesFromArgs(c, oneRole, manyMembers)
 		default:
 			memberRoles = getMemberRolesFromPrompt(c, manyMembers)
 		}
@@ -147,7 +147,7 @@ func getMemberRolesFromFile(c client.KeystoneClient, filepath string) map[string
 func getMemberRolesFromArgs(c client.KeystoneClient, roleName string, memberIDs []string) map[string]models.Role {
 	mustMembersExist(c, memberIDs)
 	roles := mustGetRoles(c)
-	var foundRole *models.Role
+	foundRole := &models.Role{}
 
 	for _, role := range roles {
 		if role.Name == roleName {

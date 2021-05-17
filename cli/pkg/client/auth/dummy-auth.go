@@ -4,7 +4,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -92,7 +91,6 @@ func (g dummyAuthService) CheckAccount(account map[string]string) (bool, error) 
 	gUser, _, err := g.client.Users.CurrentUser()
 
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
 		return false, err
 	}
 

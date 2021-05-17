@@ -32,7 +32,7 @@ func (r *Repo) createProject(project *Project) IRepo {
 	projectMember := ProjectMember{
 		Project: *project,
 		Role:    role,
-		User:    project.User,
+		UserID:  project.UserID,
 	}
 
 	r.err = db.Create(&projectMember).Error
@@ -97,7 +97,7 @@ func (r *Repo) GetProject(project *Project) IRepo {
 	}
 
 	r.err = r.GetDb().
-		Where(&project).
+		Where(*project).
 		First(project).
 		Error
 
@@ -177,6 +177,7 @@ func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole) IRep
 			user, hasUser := users[memberRole.MemberID]
 
 			if hasUser {
+				fmt.Printf("AddMember p: %d, u: %d, r: %d", user.ID, project.ID, memberRole.RoleID)
 				pms = append(pms, ProjectMember{
 					UserID:    user.ID,
 					ProjectID: project.ID,

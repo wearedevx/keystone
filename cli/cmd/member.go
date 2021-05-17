@@ -18,12 +18,14 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 
+	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
@@ -63,10 +65,21 @@ grouped by their role, with indication of their ownership.`,
 
 		grouped := groupMembersByRole(members)
 
-		for role, members := range grouped {
+		for _, role := range getSortedRoles(grouped) {
+			members := grouped[role]
 			printRole(role, members)
 		}
 	},
+}
+
+func getSortedRoles(m map[Role][]ProjectMember) []Role {
+	roles := make([]Role, 0)
+	for r := range m {
+		roles = append(roles, r)
+	}
+
+	s := models.NewRoleSorter(roles)
+	return s.Sort()
 }
 
 func groupMembersByRole(pmembers []ProjectMember) map[Role][]ProjectMember {
@@ -85,15 +98,18 @@ func printRole(role Role, members []ProjectMember) {
 	ui.Print("%s: %s", role.Name, role.Description)
 	ui.Print("---")
 
-	for _, member := range members {
-		printMember(member)
+	memberIDs := make([]string, len(members))
+	for idx, member := range members {
+		memberIDs[idx] = member.User.UserID
+	}
+
+	sort.Strings(memberIDs)
+
+	for _, member := range memberIDs {
+		ui.Print("%s", member)
 	}
 
 	ui.Print("")
-}
-
-func printMember(member ProjectMember) {
-	ui.Print("%s", member.User.UserID)
 }
 
 var envs []string

@@ -35,20 +35,19 @@ func (p *projectsPublicKeys) Serialize(out *string) (err error) {
 func PostProject(_ router.Params, body io.ReadCloser, Repo repo.Repo, user User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
-	project := &Project{
-		User:   user,
-		UserID: user.ID,
-	}
+	project := Project{}
 
 	if err = project.Deserialize(body); err != nil {
-		return project, http.StatusBadRequest, err
+		return &project, http.StatusBadRequest, err
 	}
 
-	if err = Repo.GetOrCreateProject(project).Err(); err != nil {
-		return project, http.StatusInternalServerError, err
+	project.UserID = user.ID
+
+	if err = Repo.GetOrCreateProject(&project).Err(); err != nil {
+		return &project, http.StatusInternalServerError, err
 	}
 
-	return project, status, err
+	return &project, status, err
 
 }
 

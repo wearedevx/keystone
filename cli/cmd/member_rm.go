@@ -71,6 +71,11 @@ This causes secrets to be re-crypted for the remainig members.`,
 		c := client.NewKeystoneClient(account["user_id"], token)
 		r, err := c.Users().CheckUsersExist(args)
 
+		if err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+
 		if r.Error != "" {
 			errors.UsersDontExist(r.Error, nil).Print()
 

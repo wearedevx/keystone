@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/rogpeppe/go-internal/testscript"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/cmd"
 	"github.com/wearedevx/keystone/cli/tests/utils"
 )
@@ -18,8 +19,8 @@ func setupFunc(env *testscript.Env) error {
 	utils.SetupEnvVars(env)
 	utils.CreateAndLogUser(env)
 
-	utils.CreateFakeUserWithUsername("john.doe")
-	utils.CreateFakeUserWithUsername("jane.to")
+	utils.CreateFakeUserWithUsername("john.doe", models.GitLabAccountType)
+	utils.CreateFakeUserWithUsername("jane.to", models.GitHubAccountType)
 
 	return nil
 }

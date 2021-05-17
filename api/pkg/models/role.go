@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"io"
+	"sort"
 	"strings"
 	"time"
 
@@ -56,13 +57,41 @@ func (e *GetRolesResponse) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(e)
 }
 
-func (u *GetRolesResponse) Serialize(out *string) error {
+func (u *GetRolesResponse) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(u)
 
 	*out = sb.String()
 
 	return err
+}
+
+// Sort interface
+type RoleSorter struct {
+	roles []Role
+}
+
+func NewRoleSorter(roles []Role) *RoleSorter {
+	return &RoleSorter{
+		roles: roles,
+	}
+}
+
+func (rs *RoleSorter) Sort() []Role {
+	sort.Sort(rs)
+
+	return rs.roles
+}
+
+func (rs *RoleSorter) Len() int {
+	return len(rs.roles)
+}
+
+func (rs *RoleSorter) Swap(i, j int) {
+	rs.roles[i], rs.roles[j] = rs.roles[j], rs.roles[i]
+}
+
+func (rs *RoleSorter) Less(i, j int) bool {
+	return rs.roles[i].Name < rs.roles[j].Name
 }

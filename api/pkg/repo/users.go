@@ -3,6 +3,7 @@ package repo
 import (
 	"bytes"
 	"errors"
+	"fmt"
 
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	"gorm.io/gorm"
@@ -13,7 +14,7 @@ func (r *Repo) GetUser(user *User) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().Where(user).First(user).Error
+	r.err = r.GetDb().Where("user_id = ?", user.UserID).First(user).Error
 
 	return r
 }
@@ -25,13 +26,14 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 
 	foundUser := User{
 		AccountType: user.AccountType,
-		ExtID:       user.ExtID,
+		Username:    user.Username,
+		UserID:      fmt.Sprintf("%s@%s", user.Username, user.AccountType),
 	}
 
-	r.err = r.GetDb().Where(*&foundUser).First(&foundUser).Error
+	r.err = r.GetDb().Where(foundUser).First(&foundUser).Error
 
 	if r.err == nil {
-		if bytes.Compare(foundUser.PublicKey, user.PublicKey) != 0 {
+		if !bytes.Equal(foundUser.PublicKey, user.PublicKey) {
 			foundUser.PublicKey = user.PublicKey
 			db.Save(&foundUser)
 		}

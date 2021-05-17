@@ -1,0 +1,22 @@
+# Init a project
+
+ks init list-members-project
+
+# Add members to project
+ks member add -r developer -u john.doe@gitlab -u jane.to@github
+
+# list members of project
+ks member
+
+cmpenv stdout expected.txt
+
+-- expected.txt --
+admin: 
+---
+$USER_ID
+
+developer: 
+---
+jane.to@github
+john.doe@gitlab
+
