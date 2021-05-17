@@ -75,6 +75,23 @@ func waitForServerStarted(serverUrl string) {
 	<-c
 }
 
+func CreateFakeUserWithUsername(username string) (err error) {
+	Repo := new(repo.Repo)
+	user := User{}
+
+	faker.FakeData(&user)
+
+	user.Username = username
+	fmt.Println("user:", user)
+
+	if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
+		fmt.Println("err:", err)
+		return err
+	}
+
+	return nil
+}
+
 func CreateAndLogUser(env *testscript.Env) error {
 	Repo := new(repo.Repo)
 	user := User{}

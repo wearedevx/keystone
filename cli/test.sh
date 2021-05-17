@@ -25,7 +25,9 @@ go test -tags test -ldflags "$LDFLAGS" -work "$@"
 
 EXIT_STATUS_CODE=$?
 
-rm "/tmp/keystone_gorm"*
+# rm "/tmp/keystone_gorm"*
+echo $DBFILE
+
 
 kill -9 $(lsof -t -i:9001)
 

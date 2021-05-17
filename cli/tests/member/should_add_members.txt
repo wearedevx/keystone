@@ -1,0 +1,12 @@
+# Init a project
+
+ks init add-member-project
+
+
+# Add members to project
+ks member add -r developer -u john.doe@github -u jane.to@gitlab
+
+
+# Result check
+
+

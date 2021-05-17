@@ -17,8 +17,9 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
-	"regexp"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -28,24 +29,40 @@ import (
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
+	"gopkg.in/yaml.v2"
 )
 
 var membersFile string
+var oneRole string
+var manyMembers []string
+
+type Flow int
+
+const (
+	PromptFlow = iota
+	FileFlow
+	ArgsFlow
+)
+
+var flow Flow
 
 // memberAddCmd represents the memberAdd command
 var memberAddCmd = &cobra.Command{
 	Use: "add <list of member ids>",
-	Args: func(cmd *cobra.Command, args []string) error {
-		r := regexp.MustCompile("[\\w-_.]+@(gitlab|github)")
+	Args: func(_ *cobra.Command, args []string) error {
+		// r := regexp.MustCompile(`[\w-_.]+@(gitlab|github)`)
+		flow = PromptFlow
 
-		if len(args) == 0 {
-			return fmt.Errorf("missing member id")
+		if len(args) == 0 && membersFile == "" && oneRole == "" && len(manyMembers) == 0 {
+			return fmt.Errorf("missing arguments")
 		}
 
-		for _, memberId := range args {
-			if !r.Match([]byte(memberId)) {
-				return fmt.Errorf("invalid member id: %s", memberId)
-			}
+		if membersFile != "" {
+			flow = FileFlow
+		} else if oneRole != "" && len(manyMembers) > 0 {
+			flow = ArgsFlow
+		} else {
+			manyMembers = args
 		}
 
 		return nil
@@ -57,8 +74,11 @@ Passed arguments are list member ids, which users can
 obtain using ks whoami.
 
 This will cause secrets to be encryted for all members, existing and new.`,
-	Example: `ks member add john.doe@gitlab danny54@github helena@gitlab`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Example: `ks member add john.doe@gitlab danny54@github helena@gitlab
+ks member add --from-file team.yml
+ks member add -r developer -u john.doe@gitlab -u danny54@gitlab
+`,
+	Run: func(_ *cobra.Command, _ []string) {
 		// Auth check
 		account, index := config.GetCurrentAccount()
 		token := config.GetAuthToken()
@@ -67,42 +87,23 @@ This will cause secrets to be encryted for all members, existing and new.`,
 			ui.Print(errors.MustBeLoggedIn(nil).Error())
 		}
 
-		// Read Roles from config
 		ctx := core.New(core.CTX_RESOLVE)
 		projectID := ctx.GetProjectID()
 
 		c := client.NewKeystoneClient(account["user_id"], token)
 
-		r, err := c.Users().CheckUsersExist(args)
+		var memberRoles map[string]models.Role
 
-		if r.Error != "" {
-			errors.UsersDontExist(r.Error, nil).Print()
-			os.Exit(1)
+		switch flow {
+		case FileFlow:
+			memberRoles = getMemberRolesFromFile(c, membersFile)
+		case ArgsFlow:
+			memberRoles = getMemberRolesFromArgs(c, roleName, manyMembers)
+		default:
+			memberRoles = getMemberRolesFromPrompt(c, manyMembers)
 		}
 
-		roles, err := c.Roles().GetAll()
-
-		if err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
-
-		memberRole := make(map[string]models.Role)
-
-		for _, memberId := range args {
-			role, err := prompts.PromptRole(memberId, roles)
-
-			if err != nil {
-				// TODO: Handle error
-				fmt.Println(err)
-
-				os.Exit(1)
-			}
-
-			memberRole[memberId] = role
-		}
-
-		err = c.Project(projectID).AddMembers(memberRole)
+		err := c.Project(projectID).AddMembers(memberRoles)
 
 		if err != nil {
 			errors.CannotAddMembers(err).Print()
@@ -116,10 +117,144 @@ This will cause secrets to be encryted for all members, existing and new.`,
 	},
 }
 
+func getMemberRolesFromFile(c client.KeystoneClient, filepath string) map[string]models.Role {
+	memberRoleNames := make(map[string]string)
+
+	dat, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		ui.PrintError(err.Error())
+		os.Exit(1)
+	}
+
+	if err = yaml.Unmarshal(dat, &memberRoleNames); err != nil {
+		ui.PrintError(err.Error())
+		os.Exit(1)
+	}
+
+	memberIDs := make([]string, 0)
+	for m := range memberRoleNames {
+		memberIDs = append(memberIDs, m)
+	}
+
+	mustMembersExist(c, memberIDs)
+	roles := mustGetRoles(c)
+
+	memberRoles := mapRoleNamesToRoles(memberRoleNames, roles)
+
+	return memberRoles
+}
+
+func getMemberRolesFromArgs(c client.KeystoneClient, roleName string, memberIDs []string) map[string]models.Role {
+	mustMembersExist(c, memberIDs)
+	roles := mustGetRoles(c)
+	var foundRole *models.Role
+
+	for _, role := range roles {
+		if role.Name == roleName {
+			*foundRole = role
+		}
+	}
+
+	if foundRole == nil {
+		roleNames := []string{}
+
+		for _, role := range roles {
+			roleNames = append(roleNames, role.Name)
+		}
+
+		errors.RoleDoesNotExist(roleName, strings.Join(roleNames, ", "), nil).Print()
+		os.Exit(1)
+	}
+
+	memberRoles := make(map[string]models.Role)
+
+	for _, member := range memberIDs {
+		memberRoles[member] = *foundRole
+	}
+
+	return memberRoles
+}
+
+func getMemberRolesFromPrompt(c client.KeystoneClient, memberIDs []string) map[string]models.Role {
+	mustMembersExist(c, memberIDs)
+	roles := mustGetRoles(c)
+
+	memberRole := make(map[string]models.Role)
+
+	for _, memberId := range memberIDs {
+		role, err := prompts.PromptRole(memberId, roles)
+
+		if err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+
+		memberRole[memberId] = role
+	}
+
+	return memberRole
+}
+
+func mustMembersExist(c client.KeystoneClient, memberIDs []string) {
+	r, err := c.Users().CheckUsersExist(memberIDs)
+	if err != nil {
+		errors.UnkownError(err).Print()
+		os.Exit(1)
+	}
+
+	if r.Error != "" {
+		errors.UsersDontExist(r.Error, nil).Print()
+		os.Exit(1)
+	}
+}
+
+func mustGetRoles(c client.KeystoneClient) []models.Role {
+	roles, err := c.Roles().GetAll()
+	if err != nil {
+		ui.PrintError(err.Error())
+		os.Exit(1)
+	}
+
+	return roles
+}
+
+func mapRoleNamesToRoles(memberRoleNames map[string]string, roles []models.Role) map[string]models.Role {
+	memberRoles := make(map[string]models.Role)
+
+	for member, roleName := range memberRoleNames {
+		var foundRole *models.Role
+		for _, role := range roles {
+			if role.Name == roleName {
+				*foundRole = role
+
+				break
+			}
+		}
+
+		if foundRole == nil {
+			roleNames := []string{}
+
+			for _, role := range roles {
+				roleNames = append(roleNames, role.Name)
+			}
+
+			errors.RoleDoesNotExist(roleName, strings.Join(roleNames, ", "), nil).Print()
+			os.Exit(1)
+		}
+
+		memberRoles[member] = *foundRole
+	}
+
+	return memberRoles
+}
+
 func init() {
 	memberCmd.AddCommand(memberAddCmd)
 
 	memberAddCmd.Flags().StringVar(&membersFile, "from-file", "", "yml file to import a known list of members")
+
+	memberAddCmd.Flags().StringVarP(&oneRole, "role", "r", "", "role to set users, when not using the prompt")
+	memberAddCmd.Flags().StringSliceVarP(&manyMembers, "user", "u", []string{}, "user to add, when not using the prompt")
 
 	// Here you will define your flags and configuration settings.
 
