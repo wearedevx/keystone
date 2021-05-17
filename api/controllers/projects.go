@@ -41,6 +41,8 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.Repo, user User)
 	if err = project.Deserialize(body); err != nil {
 		return project, http.StatusBadRequest, err
 	}
+	project.User = user
+	project.UserID = user.ID
 
 	if err = Repo.GetOrCreateProject(project).Err(); err != nil {
 		return project, http.StatusInternalServerError, err
