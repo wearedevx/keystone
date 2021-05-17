@@ -55,7 +55,7 @@ func NewKeystoneFile(wd string, project Project) *KeystoneFile {
 	for _, env := range project.Environments {
 		// TODO
 		// Remove VersionID fro: keystone file
-		environments = append(environments, Env{fmt.Sprint(env.ID), env.Name, env.VersionID})
+		environments = append(environments, Env{fmt.Sprint(env.EnvironmentID), env.Name, env.VersionID})
 	}
 
 	return &KeystoneFile{
