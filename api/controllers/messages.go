@@ -76,18 +76,18 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 
 	var envID = params.Get("envID").(string)
 
-	u64, err := strconv.ParseUint(envID, 10, 64)
+	// u64, err := strconv.ParseUint(envID, 10, 64)
 
-	if err != nil {
-		fmt.Println("api ~ messages.go ~ err", err)
+	// if err != nil {
+	// 	fmt.Println("api ~ messages.go ~ err", err)
 
-		response.Error = err
-		response.Success = false
-		return response, 400, nil
-	}
+	// 	response.Error = err
+	// 	response.Success = false
+	// 	return response, 400, nil
+	// }
 
 	environment := &Environment{
-		ID: uint(u64),
+		EnvironmentID: envID,
 	}
 
 	// Create transaction

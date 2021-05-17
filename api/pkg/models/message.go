@@ -68,8 +68,10 @@ type MessageToWritePayload struct {
 	Payload []byte `json:"payload"`
 	// SenderID // Set by server
 	UserID        string `json:"userid"`
+	RecipientID   uint   `json:"recipient_id"`
 	EnvironmentID string `json:"environment_id"`
 }
+
 type MessagesToWritePayload struct {
 	Messages []MessageToWritePayload `json:"messages"`
 }
