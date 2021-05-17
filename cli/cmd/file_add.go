@@ -29,6 +29,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
+	"github.com/wearedevx/keystone/cli/ui"
 	. "github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -87,7 +88,10 @@ Examples:
 			for _, environment := range environments {
 				if environment != currentEnvironment {
 					Print(fmt.Sprintf("Enter content for file `%s` for the '%s' environment (Press any key to continue)", filePath, environment))
-					keyboard.GetSingleKey()
+					_, _, err := keyboard.GetSingleKey()
+					if err != nil {
+						panic(err)
+					}
 
 					content, err := CaptureInputFromEditor(
 						GetPreferredEditorFromEnvironment,
@@ -119,7 +123,11 @@ Examples:
 			return
 		}
 
-		GitIgnore(ctx.Wd, filePath)
+		err_ := GitIgnore(ctx.Wd, filePath)
+		if err_ != nil {
+			ui.PrintError(err_.Error())
+			return
+		}
 
 		ctx.FilesUseEnvironment(currentEnvironment)
 

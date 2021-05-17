@@ -64,11 +64,9 @@ ks member set-role sandra@github`,
 			return fmt.Errorf("invalid member id: %s", memberId)
 		}
 
-		// TODO: check role is valid
-
 		return nil
 	},
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		// Auth check
 		account, index := config.GetCurrentAccount()
 		token := config.GetAuthToken()
@@ -124,6 +122,11 @@ ks member set-role sandra@github`,
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
+
+		ui.Print(ui.RenderTemplate("set role ok", `
+{{ OK }} {{ "Role set" | green }}
+`, struct {
+		}{}))
 	},
 }
 

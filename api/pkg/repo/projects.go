@@ -177,7 +177,6 @@ func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole) IRep
 			user, hasUser := users[memberRole.MemberID]
 
 			if hasUser {
-				fmt.Printf("AddMember p: %d, u: %d, r: %d", user.ID, project.ID, memberRole.RoleID)
 				pms = append(pms, ProjectMember{
 					UserID:    user.ID,
 					ProjectID: project.ID,
@@ -221,7 +220,11 @@ func (r *Repo) ProjectRemoveMembers(project Project, members []string) IRepo {
 		memberIDs = append(memberIDs, user.ID)
 	}
 
-	r.err = db.Where("user_id IN (?)", memberIDs).Delete(ProjectMember{}).Error
+	r.err = db.
+		Where("user_id IN (?)", memberIDs).
+		Where("project_id = ?", project.ID).
+		Delete(ProjectMember{}).
+		Error
 
 	return r
 }
