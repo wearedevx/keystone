@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
-	. "github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // sourceCmd represents the source command
@@ -40,7 +40,7 @@ Example:
   value
   $ echo $OTHER_KEY
   other_value`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		var err *errors.Error
 
 		ctx := core.New(core.CTX_RESOLVE)
@@ -54,7 +54,7 @@ Example:
 		}
 
 		for key, value := range env {
-			Print("export %s=%s;", key, value)
+			ui.Print("export %s=%s;", key, value)
 			// Print("echo \"TUTU\";")
 		}
 	},

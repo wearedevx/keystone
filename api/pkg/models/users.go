@@ -84,17 +84,16 @@ type AccountType string
 
 const (
 	GitHubAccountType AccountType = "github"
-	GitLabAccountType             = "gitlab"
-	CustomAccountType             = "custom"
+	GitLabAccountType AccountType = "gitlab"
+	CustomAccountType AccountType = "custom"
 )
 
 func (u *User) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(u)
 }
 
-func (u *User) Serialize(out *string) error {
+func (u *User) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(u)
 
@@ -107,9 +106,8 @@ func (upk *UserPublicKey) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(upk)
 }
 
-func (upk UserPublicKey) Serialize(out *string) error {
+func (upk UserPublicKey) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(upk)
 

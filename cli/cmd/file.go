@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	. "github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // filesCmd represents the files command
@@ -36,7 +36,7 @@ List tracked secret files:
 		  config/front.config.js
 `,
 	Args: cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		var err *errors.Error
 
 		ctx := core.New(core.CTX_RESOLVE)
@@ -51,7 +51,7 @@ List tracked secret files:
 
 		if len(files) == 0 {
 			if !quietOutput {
-				Print(`No files are currently tracked as secret files.
+				ui.Print(`No files are currently tracked as secret files.
 
 To add files to secret files:
   $ ks file add <path-to-secret-file>
@@ -62,12 +62,12 @@ To add files to secret files:
 
 		if quietOutput {
 			for _, file := range files {
-				Print(file.Path)
+				ui.Print(file.Path)
 			}
 			return
 		}
 
-		Print(RenderTemplate("files list", `Files tracked as secret files:
+		ui.Print(ui.RenderTemplate("files list", `Files tracked as secret files:
 
 {{ range . }} {{- . | indent 8 }} {{ end }}
 `, files))

@@ -10,8 +10,8 @@ import (
 
 	"github.com/bxcodec/faker/v3"
 	"github.com/rogpeppe/go-internal/testscript"
-	. "github.com/wearedevx/keystone/api/pkg/jwt"
-	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/jwt"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
@@ -75,9 +75,27 @@ func waitForServerStarted(serverUrl string) {
 	<-c
 }
 
-func CreateAndLogUser(env *testscript.Env) error {
+func CreateFakeUserWithUsername(username string, accountType models.AccountType) (err error) {
 	Repo := new(repo.Repo)
-	user := User{}
+	user := models.User{}
+
+	faker.FakeData(&user)
+
+	user.Username = username
+	user.AccountType = accountType
+	user.UserID = fmt.Sprintf("%s@%s", user.Username, user.AccountType)
+
+	if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
+		fmt.Println("err:", err)
+		return err
+	}
+
+	return nil
+}
+
+func CreateAndLogUser(env *testscript.Env) (err error) {
+	Repo := new(repo.Repo)
+	user := models.User{}
 
 	faker.FakeData(&user)
 
@@ -92,13 +110,15 @@ func CreateAndLogUser(env *testscript.Env) error {
 		os.Exit(1)
 	}
 
-	token, _ := MakeToken(user)
+	env.Setenv("USER_ID", user.UserID)
+
+	token, err := jwt.MakeToken(user)
 
 	configDir := getConfigDir(env)
 
 	pathToKeystoneFile := path.Join(configDir, "keystone.yaml")
 
-	err := ioutil.WriteFile(pathToKeystoneFile, []byte(`
+	err = ioutil.WriteFile(pathToKeystoneFile, []byte(`
 accounts:
 - Fullname: `+user.Fullname+`
   account_type: "`+string(user.AccountType)+`"

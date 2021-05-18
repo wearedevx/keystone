@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
-	. "github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // secretsRmCmd represents the unset command
@@ -33,7 +33,7 @@ Removes the given secret from all environments.
 Exemple:
   $ ks rmove PORT`,
 	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 		secretName := args[0]
 
@@ -44,7 +44,7 @@ Exemple:
 			return
 		}
 
-		PrintSuccess("Variable '%s' unset for all environments", secretName)
+		ui.PrintSuccess("Variable '%s' unset for all environments", secretName)
 	},
 }
 

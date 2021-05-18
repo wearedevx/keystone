@@ -20,7 +20,7 @@ import (
 
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	. "github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -42,7 +42,7 @@ With an argument name, activates the environment:
   $ ks env staging
 `,
 	Args: cobra.MaximumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 
 		ctx := core.New(core.CTX_RESOLVE)
@@ -64,7 +64,7 @@ With an argument name, activates the environment:
 			return
 		}
 
-		Print(RenderTemplate("using env", `
+		ui.Print(ui.RenderTemplate("using env", `
 {{ OK }} {{ .Message | bright_green }}
 
 To load its variables:
@@ -83,15 +83,15 @@ type EnvListViewModel struct {
 
 // Prints an environment list
 // The current environment is marked with an asterisk
-var listEnv = func(ctx *core.Context, err *errors.Error) {
+var listEnv = func(ctx *core.Context, _ *errors.Error) {
 	if quietOutput {
-		Print(currentEnvironment)
+		ui.Print(currentEnvironment)
 		return
 	}
 
 	environments := ctx.ListEnvironments()
 
-	if err = ctx.Err(); err != nil {
+	if err := ctx.Err(); err != nil {
 		err.Print()
 		return
 	}
@@ -99,7 +99,7 @@ var listEnv = func(ctx *core.Context, err *errors.Error) {
 	template := `{{ range  .Environments }}
 {{ if eq . $.Current }} {{ "*" | blue }} {{ . | yellow }} {{ else }}   {{ . }} {{ end }} {{ end }}`
 
-	Print(RenderTemplate("list env", template, EnvListViewModel{
+	ui.Print(ui.RenderTemplate("list env", template, EnvListViewModel{
 		Current:      currentEnvironment,
 		Environments: environments,
 	}))

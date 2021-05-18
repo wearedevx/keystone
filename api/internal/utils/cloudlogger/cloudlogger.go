@@ -53,7 +53,6 @@ func (e LogEntry) String() string {
 	}
 	out, err := json.Marshal(e)
 	if err != nil {
-		log.Printf("json.Marshal: %v", err)
 	}
 	return string(out)
 }

@@ -23,7 +23,6 @@ func CleanTestDir(testDir string) error {
 	err := os.RemoveAll(testDir)
 
 	if err != nil {
-		fmt.Printf("%+v\n", err)
 		return fmt.Errorf("Error Cleaning Test Dir: `%s` (%w)", testDir, err)
 	}
 

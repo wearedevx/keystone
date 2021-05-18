@@ -13,7 +13,6 @@ import (
 	. "github.com/wearedevx/keystone/api/pkg/jwt"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
-	"gorm.io/gorm"
 )
 
 type Route struct {
@@ -77,11 +76,14 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 
 		if err = Repo.Err(); err != nil {
 			status := http.StatusInternalServerError
-			if errors.Is(err, gorm.ErrRecordNotFound) {
+			message := err.Error()
+
+			if errors.Is(err, repo.ErrorNotFound) {
 				status = http.StatusNotFound
+				message = fmt.Sprintf("No user with id: %s", userID)
 			}
 
-			http.Error(w, "", status)
+			http.Error(w, message, status)
 			return
 		}
 

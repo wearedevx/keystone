@@ -13,7 +13,7 @@ type SecretType string
 
 const (
 	SecretString SecretType = "string"
-	SecretFile              = "file"
+	SecretFile   SecretType = "file"
 )
 
 type Secret struct {
@@ -41,9 +41,8 @@ func (u *Secret) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(u)
 }
 
-func (u *Secret) Serialize(out *string) error {
+func (u *Secret) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(u)
 

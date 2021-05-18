@@ -21,7 +21,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	. "github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // secretsUnsetCmd represents the unset command
@@ -33,7 +33,7 @@ var secretsUnsetCmd = &cobra.Command{
 Other environments will not be afftected.
 The secret must not be required.`,
 	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 
 		ctx := core.New(core.CTX_RESOLVE)
@@ -58,7 +58,7 @@ The secret must not be required.`,
 			return
 		}
 
-		PrintSuccess(fmt.Sprintf("Secret '%s' updated for the '%s' environment", secretName, currentEnvironment))
+		ui.PrintSuccess(fmt.Sprintf("Secret '%s' updated for the '%s' environment", secretName, currentEnvironment))
 	},
 }
 

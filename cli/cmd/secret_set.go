@@ -21,7 +21,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	. "github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // secretsSetCmd represents the set command
@@ -39,7 +39,7 @@ Example:
   $ ks --env staging set PORT 4545
 `,
 	Args: cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 
 		ctx := core.New(core.CTX_RESOLVE)
@@ -60,7 +60,7 @@ Example:
 			return
 		}
 
-		PrintSuccess(fmt.Sprintf("Secret '%s' updated for the '%s' environment", secretName, currentEnvironment))
+		ui.PrintSuccess(fmt.Sprintf("Secret '%s' updated for the '%s' environment", secretName, currentEnvironment))
 	},
 }
 

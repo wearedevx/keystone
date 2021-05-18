@@ -32,7 +32,7 @@ var whoamiCmd = &cobra.Command{
 
 This unique user identifier is intended te be used by projects owners,
 to add members to projects.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		currentAccount, index := config.GetCurrentAccount()
 
 		if index < 0 {

@@ -32,7 +32,7 @@ func (r *Repo) createProject(project *Project) IRepo {
 	projectMember := ProjectMember{
 		Project: *project,
 		Role:    role,
-		User:    project.User,
+		UserID:  project.UserID,
 	}
 
 	r.err = db.Create(&projectMember).Error
@@ -223,7 +223,11 @@ func (r *Repo) ProjectRemoveMembers(project Project, members []string) IRepo {
 		memberIDs = append(memberIDs, user.ID)
 	}
 
-	r.err = db.Where("user_id IN (?)", memberIDs).Delete(ProjectMember{}).Error
+	r.err = db.
+		Where("user_id IN (?)", memberIDs).
+		Where("project_id = ?", project.ID).
+		Delete(ProjectMember{}).
+		Error
 
 	return r
 }
