@@ -17,12 +17,13 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"os"
+	"path"
 	"strings"
 
 	kerrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+	. "github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -55,6 +56,7 @@ Created files and directories:
 
 		// Retrieve working directry
 		currentfolder, osError := os.Getwd()
+		ctx := core.New(core.CTX_INIT)
 
 		if osError != nil {
 			err = kerrors.NewError("OS Error", "Error when retrieving working directory", map[string]string{}, osError)
@@ -64,29 +66,6 @@ Created files and directories:
 
 		// Ask for project name if keystone file doesn't exist.
 		if !keystonefile.ExistsKeystoneFile(currentfolder) {
-
-			// if projectName == "" {
-			// 	p := promptui.Prompt{
-			// 		Label: "What is the name of the project?",
-			// 		Validate: func(value string) error {
-			// 			if len(value) == 0 {
-			// 				return errors.New("Bad project name")
-			// 			}
-
-			// 			return nil
-			// 		},
-			// 	}
-
-			// 	var erro error
-			// 	projectName, erro = p.Run()
-
-			// 	if erro != nil {
-			// 		err = kerrors.NewError("Bad project name", "A project name cannot be empty", map[string]string{}, erro)
-			// 		err.Print()
-			// 		return
-			// 	}
-			// }
-
 			c, kcErr := client.NewKeystoneClient()
 
 			if kcErr != nil {
@@ -94,25 +73,22 @@ Created files and directories:
 			}
 
 			project, kerr := c.Project("").Init(projectName)
-			fmt.Println("cli ~ init.go ~ project", project)
-			fmt.Println("cli ~ init.go ~ kerr", kerr)
 
 			if kerr != nil {
 				panic(kerr)
 			}
 
-			if err = core.New(core.CTX_INIT).Init(project).Err(); err != nil {
+			if err = ctx.Init(project).Err(); err != nil {
 				err.Print()
 				return
 			}
-		}
 
-		ui.Print(ui.RenderTemplate("Init Success", `
+			ui.Print(ui.RenderTemplate("Init Success", `
 {{ .Message | box | bright_green | indent 2 }}
 
 {{ .Text | bright_black | indent 2 }}`, map[string]string{
-			"Message": "All done!",
-			"Text": `You can start adding environment variable with:
+				"Message": "All done!",
+				"Text": `You can start adding environment variable with:
   $ ks secret add VARIABLE value
 
 Load them with:
@@ -122,8 +98,16 @@ If you need help with anything:
   $ ks help [command]
 
 `,
-		}))
+			}))
+		} else {
+			if ctx.GetProjectName() != projectName {
+				// check if .keystone directory too
 
+				if DirExists(path.Join(ctx.Wd, ".keystone")) {
+					kerrors.AlreadyKeystoneProject(errors.New("")).Print()
+				}
+			}
+		}
 	},
 }
 
