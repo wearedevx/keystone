@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
-	"path"
 	"strconv"
 	"strings"
 
@@ -76,7 +75,7 @@ func (ctx *Context) CreateEnvironment(name string) *Context {
 	}
 
 	if !ctx.HasEnvironment(name) {
-		newEnvDir := path.Join(ctx.cacheDirPath(), name)
+		newEnvDir := ctx.CachedEnvironmentPath(name)
 		err := os.MkdirAll(newEnvDir, 0o755)
 
 		if err != nil {
@@ -99,7 +98,7 @@ func (ctx *Context) RemoveEnvironment(name string) *Context {
 	}
 
 	if ctx.HasEnvironment(name) {
-		envDir := path.Join(ctx.cacheDirPath(), name)
+		envDir := ctx.CachedEnvironmentPath(name)
 		err := os.RemoveAll(envDir)
 
 		if err != nil {
@@ -118,8 +117,8 @@ func (ctx *Context) SetCurrent(name string) *Context {
 	}
 
 	if ctx.HasEnvironment(name) {
-		dotEnvFilePath := path.Join(ctx.cacheDirPath(), name, ".env")
-		currentDotEnvFilePath := path.Join(ctx.cacheDirPath(), ".env")
+		dotEnvFilePath := ctx.CachedEnvironmentDotEnvPath(name)
+		currentDotEnvFilePath := ctx.CachedDotEnvPath()
 
 		err := CopyFile(dotEnvFilePath, currentDotEnvFilePath)
 
@@ -148,7 +147,7 @@ func (ctx *Context) SetAllSecrets(name string, secrets map[string]string) *Conte
 	}
 
 	if ctx.HasEnvironment(name) {
-		dotEnvPath := path.Join(ctx.cacheDirPath(), name, ".env")
+		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(name)
 
 		if err := new(EnvFile).Load(dotEnvPath).SetData(secrets).Dump().Err(); err != nil {
 			return ctx.setError(FailedToUpdateDotEnv(dotEnvPath, err))
@@ -169,7 +168,7 @@ func (ctx *Context) GetAllSecrets(envName string) map[string]string {
 	}
 
 	if ctx.HasEnvironment(envName) {
-		dotEnvPath := path.Join(ctx.cacheDirPath(), envName, ".env")
+		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(envName)
 
 		envFile := new(EnvFile).Load(dotEnvPath)
 
@@ -191,7 +190,7 @@ func (ctx *Context) HasEnvironment(name string) bool {
 		return false
 	}
 
-	return DirExists(path.Join(ctx.cacheDirPath(), name))
+	return DirExists(ctx.CachedEnvironmentPath(name))
 }
 
 func (ctx *Context) MustHaveEnvironment(name string) {

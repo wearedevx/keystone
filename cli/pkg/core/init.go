@@ -6,7 +6,6 @@ import (
 	. "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
-	"github.com/wearedevx/keystone/cli/internal/rolesfile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -18,7 +17,6 @@ import (
 // it creates:
 // - keystone.yml
 // - .keystone/
-// - .keystone/roles.yml
 // - .keystone/environment
 // - .keystone/cache/
 // - .keystone/cache/.env
@@ -53,37 +51,46 @@ func (ctx *Context) Init(project models.Project) *Context {
 			return CreateFileIfNotExists(ctx.environmentFilePath(), "dev")
 		},
 		func() error {
-			return CreateFileIfNotExists(ctx.rolesFilePath(), rolesfile.DefaultContent())
-		},
-		func() error {
 			return CreateDirIfNotExist(ctx.cacheDirPath())
 		},
 		func() error {
 			return CreateFileIfNotExists(ctx.CachedDotEnvPath(), "")
 		},
 		func() error {
-			return CreateDirIfNotExist(path.Join(ctx.cacheDirPath(), "dev"))
+			return CreateDirIfNotExist(ctx.CachedEnvironmentPath("dev"))
 		},
 		func() error {
-			return CreateDirIfNotExist(path.Join(ctx.cacheDirPath(), "ci"))
+			return CreateDirIfNotExist(ctx.CachedEnvironmentPath("ci"))
 		},
 		func() error {
-			return CreateDirIfNotExist(path.Join(ctx.cacheDirPath(), "staging"))
+			return CreateDirIfNotExist(ctx.CachedEnvironmentPath("staging"))
 		},
 		func() error {
-			return CreateDirIfNotExist(path.Join(ctx.cacheDirPath(), "prod"))
+			return CreateDirIfNotExist(ctx.CachedEnvironmentPath("prod"))
 		},
 		func() error {
-			return CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), "dev", ".env"), "")
+			return CreateFileIfNotExists(ctx.CachedEnvironmentDotEnvPath("dev"), "")
 		},
 		func() error {
-			return CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), "ci", ".env"), "")
+			return CreateFileIfNotExists(ctx.CachedEnvironmentDotEnvPath("ci"), "")
 		},
 		func() error {
-			return CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), "staging", ".env"), "")
+			return CreateFileIfNotExists(ctx.CachedEnvironmentDotEnvPath("staging"), "")
 		},
 		func() error {
-			return CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), "prod", ".env"), "")
+			return CreateFileIfNotExists(ctx.CachedEnvironmentDotEnvPath("prod"), "")
+		},
+		func() error {
+			return CreateDirIfNotExist(ctx.CachedEnvironmentFilesPath("dev"))
+		},
+		func() error {
+			return CreateDirIfNotExist(ctx.CachedEnvironmentFilesPath("ci"))
+		},
+		func() error {
+			return CreateDirIfNotExist(ctx.CachedEnvironmentFilesPath("staging"))
+		},
+		func() error {
+			return CreateDirIfNotExist(ctx.CachedEnvironmentFilesPath("prod"))
 		},
 		func() error {
 			return GitIgnore(ctx.Wd, dotKeystone)

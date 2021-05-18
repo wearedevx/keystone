@@ -25,14 +25,14 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		}
 
 		// Remove content of cache directory to ensure old files are deleted
-		RemoveContents(path.Join(ctx.cacheDirPath(), environmentName))
+		RemoveContents(ctx.CachedEnvironmentPath(environmentName))
 
 		for _, file := range PayloadContent.Files {
 			fileContent, _ := base64.StdEncoding.DecodeString(file.Value)
-			CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), environmentName, file.Path), string(fileContent))
+			CreateFileIfNotExists(path.Join(ctx.CachedEnvironmentFilesPath(environmentName), file.Path), string(fileContent))
 		}
 
-		envFilePath := path.Join(ctx.cacheDirPath(), environmentName, ".env")
+		envFilePath := ctx.CachedEnvironmentDotEnvPath(environmentName)
 
 		for _, secret := range PayloadContent.Secrets {
 			if err := new(EnvFile).Load(envFilePath).Set(secret.Label, secret.Value).Dump().Err(); err != nil {
