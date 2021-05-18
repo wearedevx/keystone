@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	. "github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // requireCmd represents the require command
@@ -35,7 +35,7 @@ Secrets marked as required cannot be unset or set to blank value.
 If they are, 'ks source' will exit with a non-zero exit code.
 `,
 	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 
 		ctx := core.New(core.CTX_RESOLVE)
@@ -55,7 +55,7 @@ If they are, 'ks source' will exit with a non-zero exit code.
 			value := string(secret.Values[core.EnvironmentName(environment)])
 
 			for len(value) == 0 {
-				Print("Enter the value of '%s' for the '%s' environment", secretName, environment)
+				ui.Print("Enter the value of '%s' for the '%s' environment", secretName, environment)
 
 				p := promptui.Prompt{
 					Label: secretName,
@@ -76,7 +76,7 @@ If they are, 'ks source' will exit with a non-zero exit code.
 			return
 		}
 
-		PrintSuccess(fmt.Sprintf("Secret '%s' is now required.", secretName))
+		ui.PrintSuccess(fmt.Sprintf("Secret '%s' is now required.", secretName))
 	},
 }
 

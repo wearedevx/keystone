@@ -15,7 +15,7 @@ func (r *Repo) GetRoles(roles *[]Role) IRepo {
 }
 
 func (repo *Repo) CreateRole(role *Role) IRepo {
-	repo.err = repo.GetDb().Create(&role).Error
+	repo.err = repo.GetDb().Create(role).Error
 	return repo
 }
 
@@ -26,7 +26,7 @@ func (repo *Repo) GetRole(role *Role) IRepo {
 
 	repo.err = repo.GetDb().
 		Where(*role).
-		First(&role).
+		First(role).
 		Error
 
 	return repo
@@ -37,7 +37,7 @@ func (repo *Repo) GetOrCreateRole(role *Role) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().FirstOrCreate(&role).Error
+	repo.err = repo.GetDb().Where(*role).FirstOrCreate(role).Error
 
 	return repo
 }

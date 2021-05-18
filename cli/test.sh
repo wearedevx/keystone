@@ -12,6 +12,10 @@ LDFLAGS="-X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=$KSAPI_URL"
 
 DBFILE="${TMPDIR}keystone_gorm.db"
 
+if [ -f $DBFILE ]; then
+  rm $DBFILE;
+fi
+
 # Create db file
 touch $DBFILE
 
@@ -25,7 +29,8 @@ go test -tags test -ldflags "$LDFLAGS" -work "$@"
 
 EXIT_STATUS_CODE=$?
 
-rm "/tmp/keystone_gorm"*
+# rm "/tmp/keystone_gorm"*
+
 
 kill -9 $(lsof -t -i:9001)
 

@@ -26,7 +26,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	. "github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 var serviceName string
@@ -37,7 +37,7 @@ func ShowAlreadyLoggedInAndExit(account map[string]string) {
 		username = account["email"]
 	}
 
-	Print(RenderTemplate("already logged in", `You are already logged in as {{ . }}`, username))
+	ui.Print(ui.RenderTemplate("already logged in", `You are already logged in as {{ . }}`, username))
 	os.Exit(0)
 }
 
@@ -48,14 +48,14 @@ func LogIntoExisitingAccount(accountIndex int, currentAccount map[string]string,
 	_, jwtToken, err := c.Finish(publicKey)
 
 	if err != nil {
-		PrintError(err.Error())
+		ui.PrintError(err.Error())
 		os.Exit(1)
 	}
 
 	config.SetAuthToken(jwtToken)
 	config.Write()
 
-	Print(RenderTemplate("login ok", `
+	ui.Print(ui.RenderTemplate("login ok", `
 {{ OK }} {{ . | bright_green }}
 `, fmt.Sprintf("Welcome back, %s", currentAccount["username"])))
 	os.Exit(0)
@@ -65,7 +65,7 @@ func CreateAccountAndLogin(c auth.AuthService) {
 	keyPair, err := keys.New(keys.TypeEC)
 
 	if err != nil {
-		PrintError(err.Error())
+		ui.PrintError(err.Error())
 		os.Exit(1)
 	}
 
@@ -74,7 +74,7 @@ func CreateAccountAndLogin(c auth.AuthService) {
 	user, jwtToken, err := c.Finish(keyPair.Public.Value)
 
 	if err != nil {
-		PrintError(err.Error())
+		ui.PrintError(err.Error())
 		os.Exit(1)
 	}
 
@@ -96,7 +96,7 @@ func CreateAccountAndLogin(c auth.AuthService) {
 	config.SetAuthToken(jwtToken)
 	config.Write()
 
-	Print(RenderTemplate("login success", `
+	ui.Print(ui.RenderTemplate("login success", `
 {{ OK }} {{ . | bright_green }}
 
 Thank you for using Keystone!
@@ -138,7 +138,7 @@ var loginCmd = &cobra.Command{
 	Short: "Login or sign up to your keystone accounts",
 	Long:  `Login or sign up to your keystone accounts`,
 	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		ctx := context.Background()
 
 		currentAccount, accountIndex := config.GetCurrentAccount()
@@ -151,7 +151,7 @@ var loginCmd = &cobra.Command{
 		c, err := SelectAuthService(ctx)
 
 		if err != nil {
-			PrintError(err.Error())
+			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
 
@@ -159,11 +159,11 @@ var loginCmd = &cobra.Command{
 		url, err := c.Start()
 
 		if err != nil {
-			PrintError(err.Error())
+			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
 
-		Print(RenderTemplate("login visit", `Visit the URL below to login with your {{ .Service }} account:
+		ui.Print(ui.RenderTemplate("login visit", `Visit the URL below to login with your {{ .Service }} account:
 
 {{ .Url | indent 8 }}
 
@@ -179,7 +179,7 @@ Waiting for you to login with your {{ .Service }} Account...`, struct {
 		err = c.WaitForExternalLogin()
 
 		if err != nil {
-			PrintError(err.Error())
+			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
 

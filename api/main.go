@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/wearedevx/keystone/api/db/seed"
 	"github.com/wearedevx/keystone/api/routes"
 )
 
@@ -17,6 +17,12 @@ func (h *baseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	err := seed.SeedRoles()
+
+	if err != nil {
+		panic(err)
+	}
+
 	// Use PORT environment variable, or default to 8080.
 	port := "9001"
 	if envPort := os.Getenv("PORT"); envPort != "" {
@@ -31,6 +37,5 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	fmt.Printf("Will listen on port %s\n", port)
 	log.Fatalf("Api main: %v\n", server.ListenAndServe())
 }

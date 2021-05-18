@@ -27,7 +27,7 @@ import (
 	. "github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
-	. "github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -38,9 +38,9 @@ var projectName string
 var initCmd = &cobra.Command{
 	Use:   "init [project name]",
 	Short: "Creates Keystone config files and directories",
-	Args: func(cmd *cobra.Command, args []string) error {
+	Args: func(_ *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return errors.New("A project name cannot be empty")
+			return errors.New("a project name cannot be empty")
 		}
 		return nil
 	},
@@ -51,7 +51,7 @@ Created files and directories:
  - .keystone:    cache and various files for internal use. 
                  automatically added to .gitignore
 `,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err *kerrors.Error
 		projectName = strings.Join(args, " ")
 
@@ -82,7 +82,9 @@ Created files and directories:
 				err.Print()
 				return
 			}
-			Print(RenderTemplate("Init Success", `
+		}
+
+		ui.Print(ui.RenderTemplate("Init Success", `
 {{ .Message | box | bright_green | indent 2 }}
 
 {{ .Text | bright_black | indent 2 }}`, map[string]string{

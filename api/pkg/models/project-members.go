@@ -12,9 +12,9 @@ import (
 type ProjectMember struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`
 	User      User      `json:"user"`
-	UserID    uint      `json:"user_id"`
+	UserID    uint      `json:"user_id" gorm:"uniqueIndex:project_members_user_id_project_id_key"`
 	Project   Project   `json:"project"`
-	ProjectID uint      `json:"project_id"`
+	ProjectID uint      `json:"project_id" gorm:"uniqueIndex:project_members_user_id_project_id_key"`
 	Role      Role      `json:"role"`
 	RoleID    uint      `json:"role_id"`
 	CreatedAt time.Time `json:"created_at"`
@@ -38,9 +38,8 @@ func (pm *ProjectMember) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(pm)
 }
 
-func (pm *ProjectMember) Serialize(out *string) error {
+func (pm *ProjectMember) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(pm)
 
@@ -80,9 +79,8 @@ func (pm *AddMembersPayload) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(pm)
 }
 
-func (pm *AddMembersPayload) Serialize(out *string) error {
+func (pm *AddMembersPayload) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(pm)
 
@@ -100,9 +98,8 @@ func (pm *AddMembersResponse) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(pm)
 }
 
-func (pm *AddMembersResponse) Serialize(out *string) error {
+func (pm *AddMembersResponse) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(pm)
 
@@ -119,9 +116,8 @@ func (pm *RemoveMembersPayload) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(pm)
 }
 
-func (pm *RemoveMembersPayload) Serialize(out *string) error {
+func (pm *RemoveMembersPayload) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(pm)
 
@@ -139,9 +135,8 @@ func (pm *RemoveMembersResponse) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(pm)
 }
 
-func (pm *RemoveMembersResponse) Serialize(out *string) error {
+func (pm *RemoveMembersResponse) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(pm)
 
@@ -159,9 +154,8 @@ func (pm *CheckMembersResponse) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(pm)
 }
 
-func (pm *CheckMembersResponse) Serialize(out *string) error {
+func (pm *CheckMembersResponse) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(pm)
 
@@ -178,9 +172,8 @@ func (pm *CheckMembersPayload) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(pm)
 }
 
-func (pm *CheckMembersPayload) Serialize(out *string) error {
+func (pm *CheckMembersPayload) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(pm)
 
@@ -198,9 +191,8 @@ func (pm *SetMemberRolePayload) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(pm)
 }
 
-func (pm *SetMemberRolePayload) Serialize(out *string) error {
+func (pm *SetMemberRolePayload) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(pm)
 

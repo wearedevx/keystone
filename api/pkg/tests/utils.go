@@ -1,8 +1,6 @@
 package tests
 
 import (
-	"fmt"
-
 	uuid "github.com/satori/go.uuid"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -36,21 +34,18 @@ func SeedTestData() {
 			EnvironmentType: devEnvironmentType,
 			Read:            true,
 			Write:           true,
-			Invite:          false,
 		}).
 		GetOrCreateRoleEnvType(&RolesEnvironmentType{
 			Role:            devRole,
 			EnvironmentType: stagingEnvironmentType,
 			Read:            false,
 			Write:           false,
-			Invite:          false,
 		}).
 		GetOrCreateRoleEnvType(&RolesEnvironmentType{
 			Role:            devRole,
 			EnvironmentType: prodEnvironmentType,
 			Read:            false,
 			Write:           false,
-			Invite:          false,
 		}).
 
 		// Staging
@@ -59,21 +54,18 @@ func SeedTestData() {
 			EnvironmentType: devEnvironmentType,
 			Read:            true,
 			Write:           true,
-			Invite:          true,
 		}).
 		GetOrCreateRoleEnvType(&RolesEnvironmentType{
 			Role:            devopsRole,
 			EnvironmentType: stagingEnvironmentType,
 			Read:            true,
 			Write:           true,
-			Invite:          true,
 		}).
 		GetOrCreateRoleEnvType(&RolesEnvironmentType{
 			Role:            devopsRole,
 			EnvironmentType: prodEnvironmentType,
 			Read:            false,
 			Write:           false,
-			Invite:          false,
 		}).
 
 		// ADMIN
@@ -82,21 +74,18 @@ func SeedTestData() {
 			EnvironmentType: devEnvironmentType,
 			Read:            true,
 			Write:           true,
-			Invite:          true,
 		}).
 		GetOrCreateRoleEnvType(&RolesEnvironmentType{
 			Role:            adminRole,
 			EnvironmentType: stagingEnvironmentType,
 			Read:            true,
 			Write:           true,
-			Invite:          true,
 		}).
 		GetOrCreateRoleEnvType(&RolesEnvironmentType{
 			Role:            adminRole,
 			EnvironmentType: prodEnvironmentType,
 			Read:            true,
 			Write:           true,
-			Invite:          true,
 		})
 
 	var userProjectOwner *User = &User{

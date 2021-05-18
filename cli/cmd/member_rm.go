@@ -41,8 +41,8 @@ of the secrets and files.
 
 This causes secrets to be re-crypted for the remainig members.`,
 	Example: "ks member rm aster_23@github sam@gitlab",
-	Args: func(cmd *cobra.Command, args []string) error {
-		r := regexp.MustCompile("[\\w-_.]+@(gitlab|github)")
+	Args: func(_ *cobra.Command, args []string) error {
+		r := regexp.MustCompile(`[\w-_.]+@(gitlab|github)`)
 
 		if len(args) == 0 {
 			return fmt.Errorf("missing member id")
@@ -56,7 +56,7 @@ This causes secrets to be re-crypted for the remainig members.`,
 
 		return nil
 	},
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		// Auth check
 		account, index := config.GetCurrentAccount()
 		token := config.GetAuthToken()
@@ -70,6 +70,11 @@ This causes secrets to be re-crypted for the remainig members.`,
 
 		c := client.NewKeystoneClient(account["user_id"], token)
 		r, err := c.Users().CheckUsersExist(args)
+
+		if err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
 
 		if r.Error != "" {
 			errors.UsersDontExist(r.Error, nil).Print()

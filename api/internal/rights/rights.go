@@ -79,9 +79,13 @@ func CanRoleAddRole(Repo repo.IRepo, role Role, roleToInvite Role) (can bool, er
 	if role.CanAddMember {
 		roles := make([]Role, 0)
 
+		if role.ID == roleToInvite.ID {
+			return true, nil
+		}
+
 		err = Repo.GetChildrenRoles(role, &roles).Err()
 		if err != nil {
-			fmt.Println("Error when retriving invite roles", Repo.Err())
+			fmt.Println("Error when retrieving invite roles", Repo.Err())
 		} else {
 			for _, childRole := range roles {
 				if childRole.ID == roleToInvite.ID {

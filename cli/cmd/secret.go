@@ -32,7 +32,7 @@ var secretsCmd = &cobra.Command{
 	Long: `Manage secrets.
 
 Used without arguments, displays a table of secrets.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		var err *errors.Error
 
 		ctx := core.New(core.CTX_RESOLVE)

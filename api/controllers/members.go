@@ -9,17 +9,17 @@ import (
 
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
-	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 	"gorm.io/gorm"
 )
 
 // DoUsersExist checks if users exists in the Keystone database
 // This is not project dependant, it checks all users in the whole world
-func DoUsersExist(params router.Params, body io.ReadCloser, Repo repo.Repo, user User) (_ router.Serde, status int, err error) {
+func DoUsersExist(_ router.Params, body io.ReadCloser, Repo repo.Repo, _ models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusBadRequest
-	response := &CheckMembersResponse{}
-	payload := &CheckMembersPayload{}
+	response := &models.CheckMembersResponse{}
+	payload := &models.CheckMembersPayload{}
 
 	// input check
 	err = payload.Deserialize(body)
@@ -30,7 +30,7 @@ func DoUsersExist(params router.Params, body io.ReadCloser, Repo repo.Repo, user
 
 	// actual work
 
-	users := make(map[string]User)
+	users := make(map[string]models.User)
 	notFounds := make([]string, 0)
 
 	Repo.FindUsers(payload.MemberIDs, &users, &notFounds)
@@ -50,10 +50,10 @@ func DoUsersExist(params router.Params, body io.ReadCloser, Repo repo.Repo, user
 }
 
 // PutMembersSetRole sets the role for a given project member
-func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo, user User) (response router.Serde, status int, err error) {
+func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (response router.Serde, status int, err error) {
 	status = http.StatusOK
-	payload := &SetMemberRolePayload{}
-	project := Project{}
+	payload := &models.SetMemberRolePayload{}
+	project := models.Project{}
 
 	// input check
 	var projectID = params.Get("projectID").(string)
@@ -64,11 +64,11 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo,
 	}
 
 	// actual work
-	member := User{
+	member := models.User{
 		UserID: payload.MemberID,
 	}
 
-	role := Role{Name: payload.RoleName}
+	role := models.Role{Name: payload.RoleName}
 
 	if err = Repo.GetProjectByUUID(projectID, &project).
 		GetUser(&member).
@@ -103,12 +103,12 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo,
 	return response, status, err
 }
 
-func checkUserCanChangeMember(Repo repo.IRepo, user User, project Project, other User) (can bool, err error) {
-	projectMember := ProjectMember{
+func checkUserCanChangeMember(Repo repo.IRepo, user models.User, project models.Project, other models.User) (can bool, err error) {
+	projectMember := models.ProjectMember{
 		UserID:    user.ID,
 		ProjectID: project.ID,
 	}
-	otherProjectMember := ProjectMember{
+	otherProjectMember := models.ProjectMember{
 		UserID:    other.ID,
 		ProjectID: project.ID,
 	}

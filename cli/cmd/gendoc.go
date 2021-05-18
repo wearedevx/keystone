@@ -48,7 +48,7 @@ func newGenDocCommand(rootCmd *cobra.Command) *cobra.Command {
 		Example: `keystone documentation md
 keystone documentation man`,
 		Args: cobra.ExactValidArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			fmt.Println("Doc generation command")
 			err := doc.GenMarkdownTree(rootCmd, "./doc")
 

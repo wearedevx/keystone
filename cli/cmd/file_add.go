@@ -24,12 +24,12 @@ import (
 	"github.com/eiannone/keyboard"
 
 	"github.com/spf13/cobra"
-	. "github.com/wearedevx/keystone/cli/internal/errors"
-	. "github.com/wearedevx/keystone/cli/internal/gitignorehelper"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
-	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	. "github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // filesAddCmd represents the push command
@@ -53,8 +53,8 @@ Examples:
   $ ks file add ./certs/my-website.cert
 `,
 	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		var err *Error
+	Run: func(_ *cobra.Command, args []string) {
+		var err *kserrors.Error
 
 		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
@@ -66,8 +66,8 @@ Examples:
 
 		environmentFileMap := map[string][]byte{}
 
-		if !FileExists(filePath) {
-			err = CannotAddFile(filePath, errors.New("File not found"))
+		if !utils.FileExists(filePath) {
+			err = kserrors.CannotAddFile(filePath, errors.New("file not found"))
 			err.Print()
 
 			return
@@ -75,7 +75,7 @@ Examples:
 
 		currentContent, erro := ioutil.ReadFile(filePath)
 		if erro != nil {
-			err = CannotAddFile(filePath, erro)
+			err = kserrors.CannotAddFile(filePath, erro)
 			err.Print()
 
 			return
@@ -86,11 +86,14 @@ Examples:
 		if !skipPrompts {
 			for _, environment := range environments {
 				if environment != currentEnvironment {
-					Print(fmt.Sprintf("Enter content for file `%s` for the '%s' environment (Press any key to continue)", filePath, environment))
-					keyboard.GetSingleKey()
+					ui.Print(fmt.Sprintf("Enter content for file `%s` for the '%s' environment (Press any key to continue)", filePath, environment))
+					_, _, err := keyboard.GetSingleKey()
+					if err != nil {
+						panic(err)
+					}
 
-					content, err := CaptureInputFromEditor(
-						GetPreferredEditorFromEnvironment,
+					content, err := utils.CaptureInputFromEditor(
+						utils.GetPreferredEditorFromEnvironment,
 						extension,
 					)
 
@@ -119,7 +122,11 @@ Examples:
 			return
 		}
 
-		GitIgnore(ctx.Wd, filePath)
+		err_ := gitignorehelper.GitIgnore(ctx.Wd, filePath)
+		if err_ != nil {
+			ui.PrintError(err_.Error())
+			return
+		}
 
 		ctx.FilesUseEnvironment(currentEnvironment)
 
@@ -128,7 +135,7 @@ Examples:
 			return
 		}
 
-		Print(RenderTemplate("file add success", `
+		ui.Print(ui.RenderTemplate("file add success", `
 {{ OK }} {{ .Title | green }}
 The file has been added to all environments.
 It has also been gitignored.`, map[string]string{

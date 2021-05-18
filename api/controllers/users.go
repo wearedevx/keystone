@@ -10,10 +10,9 @@ import (
 	"strconv"
 
 	log "github.com/wearedevx/keystone/api/internal/utils/cloudlogger"
-	. "github.com/wearedevx/keystone/api/pkg/jwt"
+	"github.com/wearedevx/keystone/api/pkg/jwt"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	. "github.com/wearedevx/keystone/api/pkg/models"
 	"gorm.io/gorm"
 
 	"github.com/julienschmidt/httprouter"
@@ -23,13 +22,13 @@ import (
 )
 
 // postUser Gets or Creates a user
-func PostUser(w http.ResponseWriter, r *http.Request, _params httprouter.Params) {
+func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var status int = http.StatusOK
 	var responseBody bytes.Buffer
 	var err error
 
 	Repo := new(repo.Repo)
-	var user *User = &User{}
+	var user *models.User = &models.User{}
 	var serializedUser string
 
 	if err = user.Deserialize(r.Body); err != nil {
@@ -60,7 +59,7 @@ func PostUser(w http.ResponseWriter, r *http.Request, _params httprouter.Params)
 }
 
 // getUser gets a user
-func GetUser(_ router.Params, _ io.ReadCloser, _ repo.Repo, user User) (router.Serde, int, error) {
+func GetUser(_ router.Params, _ io.ReadCloser, _ repo.Repo, user models.User) (router.Serde, int, error) {
 	return &user, http.StatusOK, nil
 }
 
@@ -105,7 +104,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		return
 	}
 
-	jwtToken, err = MakeToken(user)
+	jwtToken, err = jwt.MakeToken(user)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
@@ -126,7 +125,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 }
 
 // Route uses a redirect URI for OAuth2 requests
-func GetAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func GetAuthRedirect(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// used to find the matching login request
 	temporaryCode := r.URL.Query().Get("state")
 	// code given by the third party
@@ -158,10 +157,10 @@ func GetAuthRedirect(w http.ResponseWriter, r *http.Request, params httprouter.P
 	response = "OK"
 	w.Header().Add("Content-Type", "text/plain")
 	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
-	fmt.Fprintf(w, response)
+	fmt.Fprint(w, response)
 }
 
-func PostLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func PostLoginRequest(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 	var response string
 	var err error
 	Repo := new(repo.Repo)
@@ -180,7 +179,7 @@ func PostLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 
 	w.Header().Add("Content-Type", "application/json; charset=utf-8")
 	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
-	fmt.Fprintf(w, response)
+	fmt.Fprint(w, response)
 }
 
 // Route to poll to check wether the user has completed the login
@@ -219,5 +218,5 @@ func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	w.Header().Add("Content-Type", "application/json; charset=utf-8")
 	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
 
-	fmt.Fprintf(w, response)
+	fmt.Fprint(w, response)
 }
