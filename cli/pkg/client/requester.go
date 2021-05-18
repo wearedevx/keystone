@@ -14,9 +14,9 @@ type methodType string
 
 const (
 	GET    methodType = "GET"
-	POST              = "POST"
-	PUT               = "PUT"
-	DELETE            = "DELETE"
+	POST   methodType = "POST"
+	PUT    methodType = "PUT"
+	DELETE methodType = "DELETE"
 )
 
 type requester struct {
@@ -52,11 +52,15 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	resp, err := c.Do(req)
 
 	if err != nil {
-		return nil
+		return err
 	}
 
 	sbuf := new(strings.Builder)
 	_, err = io.Copy(sbuf, resp.Body)
+	if err != nil {
+		return err
+	}
+
 	bodyBytes := []byte(sbuf.String())
 
 	// minimum length for json response 2 bytes: {} or []
@@ -66,7 +70,7 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	}
 
 	if resp.StatusCode != expectedStatusCode && resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Request failed with status code %d", resp.StatusCode)
+		return fmt.Errorf("request failed with status code %d", resp.StatusCode)
 	}
 
 	return nil
