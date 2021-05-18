@@ -82,9 +82,8 @@ Created files and directories:
 				err.Print()
 				return
 			}
-		}
 
-		ui.Print(ui.RenderTemplate("Init Success", `
+			ui.Print(ui.RenderTemplate("Init Success", `
 {{ .Message | box | bright_green | indent 2 }}
 
 {{ .Text | bright_black | indent 2 }}`, map[string]string{
@@ -103,7 +102,6 @@ If you need help with anything:
 		} else {
 			if ctx.GetProjectName() != projectName {
 				// check if .keystone directory too
-
 				if DirExists(path.Join(ctx.Wd, ".keystone")) {
 					kerrors.AlreadyKeystoneProject(errors.New("")).Print()
 				}
