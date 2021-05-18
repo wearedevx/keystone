@@ -102,7 +102,6 @@ If you need help with anything:
 		} else {
 			if ctx.GetProjectName() != projectName {
 				// check if .keystone directory too
-
 				if DirExists(path.Join(ctx.Wd, ".keystone")) {
 					kerrors.AlreadyKeystoneProject(errors.New("")).Print()
 				}
