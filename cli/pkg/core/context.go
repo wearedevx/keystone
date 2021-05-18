@@ -116,6 +116,11 @@ func (context *Context) Err() *Error {
 	return context.err
 }
 
+func (ctx *Context) SetError(err *Error) *Context {
+	ctx.err = err
+
+	return ctx
+}
 func (ctx *Context) setError(err *Error) *Context {
 	ctx.err = err
 
