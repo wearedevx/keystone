@@ -47,7 +47,6 @@ With an argument name, activates the environment:
 
 		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
-		fmt.Println("cli ~ env.go ~ args", args)
 
 		// If no argument is given show a list of environments
 		if len(args) == 0 {

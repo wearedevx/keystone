@@ -24,9 +24,8 @@ func (gr *GenericResponse) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(gr)
 }
 
-func (gr *GenericResponse) Serialize(out *string) error {
+func (gr *GenericResponse) Serialize(out *string) (err error) {
 	var sb strings.Builder
-	var err error
 
 	err = json.NewEncoder(&sb).Encode(gr)
 
@@ -98,7 +97,6 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 
 		payload := &repo.MessagesPayload{}
 		payload.Deserialize(body)
-		fmt.Println("api ~ messages.go ~ payload", payload)
 
 		var err error
 

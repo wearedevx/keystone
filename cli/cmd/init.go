@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 
@@ -94,8 +93,6 @@ Created files and directories:
 			}
 
 			project, kerr := c.Project("").Init(projectName)
-			fmt.Println("cli ~ init.go ~ project", project)
-			fmt.Println("cli ~ init.go ~ kerr", kerr)
 
 			if kerr != nil {
 				panic(kerr)

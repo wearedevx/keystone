@@ -137,7 +137,7 @@ Examples:
 		// TODO
 		// Format beautyiful error
 		if pushErr := ctx.PushEnv(); err != nil {
-			fmt.Println("cli ~ secret_add.go ~ err", pushErr)
+			ui.PrintError(pushErr.Error())
 			return
 		}
 

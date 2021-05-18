@@ -1,8 +1,6 @@
 package core
 
 import (
-	"path"
-
 	. "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"

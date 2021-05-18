@@ -256,9 +256,7 @@ func (ctx *Context) EnvironmentVersionByName(name string) string {
 func (ctx *Context) EnvironmentID() string {
 	return ctx.getCurrentEnvironmentId()
 	// environments := ctx.EnvironmentsFromConfig()
-	// fmt.Println("cli ~ environments.go ~ environments", environments)
 	// currentEnvironment := ctx.CurrentEnvironment()
-	// fmt.Println("cli ~ environments.go ~ currentEnvironment", currentEnvironment)
 
 	// for _, e := range environments {
 	// 	if e.Name == currentEnvironment {
@@ -335,8 +333,7 @@ func (ctx *Context) PushEnv() error {
 		}
 	}
 
-	fmt.Println("cli ~ environments.go ~ messages", messagesToWrite)
-	response, err := c.Messages().SendMessages(environmentId, messagesToWrite)
+	_, err = c.Messages().SendMessages(environmentId, messagesToWrite)
 
 	if err != nil {
 		return err
@@ -345,15 +342,10 @@ func (ctx *Context) PushEnv() error {
 	// TODO
 	// Set new version id
 
-	fmt.Println("cli ~ environments.go ~ response", response)
 	return nil
 }
 
 func (ctx *Context) EnvironmentVersionHasChanged(name string, environmentID string) bool {
 	currentVersion := ctx.EnvironmentVersionByName(name)
-	if currentVersion != environmentID {
-		return true
-	}
-	return false
-
+	return currentVersion != environmentID
 }

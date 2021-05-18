@@ -16,7 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -60,7 +59,6 @@ Example:
 
 		environments := ctx.ListEnvironments()
 
-		// fmt.Println("cli ~ file_add.go ~ ctx.CreateEnvMessage()")
 		// environment.CreateEnvMessage()
 
 		// return
@@ -124,7 +122,7 @@ Enter a values for {{ . }}:`, secretName))
 		// TODO
 		// Format beautyiful error
 		if pushErr := ctx.PushEnv(); err != nil {
-			fmt.Println("cli ~ secret_add.go ~ err", pushErr)
+			ui.PrintError(pushErr.Error())
 			return
 		}
 
