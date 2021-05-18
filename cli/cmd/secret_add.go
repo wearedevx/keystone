@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -87,7 +88,17 @@ Enter a values for {{ . }}:`, secretName))
 					Default: secretValue,
 				}
 
-				result, _ := p.Run()
+				result, err := p.Run()
+
+				// Handle user cancelation
+				// or prompt error
+				if err != nil {
+					if err.Error() != "^C" {
+						ui.PrintError(err.Error())
+						os.Exit(1)
+					}
+					os.Exit(0)
+				}
 
 				environmentValueMap[environment] = strings.Trim(result, " ")
 				affectedEnvironments = utils.AppendIfMissing(affectedEnvironments, environment)
