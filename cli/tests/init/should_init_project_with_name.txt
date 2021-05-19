@@ -18,7 +18,7 @@ exists .keystone/cache/staging/.env
 exists .keystone/cache/ci/.env
 exists .keystone/cache/.env
 
-exists .keystone/environment
+exists .keystone/environment.yml
 
 # Check dev is the current environment
-grep 'dev' .keystone/environment
+grep 'dev' .keystone/environment.yml

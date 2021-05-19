@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -12,24 +11,6 @@ import (
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
-
-type projectsPublicKeys struct {
-	Keys []models.UserPublicKey
-}
-
-// func (p *PublicKeys) Deserialize(in io.Reader) error {
-// 	return json.NewDecoder(in).Decode(p)
-// }
-
-func (p *projectsPublicKeys) Serialize(out *string) (err error) {
-	var sb strings.Builder
-
-// 	err = json.NewEncoder(&sb).Encode(p)
-
-// 	*out = sb.String()
-
-// 	return err
-// }
 
 func PostProject(_ router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
@@ -57,7 +38,7 @@ func GetProjectsPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.Repo
 
 	var project models.Project
 	var projectID string = params.Get("projectID").(string)
-	var result projectsPublicKeys
+	var result models.PublicKeys
 
 	if projectID == "" {
 		return &result, http.StatusBadRequest, nil
@@ -154,8 +135,8 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.R
 
 	var project models.Project
 	var projectID = params.Get("projectID").(string)
-	input := RemoveMembersPayload{}
-	result := RemoveMembersResponse{}
+	input := models.RemoveMembersPayload{}
+	result := models.RemoveMembersResponse{}
 	err = input.Deserialize(body)
 
 	if projectID == "" || err != nil {

@@ -13,7 +13,7 @@ import (
 type baseHandler struct{}
 
 func (h *baseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	CreateRoutes(w, r)
+	routes.CreateRoutes(w, r)
 }
 
 func main() {

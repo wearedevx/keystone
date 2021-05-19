@@ -102,6 +102,18 @@ func (c *Context) CachedDotEnvPath() string {
 	return path.Join(c.cacheDirPath(), ".env")
 }
 
+func (c *Context) CachedEnvironmentPath(environmentName string) string {
+	return path.Join(c.cacheDirPath(), environmentName)
+}
+
+func (c *Context) CachedEnvironmentDotEnvPath(environmentName string) string {
+	return path.Join(c.CachedEnvironmentPath(environmentName), ".env")
+}
+
+func (c *Context) CachedEnvironmentFilesPath(environmentName string) string {
+	return path.Join(c.CachedEnvironmentPath(environmentName), "files")
+}
+
 /********************/
 /* Public functions */
 /********************/

@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
 type Messages struct {
@@ -17,10 +16,10 @@ type GenericResponse struct {
 	Error   string `json:"error"`
 }
 
-func (client *Messages) GetMessages(projectID string) (GetMessageByEnvironmentResponse, error) {
+func (client *Messages) GetMessages(projectID string) (models.GetMessageByEnvironmentResponse, error) {
 	var err error
-	var result = GetMessageByEnvironmentResponse{
-		map[string]GetMessageResponse{},
+	var result = models.GetMessageByEnvironmentResponse{
+		Environments: map[string]models.GetMessageResponse{},
 	}
 
 	err = client.r.get("/projects/"+projectID+"/messages/", &result, nil)

@@ -15,9 +15,9 @@ type methodType string
 
 const (
 	GET    methodType = "GET"
-	POST              = "POST"
-	PUT               = "PUT"
-	DELETE            = "DELETE"
+	POST   methodType = "POST"
+	PUT    methodType = "PUT"
+	DELETE methodType = "DELETE"
 )
 
 type requester struct {
@@ -75,7 +75,6 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	sbuf := new(strings.Builder)
 	_, err = io.Copy(sbuf, resp.Body)
 	bodyBytes := []byte(sbuf.String())
-	fmt.Println("cli ~ requester.go ~ bodyBytes", string(bodyBytes))
 
 	// minimum length for json response 2 bytes: {} or []
 	if result != nil && len(bodyBytes) >= 2 {

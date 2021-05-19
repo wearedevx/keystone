@@ -1,17 +1,16 @@
 package controllers
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 
-	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
-func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.Repo, user User) (router.Serde, int, error) {
+func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.Repo, _ models.User) (router.Serde, int, error) {
 	var status int = http.StatusOK
 	var err error
 
@@ -20,8 +19,8 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.R
 
 	var envID = params.Get("envID").(string)
 
-	result := PublicKeys{
-		Keys: make([]UserPublicKey, 0),
+	result := models.PublicKeys{
+		Keys: make([]models.UserPublicKey, 0),
 	}
 
 	Repo.GetEnvironmentPublicKeys(envID, &result)
@@ -33,6 +32,5 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.R
 
 	// status = runner.Status()
 
-	fmt.Println("api ~ environments.go ~ result", result)
 	return &result, status, err
 }
