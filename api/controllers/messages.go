@@ -91,34 +91,12 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	return &result, status, nil
 }
 
+// WriteMessages writes messages to users
+// TODO: on the client side, each message should be associated with the target EnvironmentID,
+// 		 and therefore, there is no need to pass envID in the url, query or body in the HTTP query
 func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	response := &GenericResponse{}
-
-	var envID = params.Get("envID").(string)
-
-	environment := models.Environment{
-		EnvironmentID: envID,
-	}
-
-	err = Repo.GetEnvironment(&environment).Err()
-	if err != nil {
-		if errors.Is(err, repo.ErrorNotFound) {
-			return response, http.StatusNotFound, err
-		}
-		return response, http.StatusInternalServerError, err
-	}
-
-	// - check if user has rights to write on environment
-	can, err := rights.CanUserWriteOnEnvironment(&Repo, user.ID, environment.Project.ID, &environment)
-
-	if err != nil {
-		return response, http.StatusInternalServerError, err
-	}
-
-	if !can {
-		return response, http.StatusForbidden, err
-	}
 
 	// Create transaction
 	// TODO: @kévin ? Qu’est-ce qu’on fait du `tx` ?
@@ -131,6 +109,9 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 			projectMember := models.ProjectMember{
 				ID: message.RecipientID,
 			}
+			environment := models.Environment{
+				EnvironmentID: message.EnvironmentID,
+			}
 
 			err = Repo.
 				GetProjectMember(&projectMember).
@@ -139,27 +120,41 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 			if err != nil {
 				break
 			}
-			// - check recipient exists with read rights.
-			can, err := rights.CanUserReadEnvironment(&Repo, projectMember.UserID, projectMember.ProjectID, &environment)
+
+			// - check if user has rights to write on environment
+			can, err := rights.CanUserWriteOnEnvironment(&Repo, user.ID, environment.Project.ID, &environment)
+
 			if err != nil {
+				return err
+			}
+
+			if !can {
+				continue
+			}
+
+			// - check recipient exists with read rights.
+			can, err = rights.CanUserReadEnvironment(&Repo, projectMember.UserID, projectMember.ProjectID, &environment)
+			if err != nil {
+				return err
+			}
+
+			if !can {
+				continue
+			}
+
+			// If ok, remove potential old messages for recipient.
+			if err = Repo.WriteMessage(user, message).Err(); err != nil {
 				break
 			}
 
-			if can {
-				// If ok, remove potential old messages for recipient.
-				if err = Repo.WriteMessage(user, message).Err(); err != nil {
-					break
-				}
+			// Change environment version id.
+			err = Repo.SetNewVersionID(&environment)
+
+			if err != nil {
+				fmt.Println("api ~ messages.go ~ err", err)
+				return err
 			}
 		}
-
-		if err != nil {
-			fmt.Println("api ~ messages.go ~ err", err)
-			return err
-		}
-
-		// Change environment version id.
-		err = Repo.SetNewVersionID(&environment)
 
 		if err != nil {
 			fmt.Println("api ~ messages.go ~ err", err)
