@@ -11,18 +11,44 @@ import (
 )
 
 // Returns a List of Roles
-func GetRoles(_ router.Params, _ io.ReadCloser, Repo repo.Repo, _ models.User) (_ router.Serde, status int, err error) {
+func GetRoles(params router.Params, _ io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	var result = models.GetRolesResponse{
 		Roles: []models.Role{},
 	}
 
-	if err = Repo.GetRoles(&result.Roles).Err(); err != nil {
-		if errors.Is(err, repo.ErrorNotFound) {
-			status = http.StatusNotFound
-		} else {
-			status = http.StatusInternalServerError
+	projectID := params.Get("add-to-project").(string)
+
+	if projectID == "" {
+		if err = Repo.GetRoles(&result.Roles).Err(); err != nil {
+			if errors.Is(err, repo.ErrorNotFound) {
+				status = http.StatusNotFound
+			} else {
+				status = http.StatusInternalServerError
+			}
+
+			return &result, status, err
 		}
+	} else {
+		project := models.Project{UUID: projectID}
+		projectMember := models.ProjectMember{
+			UserID:    user.ID,
+			ProjectID: project.ID,
+		}
+		roles := []models.Role{}
+
+		if err = Repo.
+			GetProject(&project).
+			GetProjectMember(&projectMember).
+			GetRolesMemberCanInvite(projectMember, &roles).
+			Err(); err != nil {
+			if errors.Is(err, repo.ErrorNotFound) {
+				status = http.StatusNotFound
+			}
+
+			return &result, status, err
+		}
+
 	}
 
 	return &result, status, err

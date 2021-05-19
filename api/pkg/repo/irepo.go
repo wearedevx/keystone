@@ -36,6 +36,7 @@ type IRepo interface {
 	GetRole(*models.Role) IRepo
 	GetRoles(*[]models.Role) IRepo
 	GetRolesEnvironmentType(*models.RolesEnvironmentType) IRepo
+	GetRolesMemberCanInvite(projectMember models.ProjectMember, roles *[]models.Role) IRepo
 	GetUser(*models.User) IRepo
 	ListProjectMembers(userIDList []string, projectMember *[]models.ProjectMember) IRepo
 	ProjectAddMembers(models.Project, []models.MemberRole) IRepo
