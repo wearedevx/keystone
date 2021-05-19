@@ -19,6 +19,7 @@ type IRepo interface {
 	GetChildrenRoles(role models.Role, roles *[]models.Role) IRepo
 	GetDb() *gorm.DB
 	GetEnvironment(*models.Environment) IRepo
+	GetEnvironmentPublicKeys(envID string, publicKeys *models.PublicKeys) IRepo
 	GetEnvironmentType(*models.EnvironmentType) IRepo
 	GetInvitableRoles(models.Role, *[]models.Role) IRepo
 	GetLoginRequest(string) (models.LoginRequest, bool)

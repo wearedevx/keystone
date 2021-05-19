@@ -51,37 +51,37 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 			response.Error = err
 			return &response, http.StatusNotFound, err
 		}
+
+		return &response, http.StatusInsufficientStorage, err
 	}
 
 	var result = models.GetMessageByEnvironmentResponse{
 		Environments: map[string]models.GetMessageResponse{},
 	}
 
-	var environments *[]models.Environment
-	if err = Repo.GetEnvironmentsByProjectUUID(projectID, environments).Err(); err != nil {
+	var environments []models.Environment
+	if err = Repo.GetEnvironmentsByProjectUUID(projectID, &environments).Err(); err != nil {
 		response.Error = err
 		return &response, http.StatusBadRequest, err
 	}
 
-	for _, environment := range *environments {
+	for _, environment := range environments {
 		result.Environments[environment.Name] = models.GetMessageResponse{}
 		curr := result.Environments[environment.Name]
 
+		// - rights check
 		can, err := rights.CanUserReadEnvironment(&Repo, user.ID, project.ID, &environment)
 		if err != nil {
 			response.Error = err
 			return &response, http.StatusInternalServerError, err
 		}
 
-		if !can {
-			response.Error = errors.New("operation not allowed")
-			return &response, http.StatusForbidden, err
-		}
-
-		if err = Repo.GetMessagesForUserOnEnvironment(user, environment, &curr.Message).Err(); err != nil {
-			response.Error = Repo.Err()
-			response.Success = false
-			return &response, http.StatusBadRequest, nil
+		if can {
+			if err = Repo.GetMessagesForUserOnEnvironment(user, environment, &curr.Message).Err(); err != nil {
+				response.Error = Repo.Err()
+				response.Success = false
+				return &response, http.StatusBadRequest, nil
+			}
 		}
 
 		curr.VersionID = environment.VersionID
@@ -123,10 +123,6 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 	// Create transaction
 	// TODO: @kévin ? Qu’est-ce qu’on fait du `tx` ?
 	Repo.GetDb().Transaction(func(tx *gorm.DB) (err error) {
-
-		// TODO
-		// Check if user can write on env
-
 		payload := &repo.MessagesPayload{}
 		payload.Deserialize(body)
 
@@ -177,7 +173,7 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 	return response, status, nil
 }
 
-func DeleteMessage(params router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (router.Serde, int, error) {
+func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.Repo, user models.User) (router.Serde, int, error) {
 
 	var status = http.StatusNoContent
 	response := &GenericResponse{}

@@ -67,135 +67,139 @@ func init() {
 type FakeRepo struct{}
 
 func (f *FakeRepo) CreateEnvironment(_ *Environment) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) CreateEnvironmentType(_ *EnvironmentType) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) CreateLoginRequest() LoginRequest {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) CreateProjectMember(_ *ProjectMember, _ *Role) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) CreateRole(_ *Role) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) CreateRoleEnvironmentType(_ *RolesEnvironmentType) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) CreateSecret(_ *Secret) {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) DeleteLoginRequest(_ string) bool {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) FindUsers(_ []string, _ *map[string]User, _ *[]string) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetDb() *gorm.DB {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetEnvironment(_ *Environment) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetEnvironmentPublicKeys(envID string, publicKeys *PublicKeys) IRepo {
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetEnvironmentType(_ *EnvironmentType) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetLoginRequest(_ string) (LoginRequest, bool) {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetOrCreateEnvironment(_ *Environment) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetOrCreateEnvironmentType(_ *EnvironmentType) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetOrCreateProject(_ *Project) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetOrCreateProjectMember(_ *ProjectMember, _ string) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetOrCreateRole(_ *Role) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetOrCreateRoleEnvType(_ *RolesEnvironmentType) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetOrCreateUser(_ *User) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetProject(_ *Project) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetProjectByUUID(_ string, _ *Project) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetRole(_ *Role) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetRoles(_ *[]Role) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetSecretByName(_ string, _ *Secret) {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) GetUser(_ *User) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) ListProjectMembers(userIDList []string, projectMember *[]ProjectMember) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) ProjectAddMembers(_ Project, _ []MemberRole) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) ProjectGetMembers(_ *Project, _ *[]ProjectMember) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) ProjectLoadUsers(_ *Project) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) ProjectRemoveMembers(_ Project, _ []string) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) ProjectSetRoleForUser(_ Project, _ User, _ Role) IRepo {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func (f *FakeRepo) SetLoginRequestCode(_ string, _ string) LoginRequest {
-	panic("not implemented") // TODO: Implement
+	panic("not implemented")
 }
 
 func getRoleByEnvironmentTypeAndRole(environmentType *EnvironmentType, role *Role) RolesEnvironmentType {
