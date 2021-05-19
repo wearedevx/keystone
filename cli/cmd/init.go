@@ -66,29 +66,6 @@ Created files and directories:
 
 		// Ask for project name if keystone file doesn't exist.
 		if !keystonefile.ExistsKeystoneFile(currentfolder) {
-
-			// if projectName == "" {
-			// 	p := promptui.Prompt{
-			// 		Label: "What is the name of the project?",
-			// 		Validate: func(value string) error {
-			// 			if len(value) == 0 {
-			// 				return errors.New("Bad project name")
-			// 			}
-
-			// 			return nil
-			// 		},
-			// 	}
-
-			// 	var erro error
-			// 	projectName, erro = p.Run()
-
-			// 	if erro != nil {
-			// 		err = kerrors.NewError("Bad project name", "A project name cannot be empty", map[string]string{}, erro)
-			// 		err.Print()
-			// 		return
-			// 	}
-			// }
-
 			c, kcErr := client.NewKeystoneClient()
 
 			if kcErr != nil {
