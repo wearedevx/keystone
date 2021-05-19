@@ -1,4 +1,4 @@
-package member
+package file
 
 import (
 	"testing"
@@ -11,22 +11,23 @@ import (
 
 func TestMain(m *testing.M) {
 	testscript.RunMain(m, map[string]func() int{
-		"ks": cmd.Execute,
+		"ks":                 cmd.Execute,
+		"githubLoginSuccess": utils.GithubLoginSuccess,
 	})
 }
 
 func setupFunc(env *testscript.Env) error {
 	utils.SetupEnvVars(env)
 	utils.CreateAndLogUser(env)
-
-	utils.CreateFakeUserWithUsername("john.doe", models.GitLabAccountType, env)
-	utils.CreateFakeUserWithUsername("jane.to", models.GitHubAccountType, env)
+	utils.CreateFakeUserWithUsername("john.doe", models.GitHubAccountType, env)
 
 	return nil
 }
+
 func TestCommands(t *testing.T) {
+	utils.WaitAPIStart()
 	testscript.Run(t, testscript.Params{
-		Dir:                  "./",
+		Dir:                  ".",
 		Setup:                setupFunc,
 		IgnoreMissedCoverage: true,
 	})

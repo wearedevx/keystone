@@ -75,7 +75,7 @@ func waitForServerStarted(serverUrl string) {
 	<-c
 }
 
-func CreateFakeUserWithUsername(username string, accountType models.AccountType) (err error) {
+func CreateFakeUserWithUsername(username string, accountType models.AccountType, env *testscript.Env) (err error) {
 	Repo := new(repo.Repo)
 	user := models.User{}
 
@@ -89,6 +89,25 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType)
 		fmt.Println("err:", err)
 		return err
 	}
+
+	token, err := jwt.MakeToken(user)
+
+	configDir := getConfigDir(env)
+
+	pathToKeystoneFile := path.Join(configDir, "keystone2.yaml")
+
+	err = ioutil.WriteFile(pathToKeystoneFile, []byte(`
+accounts:
+- Fullname: `+user.Fullname+`
+  account_type: "`+string(user.AccountType)+`"
+  email: `+user.Email+`
+  ext_id: "`+user.ExtID+`"
+  fullname: `+user.Fullname+`
+  user_id: `+user.UserID+`
+  username: `+user.Username+`
+auth_token: `+token+`
+current: 0
+`), 0o777)
 
 	return nil
 }

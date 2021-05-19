@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -43,8 +44,8 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 		Environments: map[string]GetMessageResponse{},
 	}
 
-	var environments *[]Environment
-	Repo.GetEnvironmentsByProjectUUID(projectID, environments)
+	var environments []Environment
+	Repo.GetEnvironmentsByProjectUUID(projectID, &environments)
 
 	if Repo.Err() != nil {
 		response.Error = Repo.Err()
@@ -52,14 +53,14 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 		return response, 400, nil
 	}
 
-	for _, environment := range *environments {
+	for _, environment := range environments {
 		result.Environments[environment.Name] = GetMessageResponse{}
 		curr := result.Environments[environment.Name]
 		Repo.GetMessagesForUserOnEnvironment(user, environment, &curr.Message)
 		curr.VersionID = environment.VersionID
 		result.Environments[environment.Name] = curr
 
-		if Repo.Err() != nil {
+		if !errors.Is(Repo.Err(), repo.ErrorNotFound) && Repo.Err() != nil {
 			response.Error = Repo.Err()
 			response.Success = false
 			return response, 400, nil
