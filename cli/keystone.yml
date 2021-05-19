@@ -1,20 +1,18 @@
-project_id: a0207f5e-be3c-40a4-aa6a-2fc4930aa7a5
-name: my-project
+project_id: d3694b7f-7792-4589-a962-3b33fd1203f3
+name: keystone
 env:
-- key: lol
+- key: TEST
   strict: true
-files:
-- path: .envv
-  strict: false
+files: []
 options:
   strict: false
 environments:
-- id: "1"
+- id: 80eefb40-fb83-4361-b6db-db2fbeac8efb
   name: dev
-  version_id: "0"
-- id: "2"
+  version_id: 53160a67-d5ba-4ae2-8d63-1f98709e0808
+- id: 24798d2c-4f78-48e3-8ce6-7186da0f3bde
   name: staging
-  version_id: "0"
-- id: "3"
+  version_id: 42a1c71e-c687-4914-8e17-98f2de329db2
+- id: 239dccdb-2166-4333-a7ba-4a6b45079dcd
   name: prod
-  version_id: "0"
+  version_id: 351c38a7-af9d-4725-a5c3-3e043ce7f4fa

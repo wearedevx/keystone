@@ -16,10 +16,10 @@ const (
 	Invite UserRight = "invite"
 )
 
-func DoesUserHaveRightsOnEnvironment(Repo repo.IRepo, user *User, project *Project, environment *Environment, right string) (bool, error) {
+func DoesUserHaveRightsOnEnvironment(Repo repo.IRepo, userID uint, projectID uint, environment *Environment, right string) (bool, error) {
 	projectMember := ProjectMember{
-		UserID:    user.ID,
-		ProjectID: project.ID,
+		UserID:    userID,
+		ProjectID: projectID,
 	}
 
 	err := Repo.GetProjectMember(&projectMember).Err()
@@ -58,16 +58,16 @@ func DoesUserHaveRightsOnEnvironment(Repo repo.IRepo, user *User, project *Proje
 	}
 }
 
-func CanUserReadEnvironment(Repo repo.IRepo, user *User, project *Project, environment *Environment) (bool, error) {
-	return DoesUserHaveRightsOnEnvironment(Repo, user, project, environment, "read")
+func CanUserReadEnvironment(Repo repo.IRepo, userID uint, projectID uint, environment *Environment) (bool, error) {
+	return DoesUserHaveRightsOnEnvironment(Repo, userID, projectID, environment, "read")
 }
 
-func CanUserWriteOnEnvironment(Repo repo.IRepo, user *User, project *Project, environment *Environment) (bool, error) {
-	return DoesUserHaveRightsOnEnvironment(Repo, user, project, environment, "write")
+func CanUserWriteOnEnvironment(Repo repo.IRepo, userID uint, projectID uint, environment *Environment) (bool, error) {
+	return DoesUserHaveRightsOnEnvironment(Repo, userID, projectID, environment, "write")
 }
 
-func CanUserInviteOnEnvironment(Repo repo.IRepo, user *User, project *Project, environment *Environment) (bool, error) {
-	return DoesUserHaveRightsOnEnvironment(Repo, user, project, environment, "invite")
+func CanUserInviteOnEnvironment(Repo repo.IRepo, userID uint, projectID uint, environment *Environment) (bool, error) {
+	return DoesUserHaveRightsOnEnvironment(Repo, userID, projectID, environment, "invite")
 }
 
 // devops can invite on:
