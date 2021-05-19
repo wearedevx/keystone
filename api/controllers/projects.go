@@ -33,35 +33,6 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.Repo, user model
 
 }
 
-func GetProjectsPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.Repo, _ models.User) (_ router.Serde, status int, err error) {
-	status = http.StatusOK
-
-	var project models.Project
-	var projectID string = params.Get("projectID").(string)
-	var result models.PublicKeys
-
-	if projectID == "" {
-		return &result, http.StatusBadRequest, nil
-	}
-
-	Repo.
-		GetProjectByUUID(projectID, &project).
-		ProjectLoadUsers(&project)
-
-	if err = Repo.Err(); err != nil {
-		return &result, http.StatusInternalServerError, err
-	}
-
-	for _, member := range project.Members {
-		result.Keys = append(result.Keys, models.UserPublicKey{
-			UserID:    member.User.UserID,
-			PublicKey: member.User.PublicKey,
-		})
-	}
-
-	return &result, status, err
-}
-
 func GetProjectsMembers(params router.Params, _ io.ReadCloser, Repo repo.Repo, _ models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 

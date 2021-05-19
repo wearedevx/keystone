@@ -20,17 +20,6 @@ func (u *Users) CheckUsersExist(userIds []string) (models.CheckMembersResponse, 
 	return result, err
 }
 
-func (u *Users) GetPublicKeys(projectId string) ([]models.UserPublicKey, error) {
-	var err error
-	var result struct {
-		keys []models.UserPublicKey
-	}
-
-	err = u.r.get("/projects/"+projectId+"/public-keys", &result, nil)
-
-	return result.keys, err
-}
-
 func (u *Users) GetEnvironmentPublicKeys(environmentId string) (models.PublicKeys, error) {
 	var err error
 	var result models.PublicKeys

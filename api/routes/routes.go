@@ -20,7 +20,6 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 
 	router.POST("/projects", AuthedHandler(PostProject))
 
-	router.GET("/projects/:projectID/public-keys", AuthedHandler(GetProjectsPublicKeys))
 	router.GET("/projects/:projectID/members", AuthedHandler(GetProjectsMembers))
 	router.POST("/projects/:projectID/members", AuthedHandler(PostProjectsMembers))
 	router.DELETE("/projects/:projectID/members", AuthedHandler(DeleteProjectsMembers))
