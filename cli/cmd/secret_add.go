@@ -60,10 +60,6 @@ Example:
 
 		environments := ctx.ListEnvironments()
 
-		// environment.CreateEnvMessage()
-
-		// return
-
 		if err = ctx.Err(); err != nil {
 			err.Print()
 			return
