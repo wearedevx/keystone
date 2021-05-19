@@ -379,8 +379,8 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 		for envName, environment := range environments {
 			expectation := rightsMatrix[name][envName]
 
-			canRead, _ := CanUserReadEnvironment(fakeRepo, user, project, environment)
-			canWrite, _ := CanUserWriteOnEnvironment(fakeRepo, user, project, environment)
+			canRead, _ := CanUserReadEnvironment(fakeRepo, user.ID, project.ID, environment)
+			canWrite, _ := CanUserWriteOnEnvironment(fakeRepo, user.ID, project.ID, environment)
 
 			assert.Equal(t, expectation.r, canRead, "Oops! User %s has unexpected read rights on %s environment", name, envName)
 			assert.Equal(t, expectation.w, canWrite, "Oops! User %s has unexpected write rights on %s environment", name, envName)

@@ -2,16 +2,18 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
 
-	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 	"gorm.io/gorm"
 
+	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
 )
 
@@ -34,63 +36,93 @@ func (gr *GenericResponse) Serialize(out *string) (err error) {
 	return err
 }
 
-func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo repo.Repo, user User) (router.Serde, int, error) {
-	var status = http.StatusOK
+func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
+	status = http.StatusOK
 	var projectID = params.Get("projectID").(string)
-	response := &GenericResponse{}
-
-	var result = GetMessageByEnvironmentResponse{
-		Environments: map[string]GetMessageResponse{},
+	response := GenericResponse{
+		Success: false,
 	}
 
-	var environments *[]Environment
-	Repo.GetEnvironmentsByProjectUUID(projectID, environments)
+	project := models.Project{
+		UUID: projectID,
+	}
+	if err = Repo.GetProject(&project).Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			response.Error = err
+			return &response, http.StatusNotFound, err
+		}
+	}
 
-	if Repo.Err() != nil {
-		response.Error = Repo.Err()
-		response.Success = false
-		return response, 400, nil
+	var result = models.GetMessageByEnvironmentResponse{
+		Environments: map[string]models.GetMessageResponse{},
+	}
+
+	var environments *[]models.Environment
+	if err = Repo.GetEnvironmentsByProjectUUID(projectID, environments).Err(); err != nil {
+		response.Error = err
+		return &response, http.StatusBadRequest, err
 	}
 
 	for _, environment := range *environments {
-		result.Environments[environment.Name] = GetMessageResponse{}
+		result.Environments[environment.Name] = models.GetMessageResponse{}
 		curr := result.Environments[environment.Name]
-		Repo.GetMessagesForUserOnEnvironment(user, environment, &curr.Message)
-		curr.VersionID = environment.VersionID
-		result.Environments[environment.Name] = curr
 
-		if Repo.Err() != nil {
+		can, err := rights.CanUserReadEnvironment(&Repo, user.ID, project.ID, &environment)
+		if err != nil {
+			response.Error = err
+			return &response, http.StatusInternalServerError, err
+		}
+
+		if !can {
+			response.Error = errors.New("operation not allowed")
+			return &response, http.StatusForbidden, err
+		}
+
+		if err = Repo.GetMessagesForUserOnEnvironment(user, environment, &curr.Message).Err(); err != nil {
 			response.Error = Repo.Err()
 			response.Success = false
-			return response, 400, nil
+			return &response, http.StatusBadRequest, nil
 		}
+
+		curr.VersionID = environment.VersionID
+		result.Environments[environment.Name] = curr
 	}
 
 	return &result, status, nil
 }
 
-func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, user User) (router.Serde, int, error) {
-	var status = http.StatusOK
+func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
+	status = http.StatusOK
 	response := &GenericResponse{}
 
 	var envID = params.Get("envID").(string)
 
-	// u64, err := strconv.ParseUint(envID, 10, 64)
-
-	// if err != nil {
-	// 	fmt.Println("api ~ messages.go ~ err", err)
-
-	// 	response.Error = err
-	// 	response.Success = false
-	// 	return response, 400, nil
-	// }
-
-	environment := &Environment{
+	environment := models.Environment{
 		EnvironmentID: envID,
 	}
 
+	err = Repo.GetEnvironment(&environment).Err()
+	if err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			return response, http.StatusNotFound, err
+		}
+		return response, http.StatusInternalServerError, err
+	}
+
+	// - check if user has rights to write on environment
+	can, err := rights.CanUserWriteOnEnvironment(&Repo, user.ID, environment.Project.ID, &environment)
+
+	if err != nil {
+		return response, http.StatusInternalServerError, err
+	}
+
+	if !can {
+		return response, http.StatusForbidden, err
+	}
+
 	// Create transaction
-	Repo.GetDb().Transaction(func(tx *gorm.DB) error {
+	// TODO: @kévin ? Qu’est-ce qu’on fait du `tx` ?
+	Repo.GetDb().Transaction(func(tx *gorm.DB) (err error) {
 
 		// TODO
 		// Check if user can write on env
@@ -98,18 +130,30 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 		payload := &repo.MessagesPayload{}
 		payload.Deserialize(body)
 
-		var err error
-
 		for _, message := range payload.Messages {
-			// TODO
-			// - check recipient exists with read rights.
+			// - gather information for the checks
+			projectMember := models.ProjectMember{
+				ID: message.RecipientID,
+			}
 
-			// If ok, remove potential old messages for recipient.
-			Repo.WriteMessage(user, message)
-
-			if Repo.Err() != nil {
-				err = Repo.Err()
+			err = Repo.
+				GetProjectMember(&projectMember).
+				GetEnvironment(&environment).
+				Err()
+			if err != nil {
 				break
+			}
+			// - check recipient exists with read rights.
+			can, err := rights.CanUserReadEnvironment(&Repo, projectMember.UserID, projectMember.ProjectID, &environment)
+			if err != nil {
+				break
+			}
+
+			if can {
+				// If ok, remove potential old messages for recipient.
+				if err = Repo.WriteMessage(user, message).Err(); err != nil {
+					break
+				}
 			}
 		}
 
@@ -119,7 +163,7 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 		}
 
 		// Change environment version id.
-		err = Repo.SetNewVersionID(environment)
+		err = Repo.SetNewVersionID(&environment)
 
 		if err != nil {
 			fmt.Println("api ~ messages.go ~ err", err)
@@ -133,7 +177,7 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 	return response, status, nil
 }
 
-func DeleteMessage(params router.Params, body io.ReadCloser, Repo repo.Repo, user User) (router.Serde, int, error) {
+func DeleteMessage(params router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (router.Serde, int, error) {
 
 	var status = http.StatusNoContent
 	response := &GenericResponse{}
