@@ -19,11 +19,12 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 
 	"github.com/spf13/viper"
@@ -77,8 +78,19 @@ func Initialize() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 	ctx := core.New(core.CTX_RESOLVE)
-	environments := ctx.ListEnvironments()
+	// environments := ctx.ListEnvironments()
 	current := ctx.CurrentEnvironment()
+	currentfolder, _ := os.Getwd()
+
+	isKeystoneFile := keystonefile.ExistsKeystoneFile(currentfolder)
+
+	// If no current environment, call Init function to set default and create missing files in .keystone/
+	if ctx.Err() != nil {
+		ctx.SetError(nil)
+		if isKeystoneFile {
+			ctx.Init(models.Project{})
+		}
+	}
 
 	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
 
@@ -93,14 +105,15 @@ func Initialize() {
 		checkLogin = !isIn(noLoginCommands, command)
 	}
 
-	if checkProject && len(environments) == 0 {
+	if checkProject && !isKeystoneFile {
 		errors.NotAKeystoneProject(".", nil).Print()
 		os.Exit(1)
 	}
 
 	if checkEnvironment && !ctx.HasEnvironment(currentEnvironment) {
-		errors.EnvironmentDoesntExist(currentEnvironment, strings.Join(environments, ", "), nil).Print()
-		os.Exit(1)
+		ctx.Init(models.Project{})
+		// errors.EnvironmentDoesntExist(currentEnvironment, strings.Join(environments, ", "), nil).Print()
+		// os.Exit(1)
 	}
 
 	if checkLogin && !config.IsLoggedIn() {
