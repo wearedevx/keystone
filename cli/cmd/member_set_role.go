@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -117,9 +118,12 @@ ks member set-role sandra@github`,
 				os.Exit(1)
 			}
 		} else {
-			// TODO: output error invalid role
-			err = fmt.Errorf("invalid role %s", roleName)
-			ui.PrintError(err.Error())
+			roleNames := make([]string, len(roles))
+			for i, r := range roles {
+				roleNames[i] = r.Name
+			}
+
+			errors.RoleDoesNotExist(roleName, strings.Join(roleNames, ", "), nil).Print()
 			os.Exit(1)
 		}
 
