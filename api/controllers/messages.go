@@ -189,7 +189,7 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.Repo, user m
 		return response, status, nil
 	}
 
-	err = Repo.DeleteMessage(id)
+	err = Repo.DeleteMessage(id, user.ID)
 
 	if err != nil {
 		response.Error = err

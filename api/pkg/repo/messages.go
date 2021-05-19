@@ -5,11 +5,11 @@ import (
 	"io"
 	"strings"
 
-	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
 type MessagesPayload struct {
-	Messages []Message `json:"messages"`
+	Messages []models.Message `json:"messages"`
 }
 
 func (gr *MessagesPayload) Deserialize(in io.Reader) error {
@@ -45,7 +45,15 @@ func (repo *Repo) WriteMessage(user models.User, message models.Message) IRepo {
 	return repo
 }
 
-func (repo *Repo) DeleteMessage(messageID int) error {
-	repo.GetDb().Delete(&Message{}, messageID)
-	return repo.Err()
+func (repo *Repo) DeleteMessage(userID int, messageID int) IRepo {
+	if repo.err != nil {
+		return repo
+	}
+
+	repo.err = repo.GetDb().
+		Model(&models.Message{}).
+		Where("recipient_id = ? or sender_id = ?", userID).
+		Delete(messageID).Error
+
+	return repo
 }
