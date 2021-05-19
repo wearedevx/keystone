@@ -39,6 +39,14 @@ errors:
     template: |
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Flag | red }} {{- "'" | red }}
 
+  - type: AlreadyKeystoneProject
+    name: "Already a Keystone project"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      You are trying to create a Keystone project but there already is keystone files in your current directory.
+      Please remove the .keystone directory and keystone.yml file beforehand.
+
   # KEYSTONE_YAML_ERRORS
   # ––––––––––––––––––––
   - type: FailedToReadKeystoneFile

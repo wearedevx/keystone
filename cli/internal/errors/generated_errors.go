@@ -27,6 +27,12 @@ This happened because: {{ .Cause }}
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Flag | red }} {{- "'" | red }}
 
 `,
+	"AlreadyKeystoneProject": `
+{{ ERROR }} {{ .Name | red }}
+You are trying to create a Keystone project but there already is keystone files in your current directory.
+Please remove the .keystone directory and keystone.yml file beforehand.
+
+`,
 	"FailedToReadKeystoneFile": `
 {{ ERROR }} {{ .Name | red }}
 The keystone.yml file exists, but it might not be readable or writable.
@@ -229,6 +235,12 @@ func UnsupportedFlag(flag string, cause error) *Error {
 		"Flag": string(flag),
 	}
 	return NewError("Unsupported Flag", helpTexts["UnsupportedFlag"], meta, cause)
+}
+
+func AlreadyKeystoneProject(cause error) *Error {
+	meta := map[string]string{}
+
+	return NewError("Already a Keystone project", helpTexts["AlreadyKeystoneProject"], meta, cause)
 }
 
 func FailedToReadKeystoneFile(cause error) *Error {
