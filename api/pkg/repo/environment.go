@@ -58,7 +58,7 @@ func (repo *Repo) GetEnvironmentsByProjectUUID(projectUUID string, foundEnvironm
 
 func (repo *Repo) SetNewVersionID(environment *Environment) error {
 	newVersionID := uuid.NewV4().String()
-	environment.VersionID = newVersionID
+	// environment.VersionID = newVersionID
 	repo.err = repo.GetDb().Model(&Environment{}).Where(environment).Update("version_id", newVersionID).Error
 	return repo.Err()
 }

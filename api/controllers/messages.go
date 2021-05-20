@@ -151,13 +151,13 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 			err = Repo.SetNewVersionID(&environment)
 
 			if err != nil {
-				fmt.Println("api ~ messages.go ~ err", err)
+				fmt.Println("api ~ messages.go:154 ~ err", err)
 				return err
 			}
 		}
 
 		if err != nil {
-			fmt.Println("api ~ messages.go ~ err", err)
+			fmt.Println("api ~ messages.go:160 ~ err", err)
 			return err
 		}
 
@@ -168,9 +168,8 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 	return response, status, nil
 }
 
-func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.Repo, user models.User) (router.Serde, int, error) {
-
-	var status = http.StatusNoContent
+func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
+	status = http.StatusNoContent
 	response := &GenericResponse{}
 	response.Success = true
 
@@ -184,9 +183,7 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.Repo, user m
 		return response, status, nil
 	}
 
-	err = Repo.DeleteMessage(id, user.ID)
-
-	if err != nil {
+	if err = Repo.DeleteMessage(uint(id), user.ID).Err(); err != nil {
 		response.Error = err
 		response.Success = false
 	}

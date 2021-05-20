@@ -98,6 +98,10 @@ func (f *FakeRepo) DeleteLoginRequest(_ string) bool {
 	panic("not implemented")
 }
 
+func (f *FakeRepo) DeleteMessage(messageID uint, userID uint) IRepo {
+	panic("not implemented")
+}
+
 func (f *FakeRepo) FindUsers(_ []string, _ *map[string]User, _ *[]string) IRepo {
 	panic("not implemented")
 }

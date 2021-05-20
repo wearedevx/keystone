@@ -45,7 +45,7 @@ func (repo *Repo) WriteMessage(user models.User, message models.Message) IRepo {
 	return repo
 }
 
-func (repo *Repo) DeleteMessage(userID int, messageID int) IRepo {
+func (repo *Repo) DeleteMessage(messageID uint, userID uint) IRepo {
 	if repo.err != nil {
 		return repo
 	}
