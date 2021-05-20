@@ -8,6 +8,7 @@ import (
 	"reflect"
 
 	"github.com/spf13/viper"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	. "github.com/wearedevx/keystone/cli/ui"
 )
@@ -73,21 +74,28 @@ func GetAllAccounts() []map[string]string {
 // Returns the account as a map, and its index
 // If the user is logged out, the map is empty,
 // and the index is -1
-func GetCurrentAccount() (map[string]string, int) {
-	nullAccount := make(map[string]string)
+func GetCurrentAccount() (user models.User, index int) {
+	user = models.User{}
+	index = -1
 	accounts := GetAllAccounts()
 
 	if viper.IsSet("current") {
-		index := viper.Get("current").(int)
+		index = viper.Get("current").(int)
 
 		if index >= 0 && index < len(accounts) {
 			account := accounts[index]
 
-			return account, index
+			user.AccountType = models.AccountType(account["account_type"])
+			user.Email = account["email"]
+			user.ExtID = account["ext_id"]
+			user.Fullname = account["fullname"]
+			user.PublicKey = []byte(account["public_key"])
+			user.UserID = account["user_id"]
+			user.Username = account["username"]
 		}
 	}
 
-	return nullAccount, -1
+	return user, index
 }
 
 // Sets the current account as the index at `index`

@@ -94,13 +94,13 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 // WriteMessages writes messages to users
 // TODO: on the client side, each message should be associated with the target EnvironmentID,
 // 		 and therefore, there is no need to pass envID in the url, query or body in the HTTP query
-func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
+func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	response := &GenericResponse{}
 
 	// Create transaction
 	// TODO: @kévin ? Qu’est-ce qu’on fait du `tx` ?
-	Repo.GetDb().Transaction(func(tx *gorm.DB) (err error) {
+	Repo.GetDb().Transaction(func(_ *gorm.DB) (err error) {
 		payload := &repo.MessagesPayload{}
 		payload.Deserialize(body)
 

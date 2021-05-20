@@ -40,10 +40,7 @@ to add members to projects.`,
 			os.Exit(1)
 		}
 
-		username := currentAccount["username"]
-		accountType := currentAccount["account_type"]
-
-		fmt.Println(username + "@" + accountType)
+		fmt.Println(currentAccount.UserID)
 	},
 }
 

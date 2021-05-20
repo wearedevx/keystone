@@ -23,6 +23,7 @@ import (
 	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
@@ -31,20 +32,20 @@ import (
 
 var serviceName string
 
-func ShowAlreadyLoggedInAndExit(account map[string]string) {
-	username := account["username"]
-	if account["username"] == "" {
-		username = account["email"]
+func ShowAlreadyLoggedInAndExit(account models.User) {
+	username := account.Username
+	if username == "" {
+		username = account.Email
 	}
 
 	ui.Print(ui.RenderTemplate("already logged in", `You are already logged in as {{ . }}`, username))
 	os.Exit(0)
 }
 
-func LogIntoExisitingAccount(accountIndex int, currentAccount map[string]string, c auth.AuthService) {
+func LogIntoExisitingAccount(accountIndex int, currentAccount models.User, c auth.AuthService) {
 	config.SetCurrentAccount(accountIndex)
 
-	publicKey := []byte(currentAccount["public_key"])
+	publicKey := []byte(currentAccount.PublicKey)
 	_, jwtToken, err := c.Finish(publicKey)
 
 	if err != nil {
@@ -57,7 +58,7 @@ func LogIntoExisitingAccount(accountIndex int, currentAccount map[string]string,
 
 	ui.Print(ui.RenderTemplate("login ok", `
 {{ OK }} {{ . | bright_green }}
-`, fmt.Sprintf("Welcome back, %s", currentAccount["username"])))
+`, fmt.Sprintf("Welcome back, %s", currentAccount.Username)))
 	os.Exit(0)
 }
 

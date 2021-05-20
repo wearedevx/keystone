@@ -106,15 +106,6 @@ Enter a values for {{ . }}:`, secretName))
 
 		}
 
-		// If allEnv flag, set value to all envs whithout asking
-		// if allEnv {
-		// 	for _, environment := range environments {
-		// 		environmentValueMap[environment] = strings.Trim(secretValue, " ")
-		// 		affectedEnvironments = AppendIfMissing(affectedEnvironments, environment)
-		// 	}
-
-		// }
-
 		flag := core.S_REQUIRED
 
 		if addOptional {

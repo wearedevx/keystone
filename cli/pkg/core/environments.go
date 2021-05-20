@@ -1,14 +1,13 @@
 package core
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"strconv"
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -21,7 +20,6 @@ func (ctx *Context) CurrentEnvironment() string {
 		return ""
 	}
 
-	bytes := make([]byte, 0)
 	bytes, err := ioutil.ReadFile(ctx.environmentFilePath())
 
 	if err != nil {
@@ -200,36 +198,6 @@ func (ctx *Context) MustHaveEnvironment(name string) {
 	}
 }
 
-// func (ctx *Context) Fetch(environment string) {
-
-// 	currentAccount, _ := config.GetCurrentAccount()
-// 	token := config.GetAuthToken()
-// 	userID := currentAccount["user_id"]
-// 	ksClient := client.NewKeystoneClient(userID, token)
-
-// 	// Get env hash from config
-
-// 	// Request: Get env hash from remote
-// 	results, err := ksClient.GetMessages(environmentID, localEnvironmentVersion)
-
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		os.Exit(1)
-// 	}
-
-// 	fmt.Println(results.Messages)
-// 	if results.VersionID == localEnvironmentVersion {
-// 		return
-// 	}
-
-// 	fmt.Println(results.VersionID)
-
-// 	// 204: no hash set for env
-// 	//    -> Set new hash for env
-// 	// 200: hash and new message
-// 	//    -> Set new hash for env
-// }
-
 func (ctx *Context) EnvironmentVersion() string {
 	environments := ctx.EnvironmentsFromConfig()
 	currentEnvironment := ctx.CurrentEnvironment()
@@ -298,24 +266,15 @@ func (ctx *Context) PushEnv() error {
 		return err
 	}
 
-	// messages := make([]models.MessageToWritePayload, 0)
 	messagesToWrite := models.MessagesToWritePayload{
 		Messages: make([]models.MessageToWritePayload, 0),
 	}
-	// messages := make([]models.MessageToWritePayload, 0)
 
-	var currentUser *user.User
+	account, _ := config.GetCurrentAccount()
 
-	if currentUser, err = user.Current(); err != nil {
-		panic(err)
-	}
-	fmt.Println(userPublicKeys.Keys)
 	// Create one message per user
 	for _, userPublicKey := range userPublicKeys.Keys {
-		// TODO
-		// Uid ? User id ?
-		if userPublicKey.UserID != currentUser.Uid {
-
+		if userPublicKey.UserID != account.UserID {
 			// TODO: encrypt payload with recipient public key
 			// crypto.EncryptForUser()
 			var payload string
