@@ -98,6 +98,10 @@ func (f *FakeRepo) DeleteLoginRequest(_ string) bool {
 	panic("not implemented")
 }
 
+func (f *FakeRepo) DeleteMessage(messageID uint, userID uint) IRepo {
+	panic("not implemented")
+}
+
 func (f *FakeRepo) FindUsers(_ []string, _ *map[string]User, _ *[]string) IRepo {
 	panic("not implemented")
 }
@@ -107,6 +111,10 @@ func (f *FakeRepo) GetDb() *gorm.DB {
 }
 
 func (f *FakeRepo) GetEnvironment(_ *Environment) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetEnvironmentPublicKeys(envID string, publicKeys *PublicKeys) IRepo {
 	panic("not implemented")
 }
 
@@ -379,8 +387,8 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 		for envName, environment := range environments {
 			expectation := rightsMatrix[name][envName]
 
-			canRead, _ := CanUserReadEnvironment(fakeRepo, user, project, environment)
-			canWrite, _ := CanUserWriteOnEnvironment(fakeRepo, user, project, environment)
+			canRead, _ := CanUserReadEnvironment(fakeRepo, user.ID, project.ID, environment)
+			canWrite, _ := CanUserWriteOnEnvironment(fakeRepo, user.ID, project.ID, environment)
 
 			assert.Equal(t, expectation.r, canRead, "Oops! User %s has unexpected read rights on %s environment", name, envName)
 			assert.Equal(t, expectation.w, canWrite, "Oops! User %s has unexpected write rights on %s environment", name, envName)

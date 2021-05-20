@@ -14,11 +14,13 @@ type IRepo interface {
 	CreateRole(*models.Role) IRepo
 	CreateRoleEnvironmentType(*models.RolesEnvironmentType) IRepo
 	DeleteLoginRequest(string) bool
+	DeleteMessage(messageID uint, userID uint) IRepo
 	Err() error
 	FindUsers(userIDs []string, users *map[string]models.User, notFounds *[]string) IRepo
 	GetChildrenRoles(role models.Role, roles *[]models.Role) IRepo
 	GetDb() *gorm.DB
 	GetEnvironment(*models.Environment) IRepo
+	GetEnvironmentPublicKeys(envID string, publicKeys *models.PublicKeys) IRepo
 	GetEnvironmentType(*models.EnvironmentType) IRepo
 	GetInvitableRoles(models.Role, *[]models.Role) IRepo
 	GetLoginRequest(string) (models.LoginRequest, bool)
@@ -35,6 +37,7 @@ type IRepo interface {
 	GetRole(*models.Role) IRepo
 	GetRoles(*[]models.Role) IRepo
 	GetRolesEnvironmentType(*models.RolesEnvironmentType) IRepo
+	GetRolesMemberCanInvite(projectMember models.ProjectMember, roles *[]models.Role) IRepo
 	GetUser(*models.User) IRepo
 	ListProjectMembers(userIDList []string, projectMember *[]models.ProjectMember) IRepo
 	ProjectAddMembers(models.Project, []models.MemberRole) IRepo

@@ -22,7 +22,6 @@ import (
 	"path/filepath"
 
 	"github.com/eiannone/keyboard"
-
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
@@ -132,6 +131,13 @@ Examples:
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
+			return
+		}
+
+		// TODO
+		// Format beautyiful error
+		if pushErr := ctx.PushEnv(); err != nil {
+			ui.PrintError(pushErr.Error())
 			return
 		}
 

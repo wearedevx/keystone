@@ -21,7 +21,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/wearedevx/keystone/cli/internal/config"
 	kerrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
@@ -67,11 +66,12 @@ Created files and directories:
 
 		// Ask for project name if keystone file doesn't exist.
 		if !keystonefile.ExistsKeystoneFile(currentfolder) {
-			currentAccount, _ := config.GetCurrentAccount()
-			token := config.GetAuthToken()
-			userID := currentAccount["user_id"]
+			c, kcErr := client.NewKeystoneClient()
 
-			c := client.NewKeystoneClient(userID, token)
+			if kcErr != nil {
+				panic(kcErr)
+			}
+
 			project, kerr := c.Project("").Init(projectName)
 
 			if kerr != nil {

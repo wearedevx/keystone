@@ -91,6 +91,10 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		// Actual call to the handler (i.e. Controller function)
 		result, status, err := handler(p, r.Body, *Repo, user)
 
+		if err != nil {
+			http.Error(w, err.Error(), status)
+		}
+
 		// serialize the response for the user
 		var serialized string
 
@@ -99,6 +103,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		}
 
 		if err != nil {
+			http.Error(w, "Error Serializing results", http.StatusInternalServerError)
 		}
 
 		out := bytes.NewBufferString(serialized)

@@ -1,6 +1,8 @@
 package client
 
-import "github.com/wearedevx/keystone/api/pkg/models"
+import (
+	"github.com/wearedevx/keystone/api/pkg/models"
+)
 
 type Users struct {
 	r requester
@@ -13,18 +15,16 @@ func (u *Users) CheckUsersExist(userIds []string) (models.CheckMembersResponse, 
 	payload := models.CheckMembersPayload{
 		MemberIDs: userIds,
 	}
-	err = u.r.post("/users/exist", payload, &result)
+	err = u.r.post("/users/exist", payload, &result, nil)
 
 	return result, err
 }
 
-func (u *Users) GetPublicKeys(projectId string) ([]models.UserPublicKey, error) {
+func (u *Users) GetEnvironmentPublicKeys(environmentId string) (models.PublicKeys, error) {
 	var err error
-	var result struct {
-		keys []models.UserPublicKey
-	}
+	var result models.PublicKeys
 
-	err = u.r.get("/projects/"+projectId+"/public-keys", &result)
+	err = u.r.get("/environments/"+environmentId+"/public-keys", &result, nil)
 
-	return result.keys, err
+	return result, err
 }

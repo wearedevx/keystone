@@ -1,11 +1,9 @@
 package controllers
 
 import (
-	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 
@@ -13,24 +11,6 @@ import (
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
-
-type projectsPublicKeys struct {
-	Keys []models.UserPublicKey
-}
-
-func (p *projectsPublicKeys) Deserialize(in io.Reader) error {
-	return json.NewDecoder(in).Decode(p)
-}
-
-func (p *projectsPublicKeys) Serialize(out *string) (err error) {
-	var sb strings.Builder
-
-	err = json.NewEncoder(&sb).Encode(p)
-
-	*out = sb.String()
-
-	return err
-}
 
 func PostProject(_ router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
@@ -46,38 +26,11 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.Repo, user model
 	if err = Repo.GetOrCreateProject(&project).Err(); err != nil {
 		return &project, http.StatusInternalServerError, err
 	}
+	project.User = user
+	project.UserID = user.ID
 
 	return &project, status, err
 
-}
-
-func GetProjectsPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.Repo, _ models.User) (_ router.Serde, status int, err error) {
-	status = http.StatusOK
-
-	var project models.Project
-	var projectID string = params.Get("projectID").(string)
-	var result projectsPublicKeys
-
-	if projectID == "" {
-		return &result, http.StatusBadRequest, nil
-	}
-
-	Repo.
-		GetProjectByUUID(projectID, &project).
-		ProjectLoadUsers(&project)
-
-	if err = Repo.Err(); err != nil {
-		return &result, http.StatusInternalServerError, err
-	}
-
-	for _, member := range project.Members {
-		result.Keys = append(result.Keys, models.UserPublicKey{
-			UserID:    member.User.UserID,
-			PublicKey: member.User.PublicKey,
-		})
-	}
-
-	return &result, status, err
 }
 
 func GetProjectsMembers(params router.Params, _ io.ReadCloser, Repo repo.Repo, _ models.User) (_ router.Serde, status int, err error) {

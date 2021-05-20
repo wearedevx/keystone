@@ -36,12 +36,12 @@ func TestEnvType(t *testing.T) {
 	Repo.GetEnvironment(&environment)
 
 	// Get project
-	can, _ := rights.CanUserReadEnvironment(Repo, &user, &project, &environment)
+	can, _ := rights.CanUserReadEnvironment(Repo, user.ID, project.ID, &environment)
 	assert.True(t, can, "Oops! User "+user.Username+" shoud be able to read on "+environment.Name+" environment")
 
-	can, _ = rights.CanUserWriteOnEnvironment(Repo, &user, &project, &environment)
+	can, _ = rights.CanUserWriteOnEnvironment(Repo, user.ID, project.ID, &environment)
 	assert.True(t, can, "Oops! User "+user.Username+" shoud be able to write on "+environment.Name+" environment")
 
-	can, _ = rights.CanUserInviteOnEnvironment(Repo, &user, &project, &environment)
+	can, _ = rights.CanUserInviteOnEnvironment(Repo, user.ID, project.ID, &environment)
 	assert.False(t, can, "Oops! User "+user.Username+" can't invite on "+environment.Name+" environment")
 }

@@ -51,6 +51,18 @@ func (r *Repo) GetInvitableRoles(role Role, roles *[]Role) IRepo {
 	return r
 }
 
+func (r *Repo) GetRolesMemberCanInvite(projectMember ProjectMember, roles *[]Role) IRepo {
+	if r.Err() != nil {
+		return r
+	}
+
+	if projectMember.Role.CanAddMember {
+		r.GetChildrenRoles(projectMember.Role, roles)
+	}
+
+	return r
+}
+
 func (r *Repo) GetChildrenRoles(role Role, roles *[]Role) IRepo {
 	if r.Err() != nil {
 		return r

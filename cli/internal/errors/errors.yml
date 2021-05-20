@@ -293,6 +293,13 @@ errors:
       Please run:
         $ ks login
 
+  - type: CannotFindProjectID
+    name: "Cannot find project ID in config file"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      Keystone.yml must be malformated
+
   - type: UnkownError
     name: "Unkown Error"
     params: []

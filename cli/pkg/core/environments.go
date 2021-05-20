@@ -1,14 +1,19 @@
 package core
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
+	"os/user"
+	"strconv"
 	"strings"
 
+	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
+	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/pkg/client"
 )
 
 func (ctx *Context) CurrentEnvironment() string {
@@ -23,7 +28,7 @@ func (ctx *Context) CurrentEnvironment() string {
 		ctx.setError(CannotReadEnvironment(ctx.environmentFilePath(), err))
 	}
 
-	return string(bytes)
+	return strings.Trim(string(bytes), "\n")
 }
 
 func (ctx *Context) ListEnvironments() []string {
@@ -70,7 +75,7 @@ func (ctx *Context) CreateEnvironment(name string) *Context {
 	}
 
 	if !ctx.HasEnvironment(name) {
-		newEnvDir := path.Join(ctx.cacheDirPath(), name)
+		newEnvDir := ctx.CachedEnvironmentPath(name)
 		err := os.MkdirAll(newEnvDir, 0o755)
 
 		if err != nil {
@@ -93,7 +98,7 @@ func (ctx *Context) RemoveEnvironment(name string) *Context {
 	}
 
 	if ctx.HasEnvironment(name) {
-		envDir := path.Join(ctx.cacheDirPath(), name)
+		envDir := ctx.CachedEnvironmentPath(name)
 		err := os.RemoveAll(envDir)
 
 		if err != nil {
@@ -112,8 +117,8 @@ func (ctx *Context) SetCurrent(name string) *Context {
 	}
 
 	if ctx.HasEnvironment(name) {
-		dotEnvFilePath := path.Join(ctx.cacheDirPath(), name, ".env")
-		currentDotEnvFilePath := path.Join(ctx.cacheDirPath(), ".env")
+		dotEnvFilePath := ctx.CachedEnvironmentDotEnvPath(name)
+		currentDotEnvFilePath := ctx.CachedDotEnvPath()
 
 		err := CopyFile(dotEnvFilePath, currentDotEnvFilePath)
 
@@ -142,7 +147,7 @@ func (ctx *Context) SetAllSecrets(name string, secrets map[string]string) *Conte
 	}
 
 	if ctx.HasEnvironment(name) {
-		dotEnvPath := path.Join(ctx.cacheDirPath(), name, ".env")
+		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(name)
 
 		if err := new(EnvFile).Load(dotEnvPath).SetData(secrets).Dump().Err(); err != nil {
 			return ctx.setError(FailedToUpdateDotEnv(dotEnvPath, err))
@@ -163,7 +168,7 @@ func (ctx *Context) GetAllSecrets(envName string) map[string]string {
 	}
 
 	if ctx.HasEnvironment(envName) {
-		dotEnvPath := path.Join(ctx.cacheDirPath(), envName, ".env")
+		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(envName)
 
 		envFile := new(EnvFile).Load(dotEnvPath)
 
@@ -185,7 +190,7 @@ func (ctx *Context) HasEnvironment(name string) bool {
 		return false
 	}
 
-	return DirExists(path.Join(ctx.cacheDirPath(), name))
+	return DirExists(ctx.CachedEnvironmentPath(name))
 }
 
 func (ctx *Context) MustHaveEnvironment(name string) {
@@ -193,4 +198,154 @@ func (ctx *Context) MustHaveEnvironment(name string) {
 		EnvironmentDoesntExist(name, strings.Join(ctx.ListEnvironments(), ", "), nil).Print()
 		os.Exit(0)
 	}
+}
+
+// func (ctx *Context) Fetch(environment string) {
+
+// 	currentAccount, _ := config.GetCurrentAccount()
+// 	token := config.GetAuthToken()
+// 	userID := currentAccount["user_id"]
+// 	ksClient := client.NewKeystoneClient(userID, token)
+
+// 	// Get env hash from config
+
+// 	// Request: Get env hash from remote
+// 	results, err := ksClient.GetMessages(environmentID, localEnvironmentVersion)
+
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		os.Exit(1)
+// 	}
+
+// 	fmt.Println(results.Messages)
+// 	if results.VersionID == localEnvironmentVersion {
+// 		return
+// 	}
+
+// 	fmt.Println(results.VersionID)
+
+// 	// 204: no hash set for env
+// 	//    -> Set new hash for env
+// 	// 200: hash and new message
+// 	//    -> Set new hash for env
+// }
+
+func (ctx *Context) EnvironmentVersion() string {
+	environments := ctx.EnvironmentsFromConfig()
+	currentEnvironment := ctx.CurrentEnvironment()
+
+	for _, e := range environments {
+		if e.Name == currentEnvironment {
+			return e.VersionID
+		}
+	}
+	return ""
+}
+
+func (ctx *Context) EnvironmentVersionByName(name string) string {
+	environments := ctx.EnvironmentsFromConfig()
+
+	for _, e := range environments {
+		if e.Name == name {
+			return e.VersionID
+		}
+	}
+	return ""
+}
+
+func (ctx *Context) EnvironmentID() string {
+	return ctx.getCurrentEnvironmentId()
+	// environments := ctx.EnvironmentsFromConfig()
+	// currentEnvironment := ctx.CurrentEnvironment()
+
+	// for _, e := range environments {
+	// 	if e.Name == currentEnvironment {
+	// 		return e.EnvironmentID
+	// 	}
+	// }
+	// return ""
+}
+
+func (ctx *Context) EnvironmentsFromConfig() []Env {
+
+	ksfile := new(KeystoneFile).Load(ctx.Wd)
+	return ksfile.Environments
+}
+
+// Push current environnement.
+// Post to server []MessageToWritePayload.
+func (ctx *Context) PushEnv() error {
+	// var result client.GenericResponse
+
+	// Get public keyrs
+	c, kcErr := client.NewKeystoneClient()
+
+	if kcErr != nil {
+		return kcErr
+	}
+
+	environmentId := ctx.EnvironmentID()
+
+	userPublicKeys, err := c.Users().GetEnvironmentPublicKeys(environmentId)
+
+	if err != nil {
+		return err
+	}
+
+	PayloadContent, err := ctx.PrepareMessagePayload()
+
+	if err != nil {
+		return err
+	}
+
+	// messages := make([]models.MessageToWritePayload, 0)
+	messagesToWrite := models.MessagesToWritePayload{
+		Messages: make([]models.MessageToWritePayload, 0),
+	}
+	// messages := make([]models.MessageToWritePayload, 0)
+
+	var currentUser *user.User
+
+	if currentUser, err = user.Current(); err != nil {
+		panic(err)
+	}
+	fmt.Println(userPublicKeys.Keys)
+	// Create one message per user
+	for _, userPublicKey := range userPublicKeys.Keys {
+		// TODO
+		// Uid ? User id ?
+		if userPublicKey.UserID != currentUser.Uid {
+
+			// TODO: encrypt payload with recipient public key
+			// crypto.EncryptForUser()
+			var payload string
+			PayloadContent.Serialize(&payload)
+
+			RecipientID, _ := strconv.ParseUint(userPublicKey.UserID, 10, 64)
+			RecipientIDUint := uint(RecipientID)
+
+			messagesToWrite.Messages = append(messagesToWrite.Messages, models.MessageToWritePayload{
+				Payload:       []byte(payload),
+				UserID:        userPublicKey.UserID,
+				RecipientID:   RecipientIDUint,
+				EnvironmentID: environmentId,
+			})
+		}
+	}
+
+	_, err = c.Messages().SendMessages(environmentId, messagesToWrite)
+
+	if err != nil {
+		return err
+	}
+
+	// TODO
+	// Set new version id
+
+	return nil
+}
+
+func (ctx *Context) EnvironmentVersionHasChanged(name string, environmentID string) bool {
+	currentVersion := ctx.EnvironmentVersionByName(name)
+	return currentVersion != environmentID
 }

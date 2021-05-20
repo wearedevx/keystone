@@ -48,7 +48,7 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 	current := ctx.CurrentEnvironment()
 
 	// Use current content for current environment.
-	dest := path.Join(ctx.cacheDirPath(), current, file.Path)
+	dest := path.Join(ctx.CachedEnvironmentFilesPath(current), file.Path)
 	dir := filepath.Dir(dest)
 	os.MkdirAll(dir, 0o755)
 
@@ -63,8 +63,8 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 			continue
 		}
 
-		dest := path.Join(ctx.cacheDirPath(), environment, file.Path)
-		parentDir := filepath.Dir(dest) + "/"
+		dest := path.Join(ctx.CachedEnvironmentFilesPath(environment), file.Path)
+		parentDir := filepath.Dir(dest) + string(os.PathSeparator)
 
 		if err := os.MkdirAll(parentDir, 0o755); err != nil {
 			ctx.setError(CannotCreateDirectory(parentDir, err))
@@ -100,7 +100,7 @@ func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 	files := ksfile.Files
 
 	for _, file := range files {
-		cachedFilePath := path.Join(ctx.cacheDirPath(), envname, file.Path)
+		cachedFilePath := path.Join(ctx.CachedEnvironmentFilesPath(envname), file.Path)
 		linkPath := path.Join(ctx.Wd, file.Path)
 
 		if FileExists(linkPath) {
@@ -153,7 +153,7 @@ func (ctx *Context) RemoveFile(filePath string, force bool) *Context {
 	environments := ctx.ListEnvironments()
 	currentEnvironment := ctx.CurrentEnvironment()
 
-	currentCached := path.Join(ctx.cacheDirPath(), currentEnvironment, filePath)
+	currentCached := path.Join(ctx.CachedEnvironmentFilesPath(currentEnvironment), filePath)
 	dest := path.Join(ctx.Wd, filePath)
 
 	if force {
@@ -166,7 +166,7 @@ func (ctx *Context) RemoveFile(filePath string, force bool) *Context {
 	CopyFile(currentCached, dest)
 
 	for _, environment := range environments {
-		cachedFilePath := path.Join(ctx.cacheDirPath(), environment, filePath)
+		cachedFilePath := path.Join(ctx.CachedEnvironmentFilesPath(environment), filePath)
 
 		if FileExists(cachedFilePath) {
 			os.Remove(cachedFilePath)

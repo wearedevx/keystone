@@ -22,7 +22,6 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
@@ -58,17 +57,16 @@ This causes secrets to be re-crypted for the remainig members.`,
 	},
 	Run: func(_ *cobra.Command, args []string) {
 		// Auth check
-		account, index := config.GetCurrentAccount()
-		token := config.GetAuthToken()
 
-		if index < 0 {
-			ui.Print(errors.MustBeLoggedIn(nil).Error())
+		c, kcErr := client.NewKeystoneClient()
+
+		if kcErr != nil {
+			kcErr.Print()
+			os.Exit(1)
 		}
-
 		ctx := core.New(core.CTX_RESOLVE)
 		projectID := ctx.GetProjectID()
 
-		c := client.NewKeystoneClient(account["user_id"], token)
 		r, err := c.Users().CheckUsersExist(args)
 
 		if err != nil {

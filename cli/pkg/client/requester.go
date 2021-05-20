@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -28,7 +29,7 @@ func newRequester(userID string, token string) requester {
 	return requester{userID: userID, jwtToken: token}
 }
 
-func (r *requester) request(method methodType, expectedStatusCode int, path string, data interface{}, result interface{}) error {
+func (r *requester) request(method methodType, expectedStatusCode int, path string, data interface{}, result interface{}, params map[string]string) error {
 	requestPayload := make([]byte, 0)
 	buf := bytes.NewBuffer(requestPayload)
 
@@ -36,7 +37,23 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 		json.NewEncoder(buf).Encode(&data)
 	}
 
-	req, err := http.NewRequest(string(method), ApiURL+path, buf)
+	queryParams := url.Values{}
+	for key, value := range params {
+		queryParams.Set(key, value)
+		json.NewEncoder(buf).Encode(&data)
+	}
+
+	Url, err := url.Parse(ApiURL + path)
+	if err != nil {
+		return err
+	}
+	Url.RawQuery = queryParams.Encode()
+
+	req, err := http.NewRequest(string(method), Url.String(), buf)
+	if err != nil {
+		return err
+	}
+
 	req.Header.Set("Content-Type", "application/octet-stream")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.jwtToken))
 
@@ -66,7 +83,9 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	// minimum length for json response 2 bytes: {} or []
 	if result != nil && len(bodyBytes) >= 2 {
 		err := json.Unmarshal(bodyBytes, result)
-		return err
+		if err != nil {
+			return fmt.Errorf("Error parsing data : %v", string(bodyBytes))
+		}
 	}
 
 	if resp.StatusCode != expectedStatusCode && resp.StatusCode != http.StatusOK {
@@ -75,19 +94,18 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 
 	return nil
 }
-
-func (r *requester) get(path string, result interface{}) error {
-	return r.request(GET, http.StatusOK, path, nil, result)
+func (r *requester) get(path string, result interface{}, params map[string]string) error {
+	return r.request(GET, http.StatusOK, path, nil, result, params)
 }
 
-func (r *requester) post(path string, data interface{}, result interface{}) error {
-	return r.request(POST, http.StatusCreated, path, data, result)
+func (r *requester) post(path string, data interface{}, result interface{}, params map[string]string) error {
+	return r.request(POST, http.StatusCreated, path, data, result, params)
 }
 
-func (r *requester) put(path string, data interface{}, result interface{}) error {
-	return r.request(PUT, http.StatusOK, path, data, result)
+func (r *requester) put(path string, data interface{}, result interface{}, params map[string]string) error {
+	return r.request(PUT, http.StatusOK, path, data, result, params)
 }
 
-func (r *requester) del(path string, data interface{}, result interface{}) error {
-	return r.request(DELETE, http.StatusNoContent, path, data, result)
+func (r *requester) del(path string, data interface{}, result interface{}, params map[string]string) error {
+	return r.request(DELETE, http.StatusNoContent, path, data, result, params)
 }

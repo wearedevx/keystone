@@ -21,8 +21,6 @@ import (
 	"sort"
 
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/config"
-	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -42,16 +40,14 @@ Used without arguments, displays a list of all members,
 grouped by their role, with indication of their ownership.`,
 	Run: func(_ *cobra.Command, _ []string) {
 		ctx := core.New(core.CTX_RESOLVE)
-		currentUser, index := config.GetCurrentAccount()
 
-		if index < 0 {
-			ui.Print(errors.MustBeLoggedIn(nil).Error())
+		c, kcErr := client.NewKeystoneClient()
+
+		if kcErr != nil {
+			fmt.Println(kcErr)
 			os.Exit(1)
 		}
 
-		token := config.GetAuthToken()
-
-		c := client.NewKeystoneClient(currentUser["user_id"], token)
 		kf := keystonefile.KeystoneFile{}
 		kf.Load(ctx.Wd)
 

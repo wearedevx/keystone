@@ -126,6 +126,13 @@ Enter a values for {{ . }}:`, secretName))
 			return
 		}
 
+		// TODO
+		// Format beautyiful error
+		if pushErr := ctx.PushEnv(); err != nil {
+			ui.PrintError(pushErr.Error())
+			return
+		}
+
 		ui.PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(affectedEnvironments))
 	},
 }

@@ -26,7 +26,17 @@ func (ctx *Context) GetProjectID() string {
 	ksFile := &KeystoneFile{}
 	ksFile.Load(ctx.Wd)
 
-	ctx.err = FailedToReadKeystoneFile(ksFile.Err())
+	if ksFile.Err() != nil {
+		ctx.err = FailedToReadKeystoneFile(ksFile.Err())
+	}
 
 	return ksFile.ProjectId
+}
+
+func (ctx *Context) MustHaveProject() {
+	projectID := ctx.GetProjectID()
+
+	if projectID == "" {
+		ctx.err = CannotFindProjectID(nil)
+	}
 }

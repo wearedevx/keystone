@@ -1,6 +1,6 @@
-project_id: 0aa61164-0064-42d4-a1dc-820cf8e81355
-name: keystone
-env: []
-files: []
-options:
-  strict: false
+env: 
+- label: HOSTNAME
+  value: localhost
+files:
+- path: .env.test
+  value: Yydlc3QgdW4gcGV0aXQgYm91dCBkZSBib2lz
