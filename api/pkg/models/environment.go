@@ -53,6 +53,24 @@ func (u *Environment) Serialize(out *string) (err error) {
 	return err
 }
 
+type GetEnvironmentsResponse struct {
+	Environments []Environment `json:"environments"`
+}
+
+func (e *GetEnvironmentsResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(e)
+}
+
+func (u *GetEnvironmentsResponse) Serialize(out *string) (err error) {
+	var sb strings.Builder
+
+	err = json.NewEncoder(&sb).Encode(u)
+
+	*out = sb.String()
+
+	return err
+}
+
 type EnvironmentUserSecret struct {
 	EnvironmentID uint      `json:"environmentID" gorm:"primaryKey"`
 	UserID        uint      `json:"userID" gorm:"primaryKey"`

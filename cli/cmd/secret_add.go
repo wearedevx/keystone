@@ -21,7 +21,6 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 
@@ -56,19 +55,27 @@ Example:
 		environmentValueMap := make(map[string]string)
 
 		ctx := core.New(core.CTX_RESOLVE)
+
+		accessibleEnvironments := ctx.GetAccessibleEnvironments()
+
+		if err = ctx.Err(); err != nil {
+			err.Print()
+			return
+		}
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		environments := ctx.ListEnvironments()
+		environments := make([]string, 0)
+
+		for _, environment := range accessibleEnvironments {
+			environments = append(environments, environment.Name)
+		}
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
 			return
 		}
 
-		var affectedEnvironments []string
-
 		environmentValueMap[currentEnvironment] = secretValue
-		affectedEnvironments = utils.AppendIfMissing(affectedEnvironments, currentEnvironment)
 
 		// Ask value for each env
 		if !skipPrompts {
@@ -95,13 +102,11 @@ Enter a values for {{ . }}:`, secretName))
 				}
 
 				environmentValueMap[environment] = strings.Trim(result, " ")
-				affectedEnvironments = utils.AppendIfMissing(affectedEnvironments, environment)
 			}
 
 		} else {
 			for _, environment := range environments {
 				environmentValueMap[environment] = strings.Trim(secretValue, " ")
-				affectedEnvironments = utils.AppendIfMissing(affectedEnvironments, environment)
 			}
 
 		}
@@ -110,7 +115,6 @@ Enter a values for {{ . }}:`, secretName))
 		// if allEnv {
 		// 	for _, environment := range environments {
 		// 		environmentValueMap[environment] = strings.Trim(secretValue, " ")
-		// 		affectedEnvironments = AppendIfMissing(affectedEnvironments, environment)
 		// 	}
 
 		// }
@@ -133,7 +137,7 @@ Enter a values for {{ . }}:`, secretName))
 			return
 		}
 
-		ui.PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(affectedEnvironments))
+		ui.PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(environments))
 	},
 }
 

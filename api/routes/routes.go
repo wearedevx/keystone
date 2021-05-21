@@ -24,6 +24,7 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.POST("/projects/:projectID/members", AuthedHandler(PostProjectsMembers))
 	router.DELETE("/projects/:projectID/members", AuthedHandler(DeleteProjectsMembers))
 	router.PUT("/projects/:projectID/members/role", AuthedHandler(PutMembersSetRole))
+	router.GET("/projects/:projectID/environments", AuthedHandler(GetAccessibleEnvironments))
 
 	router.GET("/environments/:envID/public-keys", AuthedHandler(GetEnvironmentPublicKeys))
 	router.POST("/environments/:envID/messages", AuthedHandler(WriteMessages))

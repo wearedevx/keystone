@@ -349,3 +349,23 @@ func (ctx *Context) EnvironmentVersionHasChanged(name string, environmentID stri
 	currentVersion := ctx.EnvironmentVersionByName(name)
 	return currentVersion != environmentID
 }
+
+func (ctx *Context) GetAccessibleEnvironments() []models.Environment {
+	// Get public keyrs
+	c, kcErr := client.NewKeystoneClient()
+
+	if kcErr != nil {
+		ctx.setError(kcErr)
+		return make([]models.Environment, 0)
+	}
+
+	projectID := ctx.GetProjectID()
+
+	accessibleEnvironments, err := c.Project(projectID).GetAccessibleEnvironments()
+	if err != nil {
+		ctx.setError(UnkownError(err))
+	}
+
+	return accessibleEnvironments
+
+}
