@@ -17,6 +17,9 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/config"
+	"github.com/wearedevx/keystone/cli/internal/crypto"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
@@ -63,7 +66,9 @@ Get info from your team:
 		fmt.Println("Fetching new data...")
 		result, _ := c.Messages().GetMessages(projectID)
 
-		ctx.SaveMessages(result)
+		deciphered, err := HandleMessages(c, result)
+
+		ctx.SaveMessages(deciphered)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
@@ -89,6 +94,34 @@ Get info from your team:
 		}
 
 	},
+}
+
+func HandleMessages(c client.KeystoneClient, byEnvironment models.GetMessageByEnvironmentResponse) (deciphered map[string]string, err *errors.Error) {
+	privateKey, e := config.GetCurrentUserPrivateKey()
+	if e != nil {
+		// TODO: create a "Cannot get current user private key" error
+		return nil, errors.UnkownError(e)
+	}
+
+	for environmentName, environment := range byEnvironment.Environments {
+		msg := environment.Message
+		//TODO: fetch the sender public key
+		upk, e := c.Users().GetUserPublicKey(msg.Sender.UserID)
+		if e != nil {
+			// TODO: create a "Cannot get user public key" error
+			return nil, errors.UnkownError(e)
+		}
+
+		d, e := crypto.DecrypteMessage(privateKey, upk.PublicKey, msg.Payload)
+		if e != nil {
+			// TODO: create a "Decryption failed" error
+			return nil, errors.UnkownError(e)
+		}
+
+		deciphered[environmentName] = d
+	}
+
+	return deciphered, nil
 }
 
 func init() {

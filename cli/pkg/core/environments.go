@@ -8,6 +8,7 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
+	"github.com/wearedevx/keystone/cli/internal/crypto"
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -271,6 +272,10 @@ func (ctx *Context) PushEnv() error {
 	}
 
 	account, _ := config.GetCurrentAccount()
+	privateKey, err := config.GetCurrentUserPrivateKey()
+	if err != nil {
+		return err
+	}
 
 	// Create one message per user
 	for _, userPublicKey := range userPublicKeys.Keys {
@@ -280,11 +285,16 @@ func (ctx *Context) PushEnv() error {
 			var payload string
 			PayloadContent.Serialize(&payload)
 
+			cryptoMessage, err := crypto.EncryptMessage(privateKey, userPublicKey.PublicKey, payload)
+			if err != nil {
+				return err
+			}
+
 			RecipientID, _ := strconv.ParseUint(userPublicKey.UserID, 10, 64)
 			RecipientIDUint := uint(RecipientID)
 
 			messagesToWrite.Messages = append(messagesToWrite.Messages, models.MessageToWritePayload{
-				Payload:       []byte(payload),
+				Payload:       cryptoMessage,
 				UserID:        userPublicKey.UserID,
 				RecipientID:   RecipientIDUint,
 				EnvironmentID: environmentId,

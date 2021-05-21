@@ -15,12 +15,11 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnvironmentResponse) (models.GetMessageByEnvironmentResponse, error) {
-
-	for environmentName, environment := range MessageByEnvironments.Environments {
+func (ctx *Context) SaveMessages(messageByEnvironments map[string]string) (map[string]string, error) {
+	for environmentName, clearPayload := range messageByEnvironments {
 		var PayloadContent = models.MessagePayload{}
 
-		if err := yaml.Unmarshal(environment.Message.Payload, &PayloadContent); err != nil {
+		if err := yaml.Unmarshal([]byte(clearPayload), &PayloadContent); err != nil {
 			panic(err)
 		}
 
@@ -43,7 +42,7 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		}
 	}
 
-	return MessageByEnvironments, nil
+	return messageByEnvironments, nil
 }
 
 // Return PayloadContent, with secrets and files of current environment.

@@ -28,3 +28,9 @@ func (u *Users) GetEnvironmentPublicKeys(environmentId string) (models.PublicKey
 
 	return result, err
 }
+
+func (u *Users) GetUserPublicKey(userID string) (result models.UserPublicKey, err error) {
+	err = u.r.get("/users/"+userID+"/key", &result, nil)
+
+	return result, err
+}

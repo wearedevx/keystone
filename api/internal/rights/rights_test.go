@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/api/pkg/repo"
 	"gorm.io/gorm"
@@ -167,6 +168,10 @@ func (f *FakeRepo) GetRole(_ *Role) IRepo {
 }
 
 func (f *FakeRepo) GetRoles(_ *[]Role) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetRolesMemberCanInvite(projectMember models.ProjectMember, roles *[]models.Role) IRepo {
 	panic("not implemented")
 }
 

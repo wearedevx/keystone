@@ -80,22 +80,41 @@ func GetCurrentAccount() (user models.User, index int) {
 	accounts := GetAllAccounts()
 
 	if viper.IsSet("current") {
+		if index = viper.Get("current").(int); index >= 0 && index < len(accounts) {
+			user = userFromAccount(accounts[index])
+		}
+	}
+
+	return user, index
+}
+
+func userFromAccount(account map[string]string) (user models.User) {
+	user.AccountType = models.AccountType(account["account_type"])
+	user.Email = account["email"]
+	user.ExtID = account["ext_id"]
+	user.Fullname = account["fullname"]
+	user.PublicKey = []byte(account["public_key"])
+	user.UserID = account["user_id"]
+	user.Username = account["username"]
+
+	return user
+}
+
+func GetCurrentUserPrivateKey() (privateKey []byte, err error) {
+	index := -1
+	accounts := GetAllAccounts()
+
+	if viper.IsSet("current") {
 		index = viper.Get("current").(int)
 
 		if index >= 0 && index < len(accounts) {
 			account := accounts[index]
 
-			user.AccountType = models.AccountType(account["account_type"])
-			user.Email = account["email"]
-			user.ExtID = account["ext_id"]
-			user.Fullname = account["fullname"]
-			user.PublicKey = []byte(account["public_key"])
-			user.UserID = account["user_id"]
-			user.Username = account["username"]
+			privateKey = []byte(account["private_key"])
 		}
 	}
 
-	return user, index
+	return privateKey, err
 }
 
 // Sets the current account as the index at `index`
@@ -121,21 +140,20 @@ func IsLoggedIn() bool {
 }
 
 // finds an account matching `user` in the `account` slice
-func FindAccount(c auth.AuthService) (map[string]string, int) {
-	current := -1
-	a := make(map[string]string)
+func FindAccount(c auth.AuthService) (user models.User, current int) {
+	current = -1
 
 	for i, account := range GetAllAccounts() {
 		isAccount, _ := c.CheckAccount(account)
 
 		if isAccount {
 			current = i
-			a = account
+			user = userFromAccount(account)
 			break
 		}
 	}
 
-	return a, current
+	return user, current
 }
 
 // Create conf file if not exist

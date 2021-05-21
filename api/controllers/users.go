@@ -220,3 +220,33 @@ func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 
 	fmt.Fprint(w, response)
 }
+
+func GetUserKey(params router.Params, _ io.ReadCloser, Repo repo.Repo, _ models.User) (_ router.Serde, status int, err error) {
+	status = http.StatusOK
+
+	userPublicKey := models.UserPublicKey{
+		UserID:    "",
+		PublicKey: []byte{},
+	}
+
+	userID := params.Get("userUD").(string)
+
+	if userID == "" {
+		return &userPublicKey, http.StatusBadRequest, errors.New("bad request")
+	}
+
+	targetUser := models.User{UserID: userID}
+
+	if err = Repo.GetUser(&targetUser).Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusNotFound
+		} else {
+			status = http.StatusInternalServerError
+		}
+	} else {
+		userPublicKey.UserID = userID
+		userPublicKey.PublicKey = targetUser.PublicKey
+	}
+
+	return &userPublicKey, status, err
+}
