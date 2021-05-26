@@ -3,6 +3,8 @@ name: toto
 env:
 - key: FOO
   strict: true
+- key: HOST
+  strict: true
 files: []
 options:
   strict: false

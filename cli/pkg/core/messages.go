@@ -47,7 +47,7 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 }
 
 // Return PayloadContent, with secrets and files of current environment.
-func (ctx *Context) PrepareMessagePayload() (models.MessagePayload, error) {
+func (ctx *Context) PrepareMessagePayload(environment models.Environment) (models.MessagePayload, error) {
 	var PayloadContent = models.MessagePayload{
 		Files:   make([]models.File, 0),
 		Secrets: make([]models.SecretVal, 0),
@@ -60,14 +60,15 @@ func (ctx *Context) PrepareMessagePayload() (models.MessagePayload, error) {
 	for _, secret := range ctx.ListSecrets() {
 		PayloadContent.Secrets = append(PayloadContent.Secrets, models.SecretVal{
 			Label: secret.Name,
-			Value: string(secret.Values[EnvironmentName(ctx.CurrentEnvironment())]),
+			Value: string(secret.Values[EnvironmentName(environment.Name)]),
 		})
 	}
 
-	curEnvCachePath := ctx.currentEnvironmentCachePath()
+	cachePath := ctx.cacheDirPath()
+	envCachePath := path.Join(cachePath, environment.Name)
 
 	for _, file := range ctx.ListFiles() {
-		filePath := path.Join(curEnvCachePath, file.Path)
+		filePath := path.Join(envCachePath, file.Path)
 		fileContent, err := ioutil.ReadFile(filePath)
 
 		if err != nil {

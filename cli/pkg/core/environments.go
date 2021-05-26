@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"strconv"
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -274,7 +274,7 @@ func (ctx *Context) EnvironmentsFromConfig() []Env {
 
 // Push current environnement.
 // Post to server []MessageToWritePayload.
-func (ctx *Context) PushEnv() error {
+func (ctx *Context) PushEnv(environments []models.Environment) error {
 	// var result client.GenericResponse
 
 	// Get public keyrs
@@ -284,59 +284,58 @@ func (ctx *Context) PushEnv() error {
 		return kcErr
 	}
 
-	environmentId := ctx.EnvironmentID()
-
-	userPublicKeys, err := c.Users().GetEnvironmentPublicKeys(environmentId)
-
-	if err != nil {
-		return err
-	}
-
-	PayloadContent, err := ctx.PrepareMessagePayload()
-
-	if err != nil {
-		return err
-	}
-
-	// messages := make([]models.MessageToWritePayload, 0)
 	messagesToWrite := models.MessagesToWritePayload{
 		Messages: make([]models.MessageToWritePayload, 0),
 	}
-	// messages := make([]models.MessageToWritePayload, 0)
 
-	var currentUser *user.User
+	for _, environment := range environments {
+		environmentId := environment.EnvironmentID
 
-	if currentUser, err = user.Current(); err != nil {
-		panic(err)
-	}
-	fmt.Println(userPublicKeys.Keys)
-	// Create one message per user
-	for _, userPublicKey := range userPublicKeys.Keys {
-		// TODO
-		// Uid ? User id ?
-		if userPublicKey.UserID != currentUser.Uid {
+		userPublicKeys, err := c.Users().GetEnvironmentPublicKeys(environmentId)
 
-			// TODO: encrypt payload with recipient public key
-			// crypto.EncryptForUser()
-			var payload string
-			PayloadContent.Serialize(&payload)
-
-			RecipientID, _ := strconv.ParseUint(userPublicKey.UserID, 10, 64)
-			RecipientIDUint := uint(RecipientID)
-
-			messagesToWrite.Messages = append(messagesToWrite.Messages, models.MessageToWritePayload{
-				Payload:       []byte(payload),
-				UserID:        userPublicKey.UserID,
-				RecipientID:   RecipientIDUint,
-				EnvironmentID: environmentId,
-			})
+		if err != nil {
+			return err
 		}
-	}
 
-	_, err = c.Messages().SendMessages(environmentId, messagesToWrite)
+		PayloadContent, err := ctx.PrepareMessagePayload(environment)
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		var currentUser map[string]string
+
+		if currentUser, _ = config.GetCurrentAccount(); err != nil {
+			panic(err)
+		}
+		// Create one message per user
+		for _, userPublicKey := range userPublicKeys.Keys {
+
+			// Uid ? User id ?
+			fmt.Println(userPublicKey.UserID, currentUser["user_id"])
+			if userPublicKey.UserID != currentUser["user_id"] {
+
+				// TODO: encrypt payload with recipient public key
+				// crypto.EncryptForUser()
+				var payload string
+				PayloadContent.Serialize(&payload)
+
+				RecipientID, _ := strconv.ParseUint(userPublicKey.UserID, 10, 64)
+				RecipientIDUint := uint(RecipientID)
+
+				messagesToWrite.Messages = append(messagesToWrite.Messages, models.MessageToWritePayload{
+					Payload:       []byte(payload),
+					UserID:        userPublicKey.UserID,
+					RecipientID:   RecipientIDUint,
+					EnvironmentID: environmentId,
+				})
+			}
+		}
+		_, err = c.Messages().SendMessages(environmentId, messagesToWrite)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	// TODO

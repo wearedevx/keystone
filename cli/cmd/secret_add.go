@@ -132,7 +132,7 @@ Enter a values for {{ . }}:`, secretName))
 
 		// TODO
 		// Format beautyiful error
-		if pushErr := ctx.PushEnv(); err != nil {
+		if pushErr := ctx.PushEnv(accessibleEnvironments); pushErr != nil {
 			ui.PrintError(pushErr.Error())
 			return
 		}

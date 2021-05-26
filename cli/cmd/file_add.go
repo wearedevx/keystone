@@ -58,6 +58,7 @@ Examples:
 		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
 
+		accessibleEnvironments := ctx.GetAccessibleEnvironments()
 		filePath := args[0]
 		extension := filepath.Ext(filePath)
 
@@ -136,7 +137,7 @@ Examples:
 
 		// TODO
 		// Format beautyiful error
-		if pushErr := ctx.PushEnv(); err != nil {
+		if pushErr := ctx.PushEnv(accessibleEnvironments); err != nil {
 			ui.PrintError(pushErr.Error())
 			return
 		}

@@ -64,7 +64,7 @@ func (repo *Repo) SetNewVersionID(environment *Environment) error {
 }
 
 func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *PublicKeys) IRepo {
-	rows, err := repo.GetDb().Raw(`select u.public_key as PublicKey, u.id as UserID
+	rows, err := repo.GetDb().Raw(`select u.public_key as PublicKey, u.user_id as UserID
 	from environments as e
 	inner join environment_types as et on et.id = e.environment_type_id
 	inner join roles_environment_types as ret on ret.environment_type_id = et.id
