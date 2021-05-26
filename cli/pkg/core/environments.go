@@ -283,11 +283,11 @@ func (ctx *Context) PushEnv(environments []models.Environment) error {
 		return kcErr
 	}
 
+	messagesToWrite := models.MessagesToWritePayload{
+		Messages: make([]models.MessageToWritePayload, 0),
+	}
 	for _, environment := range environments {
 		environmentId := environment.EnvironmentID
-		messagesToWrite := models.MessagesToWritePayload{
-			Messages: make([]models.MessageToWritePayload, 0),
-		}
 
 		userPublicKeys, err := c.Users().GetEnvironmentPublicKeys(environmentId)
 
@@ -328,11 +328,12 @@ func (ctx *Context) PushEnv(environments []models.Environment) error {
 				})
 			}
 		}
-		_, err = c.Messages().SendMessages(messagesToWrite)
 
-		if err != nil {
-			return err
-		}
+	}
+
+	_, pushErr := c.Messages().SendMessages(messagesToWrite)
+	if pushErr != nil {
+		return pushErr
 	}
 
 	// TODO
