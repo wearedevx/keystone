@@ -27,7 +27,7 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.GET("/projects/:projectID/environments", AuthedHandler(GetAccessibleEnvironments))
 
 	router.GET("/environments/:envID/public-keys", AuthedHandler(GetEnvironmentPublicKeys))
-	router.POST("/environments/:envID/messages", AuthedHandler(WriteMessages))
+	router.POST("/messages", AuthedHandler(WriteMessages))
 
 	router.GET("/roles", AuthedHandler(GetRoles))
 

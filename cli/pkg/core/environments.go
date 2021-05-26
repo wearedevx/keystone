@@ -328,7 +328,7 @@ func (ctx *Context) PushEnv(environments []models.Environment) error {
 				})
 			}
 		}
-		_, err = c.Messages().SendMessages(environmentId, messagesToWrite)
+		_, err = c.Messages().SendMessages(messagesToWrite)
 
 		if err != nil {
 			return err

@@ -40,10 +40,10 @@ func (client *Messages) DeleteMessage(messageID uint) (GenericResponse, error) {
 	return result, err
 }
 
-func (client *Messages) SendMessages(environmentId string, messages models.MessagesToWritePayload) (GenericResponse, error) {
+func (client *Messages) SendMessages(messages models.MessagesToWritePayload) (GenericResponse, error) {
 	var result GenericResponse
 
-	err := client.r.post("/environments/"+environmentId+"/messages", messages, &result, nil)
+	err := client.r.post("/messages", messages, &result, nil)
 
 	return result, err
 }

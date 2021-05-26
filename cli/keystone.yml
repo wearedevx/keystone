@@ -5,6 +5,8 @@ env:
   strict: true
 - key: HOST
   strict: true
+- key: HOST1
+  strict: true
 files: []
 options:
   strict: false
