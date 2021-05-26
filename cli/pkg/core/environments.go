@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -284,12 +283,11 @@ func (ctx *Context) PushEnv(environments []models.Environment) error {
 		return kcErr
 	}
 
-	messagesToWrite := models.MessagesToWritePayload{
-		Messages: make([]models.MessageToWritePayload, 0),
-	}
-
 	for _, environment := range environments {
 		environmentId := environment.EnvironmentID
+		messagesToWrite := models.MessagesToWritePayload{
+			Messages: make([]models.MessageToWritePayload, 0),
+		}
 
 		userPublicKeys, err := c.Users().GetEnvironmentPublicKeys(environmentId)
 
@@ -311,9 +309,8 @@ func (ctx *Context) PushEnv(environments []models.Environment) error {
 		// Create one message per user
 		for _, userPublicKey := range userPublicKeys.Keys {
 
-			// Uid ? User id ?
-			fmt.Println(userPublicKey.UserID, currentUser["user_id"])
-			if userPublicKey.UserID != currentUser["user_id"] {
+			// Dont't send message to current user
+			if userPublicKey.UserUID != currentUser["user_id"] {
 
 				// TODO: encrypt payload with recipient public key
 				// crypto.EncryptForUser()

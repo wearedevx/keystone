@@ -61,7 +61,8 @@ type LoginPayload struct {
 }
 
 type UserPublicKey struct {
-	UserID    string `json:"user_id"` // UserID as string (e.g: toto@github)
+	UserID    string `json:"user_id"`
+	UserUID   string `json:"user_uid"` // UserID as string (e.g: toto@github)
 	PublicKey []byte `json:"publick_key"`
 }
 

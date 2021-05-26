@@ -64,7 +64,7 @@ func (repo *Repo) SetNewVersionID(environment *Environment) error {
 }
 
 func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *PublicKeys) IRepo {
-	rows, err := repo.GetDb().Raw(`select u.public_key as PublicKey, u.user_id as UserID
+	rows, err := repo.GetDb().Raw(`select u.public_key as PublicKey, u.user_id as UserUID, u.id as UserID
 	from environments as e
 	inner join environment_types as et on et.id = e.environment_type_id
 	inner join roles_environment_types as ret on ret.environment_type_id = et.id
@@ -78,14 +78,16 @@ func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *Pub
 	repo.err = err
 
 	var PublicKey []byte
-	var UserID uint
+	var UserID string
+	var UserUID string
 
 	for rows.Next() {
-		rows.Scan(&PublicKey, &UserID)
+		rows.Scan(&PublicKey, &UserUID, &UserID)
 
 		publicKeys.Keys = append(publicKeys.Keys, models.UserPublicKey{
 			UserID:    fmt.Sprint(UserID),
 			PublicKey: PublicKey,
+			UserUID:   fmt.Sprint(UserUID),
 		})
 	}
 
