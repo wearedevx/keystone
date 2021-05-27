@@ -128,17 +128,40 @@ func (file *EnvironmentsFile) Remove() {
 
 // Adds a variable to the project
 // set strict to true if you want to throw an error when it is missing
-// func (file *EnvironmentsFile) SetEnv(varname string, strict bool) *KeystoneFile {
+func (file *EnvironmentsFile) SetVersion(environmentName string, versionID string) *EnvironmentsFile {
+	if file.Err() != nil {
+		return file
+	}
+
+	// file.UnsetEnv(varname) // avoid duplicates
+	fmt.Println("🦐🦐🦐🦐", file.Environments, versionID)
+	for i, environment := range file.Environments {
+
+		if environmentName == environment.Name {
+			file.Environments[i].VersionID = versionID
+
+		}
+	}
+
+	return file
+}
+
+// // Removes a variable from the project
+// func (file *EnvironmentsFile) UnsetEnv(varname string) *KeystoneFile {
 // 	if file.Err() != nil {
 // 		return file
 // 	}
 
-// 	file.UnsetEnv(varname) // avoid duplicates
+// 	envs := make([]envKey, 0)
 
-// 	file.Env = append(file.Env, envKey{
-// 		Key:    varname,
-// 		Strict: strict,
-// 	})
+// 	// Filter out previously existing value
+// 	for _, env := range file.Env {
+// 		if env.Key != varname {
+// 			envs = append(envs, env)
+// 		}
+// 	}
+
+// 	file.Env = envs
 
 // 	return file
 // }

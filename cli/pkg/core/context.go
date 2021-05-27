@@ -88,7 +88,7 @@ func (c *Context) dotKeystonePath() string {
 }
 
 func (c *Context) environmentFilePath() string {
-	return path.Join(c.dotKeystonePath(), "environment.yml")
+	return path.Join(c.dotKeystonePath(), "environments.yml")
 }
 
 func (c *Context) rolesFilePath() string {

@@ -1,6 +1,8 @@
 project_id: 5cd271d2-bc48-4f60-9a92-b6694296c6a0
 name: toto
-env: []
+env:
+- key: HOSTI
+  strict: true
 files: []
 options:
   strict: false

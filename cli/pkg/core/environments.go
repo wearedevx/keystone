@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -21,14 +20,14 @@ func (ctx *Context) CurrentEnvironment() string {
 		return ""
 	}
 
-	bytes := make([]byte, 0)
-	bytes, err := ioutil.ReadFile(ctx.environmentFilePath())
+	environmentsfile := &EnvironmentsFile{}
+	environmentsfile.Load(ctx.dotKeystonePath())
 
-	if err != nil {
+	if err := environmentsfile.Err(); err != nil {
 		ctx.setError(CannotReadEnvironment(ctx.environmentFilePath(), err))
 	}
 
-	return strings.Trim(string(bytes), "\n")
+	return environmentsfile.Current
 }
 
 func (ctx *Context) ListEnvironments() []string {
@@ -348,11 +347,16 @@ func (ctx *Context) PushEnv(environments []models.Environment) error {
 		return pushErr
 	}
 
-	// TODO
-	// Set new version id
-	fmt.Println(result.Environments)
+	var environmentsfile EnvironmentsFile
+	loadedEnvironmentsFile := environmentsfile.Load(ctx.dotKeystonePath())
+
 	for _, environment := range result.Environments {
-		fmt.Println(environment.VersionID)
+		if err := loadedEnvironmentsFile.SetVersion(environment.Name, environment.VersionID).Save().Err(); err != nil {
+			ctx.setError(FailedToUpdateKeystoneFile(err))
+		}
+	}
+	if ctx.Err() != nil {
+		return ctx.Err()
 	}
 
 	return nil
