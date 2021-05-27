@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -9,8 +10,8 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
+	. "github.com/wearedevx/keystone/cli/internal/environmentsfile"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
-	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 )
@@ -229,6 +230,17 @@ func (ctx *Context) MustHaveEnvironment(name string) {
 // 	//    -> Set new hash for env
 // }
 
+func (ctx *Context) SetEnvironmentVersion(name string, version_id string) string {
+	environments := ctx.EnvironmentsFromConfig()
+
+	for _, e := range environments {
+		if e.Name == name {
+			return e.VersionID
+		}
+	}
+	return ""
+}
+
 func (ctx *Context) EnvironmentVersion() string {
 	environments := ctx.EnvironmentsFromConfig()
 	currentEnvironment := ctx.CurrentEnvironment()
@@ -267,8 +279,8 @@ func (ctx *Context) EnvironmentID() string {
 
 func (ctx *Context) EnvironmentsFromConfig() []Env {
 
-	ksfile := new(KeystoneFile).Load(ctx.Wd)
-	return ksfile.Environments
+	environmentsfile := new(EnvironmentsFile).Load(ctx.Wd)
+	return environmentsfile.Environments
 }
 
 // Push current environnement.
@@ -331,13 +343,17 @@ func (ctx *Context) PushEnv(environments []models.Environment) error {
 
 	}
 
-	_, pushErr := c.Messages().SendMessages(messagesToWrite)
+	result, pushErr := c.Messages().SendMessages(messagesToWrite)
 	if pushErr != nil {
 		return pushErr
 	}
 
 	// TODO
 	// Set new version id
+	fmt.Println(result.Environments)
+	for _, environment := range result.Environments {
+		fmt.Println(environment.VersionID)
+	}
 
 	return nil
 }

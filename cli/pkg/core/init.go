@@ -1,6 +1,7 @@
 package core
 
 import (
+	. "github.com/wearedevx/keystone/cli/internal/environmentsfile"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -46,7 +47,10 @@ func (ctx *Context) Init(project models.Project) *Context {
 			return CreateDirIfNotExist(ctx.dotKeystonePath())
 		},
 		func() error {
-			return CreateFileIfNotExists(ctx.environmentFilePath(), "dev")
+			if !ExistsEnvironmentsFile(ctx.dotKeystonePath()) {
+				return NewEnvironmentsFile(ctx.dotKeystonePath(), project.Environments).Save().Err()
+			}
+			return nil
 		},
 		func() error {
 			return CreateDirIfNotExist(ctx.cacheDirPath())

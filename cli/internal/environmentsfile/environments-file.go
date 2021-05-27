@@ -1,0 +1,144 @@
+package environmentsfile
+
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+
+	. "github.com/wearedevx/keystone/api/pkg/models"
+	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"gopkg.in/yaml.v2"
+)
+
+type environmentsFileOptions struct {
+	Strict bool
+}
+
+type Env struct {
+	EnvironmentID string `yaml:"id"`
+	Name          string `yaml:"name"`
+	VersionID     string `yaml:"version_id"`
+}
+
+type EnvironmentsFile struct {
+	path         string `yaml:"-"`
+	err          error  `yaml:"-"`
+	Current      string `yaml:"current"`
+	Environments []Env  `yaml:"environments"`
+}
+
+// Keystone file path for the given context
+func environmentsFilePath(dotKeystonePath string) string {
+	return path.Join(dotKeystonePath, "environments.yml")
+}
+
+func NewEnvironmentsFile(dotKeystonePath string, updatedEnvironments []Environment) *EnvironmentsFile {
+	envs := make([]Env, 0)
+
+	for _, env := range updatedEnvironments {
+		envs = append(envs, Env{fmt.Sprint(env.EnvironmentID), env.Name, env.VersionID})
+	}
+	return &EnvironmentsFile{
+		path:         environmentsFilePath(dotKeystonePath),
+		err:          nil,
+		Current:      "dev",
+		Environments: envs,
+	}
+
+}
+
+// Checks if current execution context contains a keystone.yml
+func ExistsEnvironmentsFile(dotKeystonePath string) bool {
+	return FileExists(environmentsFilePath(dotKeystonePath))
+}
+
+// Loads a Keystone from disk
+func (file *EnvironmentsFile) Load(dotKeystonePath string) *EnvironmentsFile {
+	bytes, err := ioutil.ReadFile(environmentsFilePath(dotKeystonePath))
+	// file := newKeystoneFile(context)
+
+	if err != nil {
+		file.err = err
+	}
+
+	file.path = environmentsFilePath(dotKeystonePath)
+
+	return file.fromYaml(bytes)
+}
+
+// Loads contents of yml file into a KeystoneFile struct
+func (file *EnvironmentsFile) fromYaml(bytes []byte) *EnvironmentsFile {
+	if file.Err() != nil {
+		return file
+	}
+
+	file.err = yaml.Unmarshal(bytes, &file)
+
+	return file
+}
+
+// Turns a EnvironmentsFile into a ynl
+func (file *EnvironmentsFile) toYaml() []byte {
+	if file.Err() != nil {
+		return []byte{}
+	}
+
+	bytes, err := yaml.Marshal(file)
+
+	if err != nil {
+		file.err = fmt.Errorf("Could not serialize environments file (%w)", err)
+	}
+
+	return bytes
+}
+
+// Accessor for the EnvironmentsFile's err field
+// use for error management
+func (file *EnvironmentsFile) Err() error {
+	return file.err
+}
+
+// Writes the Keystone File to disk
+func (file *EnvironmentsFile) Save() *EnvironmentsFile {
+	if file.Err() == nil {
+		yamlBytes := file.toYaml()
+
+		if err := ioutil.WriteFile(file.path, yamlBytes, 0644); err != nil {
+			file.err = fmt.Errorf("Could not write `environments.yml` (%w)", err)
+		}
+	}
+
+	return file
+
+}
+
+// Removes the environments file from disk
+func (file *EnvironmentsFile) Remove() {
+	if file.Err() != nil {
+		return
+	}
+
+	if err := os.Remove(file.path); err != nil {
+		file.err = fmt.Errorf("Could not remove `environments.yml` (%w)", err)
+	}
+
+	return
+}
+
+// Adds a variable to the project
+// set strict to true if you want to throw an error when it is missing
+// func (file *EnvironmentsFile) SetEnv(varname string, strict bool) *KeystoneFile {
+// 	if file.Err() != nil {
+// 		return file
+// 	}
+
+// 	file.UnsetEnv(varname) // avoid duplicates
+
+// 	file.Env = append(file.Env, envKey{
+// 		Key:    varname,
+// 		Strict: strict,
+// 	})
+
+// 	return file
+// }

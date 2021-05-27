@@ -7,6 +7,7 @@ import (
 	"path"
 	"path/filepath"
 
+	. "github.com/wearedevx/keystone/cli/internal/environmentsfile"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
@@ -181,10 +182,10 @@ func (c *Context) currentEnvironmentCachePath() string {
 }
 
 func (c *Context) getCurrentEnvironmentId() string {
-	ksfile := new(KeystoneFile).Load(c.Wd)
+	environmentsfile := new(EnvironmentsFile).Load(c.Wd)
 	currentEnvironment := c.CurrentEnvironment()
 
-	for _, env := range ksfile.Environments {
+	for _, env := range environmentsfile.Environments {
 		if env.Name == currentEnvironment {
 			return env.EnvironmentID
 		}

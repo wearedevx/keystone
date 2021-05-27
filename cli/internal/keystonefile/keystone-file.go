@@ -27,20 +27,13 @@ type keystoneFileOptions struct {
 
 // Represents the contents of the keystone.yml file
 type KeystoneFile struct {
-	path         string `yaml:"-"`
-	err          error  `yaml:"-"`
-	ProjectId    string `yaml:"project_id"`
-	ProjectName  string `yaml:"name"`
-	Env          []envKey
-	Files        []FileKey
-	Options      keystoneFileOptions
-	Environments []Env `yaml:"environments"`
-}
-
-type Env struct {
-	EnvironmentID string `yaml:"id"`
-	Name          string `yaml:"name"`
-	VersionID     string `yaml:"version_id"`
+	path        string `yaml:"-"`
+	err         error  `yaml:"-"`
+	ProjectId   string `yaml:"project_id"`
+	ProjectName string `yaml:"name"`
+	Env         []envKey
+	Files       []FileKey
+	Options     keystoneFileOptions
 }
 
 // Keystone file path for the given context
@@ -48,24 +41,15 @@ func keystoneFilePath(wd string) string {
 	return path.Join(wd, "keystone.yml")
 }
 
-//
 func NewKeystoneFile(wd string, project Project) *KeystoneFile {
-	var environments []Env
-
-	for _, env := range project.Environments {
-		// TODO
-		// Remove VersionID fro: keystone file
-		environments = append(environments, Env{fmt.Sprint(env.EnvironmentID), env.Name, env.VersionID})
-	}
 
 	return &KeystoneFile{
-		path:         keystoneFilePath(wd),
-		err:          nil,
-		ProjectId:    project.UUID,
-		ProjectName:  project.Name,
-		Env:          make([]envKey, 0),
-		Environments: environments,
-		Files:        make([]FileKey, 0),
+		path:        keystoneFilePath(wd),
+		err:         nil,
+		ProjectId:   project.UUID,
+		ProjectName: project.Name,
+		Env:         make([]envKey, 0),
+		Files:       make([]FileKey, 0),
 		Options: keystoneFileOptions{
 			Strict: false,
 		},

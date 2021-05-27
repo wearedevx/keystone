@@ -1,22 +1,6 @@
 project_id: 5cd271d2-bc48-4f60-9a92-b6694296c6a0
 name: toto
-env:
-- key: FOO
-  strict: true
-- key: HOST
-  strict: true
-- key: HOST1
-  strict: true
+env: []
 files: []
 options:
   strict: false
-environments:
-- id: f3bcda83-11ad-4bf0-91ff-7f98b917bdb2
-  name: dev
-  version_id: 1d2f003b-0a3e-4276-9098-6d8e21ccfe86
-- id: 1d376568-728e-475a-a5b6-cf911a32a6f2
-  name: staging
-  version_id: e87759d9-ac57-4053-894b-d06aa361789f
-- id: d38c9131-fb53-4169-8e05-a14d2abd87c7
-  name: prod
-  version_id: 57ef71cc-e97d-4c20-9890-d6ff2c3c785b

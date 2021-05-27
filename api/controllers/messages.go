@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -94,7 +93,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 // WriteMessages writes messages to users
 func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
-	response := &GenericResponse{}
+	response := &models.GetEnvironmentsResponse{}
 
 	// Create transaction
 	// TODO: @kévin ? Qu’est-ce qu’on fait du `tx` ?
@@ -148,14 +147,14 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 			// Change environment version id.
 			err = Repo.SetNewVersionID(&environment)
 
+			response.Environments = append(response.Environments, environment)
+
 			if err != nil {
-				fmt.Println("api ~ messages.go:154 ~ err", err)
 				return err
 			}
 		}
 
 		if err != nil {
-			fmt.Println("api ~ messages.go:160 ~ err", err)
 			return err
 		}
 
