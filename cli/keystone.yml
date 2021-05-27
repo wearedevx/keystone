@@ -3,6 +3,8 @@ name: toto
 env:
 - key: HOSTI
   strict: true
+- key: HOSTUU
+  strict: true
 files: []
 options:
   strict: false

@@ -140,6 +140,11 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 			}
 
 			// If ok, remove potential old messages for recipient.
+
+			if err = Repo.RemoveOldMessageForRecipient(message.RecipientID, message.EnvironmentID).Err(); err != nil {
+				break
+			}
+
 			if err = Repo.WriteMessage(user, message).Err(); err != nil {
 				break
 			}

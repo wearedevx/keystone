@@ -2,6 +2,7 @@ package repo
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 
@@ -54,6 +55,22 @@ func (repo *Repo) DeleteMessage(messageID uint, userID uint) IRepo {
 		Model(&models.Message{}).
 		Where("recipient_id = ? or sender_id = ?", userID).
 		Delete(messageID).Error
+
+	return repo
+}
+
+func (repo *Repo) RemoveOldMessageForRecipient(userID uint, environmentID string) IRepo {
+	if repo.err != nil {
+		return repo
+	}
+
+	fmt.Println(userID, environmentID)
+
+	repo.err = repo.GetDb().
+		Model(&models.Message{}).
+		Where("recipient_id = ?", userID).
+		Where("environment_id = ?", environmentID).
+		Delete(models.Message{}).Error
 
 	return repo
 }
