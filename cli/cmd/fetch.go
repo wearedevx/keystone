@@ -23,6 +23,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // fetchCmd represents the fetch command
@@ -51,34 +52,43 @@ Get info from your team:
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
-			return
+			os.Exit(1)
 		}
 
 		ctx.MustHaveProject()
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
-			return
+			os.Exit(1)
 		}
 
 		projectID := ctx.GetProjectID()
 
 		fmt.Println("Fetching new data...")
-		result, _ := c.Messages().GetMessages(projectID)
+		result, err_ := c.Messages().GetMessages(projectID)
+
+		if err != nil {
+			ui.PrintError(err_.Error())
+			os.Exit(1)
+		}
 
 		deciphered, err := HandleMessages(c, result)
+		if err != nil {
+			err.Print()
+			os.Exit(1)
+		}
+		fmt.Printf("deciphered: %+v\n", deciphered)
 
 		ctx.SaveMessages(deciphered)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
-			return
+			os.Exit(1)
 		}
 
 		for environmentName, environment := range result.Environments {
 			messageID := environment.Message.ID
 			if messageID != 0 {
-				fmt.Println("Environment", environmentName, "updated")
 				response, _ := c.Messages().DeleteMessage(environment.Message.ID)
 				if !response.Success {
 					fmt.Println("Can't delete message", response.Error)
@@ -97,28 +107,37 @@ Get info from your team:
 }
 
 func HandleMessages(c client.KeystoneClient, byEnvironment models.GetMessageByEnvironmentResponse) (deciphered map[string]string, err *errors.Error) {
+	deciphered = make(map[string]string)
 	privateKey, e := config.GetCurrentUserPrivateKey()
 	if e != nil {
 		// TODO: create a "Cannot get current user private key" error
+		fmt.Println("Could not get the current user private key")
+
 		return nil, errors.UnkownError(e)
 	}
 
 	for environmentName, environment := range byEnvironment.Environments {
 		msg := environment.Message
-		//TODO: fetch the sender public key
-		upk, e := c.Users().GetUserPublicKey(msg.Sender.UserID)
-		if e != nil {
-			// TODO: create a "Cannot get user public key" error
-			return nil, errors.UnkownError(e)
-		}
+		fmt.Printf("msg: %+v\n", msg)
+		if msg.Sender.UserID != "" {
+			upk, e := c.Users().GetUserPublicKey(msg.Sender.UserID)
+			if e != nil {
+				// TODO: create a "Cannot get user public key" error
+				fmt.Println("Could not get the sender’s public key")
 
-		d, e := crypto.DecrypteMessage(privateKey, upk.PublicKey, msg.Payload)
-		if e != nil {
-			// TODO: create a "Decryption failed" error
-			return nil, errors.UnkownError(e)
-		}
+				return nil, errors.UnkownError(e)
+			}
 
-		deciphered[environmentName] = d
+			d, e := crypto.DecrypteMessage(privateKey, upk.PublicKey, msg.Payload)
+			if e != nil {
+				// TODO: create a "Decryption failed" error
+				fmt.Println("Could decrypt the message")
+
+				return nil, errors.UnkownError(e)
+			}
+
+			deciphered[environmentName] = d
+		}
 	}
 
 	return deciphered, nil

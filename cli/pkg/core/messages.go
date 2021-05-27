@@ -36,7 +36,6 @@ func (ctx *Context) SaveMessages(messageByEnvironments map[string]string) (map[s
 		for _, secret := range PayloadContent.Secrets {
 			if err := new(EnvFile).Load(envFilePath).Set(secret.Label, secret.Value).Dump().Err(); err != nil {
 				err = FailedToUpdateDotEnv(envFilePath, err)
-				// fmt.Println(err.Error())
 			}
 			// CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), environmentName, file.Path), string(fileContent))
 		}
