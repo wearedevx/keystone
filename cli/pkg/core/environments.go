@@ -125,7 +125,10 @@ func (ctx *Context) SetCurrent(name string) *Context {
 			return ctx.setError(CopyFailed(dotEnvFilePath, currentDotEnvFilePath, err))
 		}
 
-		err = ioutil.WriteFile(ctx.environmentFilePath(), []byte(name), 0o644)
+		environmentsfile := &EnvironmentsFile{}
+		if err := environmentsfile.Load(ctx.dotKeystonePath()).SetCurrent(name).Save().Err(); err != nil {
+			ctx.setError(FailedToUpdateKeystoneFile(err))
+		}
 
 		if err != nil {
 			return ctx.setError(FailedToSetCurrentEnvironment(name, ctx.environmentFilePath(), err))

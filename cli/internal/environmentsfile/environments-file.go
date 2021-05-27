@@ -133,15 +133,21 @@ func (file *EnvironmentsFile) SetVersion(environmentName string, versionID strin
 		return file
 	}
 
-	// file.UnsetEnv(varname) // avoid duplicates
-	fmt.Println("🦐🦐🦐🦐", file.Environments, versionID)
 	for i, environment := range file.Environments {
-
 		if environmentName == environment.Name {
 			file.Environments[i].VersionID = versionID
-
 		}
 	}
+
+	return file
+}
+
+func (file *EnvironmentsFile) SetCurrent(environmentName string) *EnvironmentsFile {
+	if file.Err() != nil {
+		return file
+	}
+
+	file.Current = environmentName
 
 	return file
 }
