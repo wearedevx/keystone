@@ -229,7 +229,7 @@ func GetUserKey(params router.Params, _ io.ReadCloser, Repo repo.Repo, _ models.
 		PublicKey: []byte{},
 	}
 
-	userID := params.Get("userUD").(string)
+	userID := params.Get("userID").(string)
 
 	if userID == "" {
 		return &userPublicKey, http.StatusBadRequest, errors.New("bad request")
