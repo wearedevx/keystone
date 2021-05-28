@@ -107,12 +107,12 @@ func (ctx *Context) FetchNewMessages(result *models.GetMessageByEnvironmentRespo
 }
 
 func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByEnvironmentResponse) error {
-	// c, kcErr := client.NewKeystoneClient()
+	c, kcErr := client.NewKeystoneClient()
 
-	// if kcErr != nil {
-	// 	kcErr.Print()
-	// 	os.Exit(1)
-	// }
+	if kcErr != nil {
+		kcErr.Print()
+		os.Exit(1)
+	}
 
 	ctx.SaveMessages(messagesByEnvironments)
 
@@ -123,17 +123,17 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 	for environmentName, environment := range messagesByEnvironments.Environments {
 		messageID := environment.Message.ID
 		if messageID != 0 {
-			fmt.Println("Environment", environmentName, "updated")
-			// response, _ := c.Messages().DeleteMessage(environment.Message.ID)
-			// if !response.Success {
-			// 	fmt.Println("Can't delete message", response.Error)
-			// }
+			fmt.Println("Environment", environmentName, "updated ✔")
+			response, _ := c.Messages().DeleteMessage(environment.Message.ID)
+			if !response.Success {
+				fmt.Println("Can't delete message", response.Error)
+			}
 		} else {
 			environmentChanged := ctx.EnvironmentVersionHasChanged(environmentName, environment.VersionID)
 			if environmentChanged {
-				fmt.Println("Environment", environmentName, "has changed but no message available. Ask someone to push their secret.")
+				fmt.Println("Environment", environmentName, "has changed but no message available. Ask someone to push their secret ⨯")
 			} else {
-				fmt.Println("Environment", environmentName, "up to date")
+				fmt.Println("Environment", environmentName, "up to date ✔")
 			}
 		}
 	}
@@ -159,7 +159,6 @@ func (ctx *Context) CompareNewSecretWithMessages(secretName string, newSecret ma
 					if secretName == localSecret.Name {
 						// Compare local value with value from message
 						localSecretValue := string(localSecret.Values[EnvironmentName(environmentName)])
-						fmt.Println(secret.Value, localSecretValue)
 						if secret.Value != localSecretValue {
 							environmentValueMap[environmentName] = secret.Value
 						}

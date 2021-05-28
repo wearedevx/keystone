@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -119,6 +120,7 @@ Enter a values for {{ . }}:`, secretName))
 
 		localSecrets := ctx.ListSecrets()
 
+		fmt.Println("Syncing data...")
 		fetchErr := ctx.FetchNewMessages(messagesByEnvironment)
 
 		if fetchErr != nil {
@@ -135,7 +137,7 @@ Enter a values for {{ . }}:`, secretName))
 
 		if err = ctx.CompareNewSecretWithMessages(secretName, environmentValueMap, *messagesByEnvironment, localSecrets); err != nil {
 			err.Print()
-			err = nil
+			return
 		}
 
 		flag := core.S_REQUIRED

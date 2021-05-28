@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -23,7 +22,6 @@ func (client *Messages) GetMessages(projectID string) (models.GetMessageByEnviro
 	}
 
 	err = client.r.get("/projects/"+projectID+"/messages/", &result, nil)
-	fmt.Println(err)
 
 	return result, err
 }
