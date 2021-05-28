@@ -14,11 +14,10 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 )
 
@@ -33,14 +32,6 @@ Get info from your team:
 	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err *errors.Error
-
-		// Get keystone key.
-		c, kcErr := client.NewKeystoneClient()
-
-		if kcErr != nil {
-			kcErr.Print()
-			os.Exit(1)
-		}
 
 		ctx := core.New(core.CTX_RESOLVE)
 
@@ -58,34 +49,24 @@ Get info from your team:
 			return
 		}
 
-		projectID := ctx.GetProjectID()
-
 		fmt.Println("Fetching new data...")
-		result, _ := c.Messages().GetMessages(projectID)
 
-		ctx.SaveMessages(result)
-
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			return
+		messagesByEnvironment := &models.GetMessageByEnvironmentResponse{
+			Environments: map[string]models.GetMessageResponse{},
 		}
 
-		for environmentName, environment := range result.Environments {
-			messageID := environment.Message.ID
-			if messageID != 0 {
-				fmt.Println("Environment", environmentName, "updated")
-				response, _ := c.Messages().DeleteMessage(environment.Message.ID)
-				if !response.Success {
-					fmt.Println("Can't delete message", response.Error)
-				}
-			} else {
-				environmentChanged := ctx.EnvironmentVersionHasChanged(environmentName, environment.VersionID)
-				if environmentChanged {
-					fmt.Println("Environment", environmentName, "has changed but no message available. Ask someone to push their secret.")
-				} else {
-					fmt.Println("Environment", environmentName, "up to date")
-				}
-			}
+		fetchErr := ctx.FetchNewMessages(messagesByEnvironment)
+		if fetchErr != nil {
+			err.SetCause(fetchErr)
+			err.Print()
+		}
+		// fmt.Println(messagesByEnvironment)
+
+		fetchErr = ctx.WriteNewMessages(*messagesByEnvironment)
+
+		if fetchErr != nil {
+			err.SetCause(fetchErr)
+			err.Print()
 		}
 
 	},

@@ -53,7 +53,8 @@ func (repo *Repo) DeleteMessage(messageID uint, userID uint) IRepo {
 
 	repo.err = repo.GetDb().
 		Model(&models.Message{}).
-		Where("recipient_id = ? or sender_id = ?", userID).
+		Where("recipient_id = ?", userID).
+		Where("id = ?", messageID).
 		Delete(messageID).Error
 
 	return repo

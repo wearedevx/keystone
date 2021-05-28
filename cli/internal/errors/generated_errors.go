@@ -126,6 +126,14 @@ You are trying to either unset '{{ .Secret }}', or to set it to a blank value,
 but is required.
 
 `,
+	"SecretHasChanged": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
+You are trying to set a value for '{{ .Secret }}', but a new value has been set by another member.
+If you want to override their value, try again.
+
+{{ .Values }}
+
+`,
 	"CannotAddFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
@@ -333,6 +341,14 @@ func SecretRequired(secret string, cause error) *Error {
 		"Secret": string(secret),
 	}
 	return NewError("Secret Required", helpTexts["SecretRequired"], meta, cause)
+}
+
+func SecretHasChanged(secret string, values string, cause error) *Error {
+	meta := map[string]string{
+		"Secret": string(secret),
+		"Values": string(values),
+	}
+	return NewError("Secret has changed", helpTexts["SecretHasChanged"], meta, cause)
 }
 
 func CannotAddFile(path string, cause error) *Error {

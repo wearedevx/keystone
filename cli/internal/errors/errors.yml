@@ -204,6 +204,21 @@ errors:
       You are trying to either unset '{{ .Secret }}', or to set it to a blank value,
       but is required.
 
+  - type: SecretHasChanged
+    name: "Secret has changed"
+    params:
+      - name: Secret
+        type: string
+      - name: Values
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
+      You are trying to set a value for '{{ .Secret }}', but a new value has been set by another member.
+      If you want to override their value, try again.
+
+      {{ .Values }}
+
+
   # KEYSTONED_FILES_ERRORS
   # ––––––––––––––––––––––
   - type: CannotAddFile

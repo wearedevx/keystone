@@ -4,12 +4,14 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
-	. "github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/pkg/client"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"gopkg.in/yaml.v2"
@@ -36,7 +38,7 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 
 		for _, secret := range PayloadContent.Secrets {
 			if err := new(EnvFile).Load(envFilePath).Set(secret.Label, secret.Value).Dump().Err(); err != nil {
-				err = FailedToUpdateDotEnv(envFilePath, err)
+				err = kserrors.FailedToUpdateDotEnv(envFilePath, err)
 				// fmt.Println(err.Error())
 			}
 			// CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), environmentName, file.Path), string(fileContent))
@@ -86,4 +88,93 @@ func (ctx *Context) PrepareMessagePayload(environment models.Environment) (model
 	}
 
 	return PayloadContent, err
+}
+
+func (ctx *Context) FetchNewMessages(result *models.GetMessageByEnvironmentResponse) error {
+	// Get keystone key.
+	c, kcErr := client.NewKeystoneClient()
+
+	if kcErr != nil {
+		kcErr.Print()
+		os.Exit(1)
+	}
+
+	projectID := ctx.GetProjectID()
+
+	*result, _ = c.Messages().GetMessages(projectID)
+
+	return nil
+}
+
+func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByEnvironmentResponse) error {
+	// c, kcErr := client.NewKeystoneClient()
+
+	// if kcErr != nil {
+	// 	kcErr.Print()
+	// 	os.Exit(1)
+	// }
+
+	ctx.SaveMessages(messagesByEnvironments)
+
+	if err := ctx.Err(); err != nil {
+		err.Print()
+		return err
+	}
+	for environmentName, environment := range messagesByEnvironments.Environments {
+		messageID := environment.Message.ID
+		if messageID != 0 {
+			fmt.Println("Environment", environmentName, "updated")
+			// response, _ := c.Messages().DeleteMessage(environment.Message.ID)
+			// if !response.Success {
+			// 	fmt.Println("Can't delete message", response.Error)
+			// }
+		} else {
+			environmentChanged := ctx.EnvironmentVersionHasChanged(environmentName, environment.VersionID)
+			if environmentChanged {
+				fmt.Println("Environment", environmentName, "has changed but no message available. Ask someone to push their secret.")
+			} else {
+				fmt.Println("Environment", environmentName, "up to date")
+			}
+		}
+	}
+	return nil
+}
+
+func (ctx *Context) CompareNewSecretWithMessages(secretName string, newSecret map[string]string, fetchedSecrets models.GetMessageByEnvironmentResponse, localSecrets []Secret) *kserrors.Error {
+
+	// where are stored changed values
+	environmentValueMap := make(map[string]string)
+
+	for environmentName, message := range fetchedSecrets.Environments {
+		var PayloadContent = models.MessagePayload{}
+		if err := yaml.Unmarshal(message.Message.Payload, &PayloadContent); err != nil {
+			panic(err)
+		}
+
+		for _, secret := range PayloadContent.Secrets {
+			// Get Secret we want to change in messages
+			if secret.Label == secretName {
+				// Get local value to see if it has changed in fetchedSecrets
+				for _, localSecret := range localSecrets {
+					if secretName == localSecret.Name {
+						// Compare local value with value from message
+						localSecretValue := string(localSecret.Values[EnvironmentName(environmentName)])
+						fmt.Println(secret.Value, localSecretValue)
+						if secret.Value != localSecretValue {
+							environmentValueMap[environmentName] = secret.Value
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if len(environmentValueMap) > 0 {
+		environmentValueMapString := ""
+		for environment, value := range environmentValueMap {
+			environmentValueMapString += fmt.Sprintf("Value in '%s' is '%s'.\n", environment, value)
+		}
+		return kserrors.SecretHasChanged(secretName, environmentValueMapString, nil)
+	}
+	return nil
 }

@@ -1,9 +1,9 @@
-project_id: 5cd271d2-bc48-4f60-9a92-b6694296c6a0
+project_id: 441d05ef-f6ec-435c-abba-cdf545958966
 name: toto
 env:
-- key: HOSTI
+- key: FOO
   strict: true
-- key: HOSTUU
+- key: HOST
   strict: true
 files: []
 options:

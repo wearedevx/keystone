@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -56,15 +57,15 @@ Example:
 
 		ctx := core.New(core.CTX_RESOLVE)
 
+		ctx.MustHaveEnvironment(currentEnvironment)
+
+		environments := make([]string, 0)
 		accessibleEnvironments := ctx.GetAccessibleEnvironments()
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
 			return
 		}
-		ctx.MustHaveEnvironment(currentEnvironment)
-
-		environments := make([]string, 0)
 
 		for _, environment := range accessibleEnvironments {
 			environments = append(environments, environment.Name)
@@ -74,8 +75,6 @@ Example:
 			err.Print()
 			return
 		}
-
-		environmentValueMap[currentEnvironment] = secretValue
 
 		// Ask value for each env
 		if !skipPrompts {
@@ -111,13 +110,33 @@ Enter a values for {{ . }}:`, secretName))
 
 		}
 
-		// If allEnv flag, set value to all envs whithout asking
-		// if allEnv {
-		// 	for _, environment := range environments {
-		// 		environmentValueMap[environment] = strings.Trim(secretValue, " ")
-		// 	}
+		environmentValueMap[currentEnvironment] = secretValue
 
-		// }
+		// Fetch new messages to see if added secret has changed
+		messagesByEnvironment := &models.GetMessageByEnvironmentResponse{
+			Environments: map[string]models.GetMessageResponse{},
+		}
+
+		localSecrets := ctx.ListSecrets()
+
+		fetchErr := ctx.FetchNewMessages(messagesByEnvironment)
+
+		if fetchErr != nil {
+			err.SetCause(fetchErr)
+			err.Print()
+		}
+
+		fetchErr = ctx.WriteNewMessages(*messagesByEnvironment)
+
+		if fetchErr != nil {
+			err.SetCause(fetchErr)
+			err.Print()
+		}
+
+		if err = ctx.CompareNewSecretWithMessages(secretName, environmentValueMap, *messagesByEnvironment, localSecrets); err != nil {
+			err.Print()
+			err = nil
+		}
 
 		flag := core.S_REQUIRED
 
