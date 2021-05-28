@@ -27,39 +27,44 @@ func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var responseBody bytes.Buffer
 	var err error
 
-	Repo := new(repo.Repo)
 	var user *models.User = &models.User{}
 	var serializedUser string
 
-	if err = user.Deserialize(r.Body); err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
+	err = repo.Transaction(func(Repo repo.IRepo) error {
+		if err = user.Deserialize(r.Body); err != nil {
+			http.Error(w, "Bad request", http.StatusBadRequest)
+			return err
+		}
+
+		if err = Repo.GetOrCreateUser(user).Err(); err != nil {
+			http.Error(w, "Not found", http.StatusNotFound)
+			return err
+		}
+
+		if err = user.Serialize(&serializedUser); err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return err
+		}
+
+		return nil
+	})
+
+	if err == nil {
+		in := bytes.NewBufferString(serializedUser)
+		responseBody = *in
+
+		if responseBody.Len() > 0 {
+			w.Header().Add("Content-Type", "application/octet-stream")
+			w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
+			w.Write(responseBody.Bytes())
+		}
+
+		w.WriteHeader(status)
 	}
-
-	if err = Repo.GetOrCreateUser(user).Err(); err != nil {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
-
-	if err = user.Serialize(&serializedUser); err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	in := bytes.NewBufferString(serializedUser)
-	responseBody = *in
-
-	if responseBody.Len() > 0 {
-		w.Header().Add("Content-Type", "application/octet-stream")
-		w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
-		w.Write(responseBody.Bytes())
-	}
-
-	w.WriteHeader(status)
 }
 
 // getUser gets a user
-func GetUser(_ router.Params, _ io.ReadCloser, _ repo.Repo, user models.User) (router.Serde, int, error) {
+func GetUser(_ router.Params, _ io.ReadCloser, _ repo.IRepo, user models.User) (router.Serde, int, error) {
 	return &user, http.StatusOK, nil
 }
 
@@ -68,7 +73,6 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	var err error
 	payload := models.LoginPayload{}
 
-	Repo := new(repo.Repo)
 	var user models.User
 	var serializedUser string
 	var jwtToken string
@@ -99,29 +103,35 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		return
 	}
 
-	if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
+	err = repo.Transaction(func(Repo repo.IRepo) error {
+		if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return err
+		}
+
+		jwtToken, err = jwt.MakeToken(user)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return err
+		}
+
+		if err = user.Serialize(&serializedUser); err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return err
+		}
+
+		return nil
+	})
+
+	if err == nil {
+		serializedUserBytes := []byte(serializedUser)
+		responseBody = *bytes.NewBuffer(serializedUserBytes)
+
+		w.Header().Add("Authorization", fmt.Sprintf("Bearer %s", jwtToken))
+		w.Header().Add("Content-Type", "application/octet-stream")
+		w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
+		w.Write(responseBody.Bytes())
 	}
-
-	jwtToken, err = jwt.MakeToken(user)
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	if err = user.Serialize(&serializedUser); err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	serializedUserBytes := []byte(serializedUser)
-	responseBody = *bytes.NewBuffer(serializedUserBytes)
-
-	w.Header().Add("Authorization", fmt.Sprintf("Bearer %s", jwtToken))
-	w.Header().Add("Content-Type", "application/octet-stream")
-	w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
-	w.Write(responseBody.Bytes())
 }
 
 // Route uses a redirect URI for OAuth2 requests
@@ -139,54 +149,60 @@ func GetAuthRedirect(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	var response string
 	var err error
 
-	Repo := new(repo.Repo)
+	err = repo.Transaction(func(Repo repo.IRepo) error {
+		Repo.SetLoginRequestCode(temporaryCode, code)
+		if err = Repo.Err(); err != nil {
+			code := http.StatusInternalServerError
 
-	Repo.SetLoginRequestCode(temporaryCode, code)
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				code = http.StatusNotFound
+			}
 
-	if err = Repo.Err(); err != nil {
-		code := http.StatusInternalServerError
-
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			code = http.StatusNotFound
+			http.Error(w, err.Error(), code)
+			return err
 		}
+		return nil
+	})
 
-		http.Error(w, err.Error(), code)
-		return
+	if err == nil {
+		response = "OK"
+		w.Header().Add("Content-Type", "text/plain")
+		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
+		fmt.Fprint(w, response)
 	}
-
-	response = "OK"
-	w.Header().Add("Content-Type", "text/plain")
-	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
-	fmt.Fprint(w, response)
 }
 
 func PostLoginRequest(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 	var response string
 	var err error
-	Repo := new(repo.Repo)
 
-	loginRequest := Repo.CreateLoginRequest()
+	err = repo.Transaction(func(Repo repo.IRepo) error {
+		loginRequest := Repo.CreateLoginRequest()
 
-	if err = Repo.Err(); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		if err = Repo.Err(); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return err
+		}
+
+		if err = loginRequest.Serialize(&response); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return err
+		}
+
+		return nil
+	})
+
+	if err == nil {
+		w.Header().Add("Content-Type", "application/json; charset=utf-8")
+		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
+		fmt.Fprint(w, response)
 	}
-
-	if err = loginRequest.Serialize(&response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Add("Content-Type", "application/json; charset=utf-8")
-	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
-	fmt.Fprint(w, response)
 }
 
 // Route to poll to check wether the user has completed the login
 func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var response string
 	var err error
-	Repo := new(repo.Repo)
 
 	temporaryCode := r.URL.Query().Get("code")
 
@@ -195,28 +211,33 @@ func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		return
 	}
 
-	loginRequest, found := Repo.GetLoginRequest(temporaryCode)
+	err = repo.Transaction(func(Repo repo.IRepo) error {
+		loginRequest, found := Repo.GetLoginRequest(temporaryCode)
 
-	if err = Repo.Err(); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		if err = Repo.Err(); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return err
+		}
+
+		if !found {
+			log.Error(r, "Login Request not found with: `%s`", temporaryCode)
+			http.Error(w, "Not Found", http.StatusNotFound)
+			return err
+		}
+
+		err = loginRequest.Serialize(&response)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return err
+		}
+
+		return nil
+	})
+
+	if err == nil {
+		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
+
+		fmt.Fprint(w, response)
 	}
-
-	if !found {
-		log.Error(r, "Login Request not found with: `%s`", temporaryCode)
-		http.Error(w, "Not Found", http.StatusNotFound)
-		return
-	}
-
-	err = loginRequest.Serialize(&response)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Add("Content-Type", "application/json; charset=utf-8")
-	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
-
-	fmt.Fprint(w, response)
 }

@@ -16,7 +16,7 @@ import (
 
 // DoUsersExist checks if users exists in the Keystone database
 // This is not project dependant, it checks all users in the whole world
-func DoUsersExist(_ router.Params, body io.ReadCloser, Repo repo.Repo, _ models.User) (_ router.Serde, status int, err error) {
+func DoUsersExist(_ router.Params, body io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusBadRequest
 	response := &models.CheckMembersResponse{}
 	payload := &models.CheckMembersPayload{}
@@ -50,7 +50,7 @@ func DoUsersExist(_ router.Params, body io.ReadCloser, Repo repo.Repo, _ models.
 }
 
 // PutMembersSetRole sets the role for a given project member
-func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (response router.Serde, status int, err error) {
+func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (response router.Serde, status int, err error) {
 	status = http.StatusOK
 	payload := &models.SetMemberRolePayload{}
 	project := models.Project{}
@@ -83,7 +83,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.Repo,
 		return response, status, err
 	}
 
-	can, err := rights.CanUserSetMemberRole(&Repo, user, member, role, project)
+	can, err := rights.CanUserSetMemberRole(Repo, user, member, role, project)
 	if err != nil {
 		return response, http.StatusInternalServerError, err
 	}

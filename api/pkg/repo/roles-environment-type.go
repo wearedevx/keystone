@@ -32,7 +32,7 @@ func (repo *Repo) GetRolesEnvironmentType(rolesEnvironmentType *RolesEnvironment
 		return repo
 	}
 
-	repo.err = db.
+	repo.err = repo.GetDb().
 		Where(*rolesEnvironmentType).
 		First(&rolesEnvironmentType).
 		Error

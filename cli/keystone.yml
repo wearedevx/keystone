@@ -1,18 +1,20 @@
-project_id: d3694b7f-7792-4589-a962-3b33fd1203f3
+project_id: 46707785-57cd-4389-8eef-004319e13563
 name: keystone
 env:
 - key: TEST
+  strict: true
+- key: TEST2
   strict: true
 files: []
 options:
   strict: false
 environments:
-- id: 80eefb40-fb83-4361-b6db-db2fbeac8efb
+- id: ceeb412d-83e0-488d-a557-518900baeed7
   name: dev
-  version_id: 53160a67-d5ba-4ae2-8d63-1f98709e0808
-- id: 24798d2c-4f78-48e3-8ce6-7186da0f3bde
+  version_id: 66e7fa70-85ea-4815-8a07-c8cbce38bb1f
+- id: bb1961b3-e744-4c32-87f5-f6e3c8d9e1b7
   name: staging
-  version_id: 42a1c71e-c687-4914-8e17-98f2de329db2
-- id: 239dccdb-2166-4333-a7ba-4a6b45079dcd
+  version_id: 069d29bd-564c-44ef-8c92-fc0ff0ebb658
+- id: 50dc796e-e5e8-45d1-a89b-2a649d52bd22
   name: prod
-  version_id: 351c38a7-af9d-4725-a5c3-3e043ce7f4fa
+  version_id: ae987022-9991-4400-8ab2-324f578dfa4f

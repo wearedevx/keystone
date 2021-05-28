@@ -98,7 +98,7 @@ func (f *FakeRepo) DeleteLoginRequest(_ string) bool {
 	panic("not implemented")
 }
 
-func (f *FakeRepo) DeleteMessage(messageID uint, userID uint) IRepo {
+func (f *FakeRepo) DeleteMessage(_ uint, _ uint) IRepo {
 	panic("not implemented")
 }
 
@@ -114,7 +114,11 @@ func (f *FakeRepo) GetEnvironment(_ *Environment) IRepo {
 	panic("not implemented")
 }
 
-func (f *FakeRepo) GetEnvironmentPublicKeys(envID string, publicKeys *PublicKeys) IRepo {
+func (f *FakeRepo) GetEnvironmentsByProjectUUID(_ string, _ *[]Environment) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetEnvironmentPublicKeys(_ string, _ *PublicKeys) IRepo {
 	panic("not implemented")
 }
 
@@ -123,6 +127,10 @@ func (f *FakeRepo) GetEnvironmentType(_ *EnvironmentType) IRepo {
 }
 
 func (f *FakeRepo) GetLoginRequest(_ string) (LoginRequest, bool) {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetMessagesForUserOnEnvironment(_ User, _ Environment, _ *Message) IRepo {
 	panic("not implemented")
 }
 
@@ -170,6 +178,10 @@ func (f *FakeRepo) GetRoles(_ *[]Role) IRepo {
 	panic("not implemented")
 }
 
+func (r *FakeRepo) GetRolesMemberCanInvite(projectMember ProjectMember, roles *[]Role) IRepo {
+	panic("not implemented")
+}
+
 func (f *FakeRepo) GetSecretByName(_ string, _ *Secret) {
 	panic("not implemented")
 }
@@ -203,6 +215,14 @@ func (f *FakeRepo) ProjectSetRoleForUser(_ Project, _ User, _ Role) IRepo {
 }
 
 func (f *FakeRepo) SetLoginRequestCode(_ string, _ string) LoginRequest {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) SetNewVersionID(_ *Environment) error {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) WriteMessage(_ User, _ Message) IRepo {
 	panic("not implemented")
 }
 

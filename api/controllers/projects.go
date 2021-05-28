@@ -12,7 +12,7 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
-func PostProject(_ router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
+func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
 	project := models.Project{}
@@ -33,7 +33,7 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.Repo, user model
 
 }
 
-func GetProjectsMembers(params router.Params, _ io.ReadCloser, Repo repo.Repo, _ models.User) (_ router.Serde, status int, err error) {
+func GetProjectsMembers(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
 	var project models.Project
@@ -54,7 +54,7 @@ func GetProjectsMembers(params router.Params, _ io.ReadCloser, Repo repo.Repo, _
 	return &result, status, err
 }
 
-func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
+func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
 	var project models.Project
@@ -76,7 +76,7 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.Rep
 		return &result, status, err
 	}
 
-	can, err := checkUserCanAddMembers(&Repo, user, project, input.Members)
+	can, err := checkUserCanAddMembers(Repo, user, project, input.Members)
 	if err != nil {
 		status = http.StatusInternalServerError
 		result.Error = err.Error()
@@ -101,7 +101,7 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.Rep
 	return &result, status, err
 }
 
-func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
+func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
 	var project models.Project
@@ -124,7 +124,7 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.R
 		}
 	}
 
-	can, err := checkUserCanRemoveMembers(&Repo, user, project, input.Members)
+	can, err := checkUserCanRemoveMembers(Repo, user, project, input.Members)
 	if err != nil {
 		status = http.StatusInternalServerError
 		result.Error = err.Error()
@@ -153,7 +153,7 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.R
 
 // checkUserCanAddMembers checks wether a user can add all the members in `members` to `project`
 // Returns false if at least one of the members cannot be added
-func checkUserCanAddMembers(Repo *repo.Repo, user models.User, project models.Project, members []models.MemberRole) (can bool, err error) {
+func checkUserCanAddMembers(Repo repo.IRepo, user models.User, project models.Project, members []models.MemberRole) (can bool, err error) {
 	can = true
 
 	projectMember := models.ProjectMember{

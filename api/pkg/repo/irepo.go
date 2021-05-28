@@ -22,8 +22,10 @@ type IRepo interface {
 	GetEnvironment(*models.Environment) IRepo
 	GetEnvironmentPublicKeys(envID string, publicKeys *models.PublicKeys) IRepo
 	GetEnvironmentType(*models.EnvironmentType) IRepo
+    GetEnvironmentsByProjectUUID(projectUUID string, foundEnvironments *[]models.Environment) IRepo
 	GetInvitableRoles(models.Role, *[]models.Role) IRepo
 	GetLoginRequest(string) (models.LoginRequest, bool)
+    GetMessagesForUserOnEnvironment(user models.User, environment models.Environment, message *models.Message) IRepo
 	GetOrCreateEnvironment(*models.Environment) IRepo
 	GetOrCreateEnvironmentType(*models.EnvironmentType) IRepo
 	GetOrCreateProject(*models.Project) IRepo
@@ -46,4 +48,6 @@ type IRepo interface {
 	ProjectRemoveMembers(models.Project, []string) IRepo
 	ProjectSetRoleForUser(models.Project, models.User, models.Role) IRepo
 	SetLoginRequestCode(string, string) models.LoginRequest
+    SetNewVersionID(environment *models.Environment) error
+    WriteMessage(user models.User, message models.Message) IRepo
 }
