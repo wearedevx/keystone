@@ -281,7 +281,7 @@ func (ctx *Context) EnvironmentID() string {
 
 func (ctx *Context) EnvironmentsFromConfig() []Env {
 
-	environmentsfile := new(EnvironmentsFile).Load(ctx.Wd)
+	environmentsfile := new(EnvironmentsFile).Load(ctx.dotKeystonePath())
 	return environmentsfile.Environments
 }
 

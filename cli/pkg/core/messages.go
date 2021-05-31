@@ -169,11 +169,14 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 	for environmentName, environment := range messagesByEnvironments.Environments {
 		messageID := environment.Message.ID
 		if messageID != 0 {
+			// IF changes detected
 			if len(changes.Environments[environmentName]) > 0 {
 				ui.Print("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
 				for _, change := range changes.Environments[environmentName] {
 					ui.Print(change.From + " ↦ " + change.To)
 				}
+			} else {
+				fmt.Println("Environment", environmentName, "up to date ✔")
 			}
 			// response, _ := c.Messages().DeleteMessage(environment.Message.ID)
 			// if !response.Success {
