@@ -1,7 +1,9 @@
 package core
 
 import (
+	"bytes"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,13 +11,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/udhos/equalfile"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/ui"
-
-	"github.com/wearedevx/keystone/api/pkg/models"
 	"gopkg.in/yaml.v2"
 )
 
@@ -35,6 +37,7 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 
 	for environmentName, environment := range MessageByEnvironments.Environments {
 		var PayloadContent = models.MessagePayload{}
+		envFilePath := ctx.CachedEnvironmentDotEnvPath(environmentName)
 
 		localSecrets := make([]models.SecretVal, 0)
 		for _, localSecret := range ctx.ListSecrets() {
@@ -45,27 +48,40 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		}
 
 		if err := yaml.Unmarshal(environment.Message.Payload, &PayloadContent); err != nil {
+			// TODO: Error Handling
 			panic(err)
 		}
 
 		// Remove content of cache directory to ensure old files are deleted
 		RemoveContents(ctx.CachedEnvironmentPath(environmentName))
 
-		for _, file := range PayloadContent.Files {
-			fileContent, _ := base64.StdEncoding.DecodeString(file.Value)
-			CreateFileIfNotExists(path.Join(ctx.CachedEnvironmentFilesPath(environmentName), file.Path), string(fileContent))
+		environmentChanges := make([]Change, 0)
+		fileChanges, err := ctx.getFilesChanges(PayloadContent.Files, environmentName)
+		if err != nil {
+			// TODO: Error Handling
+			panic(err)
 		}
 
-		envFilePath := ctx.CachedEnvironmentDotEnvPath(environmentName)
+		err = ctx.saveFilesChanges(fileChanges)
+		if err != nil {
+			// TODO: Error Handling
+			panic(err)
+		}
+
+		secretChanges := GetSecretsChanges(localSecrets, PayloadContent.Secrets)
+
+		environmentChanges = append(environmentChanges, fileChanges...)
+		environmentChanges = append(environmentChanges, secretChanges...)
 
 		for _, secret := range PayloadContent.Secrets {
-			changes.Environments[environmentName] = GetSecretsChanges(localSecrets, PayloadContent.Secrets)
 			if err := new(EnvFile).Load(envFilePath).Set(secret.Label, secret.Value).Dump().Err(); err != nil {
 				err = kserrors.FailedToUpdateDotEnv(envFilePath, err)
 				// fmt.Println(err.Error())
 			}
 			// CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), environmentName, file.Path), string(fileContent))
 		}
+
+		changes.Environments[environmentName] = environmentChanges
 	}
 
 	return changes, nil
@@ -91,6 +107,75 @@ func GetSecretsChanges(localSecrets []models.SecretVal, newSecrets []models.Secr
 	}
 
 	return changes
+}
+
+/// fileHasChanges returns true if the content of file at `pathToExistingFile` is different
+// from `candidateContent`, meaning the file contents have changed.
+func fileHasChanges(pathToExistingFile string, candidateContent []byte) (sameContent bool, err error) {
+	candidateReader := bytes.NewReader(candidateContent)
+	currentFileReader, err := os.Open(pathToExistingFile)
+
+	if err != nil {
+		return sameContent, err
+	}
+
+	comparator := equalfile.New(nil, equalfile.Options{})
+
+	sameContent, err = comparator.CompareReader(currentFileReader, candidateReader)
+	if err == nil {
+		return !sameContent, nil
+	}
+
+	return false, err
+}
+
+func (ctx *Context) getFilesChanges(files []models.File, environmentName string) (changes []Change, err error) {
+	changes = make([]Change, 0)
+
+	for _, file := range files {
+		fileContent, err := base64.StdEncoding.DecodeString(file.Value)
+		if err != nil {
+			//TODO: Prettify this error
+			fmt.Println("ERROR decoding base64 decrypted file content", err.Error())
+			continue
+		}
+
+		filePath := path.Join(ctx.CachedEnvironmentFilesPath(environmentName), file.Path)
+
+		fileHasChanges, err := fileHasChanges(filePath, fileContent)
+		if err != nil {
+			//TODO: Prettify this error
+			fmt.Println("ERROR checking for file changes: ", err.Error())
+		}
+
+		if fileHasChanges {
+			changes = append(changes, Change{
+				Type: "file",
+				Name: filePath,
+				To:   string(fileContent),
+			})
+		}
+	}
+	return changes, err
+}
+
+func (ctx *Context) saveFilesChanges(changes []Change) (err error) {
+	errorList := make([]string, 0)
+
+	for _, change := range changes {
+		err = CreateFileIfNotExists(change.Name, change.To)
+		if err != nil {
+			errorList = append(errorList, err.Error())
+		}
+	}
+
+	if len(errorList) > 0 {
+		errMessage := strings.Join(errorList, "\n")
+
+		return errors.New(errMessage)
+	}
+
+	return nil
 }
 
 // Return PayloadContent, with secrets and files of current environment.
