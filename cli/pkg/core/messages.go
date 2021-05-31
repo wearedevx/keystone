@@ -58,8 +58,8 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 
 		envFilePath := ctx.CachedEnvironmentDotEnvPath(environmentName)
 
+		changes.Environments[environmentName] = GetSecretsChanges(localSecrets, PayloadContent.Secrets)
 		for _, secret := range PayloadContent.Secrets {
-			changes.Environments[environmentName] = GetSecretsChanges(localSecrets, PayloadContent.Secrets)
 			if err := new(EnvFile).Load(envFilePath).Set(secret.Label, secret.Value).Dump().Err(); err != nil {
 				err = kserrors.FailedToUpdateDotEnv(envFilePath, err)
 				// fmt.Println(err.Error())
