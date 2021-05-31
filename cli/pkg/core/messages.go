@@ -6,21 +6,43 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/ui"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"gopkg.in/yaml.v2"
 )
 
-func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnvironmentResponse) (models.GetMessageByEnvironmentResponse, error) {
+type Change struct {
+	Name string
+	From string
+	To   string
+	Type string // secret || file
+}
+
+type ChangesByEnvironment struct {
+	Environments map[string][]Change
+}
+
+func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnvironmentResponse) (ChangesByEnvironment, error) {
+	changes := ChangesByEnvironment{Environments: make(map[string][]Change)}
 
 	for environmentName, environment := range MessageByEnvironments.Environments {
 		var PayloadContent = models.MessagePayload{}
+
+		localSecrets := make([]models.SecretVal, 0)
+		for _, localSecret := range ctx.ListSecrets() {
+			localSecrets = append(localSecrets, models.SecretVal{
+				Label: localSecret.Name,
+				Value: string(localSecret.Values[EnvironmentName(environmentName)]),
+			})
+		}
 
 		if err := yaml.Unmarshal(environment.Message.Payload, &PayloadContent); err != nil {
 			panic(err)
@@ -37,6 +59,7 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		envFilePath := ctx.CachedEnvironmentDotEnvPath(environmentName)
 
 		for _, secret := range PayloadContent.Secrets {
+			changes.Environments[environmentName] = GetSecretsChanges(localSecrets, PayloadContent.Secrets)
 			if err := new(EnvFile).Load(envFilePath).Set(secret.Label, secret.Value).Dump().Err(); err != nil {
 				err = kserrors.FailedToUpdateDotEnv(envFilePath, err)
 				// fmt.Println(err.Error())
@@ -45,7 +68,29 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		}
 	}
 
-	return MessageByEnvironments, nil
+	return changes, nil
+}
+
+func GetSecretsChanges(localSecrets []models.SecretVal, newSecrets []models.SecretVal) (changes []Change) {
+	for _, secret := range newSecrets {
+		// Get Secret we want to change in messages
+		// Get local value to see if it has changed in fetchedSecrets
+		for _, localSecret := range localSecrets {
+			if secret.Label == localSecret.Label {
+				// Compare local value with value from message
+				if secret.Value != localSecret.Value {
+					changes = append(changes, Change{
+						Name: secret.Label,
+						From: localSecret.Value,
+						To:   secret.Value,
+						Type: "secret",
+					})
+				}
+			}
+		}
+	}
+
+	return changes
 }
 
 // Return PayloadContent, with secrets and files of current environment.
@@ -107,27 +152,33 @@ func (ctx *Context) FetchNewMessages(result *models.GetMessageByEnvironmentRespo
 }
 
 func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByEnvironmentResponse) error {
-	c, kcErr := client.NewKeystoneClient()
+	// c, kcErr := client.NewKeystoneClient()
 
-	if kcErr != nil {
-		kcErr.Print()
-		os.Exit(1)
-	}
+	// if kcErr != nil {
+	// 	kcErr.Print()
+	// 	os.Exit(1)
+	// }
 
-	ctx.SaveMessages(messagesByEnvironments)
+	changes, _ := ctx.SaveMessages(messagesByEnvironments)
 
 	if err := ctx.Err(); err != nil {
 		err.Print()
 		return err
 	}
+
 	for environmentName, environment := range messagesByEnvironments.Environments {
 		messageID := environment.Message.ID
 		if messageID != 0 {
-			fmt.Println("Environment", environmentName, "updated ✔")
-			response, _ := c.Messages().DeleteMessage(environment.Message.ID)
-			if !response.Success {
-				fmt.Println("Can't delete message", response.Error)
+			if len(changes.Environments[environmentName]) > 0 {
+				ui.Print("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
+				for _, change := range changes.Environments[environmentName] {
+					ui.Print(change.From + " ↦ " + change.To)
+				}
 			}
+			// response, _ := c.Messages().DeleteMessage(environment.Message.ID)
+			// if !response.Success {
+			// 	fmt.Println("Can't delete message", response.Error)
+			// }
 		} else {
 			environmentChanged := ctx.EnvironmentVersionHasChanged(environmentName, environment.VersionID)
 			if environmentChanged {
