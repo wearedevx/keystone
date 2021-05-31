@@ -151,21 +151,21 @@ func (ctx *Context) FetchNewMessages(result *models.GetMessageByEnvironmentRespo
 	return nil
 }
 
-func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByEnvironmentResponse) error {
-	// c, kcErr := client.NewKeystoneClient()
+func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByEnvironmentResponse) (ChangesByEnvironment, *kserrors.Error) {
+	c, kcErr := client.NewKeystoneClient()
 
-	// if kcErr != nil {
-	// 	kcErr.Print()
-	// 	os.Exit(1)
-	// }
+	if kcErr != nil {
+		kcErr.Print()
+		os.Exit(1)
+	}
 
 	changes, _ := ctx.SaveMessages(messagesByEnvironments)
 
 	if err := ctx.Err(); err != nil {
 		err.Print()
-		return err
+		return changes, kserrors.UnkownError(err)
 	}
-
+	changedEnvironments := make([]string, 0)
 	for environmentName, environment := range messagesByEnvironments.Environments {
 		messageID := environment.Message.ID
 		if messageID != 0 {
@@ -176,50 +176,47 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 					ui.Print(change.From + " ↦ " + change.To)
 				}
 			} else {
-				fmt.Println("Environment", environmentName, "up to date ✔")
+				ui.Print("Environment " + environmentName + " up to date ✔")
 			}
-			// response, _ := c.Messages().DeleteMessage(environment.Message.ID)
-			// if !response.Success {
-			// 	fmt.Println("Can't delete message", response.Error)
-			// }
+			response, _ := c.Messages().DeleteMessage(environment.Message.ID)
+			if !response.Success {
+				ui.Print("Can't delete message " + response.Error)
+			} else {
+				ctx.SetEnvironmentVersion(environmentName, environment.VersionID)
+			}
+
 		} else {
 			environmentChanged := ctx.EnvironmentVersionHasChanged(environmentName, environment.VersionID)
 			if environmentChanged {
-				fmt.Println("Environment", environmentName, "has changed but no message available. Ask someone to push their secret ⨯")
+				ui.Print("Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯")
+				changedEnvironments = append(changedEnvironments, environmentName)
 			} else {
-				fmt.Println("Environment", environmentName, "up to date ✔")
+				ui.Print("Environment " + environmentName + " up to date ✔")
 			}
 		}
 	}
-	return nil
+	if len(changedEnvironments) > 0 {
+		return changes, kserrors.EnvironmentsHaveChanged(strings.Join(changedEnvironments, ", "), nil)
+	}
+	return changes, nil
 }
 
-func (ctx *Context) CompareNewSecretWithMessages(secretName string, newSecret map[string]string, fetchedSecrets models.GetMessageByEnvironmentResponse, localSecrets []Secret) *kserrors.Error {
-
+func (ctx *Context) CompareNewSecretWithChanges(secretName string, newSecret map[string]string, changesByEnvironment ChangesByEnvironment) *kserrors.Error {
 	// where are stored changed values
 	environmentValueMap := make(map[string]string)
 
-	for environmentName, message := range fetchedSecrets.Environments {
-		var PayloadContent = models.MessagePayload{}
-		if err := yaml.Unmarshal(message.Message.Payload, &PayloadContent); err != nil {
-			panic(err)
-		}
+	for environmentName, changes := range changesByEnvironment.Environments {
+		// var PayloadContent = models.MessagePayload{}
+		// if err := yaml.Unmarshal(message.Message.Payload, &PayloadContent); err != nil {
+		// 	panic(err)
+		// }
+		for _, change := range changes {
 
-		for _, secret := range PayloadContent.Secrets {
-			// Get Secret we want to change in messages
-			if secret.Label == secretName {
-				// Get local value to see if it has changed in fetchedSecrets
-				for _, localSecret := range localSecrets {
-					if secretName == localSecret.Name {
-						// Compare local value with value from message
-						localSecretValue := string(localSecret.Values[EnvironmentName(environmentName)])
-						if secret.Value != localSecretValue {
-							environmentValueMap[environmentName] = secret.Value
-						}
-					}
-				}
+			if change.Name == secretName {
+				environmentValueMap[environmentName] = change.To
 			}
 		}
+
 	}
 
 	if len(environmentValueMap) > 0 {
