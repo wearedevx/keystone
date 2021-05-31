@@ -5,6 +5,8 @@ env:
   strict: true
 - key: HOST
   strict: true
-files: []
+files:
+- path: Makefile
+  strict: false
 options:
   strict: false

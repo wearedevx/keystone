@@ -38,7 +38,7 @@ Get info from your team:
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		if err = ctx.Err(); err != nil {
-			err.Print()
+			// err.Print()
 			return
 		}
 

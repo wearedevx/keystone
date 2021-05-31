@@ -237,17 +237,13 @@ func (ctx *Context) FetchNewMessages(result *models.GetMessageByEnvironmentRespo
 }
 
 func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByEnvironmentResponse) error {
-	// c, kcErr := client.NewKeystoneClient()
-
-	// if kcErr != nil {
-	// 	kcErr.Print()
-	// 	os.Exit(1)
-	// }
-
-	changes, _ := ctx.SaveMessages(messagesByEnvironments)
-
 	if err := ctx.Err(); err != nil {
-		err.Print()
+		// err.Print()
+		return err
+	}
+
+	changes, err := ctx.SaveMessages(messagesByEnvironments)
+	if err != nil {
 		return err
 	}
 
@@ -260,10 +256,6 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 					ui.Print(change.From + " ↦ " + change.To)
 				}
 			}
-			// response, _ := c.Messages().DeleteMessage(environment.Message.ID)
-			// if !response.Success {
-			// 	fmt.Println("Can't delete message", response.Error)
-			// }
 		} else {
 			environmentChanged := ctx.EnvironmentVersionHasChanged(environmentName, environment.VersionID)
 			if environmentChanged {
@@ -273,6 +265,7 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 			}
 		}
 	}
+
 	return nil
 }
 
