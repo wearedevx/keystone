@@ -149,11 +149,10 @@ Examples:
 			err.Print()
 		}
 
-		fetchErr = ctx.WriteNewMessages(*messagesByEnvironment)
+		_, err = ctx.WriteNewMessages(*messagesByEnvironment)
 
-		if fetchErr != nil {
-			err.SetCause(fetchErr)
-			err.Print()
+		if err != nil {
+			ui.PrintError(err.Error())
 		}
 
 		// TODO
