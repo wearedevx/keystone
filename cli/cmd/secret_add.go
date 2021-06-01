@@ -118,8 +118,6 @@ Enter a values for {{ . }}:`, secretName))
 			Environments: map[string]models.GetMessageResponse{},
 		}
 
-		localSecrets := ctx.ListSecrets()
-
 		fmt.Println("Syncing data...")
 		fetchErr := ctx.FetchNewMessages(messagesByEnvironment)
 
@@ -128,14 +126,16 @@ Enter a values for {{ . }}:`, secretName))
 			err.Print()
 		}
 
-		fetchErr = ctx.WriteNewMessages(*messagesByEnvironment)
+		changes, writeErr := ctx.WriteNewMessages(*messagesByEnvironment)
 
-		if fetchErr != nil {
-			err.SetCause(fetchErr)
-			err.Print()
+		if writeErr != nil {
+			writeErr.Print()
+			// err.SetCause(writeErr)
+			// err.Print()
+			return
 		}
 
-		if err = ctx.CompareNewSecretWithMessages(secretName, environmentValueMap, *messagesByEnvironment, localSecrets); err != nil {
+		if err = ctx.CompareNewSecretWithChanges(secretName, environmentValueMap, changes); err != nil {
 			err.Print()
 			return
 		}

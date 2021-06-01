@@ -134,6 +134,12 @@ If you want to override their value, try again.
 {{ .Values }}
 
 `,
+	"EnvironmentsHaveChanged": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- "'" | red }}
+We couldn't find data for the following environments: '{{ .EnvironmentsName }}', but a new value has been set by another member.
+Ask someone to push their environments to make new data available to you.
+
+`,
 	"CannotAddFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
@@ -349,6 +355,13 @@ func SecretHasChanged(secret string, values string, cause error) *Error {
 		"Values": string(values),
 	}
 	return NewError("Secret has changed", helpTexts["SecretHasChanged"], meta, cause)
+}
+
+func EnvironmentsHaveChanged(environmentsname string, cause error) *Error {
+	meta := map[string]string{
+		"EnvironmentsName": string(environmentsname),
+	}
+	return NewError("Environments have changed", helpTexts["EnvironmentsHaveChanged"], meta, cause)
 }
 
 func CannotAddFile(path string, cause error) *Error {

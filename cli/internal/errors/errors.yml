@@ -218,6 +218,16 @@ errors:
 
       {{ .Values }}
 
+  - type: EnvironmentsHaveChanged
+    name: "Environments have changed"
+    params:
+      - name: EnvironmentsName
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- "'" | red }}
+      We couldn't find data for the following environments: '{{ .EnvironmentsName }}', but a new value has been set by another member.
+      Ask someone to push their environments to make new data available to you.
+
 
   # KEYSTONED_FILES_ERRORS
   # ––––––––––––––––––––––

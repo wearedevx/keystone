@@ -60,13 +60,11 @@ Get info from your team:
 			err.SetCause(fetchErr)
 			err.Print()
 		}
-		// fmt.Println(messagesByEnvironment)
 
-		fetchErr = ctx.WriteNewMessages(*messagesByEnvironment)
+		_, writeErr := ctx.WriteNewMessages(*messagesByEnvironment)
 
-		if fetchErr != nil {
-			err.SetCause(fetchErr)
-			err.Print()
+		if writeErr != nil {
+			writeErr.Print()
 		}
 
 	},

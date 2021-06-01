@@ -281,7 +281,7 @@ func (ctx *Context) EnvironmentID() string {
 
 func (ctx *Context) EnvironmentsFromConfig() []Env {
 
-	environmentsfile := new(EnvironmentsFile).Load(ctx.Wd)
+	environmentsfile := new(EnvironmentsFile).Load(ctx.dotKeystonePath())
 	return environmentsfile.Environments
 }
 
@@ -365,9 +365,9 @@ func (ctx *Context) PushEnv(environments []models.Environment) error {
 	return nil
 }
 
-func (ctx *Context) EnvironmentVersionHasChanged(name string, environmentID string) bool {
+func (ctx *Context) EnvironmentVersionHasChanged(name string, environmentVersion string) bool {
 	currentVersion := ctx.EnvironmentVersionByName(name)
-	return currentVersion != environmentID
+	return currentVersion != environmentVersion
 }
 
 func (ctx *Context) GetAccessibleEnvironments() []models.Environment {

@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -71,12 +70,10 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 
 		// - rights check
 		can, err := rights.CanUserReadEnvironment(&Repo, user.ID, project.ID, &environment)
-		fmt.Println("🏂🏂🏂🏂", can, environment.Name)
 		if err != nil {
 			response.Error = err
 			return &response, http.StatusInternalServerError, err
 		}
-		fmt.Println("can", can)
 
 		if can {
 			if err = Repo.GetMessagesForUserOnEnvironment(user, environment, &curr.Message).Err(); err != nil {
