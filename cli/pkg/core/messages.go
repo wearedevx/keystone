@@ -73,13 +73,14 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		environmentChanges = append(environmentChanges, fileChanges...)
 		environmentChanges = append(environmentChanges, secretChanges...)
 
-		changes.Environments[environmentName] = GetSecretsChanges(localSecrets, PayloadContent.Secrets)
 		for _, secret := range PayloadContent.Secrets {
-			if err := new(EnvFile).Load(envFilePath).Set(secret.Label, secret.Value).Dump().Err(); err != nil {
+			if err := new(EnvFile).
+				Load(envFilePath).
+				Set(secret.Label, secret.Value).
+				Dump().
+				Err(); err != nil {
 				err = kserrors.FailedToUpdateDotEnv(envFilePath, err)
-				// fmt.Println(err.Error())
 			}
-			// CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), environmentName, file.Path), string(fileContent))
 		}
 
 		changes.Environments[environmentName] = environmentChanges
@@ -197,8 +198,7 @@ func (ctx *Context) PrepareMessagePayload(environment models.Environment) (model
 		})
 	}
 
-	cachePath := ctx.cacheDirPath()
-	envCachePath := path.Join(cachePath, environment.Name)
+	envCachePath := ctx.CachedEnvironmentFilesPath(environment.Name)
 
 	for _, file := range ctx.ListFiles() {
 		filePath := path.Join(envCachePath, file.Path)
@@ -232,9 +232,12 @@ func (ctx *Context) FetchNewMessages(result *models.GetMessageByEnvironmentRespo
 
 	projectID := ctx.GetProjectID()
 
-	*result, _ = c.Messages().GetMessages(projectID)
+	r, err := c.Messages().GetMessages(projectID)
+	if err == nil {
+		*result = r
+	}
 
-	return nil
+	return err
 }
 
 func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByEnvironmentResponse) (ChangesByEnvironment, *kserrors.Error) {
@@ -260,9 +263,13 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 		if messageID != 0 {
 			// IF changes detected
 			if len(changes.Environments[environmentName]) > 0 {
-				ui.Print("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
+				ui.Print("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) or file(s) changed")
 				for _, change := range changes.Environments[environmentName] {
-					ui.Print(change.From + " ↦ " + change.To)
+					if change.Type == "secret" {
+						ui.Print("secret " + change.Name + ": " + change.From + " ↦ " + change.To)
+					} else {
+						ui.Print("file " + change.Name + " changed")
+					}
 				}
 			} else {
 				ui.Print("Environment " + environmentName + " up to date ✔")
