@@ -1,7 +1,7 @@
 #!/bin/bash
 
-export $(cat .env | xargs)
+export $(cat .env-dev | xargs)
 
-LDFLAGS="-X github.com/wearedevx/keystone/cli/pkg/client.ksauthURL=$KSAUTH_URL -X github.com/wearedevx/keystone/cli/pkg/client.ksapiURL=$KSAPI_URL"
+LDFLAGS="-X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=$KSAPI_URL"
 
 go build -ldflags "$LDFLAGS" -o ks

@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
+Copyright © 2021 NAME HERE <EMAIL ADDRESS>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,53 +19,44 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
-// filesAddCmd represents the push command
-var filesAddCmd = &cobra.Command{
-	Use:   "add",
-	Short: "Adds a file to secrets",
-	Long: `Adds a file to secrets
+// fileSetCmd represents the fileSet command
+var fileSetCmd = &cobra.Command{
+	Use:   "set",
+	Short: "Updates the content of a secret file for the current environment",
+	Long: `Updates the content of a secret file for the current environment.
 
-A secret file is a file which have content that can changge
-across environments, such as configuration files, credentials,
-certificates and so on.
-
-When adding a file, you will be asked for a version of its content
-for all known environments.
+Changes the content of a file for the current environment without alering the others.
 
 Examples:
-  $ ks file add ./config/config.exs
-  
-  $ ks file add ./wp-config.php
+  $ ks file set credentials.json
 
-  $ ks file add ./certs/my-website.cert
+  Change the content of 'credentials.json' for the 'staging' environment:
+  $ ks --env staging file set credentials.json
 `,
-	Args: cobra.ExactArgs(1),
-	Run: func(_ *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, args []string) {
 		var err *kserrors.Error
 
 		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
+		environment := currentEnvironment
 
 		accessibleEnvironments := ctx.GetAccessibleEnvironments()
+
 		filePath := args[0]
 		extension := filepath.Ext(filePath)
-
-		environments := ctx.ListEnvironments()
-
-		environmentFileMap := map[string][]byte{}
 
 		if !utils.FileExists(filePath) {
 			err = kserrors.CannotAddFile(filePath, errors.New("file not found"))
@@ -82,33 +73,24 @@ Examples:
 			return
 		}
 
-		environmentFileMap[currentEnvironment] = currentContent
+		content := currentContent
 
 		if !skipPrompts {
-			for _, environment := range environments {
-				if environment != currentEnvironment {
-					ui.Print(fmt.Sprintf("Enter content for file `%s` for the '%s' environment (Press any key to continue)", filePath, environment))
-					_, _, err := keyboard.GetSingleKey()
-					if err != nil {
-						panic(err)
-					}
-
-					content, err := utils.CaptureInputFromEditor(
-						utils.GetPreferredEditorFromEnvironment,
-						extension,
-					)
-
-					if err != nil {
-						panic(err)
-					}
-
-					environmentFileMap[environment] = content
-				}
+			ui.Print(fmt.Sprintf("Enter content for file `%s` for the '%s' environment (Press any key to continue)", filePath, environment))
+			_, _, err := keyboard.GetSingleKey()
+			if err != nil {
+				panic(err)
 			}
-		} else {
-			for _, environment := range environments {
-				environmentFileMap[environment] = currentContent
+
+			content, err = utils.CaptureInputFromEditor(
+				utils.GetPreferredEditorFromEnvironment,
+				extension,
+			)
+
+			if err != nil {
+				panic(err)
 			}
+
 		}
 
 		file := keystonefile.FileKey{
@@ -116,16 +98,10 @@ Examples:
 			Strict: false, // TODO
 		}
 
-		ctx.AddFile(file, environmentFileMap)
+		ctx.SetFile(file, environment, content)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
-			return
-		}
-
-		err_ := gitignorehelper.GitIgnore(ctx.Wd, filePath)
-		if err_ != nil {
-			ui.PrintError(err_.Error())
 			return
 		}
 
@@ -142,17 +118,18 @@ Examples:
 		}
 
 		fmt.Println("Syncing data...")
-		fetchErr := ctx.FetchNewMessages(messagesByEnvironment)
+		terr := ctx.FetchNewMessages(messagesByEnvironment)
 
-		if fetchErr != nil {
-			err.SetCause(fetchErr)
-			err.Print()
+		if terr != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
 		}
 
-		_, err = ctx.WriteNewMessages(*messagesByEnvironment)
+		_, werr := ctx.WriteNewMessages(*messagesByEnvironment)
 
-		if err != nil {
-			ui.PrintError(err.Error())
+		if werr != nil {
+			ui.PrintError(werr.Error())
+			os.Exit(1)
 		}
 
 		// TODO
@@ -172,16 +149,15 @@ It has also been gitignored.`, map[string]string{
 }
 
 func init() {
-	filesCmd.AddCommand(filesAddCmd)
+	filesCmd.AddCommand(fileSetCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// pushCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// fileSetCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// pushCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	// RootCmd.Flags().BoolVarP(&skipPrompts, "skip", "s", false, "Skip questions and use defaults")
+	// fileSetCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
