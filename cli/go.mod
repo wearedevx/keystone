@@ -15,7 +15,6 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.0
-	github.com/udhos/equalfile v0.3.0 // indirect
 	github.com/wearedevx/keystone/api v0.0.0-00010101000000-000000000000
 	github.com/xanzy/go-gitlab v0.49.0
 	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c

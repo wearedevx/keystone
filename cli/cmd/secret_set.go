@@ -36,7 +36,7 @@ Example:
   $ ks secrets set PORT 3000
 
   Change the value of PORT for the 'staging' environment:
-  $ ks --env staging secrets set PORT 4545
+  $ ks --env staging set PORT 4545
 `,
 	Args: cobra.ExactArgs(2),
 	Run: func(_ *cobra.Command, args []string) {

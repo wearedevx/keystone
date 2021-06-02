@@ -1,12 +1,10 @@
-project_id: 46707785-57cd-4389-8eef-004319e13563
-name: keystone
+project_id: 441d05ef-f6ec-435c-abba-cdf545958966
+name: toto
 env:
-- key: TEST
+- key: FOO
   strict: true
-- key: TEST2
+- key: HOST
   strict: true
-files:
-- path: Makefile
-  strict: false
+files: []
 options:
   strict: false

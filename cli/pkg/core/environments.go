@@ -36,7 +36,7 @@ func (ctx *Context) ListEnvironments() []string {
 		return []string{}
 	}
 	envs := make([]string, 0)
-	// envs = append(envs, "default")
+	envs = append(envs, "default")
 
 	cacheDir := ctx.cacheDirPath()
 	contents, err := ioutil.ReadDir(cacheDir)
@@ -489,6 +489,7 @@ func (ctx *Context) GetAccessibleEnvironments() []models.Environment {
 	}
 
 	return accessibleEnvironments
+
 }
 
 func (ctx *Context) LoadEnvironmentsFile() *EnvironmentsFile {

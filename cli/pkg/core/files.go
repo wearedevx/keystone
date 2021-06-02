@@ -58,13 +58,17 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 
 	// Set content for every other environment
 	for _, environment := range environments {
+		// current is already set
+		if environment == current {
+			continue
+		}
 
 		dest := path.Join(ctx.CachedEnvironmentFilesPath(environment), file.Path)
 		parentDir := filepath.Dir(dest) + string(os.PathSeparator)
 
 		if err := os.MkdirAll(parentDir, 0o755); err != nil {
 			ctx.setError(CannotCreateDirectory(parentDir, err))
-			return ctx
+			panic(err)
 		}
 
 		destFile, err := os.OpenFile(dest, os.O_WRONLY|os.O_CREATE, 0o644)
@@ -74,32 +78,9 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 
 			destFile.Write(envContentMap[environment])
 		} else {
-			ctx.setError(CannotAddFile(dest, err))
-			return ctx
+			panic(err)
 		}
 
-	}
-
-	return ctx
-}
-
-func (ctx *Context) SetFile(file FileKey, environment string, content []byte) *Context {
-	dest := path.Join(ctx.CachedEnvironmentFilesPath(environment), file.Path)
-	parentDir := filepath.Dir(dest) + string(os.PathSeparator)
-
-	if err := os.MkdirAll(parentDir, 0o755); err != nil {
-		ctx.setError(CannotCreateDirectory(parentDir, err))
-		return ctx
-	}
-
-	destFile, err := os.OpenFile(dest, os.O_WRONLY|os.O_CREATE, 0o644)
-
-	if err == nil {
-		defer destFile.Close()
-
-		destFile.Write(content)
-	} else {
-		ctx.setError(CannotAddFile(dest, err))
 	}
 
 	return ctx

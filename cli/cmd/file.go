@@ -69,7 +69,7 @@ To add files to secret files:
 
 		ui.Print(ui.RenderTemplate("files list", `Files tracked as secret files:
 
-{{ range . }} {{- .Path | indent 8 }} {{ end }}
+{{ range . }} {{- . | indent 8 }} {{ end }}
 `, files))
 	},
 }
