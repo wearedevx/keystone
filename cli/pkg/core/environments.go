@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -365,6 +366,107 @@ func (ctx *Context) PushEnv(environments []models.Environment) error {
 	return nil
 }
 
+func (ctx *Context) PushEnvForOneMember(environment models.Environment, member string) error {
+	// var result client.GenericResponse
+
+	// Get public keyrs
+	c, kcErr := client.NewKeystoneClient()
+
+	if kcErr != nil {
+		return kcErr
+	}
+
+	environmentId := environment.EnvironmentID
+
+	userPublicKeys, err := c.Users().GetEnvironmentPublicKeys(environmentId)
+
+	if err != nil {
+		return err
+	}
+
+	userPublicKey := models.UserPublicKey{}
+
+	for _, upk := range userPublicKeys.Keys {
+		if upk.UserUID == member {
+			userPublicKey = upk
+		}
+	}
+
+	if &userPublicKey == nil {
+		return errors.New("The member has no access to the environment.")
+	}
+
+	filteredPublicKey := models.PublicKeys{
+		Keys: make([]models.UserPublicKey, 0),
+	}
+
+	filteredPublicKey.Keys = append(filteredPublicKey.Keys, userPublicKey)
+
+	messagesToWrite := models.MessagesToWritePayload{
+		Messages: make([]models.MessageToWritePayload, 0),
+	}
+
+	ctx.PrepareMessageForUsersOnEnvivironment(environment, filteredPublicKey, &messagesToWrite)
+
+	result, pushErr := c.Messages().SendMessages(messagesToWrite)
+	if pushErr != nil {
+		return pushErr
+	}
+
+	var environmentsfile EnvironmentsFile
+	loadedEnvironmentsFile := environmentsfile.Load(ctx.dotKeystonePath())
+
+	for _, environment := range result.Environments {
+		if err := loadedEnvironmentsFile.SetVersion(environment.Name, environment.VersionID).Save().Err(); err != nil {
+			ctx.setError(FailedToUpdateKeystoneFile(err))
+		}
+	}
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+
+	return nil
+}
+
+func (ctx *Context) PrepareMessageForUsersOnEnvivironment(environment models.Environment, userPublicKeys models.PublicKeys, messagesToWrite *models.MessagesToWritePayload) error {
+
+	var err error
+	PayloadContent, err := ctx.PrepareMessagePayload(environment)
+
+	if err != nil {
+		return err
+	}
+
+	var currentUser map[string]string
+
+	if currentUser, _ = config.GetCurrentAccount(); err != nil {
+		panic(err)
+	}
+	// Create one message per user
+	for _, userPublicKey := range userPublicKeys.Keys {
+
+		// Dont't send message to current user
+		if userPublicKey.UserUID != currentUser["user_id"] {
+
+			// TODO: encrypt payload with recipient public key
+			// crypto.EncryptForUser()
+			var payload string
+			PayloadContent.Serialize(&payload)
+
+			RecipientID, _ := strconv.ParseUint(userPublicKey.UserID, 10, 64)
+			RecipientIDUint := uint(RecipientID)
+
+			messagesToWrite.Messages = append(messagesToWrite.Messages, models.MessageToWritePayload{
+				Payload:       []byte(payload),
+				UserID:        userPublicKey.UserID,
+				RecipientID:   RecipientIDUint,
+				EnvironmentID: environment.EnvironmentID,
+			})
+		}
+	}
+	return nil
+}
+
 func (ctx *Context) EnvironmentVersionHasChanged(name string, environmentVersion string) bool {
 	currentVersion := ctx.EnvironmentVersionByName(name)
 	return currentVersion != environmentVersion
@@ -388,4 +490,8 @@ func (ctx *Context) GetAccessibleEnvironments() []models.Environment {
 
 	return accessibleEnvironments
 
+}
+
+func (ctx *Context) LoadEnvironmentsFile() *EnvironmentsFile {
+	return new(EnvironmentsFile).Load(ctx.dotKeystonePath())
 }

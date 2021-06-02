@@ -152,6 +152,19 @@ func (file *EnvironmentsFile) SetCurrent(environmentName string) *EnvironmentsFi
 	return file
 }
 
+func (file *EnvironmentsFile) GetByName(environmentName string) *Env {
+	if file.Err() != nil {
+		return nil
+	}
+	for _, env := range file.Environments {
+		if env.Name == environmentName {
+			return &env
+
+		}
+	}
+	return nil
+}
+
 // // Removes a variable from the project
 // func (file *EnvironmentsFile) UnsetEnv(varname string) *KeystoneFile {
 // 	if file.Err() != nil {
