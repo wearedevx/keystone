@@ -69,7 +69,7 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 			}
 		}
 
-		err = ctx.saveFilesChanges(fileChanges)
+		err = ctx.saveFilesChanges(fileChanges, environmentName)
 		if err != nil {
 			// TODO: Error Handling
 			panic(err)
@@ -133,7 +133,7 @@ func fileHasChanges(pathToExistingFile string, candidateContent []byte) (sameCon
 	if err != nil {
 		if os.IsNotExist(err) {
 			// Not really an error, just create the file
-			return false, nil
+			return true, nil
 		}
 
 		return sameContent, err
@@ -171,7 +171,7 @@ func (ctx *Context) getFilesChanges(files []models.File, environmentName string)
 		if fileHasChanges {
 			changes = append(changes, Change{
 				Type: "file",
-				Name: filePath,
+				Name: file.Path,
 				To:   string(fileContent),
 			})
 		}
@@ -179,13 +179,22 @@ func (ctx *Context) getFilesChanges(files []models.File, environmentName string)
 	return changes, err
 }
 
-func (ctx *Context) saveFilesChanges(changes []Change) (err error) {
+func (ctx *Context) saveFilesChanges(changes []Change, environmentName string) (err error) {
 	errorList := make([]string, 0)
+	cacheDir := ctx.CachedEnvironmentFilesPath(environmentName)
 
 	for _, change := range changes {
-		err = CreateFileIfNotExists(change.Name, change.To)
+		cachedFilePath := path.Join(cacheDir, change.Name)
+
+		err = CreateFileIfNotExists(cachedFilePath, change.To)
 		if err != nil {
 			errorList = append(errorList, err.Error())
+			continue
+		}
+
+		if err = ioutil.WriteFile(cachedFilePath, []byte(change.To), 0o644); err != nil {
+			errorList = append(errorList, err.Error())
+			continue
 		}
 	}
 
@@ -280,6 +289,8 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 				ui.Print("Environment " + environmentName + " up to date ✔")
 			}
 
+			// TODO: Reinstate the message deletion, but only after the whole
+			// local-file-updatin is a success
 			// response, _ := c.Messages().DeleteMessage(environment.Message.ID)
 
 			// if !response.Success {
