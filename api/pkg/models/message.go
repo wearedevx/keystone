@@ -102,8 +102,8 @@ type GetMessageByEnvironmentResponse struct {
 }
 
 type GetMessageResponse struct {
-	Message   Message `json:"message"`
-	VersionID string  `json:"versionid"`
+	Message     Message     `json:"message"`
+	Environment Environment `json:"environment"`
 }
 
 func (e *GetMessageByEnvironmentResponse) Deserialize(in io.Reader) error {

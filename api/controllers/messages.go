@@ -66,8 +66,6 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	}
 
 	for _, environment := range environments {
-		result.Environments[environment.Name] = models.GetMessageResponse{}
-		curr := result.Environments[environment.Name]
 
 		// - rights check
 		can, err := rights.CanUserReadEnvironment(&Repo, user.ID, project.ID, &environment)
@@ -77,6 +75,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 		}
 
 		if can {
+			curr := models.GetMessageResponse{}
 			if err = Repo.GetMessagesForUserOnEnvironment(user, environment, &curr.Message).Err(); err != nil {
 				if !errors.Is(err, repo.ErrorNotFound) {
 					response.Error = Repo.Err()
@@ -85,7 +84,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 				}
 			}
 
-			curr.VersionID = environment.VersionID
+			curr.Environment = environment
 			result.Environments[environment.Name] = curr
 		}
 
