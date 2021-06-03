@@ -116,7 +116,6 @@ func init() {
 		"dev",
 		"staging",
 		"prod",
-		"ci",
 	}
 
 	// Here you will define your flags and configuration settings.

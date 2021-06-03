@@ -2,7 +2,6 @@ package core
 
 import (
 	"path"
-	"strings"
 
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
@@ -48,18 +47,10 @@ func (ctx *Context) AddSecret(secretName string, secretValue map[string]string, 
 	for env, value := range secretValue {
 		cachePath := ctx.CachedEnvironmentPath(env)
 		if !DirExists(cachePath) {
-			if env != "default" {
-
-				e = EnvironmentDoesntExist(env, strings.Join(ctx.ListEnvironments(), ", "), nil)
+			if err = CreateDirIfNotExist(cachePath); err != nil {
+				e = CannotCreateDirectory(cachePath, err)
 
 				break
-
-			} else {
-				if err = CreateDirIfNotExist(cachePath); err != nil {
-					e = CannotCreateDirectory(cachePath, err)
-
-					break
-				}
 			}
 		}
 

@@ -62,9 +62,6 @@ func (ctx *Context) Init(project models.Project) *Context {
 			return CreateDirIfNotExist(ctx.CachedEnvironmentPath("dev"))
 		},
 		func() error {
-			return CreateDirIfNotExist(ctx.CachedEnvironmentPath("ci"))
-		},
-		func() error {
 			return CreateDirIfNotExist(ctx.CachedEnvironmentPath("staging"))
 		},
 		func() error {
@@ -74,9 +71,6 @@ func (ctx *Context) Init(project models.Project) *Context {
 			return CreateFileIfNotExists(ctx.CachedEnvironmentDotEnvPath("dev"), "")
 		},
 		func() error {
-			return CreateFileIfNotExists(ctx.CachedEnvironmentDotEnvPath("ci"), "")
-		},
-		func() error {
 			return CreateFileIfNotExists(ctx.CachedEnvironmentDotEnvPath("staging"), "")
 		},
 		func() error {
@@ -84,9 +78,6 @@ func (ctx *Context) Init(project models.Project) *Context {
 		},
 		func() error {
 			return CreateDirIfNotExist(ctx.CachedEnvironmentFilesPath("dev"))
-		},
-		func() error {
-			return CreateDirIfNotExist(ctx.CachedEnvironmentFilesPath("ci"))
 		},
 		func() error {
 			return CreateDirIfNotExist(ctx.CachedEnvironmentFilesPath("staging"))

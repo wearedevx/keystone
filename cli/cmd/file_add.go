@@ -24,6 +24,7 @@ import (
 
 	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"

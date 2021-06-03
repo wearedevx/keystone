@@ -36,7 +36,6 @@ func (ctx *Context) ListEnvironments() []string {
 		return []string{}
 	}
 	envs := make([]string, 0)
-	envs = append(envs, "default")
 
 	cacheDir := ctx.cacheDirPath()
 	contents, err := ioutil.ReadDir(cacheDir)
@@ -232,6 +231,21 @@ func (ctx *Context) MustHaveEnvironment(name string) {
 // 	// 200: hash and new message
 // 	//    -> Set new hash for env
 // }
+
+func (ctx *Context) UpdateEnvironment(environment models.Environment) *Context {
+	environmentFile := new(EnvironmentsFile)
+
+	if err := environmentFile.
+		Load(ctx.dotKeystonePath()).
+		Replace(environment).
+		Save().
+		Err(); err != nil {
+		panic(err)
+	}
+
+	return ctx
+
+}
 
 func (ctx *Context) SetEnvironmentVersion(name string, version_id string) string {
 	environments := ctx.EnvironmentsFromConfig()

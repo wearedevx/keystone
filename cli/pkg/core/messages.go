@@ -1,7 +1,9 @@
 package core
 
 import (
+	"bytes"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/udhos/equalfile"
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
@@ -79,13 +82,20 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		environmentChanges = append(environmentChanges, fileChanges...)
 		environmentChanges = append(environmentChanges, secretChanges...)
 
-		for _, secret := range PayloadContent.Secrets {
-			if err := new(EnvFile).Load(envFilePath).Set(secret.Label, secret.Value).Dump().Err(); err != nil {
-				err = kserrors.FailedToUpdateDotEnv(envFilePath, err)
-				// fmt.Println(err.Error())
+		if len(PayloadContent.Secrets) > 0 {
+			envFilePath := ctx.CachedEnvironmentDotEnvPath(environmentName)
+			envFile := new(EnvFile)
+			envFile.Load(envFilePath)
+
+			for _, secret := range PayloadContent.Secrets {
+				envFile.Set(secret.Label, secret.Value)
 			}
-			// CreateFileIfNotExists(path.Join(ctx.cacheDirPath(), environmentName, file.Path), string(fileContent))
+
+			if err := envFile.Dump().Err(); err != nil {
+				ctx.setError(kserrors.FailedToUpdateDotEnv(envFilePath, err))
+			}
 		}
+
 		changes.Environments[environmentName] = environmentChanges
 	}
 
@@ -206,8 +216,7 @@ func (ctx *Context) PrepareMessagePayload(environment models.Environment) (model
 		})
 	}
 
-	cachePath := ctx.cacheDirPath()
-	envCachePath := path.Join(cachePath, environment.Name)
+	envCachePath := ctx.CachedEnvironmentFilesPath(environment.Name)
 
 	for _, file := range ctx.ListFiles() {
 		filePath := path.Join(envCachePath, file.Path)
@@ -247,41 +256,40 @@ func (ctx *Context) FetchNewMessages(result *models.GetMessageByEnvironmentRespo
 }
 
 func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByEnvironmentResponse) (ChangesByEnvironment, *kserrors.Error) {
-	c, kcErr := client.NewKeystoneClient()
-
-	if kcErr != nil {
-		kcErr.Print()
-		os.Exit(1)
-	}
-
 	changes, _ := ctx.SaveMessages(messagesByEnvironments)
 
 	if err := ctx.Err(); err != nil {
 		err.Print()
 		return changes, kserrors.UnkownError(err)
 	}
+
 	changedEnvironments := make([]string, 0)
+
 	for environmentName, environment := range messagesByEnvironments.Environments {
 		messageID := environment.Message.ID
+
 		if messageID != 0 {
 			// IF changes detected
 			if len(changes.Environments[environmentName]) > 0 {
 				ui.Print("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
+
 				for _, change := range changes.Environments[environmentName] {
 					ui.Print(change.From + " ↦ " + change.To)
 				}
 			} else {
 				ui.Print("Environment " + environmentName + " up to date ✔")
 			}
-			response, _ := c.Messages().DeleteMessage(environment.Message.ID)
-			if !response.Success {
-				ui.Print("Can't delete message " + response.Error)
-			} else {
-				ctx.SetEnvironmentVersion(environmentName, environment.VersionID)
-			}
 
+			// response, _ := c.Messages().DeleteMessage(environment.Message.ID)
+
+			// if !response.Success {
+			// 	ui.Print("Can't delete message " + response.Error)
+			// } else {
+			ctx.UpdateEnvironment(environment.Environment)
+			// }
 		} else {
-			environmentChanged := ctx.EnvironmentVersionHasChanged(environmentName, environment.VersionID)
+			environmentChanged := ctx.EnvironmentVersionHasChanged(environmentName, environment.Environment.VersionID)
+
 			if environmentChanged {
 				ui.Print("Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯")
 				changedEnvironments = append(changedEnvironments, environmentName)
@@ -290,9 +298,11 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 			}
 		}
 	}
+
 	if len(changedEnvironments) > 0 {
 		return changes, kserrors.EnvironmentsHaveChanged(strings.Join(changedEnvironments, ", "), nil)
 	}
+
 	return changes, nil
 }
 
