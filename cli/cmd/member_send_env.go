@@ -63,8 +63,6 @@ If a member hasn't received secrets and files last time someone sent an update, 
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		currentEnvironment = ctx.CurrentEnvironment()
-
 		messagesByEnvironment := &models.GetMessageByEnvironmentResponse{
 			Environments: map[string]models.GetMessageResponse{},
 		}
@@ -98,7 +96,7 @@ If a member hasn't received secrets and files last time someone sent an update, 
 			return
 		}
 
-		ui.PrintSuccess("Environment sent to user.")
+		ui.PrintSuccess("Environment " + currentEnvironment + " sent to user.")
 		// Retrieve working directry
 
 		// Print(RenderTemplate("Environment push", `
