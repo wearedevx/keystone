@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -83,10 +84,11 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 					return &response, http.StatusBadRequest, nil
 				}
 			}
+
+			curr.VersionID = environment.VersionID
+			result.Environments[environment.Name] = curr
 		}
 
-		curr.VersionID = environment.VersionID
-		result.Environments[environment.Name] = curr
 	}
 
 	return &result, status, nil
@@ -94,6 +96,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 
 // WriteMessages writes messages to users
 func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
+	fmt.Printf("WriteMessages")
 	status = http.StatusOK
 	response := &models.GetEnvironmentsResponse{}
 
@@ -106,7 +109,7 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 		for _, message := range payload.Messages {
 			// - gather information for the checks
 			projectMember := models.ProjectMember{
-				ID: message.RecipientID,
+				UserID: message.RecipientID,
 			}
 			environment := models.Environment{
 				EnvironmentID: message.EnvironmentID,
@@ -117,6 +120,7 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 				GetEnvironment(&environment).
 				Err()
 			if err != nil {
+				fmt.Printf("err: %+v\n", err)
 				break
 			}
 
@@ -124,6 +128,7 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 			can, err := rights.CanUserWriteOnEnvironment(&Repo, user.ID, environment.Project.ID, &environment)
 
 			if err != nil {
+				fmt.Printf("err: %+v\n", err)
 				return err
 			}
 
@@ -134,6 +139,7 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 			// - check recipient exists with read rights.
 			can, err = rights.CanUserReadEnvironment(&Repo, projectMember.UserID, projectMember.ProjectID, &environment)
 			if err != nil {
+				fmt.Printf("err: %+v\n", err)
 				return err
 			}
 
@@ -144,10 +150,12 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 			// If ok, remove potential old messages for recipient.
 
 			if err = Repo.RemoveOldMessageForRecipient(message.RecipientID, message.EnvironmentID).Err(); err != nil {
+				fmt.Printf("err: %+v\n", err)
 				break
 			}
 
 			if err = Repo.WriteMessage(user, message).Err(); err != nil {
+				fmt.Printf("err: %+v\n", err)
 				break
 			}
 
@@ -157,11 +165,13 @@ func WriteMessages(params router.Params, body io.ReadCloser, Repo repo.Repo, use
 			response.Environments = append(response.Environments, environment)
 
 			if err != nil {
+				fmt.Printf("err: %+v\n", err)
 				return err
 			}
 		}
 
 		if err != nil {
+			fmt.Printf("err: %+v\n", err)
 			return err
 		}
 

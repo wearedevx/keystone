@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/eiannone/keyboard"
@@ -109,6 +110,28 @@ Examples:
 				environmentFileMap[environment] = currentContent
 			}
 		}
+
+		// Fetch new messages to see if added secret has changed
+		messagesByEnvironment := &models.GetMessageByEnvironmentResponse{
+			Environments: map[string]models.GetMessageResponse{},
+		}
+
+		fmt.Println("Syncing data...")
+		fetchErr := ctx.FetchNewMessages(messagesByEnvironment)
+
+		if fetchErr != nil {
+			err.SetCause(fetchErr)
+			err.Print()
+		}
+
+		_, err = ctx.WriteNewMessages(*messagesByEnvironment)
+
+		if err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+
+		//
 
 		file := keystonefile.FileKey{
 			Path:   filePath,

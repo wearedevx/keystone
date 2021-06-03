@@ -1,10 +1,10 @@
-project_id: 441d05ef-f6ec-435c-abba-cdf545958966
-name: toto
+project_id: ebf82cd0-e442-4b1e-bc5f-587ee64798da
+name: keystone
 env:
 - key: FOO
   strict: true
-- key: HOST
-  strict: true
-files: []
+files:
+- path: TestFile
+  strict: false
 options:
   strict: false
