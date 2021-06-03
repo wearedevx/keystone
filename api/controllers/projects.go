@@ -219,7 +219,7 @@ func checkUserCanRemoveMembers(Repo repo.IRepo, user models.User, project models
 	return can, err
 }
 
-func GetAccessibleEnvironments(params router.Params, body io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
+func GetAccessibleEnvironments(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	result := models.GetEnvironmentsResponse{
 		Environments: make([]models.Environment, 0),
 	}
@@ -232,7 +232,7 @@ func GetAccessibleEnvironments(params router.Params, body io.ReadCloser, Repo re
 	Repo.GetEnvironmentsByProjectUUID(project.UUID, &environments)
 
 	for _, environment := range environments {
-		can, _ := rights.CanUserWriteOnEnvironment(&Repo, user.ID, project.ID, &environment)
+		can, _ := rights.CanUserWriteOnEnvironment(Repo, user.ID, project.ID, &environment)
 		if can {
 			result.Environments = append(result.Environments, environment)
 		}

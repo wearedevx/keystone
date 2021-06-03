@@ -105,7 +105,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 	for _, message := range payload.Messages {
 		// - gather information for the checks
 		projectMember := models.ProjectMember{
-			ID: message.RecipientID,
+			UserID: message.RecipientID,
 		}
 		environment := models.Environment{
 			EnvironmentID: message.EnvironmentID,
@@ -116,6 +116,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			GetEnvironment(&environment).
 			Err()
 		if err != nil {
+            return response, http.StatusNotFound, err
 			break
 		}
 
@@ -155,15 +156,15 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 
 		if err != nil {
 			fmt.Printf("err: %+v\n", err)
-			return err
+            break
 		}
-	}
 
-	// Change environment version id.
-	err = Repo.SetNewVersionID(&environment)
+        // Change environment version id.
+        err = Repo.SetNewVersionID(&environment)
 
-	if err != nil {
-		return response, http.StatusInternalServerError, err
+        if err != nil {
+            return response, http.StatusInternalServerError, err
+        }
 	}
 
 	return response, status, nil
