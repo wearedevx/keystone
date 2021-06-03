@@ -73,9 +73,5 @@ func (repo *Repo) DeleteLoginRequest(code string) bool {
 
 	repo.err = repo.GetDb().Delete(&lr).Error
 
-	if repo.Err() != nil {
-		return false
-	}
-
-	return true
+    return repo.Err() == nil
 }

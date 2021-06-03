@@ -16,6 +16,7 @@ import (
 
 type Repo struct {
 	err error
+    tx *gorm.DB
 }
 
 var db *gorm.DB
@@ -50,6 +51,18 @@ func AutoMigrate() error {
 	return nil
 }
 
+func Transaction(fn func(IRepo) error) error {
+    err := db.Transaction(func (tx *gorm.DB) error {
+    repo := &Repo{
+        err: nil,
+        tx: tx,
+    }
+    return fn(repo)
+
+        })
+    return err
+}
+
 func (repo *Repo) Err() error {
 	if errors.Is(repo.err, gorm.ErrRecordNotFound) {
 		return ErrorNotFound
@@ -59,7 +72,7 @@ func (repo *Repo) Err() error {
 }
 
 func (repo *Repo) GetDb() *gorm.DB {
-	return db
+	return repo.tx
 }
 
 func (repo *Repo) notFoundAsBool(call func() error) (bool, error) {
@@ -82,7 +95,9 @@ func (repo *Repo) notFoundAsBool(call func() error) (bool, error) {
 func init() {
 	var err error
 
-	db, err = gorm.Open(getPostgres(), &gorm.Config{})
+	db, err = gorm.Open(getPostgres(), &gorm.Config{
+        SkipDefaultTransaction: true,
+    })
 
 	if err != nil {
 		panic(err)

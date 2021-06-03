@@ -52,10 +52,11 @@ func (p Params) Get(key string) interface{} {
 	return v
 }
 
-type Handler = func(params Params, body io.ReadCloser, Repo repo.Repo, user models.User) (Serde, int, error)
+type Handler = func(params Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (Serde, int, error)
 
 func AuthedHandler(handler Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+		wroteStatus := false
 		// Get user and prepare the repo
 		token := r.Header.Get("authorization")
 
@@ -69,58 +70,63 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			return
 		}
 
-		Repo := new(repo.Repo)
-		user := models.User{UserID: userID}
+		err = repo.Transaction(func(Repo repo.IRepo) error {
+			user := models.User{UserID: userID}
 
-		Repo.GetUser(&user)
+			Repo.GetUser(&user)
 
-		if err = Repo.Err(); err != nil {
-			status := http.StatusInternalServerError
-			message := err.Error()
+			if err = Repo.Err(); err != nil {
+				status := http.StatusInternalServerError
+				message := err.Error()
 
-			if errors.Is(err, repo.ErrorNotFound) {
-				status = http.StatusNotFound
-				message = fmt.Sprintf("No user with id: %s", userID)
+				if errors.Is(err, repo.ErrorNotFound) {
+					status = http.StatusNotFound
+					message = fmt.Sprintf("No user with id: %s", userID)
+				}
+
+				http.Error(w, message, status)
+				return err
 			}
 
-			http.Error(w, message, status)
-			return
-		}
+			p := newParams(r, params)
+			// Actual call to the handler (i.e. Controller function)
+			result, status, err := handler(p, r.Body, Repo, user)
 
-		p := newParams(r, params)
-		// Actual call to the handler (i.e. Controller function)
-		result, status, err := handler(p, r.Body, *Repo, user)
+			if err != nil {
+				http.Error(w, err.Error(), status)
+				wroteStatus = true
+			}
 
-		if err != nil {
-			http.Error(w, err.Error(), status)
-		}
+			// serialize the response for the user
+			var serialized string
 
-		// serialize the response for the user
-		var serialized string
+			if result != nil {
+				err = result.Serialize(&serialized)
+			}
 
-		if result != nil {
-			err = result.Serialize(&serialized)
-		}
+			if err != nil {
+				http.Error(w, "Error Serializing results", http.StatusInternalServerError)
+				wroteStatus = true
+			}
 
-		if err != nil {
-			http.Error(w, "Error Serializing results", http.StatusInternalServerError)
-		}
+			out := bytes.NewBufferString(serialized)
 
-		out := bytes.NewBufferString(serialized)
+			// Write the response if any
+			if out.Len() > 0 {
+				w.Header().Add("Content-Type", "application/json; charset=utf-8")
+				w.Header().Add("Content-Length", strconv.Itoa(out.Len()))
+				w.Write(out.Bytes())
+			}
 
-		// Write the response if any
-		if out.Len() > 0 {
-			w.Header().Add("Content-Type", "application/json; charset=utf-8")
-			w.Header().Add("Content-Length", strconv.Itoa(out.Len()))
-			w.Write(out.Bytes())
-		}
+			if status != 200 && !wroteStatus {
+				w.WriteHeader(status)
+			}
 
-		if status != 200 {
-			w.WriteHeader(status)
-		}
+			if Repo.Err() != nil {
+				fmt.Println(Repo.Err())
+			}
 
-		if Repo.Err() != nil {
-			fmt.Println(Repo.Err())
-		}
+			return nil
+		})
 	}
 }

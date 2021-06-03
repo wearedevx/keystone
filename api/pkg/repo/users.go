@@ -24,13 +24,15 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		return r
 	}
 
+	db := r.GetDb()
+
 	foundUser := User{
 		AccountType: user.AccountType,
 		Username:    user.Username,
 		UserID:      fmt.Sprintf("%s@%s", user.Username, user.AccountType),
 	}
 
-	r.err = r.GetDb().Where(foundUser).First(&foundUser).Error
+	r.err = db.Where(foundUser).First(&foundUser).Error
 
 	if r.err == nil {
 		if !bytes.Equal(foundUser.PublicKey, user.PublicKey) {
@@ -41,7 +43,7 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		*user = foundUser
 	} else if errors.Is(r.err, gorm.ErrRecordNotFound) {
 		user.UserID = user.Username + "@" + string(user.AccountType)
-		r.err = r.GetDb().Create(&user).Error
+		r.err = db.Create(&user).Error
 	}
 
 	return r
