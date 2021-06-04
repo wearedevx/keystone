@@ -106,8 +106,10 @@ func GetSecretsChanges(localSecrets []models.SecretVal, newSecrets []models.Secr
 	for _, secret := range newSecrets {
 		// Get Secret we want to change in messages
 		// Get local value to see if it has changed in fetchedSecrets
+		found := false
 		for _, localSecret := range localSecrets {
 			if secret.Label == localSecret.Label {
+				found = true
 				// Compare local value with value from message
 				if secret.Value != localSecret.Value {
 					changes = append(changes, Change{
@@ -118,6 +120,16 @@ func GetSecretsChanges(localSecrets []models.SecretVal, newSecrets []models.Secr
 					})
 				}
 			}
+		}
+		// New secret has been fetched
+		if found == false {
+			changes = append(changes, Change{
+				Name: secret.Label,
+				From: "",
+				To:   secret.Value,
+				Type: "secret",
+			})
+
 		}
 	}
 
@@ -283,7 +295,13 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 				ui.Print("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
 
 				for _, change := range changes.Environments[environmentName] {
-					ui.Print(change.From + " ↦ " + change.To)
+					// No previous cotent => secret is new
+					if len(change.From) == 0 {
+						ui.Print("++ " + change.Name + " : " + change.To)
+					} else {
+						ui.Print(change.Name + " : " + change.From + " ↦ " + change.To)
+					}
+
 				}
 			} else {
 				ui.Print("Environment " + environmentName + " up to date ✔")
