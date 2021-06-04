@@ -240,7 +240,7 @@ func (ctx *Context) UpdateEnvironment(environment models.Environment) *Context {
 		Replace(environment).
 		Save().
 		Err(); err != nil {
-		panic(err)
+		ctx.setError(FailedToUpdateDotEnv(environmentFile.Path(), err))
 	}
 
 	return ctx

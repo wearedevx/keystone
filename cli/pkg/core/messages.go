@@ -315,6 +315,25 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 			// 	ui.Print("Can't delete message " + response.Error)
 			// } else {
 			ctx.UpdateEnvironment(environment.Environment)
+
+			if err := ctx.Err(); err != nil {
+				err.Print()
+				return changes, ctx.err
+			}
+
+			c, kcErr := client.NewKeystoneClient()
+
+			if kcErr != nil {
+				kcErr.Print()
+				os.Exit(1)
+			}
+
+			response, _ := c.Messages().DeleteMessage(environment.Message.ID)
+
+			if !response.Success {
+				ui.Print("Can't delete message " + response.Error)
+			}
+
 			// }
 		} else {
 			environmentChanged := ctx.EnvironmentVersionHasChanged(environmentName, environment.Environment.VersionID)
