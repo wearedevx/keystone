@@ -149,12 +149,19 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			break
 		}
 
+		// Change environment version id.
+		err = Repo.SetNewVersionID(&environment)
+
+		if err != nil {
+			return response, http.StatusInternalServerError, err
+		}
 		response.Environments = append(response.Environments, environment)
 
 		if err != nil {
 			fmt.Printf("err: %+v\n", err)
 			break
 		}
+<<<<<<< HEAD
 
 		// Change environment version id.
 		err = Repo.SetNewVersionID(&environment)
@@ -162,6 +169,8 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		if err != nil {
 			return response, http.StatusInternalServerError, err
 		}
+=======
+>>>>>>> check-environment-access-in-cli
 	}
 
 	return response, status, nil
