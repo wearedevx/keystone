@@ -58,11 +58,6 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 
 	// Set content for every other environment
 	for _, environment := range environments {
-		// current is already set
-		if environment == current {
-			continue
-		}
-
 		dest := path.Join(ctx.CachedEnvironmentFilesPath(environment), file.Path)
 		parentDir := filepath.Dir(dest) + string(os.PathSeparator)
 
@@ -80,7 +75,6 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 		} else {
 			panic(err)
 		}
-
 	}
 
 	return ctx

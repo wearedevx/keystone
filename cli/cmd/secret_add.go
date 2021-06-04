@@ -122,8 +122,8 @@ Enter a values for {{ . }}:`, secretName))
 		fetchErr := ctx.FetchNewMessages(messagesByEnvironment)
 
 		if fetchErr != nil {
-			err.SetCause(fetchErr)
-			err.Print()
+			ui.PrintError(fetchErr.Error())
+			return
 		}
 
 		changes, writeErr := ctx.WriteNewMessages(*messagesByEnvironment)

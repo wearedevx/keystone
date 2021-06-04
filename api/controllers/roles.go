@@ -11,7 +11,7 @@ import (
 )
 
 // Returns a List of Roles
-func GetRoles(params router.Params, _ io.ReadCloser, Repo repo.Repo, user models.User) (_ router.Serde, status int, err error) {
+func GetRoles(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	var result = models.GetRolesResponse{
 		Roles: []models.Role{},

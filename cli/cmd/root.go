@@ -25,6 +25,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+
 	"github.com/wearedevx/keystone/cli/pkg/core"
 
 	"github.com/spf13/viper"
@@ -74,6 +75,8 @@ func isIn(haystack []string, needle string) bool {
 }
 
 func Initialize() {
+	fmt.Println("Initialize")
+
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.

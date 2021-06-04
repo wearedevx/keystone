@@ -9,7 +9,7 @@ func (r *Repo) GetRoles(roles *[]Role) IRepo {
 		return r
 	}
 
-	r.err = db.Find(roles).Error
+	r.err = r.GetDb().Find(roles).Error
 
 	return r
 }
@@ -43,7 +43,7 @@ func (repo *Repo) GetOrCreateRole(role *Role) IRepo {
 }
 
 func (r *Repo) GetInvitableRoles(role Role, roles *[]Role) IRepo {
-	r.err = db.Model(&Role{}).
+	r.err = r.GetDb().Model(&Role{}).
 		Joins("left join roles_environment_types on roles_environment_types.role_id = roles.id").
 		Where("roles_environment_types.role_id = ? and roles_environment_types.invite = true", role.ID).
 		Find(roles).Error

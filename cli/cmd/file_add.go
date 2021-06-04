@@ -19,10 +19,12 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -109,6 +111,28 @@ Examples:
 				environmentFileMap[environment] = currentContent
 			}
 		}
+
+		// Fetch new messages to see if added secret has changed
+		messagesByEnvironment := &models.GetMessageByEnvironmentResponse{
+			Environments: map[string]models.GetMessageResponse{},
+		}
+
+		fmt.Println("Syncing data...")
+		fetchErr := ctx.FetchNewMessages(messagesByEnvironment)
+
+		if fetchErr != nil {
+			err.SetCause(fetchErr)
+			err.Print()
+		}
+
+		_, err = ctx.WriteNewMessages(*messagesByEnvironment)
+
+		if err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+
+		//
 
 		file := keystonefile.FileKey{
 			Path:   filePath,

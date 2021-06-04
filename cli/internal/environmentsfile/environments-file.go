@@ -165,6 +165,33 @@ func (file *EnvironmentsFile) GetByName(environmentName string) *Env {
 	return nil
 }
 
+// Replaces an environment in the environment file with updated data
+// If the environment does not exist in the environment file,
+// it should be appended to it
+func (file *EnvironmentsFile) Replace(environment Environment) *EnvironmentsFile {
+	if file.Err() != nil {
+		return file
+	}
+
+	newEnvironments := make([]Env, 0)
+
+	for _, env := range file.Environments {
+		if env.EnvironmentID != environment.EnvironmentID {
+			newEnvironments = append(newEnvironments, env)
+		}
+	}
+
+	newEnvironments = append(newEnvironments, Env{
+		EnvironmentID: environment.EnvironmentID,
+		Name:          environment.Name,
+		VersionID:     environment.VersionID,
+	})
+
+	file.Environments = newEnvironments
+
+	return file
+}
+
 // // Removes a variable from the project
 // func (file *EnvironmentsFile) UnsetEnv(varname string) *KeystoneFile {
 // 	if file.Err() != nil {

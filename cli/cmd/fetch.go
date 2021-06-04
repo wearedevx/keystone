@@ -14,11 +14,14 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // fetchCmd represents the fetch command
@@ -49,6 +52,13 @@ Get info from your team:
 			return
 		}
 
+		c, kcErr := client.NewKeystoneClient()
+
+		if kcErr != nil {
+			kcErr.Print()
+			os.Exit(1)
+		}
+
 		fmt.Println("Fetching new data...")
 
 		messagesByEnvironment := &models.GetMessageByEnvironmentResponse{
@@ -67,6 +77,13 @@ Get info from your team:
 			writeErr.Print()
 		}
 
+		for _, msgEnv := range messagesByEnvironment.Environments {
+			response, _ := c.Messages().DeleteMessage(msgEnv.Message.ID)
+
+			if !response.Success {
+				ui.Print("Can't delete message " + response.Error)
+			}
+		}
 	},
 }
 
