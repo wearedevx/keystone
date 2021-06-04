@@ -1,10 +1,12 @@
-project_id: ebf82cd0-e442-4b1e-bc5f-587ee64798da
-name: keystone
+project_id: cee2d16c-21ee-4ad2-8ba2-2f923ae6bd59
+name: shared_toto
 env:
-- key: FOO
+- key: HOST
   strict: true
-files:
-- path: TestFile
-  strict: false
+- key: API_URL
+  strict: true
+- key: HOST2
+  strict: true
+files: []
 options:
   strict: false
