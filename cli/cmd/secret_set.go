@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -53,10 +54,41 @@ Example:
 			return
 		}
 
+		messagesByEnvironment := &models.GetMessageByEnvironmentResponse{
+			Environments: map[string]models.GetMessageResponse{},
+		}
+
+		fmt.Println("Syncing data...")
+		fetchErr := ctx.FetchNewMessages(messagesByEnvironment)
+
+		if fetchErr != nil {
+			err.SetCause(fetchErr)
+			err.Print()
+		}
+
+		_, writeErr := ctx.WriteNewMessages(*messagesByEnvironment)
+
+		if writeErr != nil {
+			writeErr.Print()
+			return
+		}
+
 		ctx.SetSecret(currentEnvironment, secretName, secretValue)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
+			return
+		}
+
+		localEnvironment := ctx.LoadEnvironmentsFile().GetByName(currentEnvironment)
+		environment := []models.Environment{{
+			Name:          localEnvironment.Name,
+			VersionID:     localEnvironment.VersionID,
+			EnvironmentID: localEnvironment.EnvironmentID,
+		}}
+
+		if pushErr := ctx.PushEnv(environment); pushErr != nil {
+			ui.PrintError(pushErr.Error())
 			return
 		}
 

@@ -96,26 +96,7 @@ If a member hasn't received secrets and files last time someone sent an update, 
 			return
 		}
 
-		ui.PrintSuccess("Environment " + currentEnvironment + " sent to user.")
-		// Retrieve working directry
-
-		// Print(RenderTemplate("Environment push", `
-		// {{ .Message | box | bright_green | indent 2 }}
-
-		// {{ .Text | bright_black | indent 2 }}`, map[string]string{
-		// 	// "Message": "All done!",
-		// 	// "Text": `You can start adding environment variable with:
-		// 	//   $ ks secrets add VARIABLE value
-
-		// 	// Load them with:
-		// 	//   $ eval $(ks source)
-
-		// 	// If you need help with anything:
-		// 	//   $ ks help [command]
-
-		// 	// `,
-		// }))
-
+		ui.PrintSuccess("Environment '" + currentEnvironment + "' sent to user.")
 	},
 }
 

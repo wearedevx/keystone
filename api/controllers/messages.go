@@ -116,7 +116,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			GetEnvironment(&environment).
 			Err()
 		if err != nil {
-            return response, http.StatusNotFound, err
+			return response, http.StatusNotFound, err
 			break
 		}
 
@@ -152,19 +152,18 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			break
 		}
 
+		// Change environment version id.
+		err = Repo.SetNewVersionID(&environment)
+
+		if err != nil {
+			return response, http.StatusInternalServerError, err
+		}
 		response.Environments = append(response.Environments, environment)
 
 		if err != nil {
 			fmt.Printf("err: %+v\n", err)
-            break
+			break
 		}
-
-        // Change environment version id.
-        err = Repo.SetNewVersionID(&environment)
-
-        if err != nil {
-            return response, http.StatusInternalServerError, err
-        }
 	}
 
 	return response, status, nil

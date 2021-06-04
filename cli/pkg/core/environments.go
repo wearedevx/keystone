@@ -364,8 +364,7 @@ func (ctx *Context) PushEnv(environments []models.Environment) error {
 		return pushErr
 	}
 
-	var environmentsfile EnvironmentsFile
-	loadedEnvironmentsFile := environmentsfile.Load(ctx.dotKeystonePath())
+	loadedEnvironmentsFile := ctx.LoadEnvironmentsFile()
 
 	for _, environment := range result.Environments {
 		if err := loadedEnvironmentsFile.SetVersion(environment.Name, environment.VersionID).Save().Err(); err != nil {
