@@ -65,7 +65,6 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	}
 
 	for _, environment := range environments {
-
 		// - rights check
 		can, err := rights.CanUserReadEnvironment(Repo, user.ID, project.ID, &environment)
 		if err != nil {

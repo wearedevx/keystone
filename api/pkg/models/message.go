@@ -50,7 +50,8 @@ func (msg *Message) Serialize(out *string) (err error) {
 }
 
 type File struct {
-	Path  string `json:"path"`
+	Path string `json:"path"`
+	// TODO: maybe have consistent names for struct fields and json fields
 	Value string `json:"content"`
 }
 
