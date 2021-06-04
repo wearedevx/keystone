@@ -219,7 +219,7 @@ func checkUserCanRemoveMembers(Repo repo.IRepo, user models.User, project models
 	return can, err
 }
 
-func GetAccessibleEnvironments(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func GetAccessibleEnvironments(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	result := models.GetEnvironmentsResponse{
 		Environments: make([]models.Environment, 0),
 	}

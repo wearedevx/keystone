@@ -9,6 +9,8 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
+	"github.com/wearedevx/keystone/cli/internal/crypto"
+
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
 	. "github.com/wearedevx/keystone/cli/internal/environmentsfile"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
@@ -202,36 +204,6 @@ func (ctx *Context) MustHaveEnvironment(name string) {
 	}
 }
 
-// func (ctx *Context) Fetch(environment string) {
-
-// 	currentAccount, _ := config.GetCurrentAccount()
-// 	token := config.GetAuthToken()
-// 	userID := currentAccount["user_id"]
-// 	ksClient := client.NewKeystoneClient(userID, token)
-
-// 	// Get env hash from config
-
-// 	// Request: Get env hash from remote
-// 	results, err := ksClient.GetMessages(environmentID, localEnvironmentVersion)
-
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		os.Exit(1)
-// 	}
-
-// 	fmt.Println(results.Messages)
-// 	if results.VersionID == localEnvironmentVersion {
-// 		return
-// 	}
-
-// 	fmt.Println(results.VersionID)
-
-// 	// 204: no hash set for env
-// 	//    -> Set new hash for env
-// 	// 200: hash and new message
-// 	//    -> Set new hash for env
-// }
-
 func (ctx *Context) UpdateEnvironment(environment models.Environment) *Context {
 	environmentFile := new(EnvironmentsFile)
 
@@ -283,15 +255,6 @@ func (ctx *Context) EnvironmentVersionByName(name string) string {
 
 func (ctx *Context) EnvironmentID() string {
 	return ctx.getCurrentEnvironmentId()
-	// environments := ctx.EnvironmentsFromConfig()
-	// currentEnvironment := ctx.CurrentEnvironment()
-
-	// for _, e := range environments {
-	// 	if e.Name == currentEnvironment {
-	// 		return e.EnvironmentID
-	// 	}
-	// }
-	// return ""
 }
 
 func (ctx *Context) EnvironmentsFromConfig() []Env {
@@ -301,7 +264,7 @@ func (ctx *Context) EnvironmentsFromConfig() []Env {
 
 // Push current environnement.
 // Post to server []MessageToWritePayload.
-func (ctx *Context) PushEnv(environments []models.Environment) error {
+func (ctx *Context) PushEnv(environments []models.Environment) (err error) {
 	// var result client.GenericResponse
 
 	// Get public keyrs
@@ -314,42 +277,43 @@ func (ctx *Context) PushEnv(environments []models.Environment) error {
 	messagesToWrite := models.MessagesToWritePayload{
 		Messages: make([]models.MessageToWritePayload, 0),
 	}
+
+	var currentUser models.User
+	if currentUser, _ = config.GetCurrentAccount(); err != nil {
+		panic(err)
+	}
+	senderPrivateKey, err := config.GetCurrentUserPrivateKey()
+
 	for _, environment := range environments {
 		environmentId := environment.EnvironmentID
 
 		userPublicKeys, err := c.Users().GetEnvironmentPublicKeys(environmentId)
-
 		if err != nil {
 			return err
 		}
 
 		PayloadContent, err := ctx.PrepareMessagePayload(environment)
-
 		if err != nil {
 			return err
 		}
 
-		var currentUser map[string]string
-
-		if currentUser, _ = config.GetCurrentAccount(); err != nil {
-			panic(err)
-		}
 		// Create one message per user
 		for _, userPublicKey := range userPublicKeys.Keys {
-
 			// Dont't send message to current user
-			if userPublicKey.UserUID != currentUser["user_id"] {
-
-				// TODO: encrypt payload with recipient public key
-				// crypto.EncryptForUser()
+			if userPublicKey.UserUID != currentUser.UserID {
 				var payload string
 				PayloadContent.Serialize(&payload)
+
+				encryptedPayload, err := crypto.EncryptMessage(senderPrivateKey, userPublicKey.PublicKey, string(payload))
+				if err != nil {
+					return err
+				}
 
 				RecipientID, _ := strconv.ParseUint(userPublicKey.UserID, 10, 64)
 				RecipientIDUint := uint(RecipientID)
 
 				messagesToWrite.Messages = append(messagesToWrite.Messages, models.MessageToWritePayload{
-					Payload:       []byte(payload),
+					Payload:       encryptedPayload,
 					UserID:        userPublicKey.UserID,
 					RecipientID:   RecipientIDUint,
 					EnvironmentID: environmentId,
@@ -379,8 +343,6 @@ func (ctx *Context) PushEnv(environments []models.Environment) error {
 }
 
 func (ctx *Context) PushEnvForOneMember(environment models.Environment, member string) error {
-	// var result client.GenericResponse
-
 	// Get public keyrs
 	c, kcErr := client.NewKeystoneClient()
 
@@ -389,7 +351,6 @@ func (ctx *Context) PushEnvForOneMember(environment models.Environment, member s
 	}
 
 	environmentId := environment.EnvironmentID
-
 	userPublicKeys, err := c.Users().GetEnvironmentPublicKeys(environmentId)
 
 	if err != nil {
@@ -418,7 +379,7 @@ func (ctx *Context) PushEnvForOneMember(environment models.Environment, member s
 		Messages: make([]models.MessageToWritePayload, 0),
 	}
 
-	ctx.PrepareMessageForUsersOnEnvivironment(environment, filteredPublicKey, &messagesToWrite)
+	ctx.PrepareMessageForUsersOnEnvironment(environment, filteredPublicKey, &messagesToWrite)
 
 	result, pushErr := c.Messages().SendMessages(messagesToWrite)
 	if pushErr != nil {
@@ -440,8 +401,7 @@ func (ctx *Context) PushEnvForOneMember(environment models.Environment, member s
 	return nil
 }
 
-func (ctx *Context) PrepareMessageForUsersOnEnvivironment(environment models.Environment, userPublicKeys models.PublicKeys, messagesToWrite *models.MessagesToWritePayload) error {
-
+func (ctx *Context) PrepareMessageForUsersOnEnvironment(environment models.Environment, userPublicKeys models.PublicKeys, messagesToWrite *models.MessagesToWritePayload) error {
 	var err error
 	PayloadContent, err := ctx.PrepareMessagePayload(environment)
 
@@ -449,27 +409,41 @@ func (ctx *Context) PrepareMessageForUsersOnEnvivironment(environment models.Env
 		return err
 	}
 
-	var currentUser map[string]string
+	var account models.User
 
-	if currentUser, _ = config.GetCurrentAccount(); err != nil {
+	if account, _ = config.GetCurrentAccount(); err != nil {
 		panic(err)
 	}
+
+	privateKey, err := config.GetCurrentUserPrivateKey()
+	if err != nil {
+		return err
+	}
+
 	// Create one message per user
 	for _, userPublicKey := range userPublicKeys.Keys {
 
 		// Dont't send message to current user
-		if userPublicKey.UserUID != currentUser["user_id"] {
+		if userPublicKey.UserUID != account.UserID {
+		}
+	}
 
-			// TODO: encrypt payload with recipient public key
-			// crypto.EncryptForUser()
+	// Create one message per user
+	for _, userPublicKey := range userPublicKeys.Keys {
+		if userPublicKey.UserUID != account.UserID {
 			var payload string
 			PayloadContent.Serialize(&payload)
+
+			cryptoMessage, err := crypto.EncryptMessage(privateKey, userPublicKey.PublicKey, payload)
+			if err != nil {
+				return err
+			}
 
 			RecipientID, _ := strconv.ParseUint(userPublicKey.UserID, 10, 64)
 			RecipientIDUint := uint(RecipientID)
 
 			messagesToWrite.Messages = append(messagesToWrite.Messages, models.MessageToWritePayload{
-				Payload:       []byte(payload),
+				Payload:       cryptoMessage,
 				UserID:        userPublicKey.UserID,
 				RecipientID:   RecipientIDUint,
 				EnvironmentID: environment.EnvironmentID,

@@ -214,6 +214,10 @@ func (f *FakeRepo) ProjectSetRoleForUser(_ Project, _ User, _ Role) IRepo {
 	panic("not implemented")
 }
 
+func (f *FakeRepo) RemoveOldMessageForRecipient(_ uint, _ string) IRepo {
+	panic("not implemented")
+}
+
 func (f *FakeRepo) SetLoginRequestCode(_ string, _ string) LoginRequest {
 	panic("not implemented")
 }

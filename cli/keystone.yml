@@ -1,7 +1,7 @@
-project_id: ebf82cd0-e442-4b1e-bc5f-587ee64798da
+project_id: 7bd70afa-0751-461f-b4b8-c582ca2f4417
 name: keystone
 env:
-- key: FOO
+- key: TEST
   strict: true
 files:
 - path: TestFile

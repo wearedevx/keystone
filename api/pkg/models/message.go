@@ -10,13 +10,13 @@ import (
 )
 
 type Message struct {
-	ID            uint          `json:"id" gorm:"primaryKey"`
-	Payload       []byte        `json:"payload"`
-	Sender        ProjectMember `json:"sender"`
-	SenderID      uint          `json:"sender_id"`
-	Recipient     ProjectMember `json:"recipient"`
-	RecipientID   uint          `json:"recipient_id"`
-	EnvironmentID string        `json:"environment_id"`
+	ID            uint   `json:"id" gorm:"primaryKey"`
+	Payload       []byte `json:"payload"`
+	Sender        User   `json:"sender"`
+	SenderID      uint   `json:"sender_id"`
+	Recipient     User   `json:"recipient"`
+	RecipientID   uint   `json:"recipient_id"`
+	EnvironmentID string `json:"environment_id"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

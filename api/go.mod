@@ -10,7 +10,6 @@ require (
 	github.com/google/go-github/v32 v32.1.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kr/text v0.2.0 // indirect
-	github.com/mitranim/gow v0.0.0-20210507153141-25e28fe8ae49 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/satori/go.uuid v1.2.0

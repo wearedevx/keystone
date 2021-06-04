@@ -32,7 +32,13 @@ func (repo *Repo) GetMessagesForUserOnEnvironment(user models.User, environment 
 		return repo
 	}
 
-	repo.GetDb().Model(&models.Message{}).Where("recipient_id = ? AND environment_id = ?", user.ID, environment.EnvironmentID).First(&message)
+	repo.err = repo.GetDb().
+		Model(&models.Message{}).
+		Preload("Sender").
+		Where("recipient_id = ? AND environment_id = ?", user.ID, environment.EnvironmentID).
+		First(&message).
+		Error
+
 	return repo
 }
 

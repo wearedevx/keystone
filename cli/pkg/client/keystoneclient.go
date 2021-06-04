@@ -18,7 +18,7 @@ func NewKeystoneClient() (KeystoneClient, *errors.Error) {
 	}
 
 	return &KeystoneClientImpl{
-		r: newRequester(account["user_id"], token),
+		r: newRequester(account.UserID, token),
 	}, nil
 }
 
