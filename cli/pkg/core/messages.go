@@ -3,6 +3,7 @@ package core
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -19,7 +20,6 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"gopkg.in/yaml.v2"
 )
 
 type Change struct {
@@ -47,7 +47,7 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 			})
 		}
 
-		if err := yaml.Unmarshal(environment.Message.Payload, &PayloadContent); err != nil {
+		if err := json.Unmarshal(environment.Message.Payload, &PayloadContent); err != nil {
 			panic(err)
 		}
 
