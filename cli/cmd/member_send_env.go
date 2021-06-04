@@ -56,8 +56,9 @@ If a member hasn't received secrets and files last time someone sent an update, 
 
 		return nil
 	},
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err *kerrors.Error
+		fmt.Printf("err: %+v\n", err)
 
 		ctx := core.New(core.CTX_RESOLVE)
 

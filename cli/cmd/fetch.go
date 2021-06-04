@@ -33,7 +33,7 @@ Get info from your team:
   $ ks fetch
 `,
 	Args: cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		var err *errors.Error
 
 		ctx := core.New(core.CTX_RESOLVE)

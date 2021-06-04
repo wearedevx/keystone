@@ -111,13 +111,11 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			EnvironmentID: message.EnvironmentID,
 		}
 
-		err = Repo.
+		if err = Repo.
 			GetProjectMember(&projectMember).
 			GetEnvironment(&environment).
-			Err()
-		if err != nil {
-            return response, http.StatusNotFound, err
-			break
+			Err(); err != nil {
+			return response, http.StatusNotFound, err
 		}
 
 		// - check if user has rights to write on environment
@@ -156,15 +154,15 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 
 		if err != nil {
 			fmt.Printf("err: %+v\n", err)
-            break
+			break
 		}
 
-        // Change environment version id.
-        err = Repo.SetNewVersionID(&environment)
+		// Change environment version id.
+		err = Repo.SetNewVersionID(&environment)
 
-        if err != nil {
-            return response, http.StatusInternalServerError, err
-        }
+		if err != nil {
+			return response, http.StatusInternalServerError, err
+		}
 	}
 
 	return response, status, nil
