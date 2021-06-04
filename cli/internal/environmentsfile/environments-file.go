@@ -192,6 +192,10 @@ func (file *EnvironmentsFile) Replace(environment Environment) *EnvironmentsFile
 	return file
 }
 
+func (file *EnvironmentsFile) Path() string {
+	return file.path
+}
+
 // // Removes a variable from the project
 // func (file *EnvironmentsFile) UnsetEnv(varname string) *KeystoneFile {
 // 	if file.Err() != nil {
@@ -207,7 +211,4 @@ func (file *EnvironmentsFile) Replace(environment Environment) *EnvironmentsFile
 // 		}
 // 	}
 
-// 	file.Env = envs
-
-// 	return file
-// }
+// 	file.Env = eenvironmentFile.Save/ }
