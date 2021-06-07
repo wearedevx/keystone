@@ -13,6 +13,8 @@ import (
 	"strings"
 
 	"github.com/udhos/equalfile"
+	"github.com/wearedevx/keystone/cli/internal/config"
+	"github.com/wearedevx/keystone/cli/internal/crypto"
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
@@ -260,12 +262,12 @@ func (ctx *Context) PrepareMessagePayload(environment models.Environment) (model
 	return PayloadContent, err
 }
 
-func (ctx *Context) FetchNewMessages(result *models.GetMessageByEnvironmentResponse) error {
+func (ctx *Context) FetchNewMessages(result *models.GetMessageByEnvironmentResponse) (err *kserrors.Error) {
 	// Get keystone key.
-	c, kcErr := client.NewKeystoneClient()
+	c, err := client.NewKeystoneClient()
 
-	if kcErr != nil {
-		kcErr.Print()
+	if err != nil {
+		err.Print()
 		os.Exit(1)
 	}
 
@@ -273,7 +275,9 @@ func (ctx *Context) FetchNewMessages(result *models.GetMessageByEnvironmentRespo
 
 	*result, _ = c.Messages().GetMessages(projectID)
 
-	return nil
+	err = DecryptMessages(c, result)
+
+	return err
 }
 
 func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByEnvironmentResponse) (ChangesByEnvironment, *kserrors.Error) {
@@ -354,6 +358,42 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 	return changes, nil
 }
 
+func DecryptMessages(c client.KeystoneClient, byEnvironment *models.GetMessageByEnvironmentResponse) (err *kserrors.Error) {
+	privateKey, e := config.GetCurrentUserPrivateKey()
+	if e != nil {
+		// TODO: create a "Cannot get current user private key" error
+		fmt.Println("Could not get the current user private key")
+
+		return kserrors.UnkownError(e)
+	}
+
+	for environmentName, environment := range byEnvironment.Environments {
+		msg := environment.Message
+		if msg.Sender.UserID != "" {
+			upk, e := c.Users().GetUserPublicKey(msg.Sender.UserID)
+			if e != nil {
+				// TODO: create a "Cannot get user public key" error
+				fmt.Println("Could not get the sender’s public key")
+
+				return kserrors.UnkownError(e)
+			}
+
+			d, e := crypto.DecryptMessage(privateKey, upk.PublicKey, msg.Payload)
+			if e != nil {
+				// TODO: create a "Decryption failed" error
+				fmt.Println("Could not decrypt the message")
+
+				return kserrors.UnkownError(e)
+			}
+
+			environment.Message.Payload = d
+
+			byEnvironment.Environments[environmentName] = environment
+		}
+	}
+
+	return nil
+}
 func (ctx *Context) CompareNewSecretWithChanges(secretName string, newSecret map[string]string, changesByEnvironment ChangesByEnvironment) *kserrors.Error {
 	// where are stored changed values
 	environmentValueMap := make(map[string]string)
