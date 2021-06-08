@@ -16,6 +16,7 @@ import (
 
 type Repo struct {
 	err error
+	tx  *gorm.DB
 }
 
 var db *gorm.DB
@@ -52,6 +53,18 @@ func (repo *Repo) notFoundAsBool(call func() error) (bool, error) {
 	}
 
 	return found, err
+}
+
+func Transaction(fn func(IRepo) error) error {
+	err := db.Transaction(func(tx *gorm.DB) error {
+		repo := &Repo{
+			err: nil,
+			tx:  tx,
+		}
+		return fn(repo)
+
+	})
+	return err
 }
 
 func init() {
