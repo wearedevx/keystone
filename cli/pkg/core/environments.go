@@ -481,3 +481,21 @@ func (ctx *Context) GetAccessibleEnvironments() []models.Environment {
 func (ctx *Context) LoadEnvironmentsFile() *EnvironmentsFile {
 	return new(EnvironmentsFile).Load(ctx.dotKeystonePath())
 }
+
+func (ctx *Context) RemoveForbiddenEnvironments() {
+	accessibleEnvironments := ctx.GetAccessibleEnvironments()
+	accessibleEnvironmentsNames := make([]string, 0)
+
+	for _, accessibleEnvironment := range accessibleEnvironments {
+		accessibleEnvironmentsNames = append(accessibleEnvironmentsNames, accessibleEnvironment.Name)
+	}
+
+	for _, localEnvironment := range ctx.ListEnvironments() {
+		// If environment is not accessible, remove directory in cache
+		if !contains(accessibleEnvironmentsNames, localEnvironment) {
+			ctx.RemoveEnvironment(localEnvironment)
+		}
+
+	}
+
+}

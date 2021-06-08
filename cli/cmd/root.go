@@ -85,11 +85,17 @@ func Initialize() {
 
 	isKeystoneFile := keystonefile.ExistsKeystoneFile(currentfolder)
 
+	ctx.RemoveForbiddenEnvironments()
+
+	accessibleEnvironments := ctx.GetAccessibleEnvironments()
+
 	// If no current environment, call Init function to set default and create missing files in .keystone/
 	if ctx.Err() != nil {
 		ctx.SetError(nil)
 		if isKeystoneFile {
-			ctx.Init(models.Project{})
+			ctx.Init(models.Project{
+				Environments: accessibleEnvironments,
+			})
 		}
 	}
 

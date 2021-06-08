@@ -3,6 +3,7 @@ package envfile
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 
@@ -84,7 +85,7 @@ func (f *EnvFile) Dump() *EnvFile {
 
 	contents := sb.String()
 
-	if err := os.WriteFile(f.path, []byte(contents), 0o644); err != nil {
+	if err := ioutil.WriteFile(f.path, []byte(contents), 0o644); err != nil {
 		f.err = fmt.Errorf("Failed to write `%s` (%w)", f.path, err)
 	}
 
