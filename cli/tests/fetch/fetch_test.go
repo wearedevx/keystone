@@ -18,8 +18,13 @@ func TestMain(m *testing.M) {
 
 func setupFunc(env *testscript.Env) error {
 	utils.SetupEnvVars(env)
-	utils.CreateAndLogUser(env)
-	utils.CreateFakeUserWithUsername("john.doe", models.GitHubAccountType, env)
+	if err := utils.CreateAndLogUser(env); err != nil {
+		return err
+	}
+
+	if err := utils.CreateFakeUserWithUsername("john.doe.fetch", models.GitHubAccountType, env); err != nil {
+		return err
+	}
 
 	return nil
 }

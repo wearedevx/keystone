@@ -10,6 +10,7 @@ cmp stdout file_added_str_expected.txt
 youpi
 
 -- file_added_str_expected.txt --
+Syncing data...
 
 [30;42m OK [0m [32mAdded 'test.txt'[0m
 The file has been added to all environments.

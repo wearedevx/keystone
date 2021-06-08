@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/bxcodec/faker/v3"
+	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/rogpeppe/go-internal/testscript"
 	"github.com/wearedevx/keystone/api/pkg/jwt"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -80,10 +82,12 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType,
 	user := models.User{}
 
 	faker.FakeData(&user)
+	keyPair, err := keys.New(keys.TypeEC)
 
 	user.Username = username
 	user.AccountType = accountType
 	user.UserID = fmt.Sprintf("%s@%s", user.Username, user.AccountType)
+	user.PublicKey = keyPair.Public.Value
 
 	if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
 		fmt.Println("err:", err)
@@ -91,23 +95,34 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType,
 	}
 
 	token, err := jwt.MakeToken(user)
-
 	configDir := getConfigDir(env)
-
 	pathToKeystoneFile := path.Join(configDir, "keystone2.yaml")
+
+	pub := base64.StdEncoding.EncodeToString(keyPair.Public.Value)
+	priv := base64.StdEncoding.EncodeToString(keyPair.Private.Value)
 
 	err = ioutil.WriteFile(pathToKeystoneFile, []byte(`
 accounts:
-- Fullname: `+user.Fullname+`
+- fullname: `+user.Fullname+`
   account_type: "`+string(user.AccountType)+`"
   email: `+user.Email+`
   ext_id: "`+user.ExtID+`"
   fullname: `+user.Fullname+`
   user_id: `+user.UserID+`
   username: `+user.Username+`
+  public_key: !!binary `+pub+`
+  private_key: !!binary `+priv+`
 auth_token: `+token+`
 current: 0
 `), 0o777)
+
+	if err != nil {
+		fmt.Println("error wrinting user account", err)
+
+		return err
+	}
+
+	fmt.Println("Written", pathToKeystoneFile)
 
 	return nil
 }
@@ -117,10 +132,11 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	user := models.User{}
 
 	faker.FakeData(&user)
+	keyPair, err := keys.New(keys.TypeEC)
 
 	user.ID = 0
-
 	user.Email = "email@example.com"
+	user.PublicKey = keyPair.Public.Value
 
 	Repo.GetOrCreateUser(&user)
 
@@ -132,20 +148,23 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	env.Setenv("USER_ID", user.UserID)
 
 	token, err := jwt.MakeToken(user)
-
 	configDir := getConfigDir(env)
-
 	pathToKeystoneFile := path.Join(configDir, "keystone.yaml")
+
+	pub := base64.StdEncoding.EncodeToString(keyPair.Public.Value)
+	priv := base64.StdEncoding.EncodeToString(keyPair.Private.Value)
 
 	err = ioutil.WriteFile(pathToKeystoneFile, []byte(`
 accounts:
-- Fullname: `+user.Fullname+`
+- fullname: `+user.Fullname+`
   account_type: "`+string(user.AccountType)+`"
   email: `+user.Email+`
   ext_id: "`+user.ExtID+`"
   fullname: `+user.Fullname+`
   user_id: `+user.UserID+`
   username: `+user.Username+`
+  public_key: !!binary `+pub+`
+  private_key: !!binary `+priv+`
 auth_token: `+token+`
 current: 0
 `), 0o777)
@@ -153,6 +172,8 @@ current: 0
 	if err != nil {
 		fmt.Println("error writing accounts", err)
 	}
+
+	fmt.Println("Written", pathToKeystoneFile)
 
 	return err
 }

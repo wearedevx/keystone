@@ -82,6 +82,7 @@ func CopyFile(src, dst string) error {
 	_, err = io.Copy(destination, source)
 	return err
 }
+
 func RemoveContents(dir string) error {
 	d, err := os.Open(dir)
 	if err != nil {

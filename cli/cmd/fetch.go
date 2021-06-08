@@ -13,7 +13,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -59,19 +58,16 @@ Get info from your team:
 			os.Exit(1)
 		}
 
-		fmt.Println("Fetching new data...")
-
 		messagesByEnvironment := models.GetMessageByEnvironmentResponse{
 			Environments: map[string]models.GetMessageResponse{},
 		}
 
 		fetchErr := ctx.FetchNewMessages(&messagesByEnvironment)
 		if fetchErr != nil {
-			err.SetCause(fetchErr)
+			err = errors.UnkownError(fetchErr)
 			err.Print()
+			os.Exit(1)
 		}
-
-		ctx.SaveMessages(messagesByEnvironment)
 
 		_, writeErr := ctx.WriteNewMessages(messagesByEnvironment)
 

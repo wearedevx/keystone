@@ -3,9 +3,10 @@ package envfile
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/wearedevx/keystone/cli/internal/utils"
 )
 
 // An EnvFile represents a .env file data
@@ -22,6 +23,12 @@ type EnvFile struct {
 func (f *EnvFile) Load(path string) *EnvFile {
 	f.path = path
 	f.data = make(map[string]string)
+
+	err := utils.CreateFileIfNotExists(path, "")
+	if err != nil {
+		f.SetError("Failed to create file %s, %+v", f.path, err)
+		return f
+	}
 
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0644)
 
@@ -62,6 +69,10 @@ func (f *EnvFile) SetError(message string, args ...interface{}) *EnvFile {
 
 // Writes the .env to the disk
 func (f *EnvFile) Dump() *EnvFile {
+	if f.Err() != nil {
+		return f
+	}
+
 	var sb strings.Builder
 
 	for key, value := range f.data {
@@ -73,7 +84,7 @@ func (f *EnvFile) Dump() *EnvFile {
 
 	contents := sb.String()
 
-	if err := ioutil.WriteFile(f.path, []byte(contents), 0o644); err != nil {
+	if err := os.WriteFile(f.path, []byte(contents), 0o644); err != nil {
 		f.err = fmt.Errorf("Failed to write `%s` (%w)", f.path, err)
 	}
 

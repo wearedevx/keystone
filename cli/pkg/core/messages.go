@@ -272,9 +272,7 @@ func (ctx *Context) FetchNewMessages(result *models.GetMessageByEnvironmentRespo
 	}
 
 	projectID := ctx.GetProjectID()
-
 	*result, _ = c.Messages().GetMessages(projectID)
-
 	err = DecryptMessages(c, result)
 
 	return err
@@ -303,7 +301,7 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 					if len(change.From) == 0 {
 						ui.Print("++ " + change.Name + " : " + change.To)
 					} else {
-						ui.Print(change.Name + " : " + change.From + " ↦ " + change.To)
+						ui.Print("   " + change.Name + " : " + change.From + " ↦ " + change.To)
 					}
 
 				}
@@ -311,34 +309,12 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 				ui.Print("Environment " + environmentName + " up to date ✔")
 			}
 
-			// TODO: Reinstate the message deletion, but only after the whole
-			// local-file-updatin is a success
-			// response, _ := c.Messages().DeleteMessage(environment.Message.ID)
-
-			// if !response.Success {
-			// 	ui.Print("Can't delete message " + response.Error)
-			// } else {
 			ctx.UpdateEnvironment(environment.Environment)
 
 			if err := ctx.Err(); err != nil {
 				err.Print()
 				return changes, ctx.err
 			}
-
-			c, kcErr := client.NewKeystoneClient()
-
-			if kcErr != nil {
-				kcErr.Print()
-				os.Exit(1)
-			}
-
-			response, _ := c.Messages().DeleteMessage(environment.Message.ID)
-
-			if !response.Success {
-				ui.Print("Can't delete message " + response.Error)
-			}
-
-			// }
 		} else {
 			environmentChanged := ctx.EnvironmentVersionHasChanged(environmentName, environment.Environment.VersionID)
 
@@ -381,7 +357,7 @@ func DecryptMessages(c client.KeystoneClient, byEnvironment *models.GetMessageBy
 			d, e := crypto.DecryptMessage(privateKey, upk.PublicKey, msg.Payload)
 			if e != nil {
 				// TODO: create a "Decryption failed" error
-				fmt.Println("Could not decrypt the message")
+				fmt.Println("Could not decrypt the message: ", string(msg.Payload))
 
 				return kserrors.UnkownError(e)
 			}
