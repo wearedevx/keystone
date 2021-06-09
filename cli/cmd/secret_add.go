@@ -16,13 +16,13 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/manifoldco/promptui"
-	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/environments"
 	"github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 
@@ -60,16 +60,22 @@ Example:
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		environments := make([]string, 0)
-		accessibleEnvironments := ctx.GetAccessibleEnvironments()
+		es := environments.NewEnvironmentService(ctx)
+		if err = es.Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+		}
 
-		if err = ctx.Err(); err != nil {
+		environmentNames := make([]string, 0)
+		accessibleEnvironments := es.GetAccessibleEnvironments()
+
+		if err = es.Err(); err != nil {
 			err.Print()
 			return
 		}
 
 		for _, environment := range accessibleEnvironments {
-			environments = append(environments, environment.Name)
+			environmentNames = append(environmentNames, environment.Name)
 		}
 
 		if err = ctx.Err(); err != nil {
@@ -82,7 +88,7 @@ Example:
 			ui.Print(ui.RenderTemplate("ask new value for environment", `
 Enter a values for {{ . }}:`, secretName))
 
-			for _, environment := range environments {
+			for _, environment := range environmentNames {
 
 				p := promptui.Prompt{
 					Label:   environment,
@@ -105,7 +111,7 @@ Enter a values for {{ . }}:`, secretName))
 			}
 
 		} else {
-			for _, environment := range environments {
+			for _, environment := range environmentNames {
 				environmentValueMap[environment] = strings.Trim(secretValue, " ")
 			}
 
@@ -113,30 +119,17 @@ Enter a values for {{ . }}:`, secretName))
 
 		environmentValueMap[currentEnvironment] = secretValue
 
-		// Fetch new messages to see if added secret has changed
-		messagesByEnvironment := &models.GetMessageByEnvironmentResponse{
-			Environments: map[string]models.GetMessageResponse{},
-		}
+		ms := messages.NewMessageService(ctx)
+		changes := ms.GetMessages()
 
-		fmt.Println("Syncing data...")
-		fetchErr := ctx.FetchNewMessages(messagesByEnvironment)
-
-		if fetchErr != nil {
-			ui.PrintError(fetchErr.Error())
-			return
-		}
-
-		changes, writeErr := ctx.WriteNewMessages(*messagesByEnvironment)
-
-		if writeErr != nil {
-			writeErr.Print()
-			// err.SetCause(writeErr)
-			// err.Print()
-			return
+		if err = ms.Err(); err != nil {
+			err.Print()
+			os.Exit(1)
 		}
 
 		if err = ctx.CompareNewSecretWithChanges(secretName, environmentValueMap, changes); err != nil {
 			err.Print()
+			os.Exit(1)
 			return
 		}
 
@@ -148,17 +141,19 @@ Enter a values for {{ . }}:`, secretName))
 
 		if err = ctx.AddSecret(secretName, environmentValueMap, flag).Err(); err != nil {
 			err.Print()
+			os.Exit(1)
 			return
 		}
 
 		// TODO
 		// Format beautyiful error
-		if pushErr := ctx.PushEnv(accessibleEnvironments); pushErr != nil {
-			ui.PrintError(pushErr.Error())
+		if err := ms.SendEnvironments(accessibleEnvironments).Err(); err != nil {
+			err.Print()
+			os.Exit(1)
 			return
 		}
 
-		ui.PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(environments))
+		ui.PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(environmentNames))
 	},
 }
 

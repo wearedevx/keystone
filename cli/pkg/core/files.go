@@ -10,6 +10,7 @@ import (
 	. "github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 type FileStrictFlag int
@@ -80,21 +81,23 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 	return ctx
 }
 
+// FilesUseEnvironment creates symlinks for files found in the project’s
+// keystone.yml file, pointing them to the environment `envname` in cache.
 func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
 
 	ksfile := new(KeystoneFile).Load(ctx.Wd)
-
 	if err := ksfile.Err(); err != nil {
 		return ctx.setError(FailedToReadKeystoneFile(err))
 	}
 
+	cachePath := ctx.CachedEnvironmentFilesPath(envname)
 	files := ksfile.Files
 
 	for _, file := range files {
-		cachedFilePath := path.Join(ctx.CachedEnvironmentFilesPath(envname), file.Path)
+		cachedFilePath := path.Join(cachePath, file.Path)
 		linkPath := path.Join(ctx.Wd, file.Path)
 
 		if FileExists(linkPath) {
@@ -102,7 +105,10 @@ func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 		}
 
 		if !FileExists(cachedFilePath) {
-			return ctx.setError(FileNotInEnvironment(file.Path, envname, nil))
+			if file.Strict {
+				return ctx.setError(FileNotInEnvironment(file.Path, envname, nil))
+			}
+			ui.Print("File \"%s\" not in envrironment", file.Path)
 		}
 
 		parentDir := filepath.Dir(linkPath)

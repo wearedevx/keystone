@@ -16,11 +16,9 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // fetchCmd represents the fetch command
@@ -51,36 +49,12 @@ Get info from your team:
 			os.Exit(1)
 		}
 
-		c, kcErr := client.NewKeystoneClient()
+		ms := messages.NewMessageService(ctx)
+		ms.GetMessages()
 
-		if kcErr != nil {
-			kcErr.Print()
-			os.Exit(1)
-		}
-
-		messagesByEnvironment := models.GetMessageByEnvironmentResponse{
-			Environments: map[string]models.GetMessageResponse{},
-		}
-
-		fetchErr := ctx.FetchNewMessages(&messagesByEnvironment)
-		if fetchErr != nil {
-			err = errors.UnkownError(fetchErr)
+		if err := ms.Err(); err != nil {
 			err.Print()
 			os.Exit(1)
-		}
-
-		_, writeErr := ctx.WriteNewMessages(messagesByEnvironment)
-
-		if writeErr != nil {
-			writeErr.Print()
-		}
-
-		for _, msgEnv := range messagesByEnvironment.Environments {
-			response, _ := c.Messages().DeleteMessage(msgEnv.Message.ID)
-
-			if !response.Success {
-				ui.Print("Can't delete message " + response.Error)
-			}
 		}
 	},
 }

@@ -17,10 +17,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kerrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 
@@ -63,36 +65,25 @@ If a member hasn't received secrets and files last time someone sent an update, 
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		messagesByEnvironment := &models.GetMessageByEnvironmentResponse{
-			Environments: map[string]models.GetMessageResponse{},
-		}
+		ms := messages.NewMessageService(ctx)
+		ms.GetMessages()
 
-		fmt.Println("Syncing data...")
-		fetchErr := ctx.FetchNewMessages(messagesByEnvironment)
-
-		if fetchErr != nil {
-			err.SetCause(fetchErr)
+		if err = ms.Err(); err != nil {
 			err.Print()
-		}
-
-		_, writeErr := ctx.WriteNewMessages(*messagesByEnvironment)
-
-		if writeErr != nil {
-			writeErr.Print()
-			// err.SetCause(writeErr)
-			// err.Print()
-			return
+			os.Exit(1)
 		}
 
 		localEnvironment := ctx.LoadEnvironmentsFile().GetByName(currentEnvironment)
-		environment := models.Environment{
-			Name:          localEnvironment.Name,
-			VersionID:     localEnvironment.VersionID,
-			EnvironmentID: localEnvironment.EnvironmentID,
+		environments := []models.Environment{
+			{
+				Name:          localEnvironment.Name,
+				VersionID:     localEnvironment.VersionID,
+				EnvironmentID: localEnvironment.EnvironmentID,
+			},
 		}
 
-		if pushErr := ctx.PushEnvForOneMember(environment, member); pushErr != nil {
-			ui.PrintError(pushErr.Error())
+		if err = ms.SendEnvironmentsToOneMember(environments, member).Err(); err != nil {
+			ui.PrintError(err.Error())
 			return
 		}
 

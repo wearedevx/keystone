@@ -17,10 +17,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -54,23 +56,11 @@ Example:
 			return
 		}
 
-		messagesByEnvironment := &models.GetMessageByEnvironmentResponse{
-			Environments: map[string]models.GetMessageResponse{},
-		}
-
-		fmt.Println("Syncing data...")
-		fetchErr := ctx.FetchNewMessages(messagesByEnvironment)
-
-		if fetchErr != nil {
-			err.SetCause(fetchErr)
+		ms := messages.NewMessageService(ctx)
+		ms.GetMessages()
+		if err := ms.Err(); err != nil {
 			err.Print()
-		}
-
-		_, writeErr := ctx.WriteNewMessages(*messagesByEnvironment)
-
-		if writeErr != nil {
-			writeErr.Print()
-			return
+			os.Exit(1)
 		}
 
 		ctx.SetSecret(currentEnvironment, secretName, secretValue)
@@ -87,9 +77,9 @@ Example:
 			EnvironmentID: localEnvironment.EnvironmentID,
 		}}
 
-		if pushErr := ctx.PushEnv(environment); pushErr != nil {
-			ui.PrintError(pushErr.Error())
-			return
+		if err := ms.SendEnvironments(environment).Err(); err != nil {
+			err.Print()
+			os.Exit(1)
 		}
 
 		ui.PrintSuccess(fmt.Sprintf("Secret '%s' updated for the '%s' environment", secretName, currentEnvironment))
