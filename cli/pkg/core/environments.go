@@ -266,8 +266,7 @@ func (ctx *Context) LoadEnvironmentsFile() *EnvironmentsFile {
 	return new(EnvironmentsFile).Load(ctx.dotKeystonePath())
 }
 
-func (ctx *Context) RemoveForbiddenEnvironments() {
-	accessibleEnvironments := ctx.GetAccessibleEnvironments()
+func (ctx *Context) RemoveForbiddenEnvironments(accessibleEnvironments []models.Environment) {
 	accessibleEnvironmentsNames := make([]string, 0)
 
 	for _, accessibleEnvironment := range accessibleEnvironments {

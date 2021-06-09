@@ -23,6 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
+	"github.com/wearedevx/keystone/cli/internal/environments"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 
@@ -85,17 +86,20 @@ func Initialize() {
 
 	isKeystoneFile := keystonefile.ExistsKeystoneFile(currentfolder)
 
-	ctx.RemoveForbiddenEnvironments()
+	if config.IsLoggedIn() {
+		es := environments.NewEnvironmentService(ctx)
+		accessibleEnvironments := es.GetAccessibleEnvironments()
 
-	accessibleEnvironments := ctx.GetAccessibleEnvironments()
+		ctx.RemoveForbiddenEnvironments(accessibleEnvironments)
 
-	// If no current environment, call Init function to set default and create missing files in .keystone/
-	if ctx.Err() != nil {
-		ctx.SetError(nil)
-		if isKeystoneFile {
-			ctx.Init(models.Project{
-				Environments: accessibleEnvironments,
-			})
+		// If no current environment, call Init function to set default and create missing files in .keystone/
+		if ctx.Err() != nil {
+			ctx.SetError(nil)
+			if isKeystoneFile {
+				ctx.Init(models.Project{
+					Environments: accessibleEnvironments,
+				})
+			}
 		}
 	}
 
