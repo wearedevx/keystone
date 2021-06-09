@@ -53,9 +53,6 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 			panic(err)
 		}
 
-		// Remove content of cache directory to ensure old files are deleted
-		// RemoveContents(ctx.CachedEnvironmentPath(environmentName))
-
 		environmentChanges := make([]Change, 0)
 		fileChanges, err := ctx.getFilesChanges(PayloadContent.Files, environmentName)
 		if err != nil {
@@ -99,6 +96,7 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		}
 
 		changes.Environments[environmentName] = environmentChanges
+		ctx.UpdateEnvironment(environment.Environment)
 	}
 
 	return changes, nil
@@ -270,6 +268,7 @@ func (ctx *Context) FetchNewMessages(result *models.GetMessageByEnvironmentRespo
 		err.Print()
 		os.Exit(1)
 	}
+	fmt.Println("Syncing data...")
 
 	projectID := ctx.GetProjectID()
 	*result, _ = c.Messages().GetMessages(projectID)
@@ -308,8 +307,6 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 			} else {
 				ui.Print("Environment " + environmentName + " up to date ✔")
 			}
-
-			ctx.UpdateEnvironment(environment.Environment)
 
 			if err := ctx.Err(); err != nil {
 				err.Print()

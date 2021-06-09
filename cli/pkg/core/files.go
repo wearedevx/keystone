@@ -80,6 +80,8 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 	return ctx
 }
 
+// FilesUseEnvironment creates symlinks for files found in the project’s
+// keystone.yml file, pointing them to the environment `envname` in cache.
 func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 	if ctx.Err() != nil {
 		return ctx

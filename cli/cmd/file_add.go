@@ -24,10 +24,11 @@ import (
 
 	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/api/pkg/models"
+	envservice "github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -60,7 +61,6 @@ Examples:
 		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		accessibleEnvironments := ctx.GetAccessibleEnvironments()
 		filePath := args[0]
 		extension := filepath.Ext(filePath)
 
@@ -112,27 +112,21 @@ Examples:
 			}
 		}
 
-		// Fetch new messages to see if added secret has changed
-		messagesByEnvironment := &models.GetMessageByEnvironmentResponse{
-			Environments: map[string]models.GetMessageResponse{},
-		}
+		ms := messages.NewMessageService(ctx)
+		ms.GetMessages()
 
-		fmt.Println("Syncing data...")
-		fetchErr := ctx.FetchNewMessages(messagesByEnvironment)
-
-		if fetchErr != nil {
-			err.SetCause(fetchErr)
+		if err := ms.Err(); err != nil {
 			err.Print()
-		}
-
-		_, err = ctx.WriteNewMessages(*messagesByEnvironment)
-
-		if err != nil {
-			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
 
-		//
+		es := envservice.NewEnvironmentService(ctx)
+		accessibleEnvironments := es.GetAccessibleEnvironments()
+
+		if err := es.Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+		}
 
 		file := keystonefile.FileKey{
 			Path:   filePath,
@@ -159,11 +153,9 @@ Examples:
 			return
 		}
 
-		// TODO
-		// Format beautyiful error
-		if pushErr := ctx.PushEnv(accessibleEnvironments); err != nil {
-			ui.PrintError(pushErr.Error())
-			return
+		if err := ms.SendEnvironments(accessibleEnvironments).Err(); err != nil {
+			err.Print()
+			os.Exit(1)
 		}
 
 		ui.Print(ui.RenderTemplate("file add success", `

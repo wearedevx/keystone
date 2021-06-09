@@ -55,7 +55,6 @@ Example:
 
 		for key, value := range env {
 			ui.Print("export %s=%s;", key, value)
-			// Print("echo \"TUTU\";")
 		}
 	},
 }
