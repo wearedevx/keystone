@@ -18,6 +18,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -46,7 +47,11 @@ Example:
 		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
 
+		ms := messages.NewMessageService(ctx)
+		ms.GetMessages()
+
 		env := ctx.GetSecrets()
+		ctx.FilesUseEnvironment(currentEnvironment)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()

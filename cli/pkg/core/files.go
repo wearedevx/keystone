@@ -88,15 +88,15 @@ func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 	}
 
 	ksfile := new(KeystoneFile).Load(ctx.Wd)
-
 	if err := ksfile.Err(); err != nil {
 		return ctx.setError(FailedToReadKeystoneFile(err))
 	}
 
+	cachePath := ctx.CachedEnvironmentFilesPath(envname)
 	files := ksfile.Files
 
 	for _, file := range files {
-		cachedFilePath := path.Join(ctx.CachedEnvironmentFilesPath(envname), file.Path)
+		cachedFilePath := path.Join(cachePath, file.Path)
 		linkPath := path.Join(ctx.Wd, file.Path)
 
 		if FileExists(linkPath) {
