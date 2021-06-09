@@ -192,8 +192,6 @@ func (file *KeystoneFile) AddFile(filekey FileKey) *KeystoneFile {
 
 	file.RemoveFile(filekey.Path)
 
-	// file.Files = append(file.Files, filepath)
-
 	file.Files = append(file.Files, filekey)
 
 	return file

@@ -10,6 +10,7 @@ import (
 	. "github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 type FileStrictFlag int
@@ -104,7 +105,10 @@ func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 		}
 
 		if !FileExists(cachedFilePath) {
-			return ctx.setError(FileNotInEnvironment(file.Path, envname, nil))
+			if file.Strict {
+				return ctx.setError(FileNotInEnvironment(file.Path, envname, nil))
+			}
+			ui.Print("File \"%s\" not in envrironment", file.Path)
 		}
 
 		parentDir := filepath.Dir(linkPath)

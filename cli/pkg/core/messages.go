@@ -13,12 +13,9 @@ import (
 	"strings"
 
 	"github.com/udhos/equalfile"
-	"github.com/wearedevx/keystone/cli/internal/config"
-	"github.com/wearedevx/keystone/cli/internal/crypto"
-	. "github.com/wearedevx/keystone/cli/internal/envfile"
+	"github.com/wearedevx/keystone/cli/internal/envfile"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	. "github.com/wearedevx/keystone/cli/internal/utils"
-	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/ui"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -62,7 +59,7 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 
 		if len(fileChanges) > 0 {
 			filesDir := ctx.CachedEnvironmentFilesPath(environmentName)
-			if err := RemoveContents(filesDir); err != nil {
+			if err := utils.RemoveContents(filesDir); err != nil {
 				// TODO: Error Handling
 				panic(err)
 			}
@@ -83,7 +80,7 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 
 		if len(PayloadContent.Secrets) > 0 {
 			envFilePath := ctx.CachedEnvironmentDotEnvPath(environmentName)
-			envFile := new(EnvFile)
+			envFile := new(envfile.EnvFile)
 			envFile.Load(envFilePath)
 
 			for _, secret := range PayloadContent.Secrets {
@@ -122,7 +119,7 @@ func GetSecretsChanges(localSecrets []models.SecretVal, newSecrets []models.Secr
 			}
 		}
 		// New secret has been fetched
-		if found == false {
+		if !found {
 			changes = append(changes, Change{
 				Name: secret.Label,
 				From: "",
@@ -198,7 +195,7 @@ func (ctx *Context) saveFilesChanges(changes []Change, environmentName string) (
 	for _, change := range changes {
 		cachedFilePath := path.Join(cacheDir, change.Name)
 
-		err = CreateFileIfNotExists(cachedFilePath, change.To)
+		err = utils.CreateFileIfNotExists(cachedFilePath, change.To)
 		if err != nil {
 			errorList = append(errorList, err.Error())
 			continue
@@ -260,23 +257,6 @@ func (ctx *Context) PrepareMessagePayload(environment models.Environment) (model
 	return PayloadContent, err
 }
 
-func (ctx *Context) FetchNewMessages(result *models.GetMessageByEnvironmentResponse) (err *kserrors.Error) {
-	// Get keystone key.
-	c, err := client.NewKeystoneClient()
-
-	if err != nil {
-		err.Print()
-		os.Exit(1)
-	}
-	fmt.Println("Syncing data...")
-
-	projectID := ctx.GetProjectID()
-	*result, _ = c.Messages().GetMessages(projectID)
-	err = DecryptMessages(c, result)
-
-	return err
-}
-
 func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByEnvironmentResponse) (ChangesByEnvironment, *kserrors.Error) {
 	changes, _ := ctx.SaveMessages(messagesByEnvironments)
 
@@ -331,58 +311,16 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 	return changes, nil
 }
 
-func DecryptMessages(c client.KeystoneClient, byEnvironment *models.GetMessageByEnvironmentResponse) (err *kserrors.Error) {
-	privateKey, e := config.GetCurrentUserPrivateKey()
-	if e != nil {
-		// TODO: create a "Cannot get current user private key" error
-		fmt.Println("Could not get the current user private key")
-
-		return kserrors.UnkownError(e)
-	}
-
-	for environmentName, environment := range byEnvironment.Environments {
-		msg := environment.Message
-		if msg.Sender.UserID != "" {
-			upk, e := c.Users().GetUserPublicKey(msg.Sender.UserID)
-			if e != nil {
-				// TODO: create a "Cannot get user public key" error
-				fmt.Println("Could not get the sender’s public key")
-
-				return kserrors.UnkownError(e)
-			}
-
-			d, e := crypto.DecryptMessage(privateKey, upk.PublicKey, msg.Payload)
-			if e != nil {
-				// TODO: create a "Decryption failed" error
-				fmt.Println("Could not decrypt the message: ", string(msg.Payload))
-
-				return kserrors.UnkownError(e)
-			}
-
-			environment.Message.Payload = d
-
-			byEnvironment.Environments[environmentName] = environment
-		}
-	}
-
-	return nil
-}
 func (ctx *Context) CompareNewSecretWithChanges(secretName string, newSecret map[string]string, changesByEnvironment ChangesByEnvironment) *kserrors.Error {
-	// where are stored changed values
 	environmentValueMap := make(map[string]string)
 
 	for environmentName, changes := range changesByEnvironment.Environments {
-		// var PayloadContent = models.MessagePayload{}
-		// if err := yaml.Unmarshal(message.Message.Payload, &PayloadContent); err != nil {
-		// 	panic(err)
-		// }
 		for _, change := range changes {
 
 			if change.Name == secretName {
 				environmentValueMap[environmentName] = change.To
 			}
 		}
-
 	}
 
 	if len(environmentValueMap) > 0 {

@@ -53,7 +53,6 @@ Example:
 		ms.GetMessages()
 
 		env := ctx.ListSecrets()
-		// TODO: only setup files known to the keystonefile
 		// TODO: crash on missing required files
 		ctx.FilesUseEnvironment(currentEnvironment)
 

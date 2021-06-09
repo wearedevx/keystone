@@ -130,7 +130,7 @@ Examples:
 
 		file := keystonefile.FileKey{
 			Path:   filePath,
-			Strict: false, // TODO
+			Strict: addOptional,
 		}
 
 		ctx.AddFile(file, environmentFileMap)
