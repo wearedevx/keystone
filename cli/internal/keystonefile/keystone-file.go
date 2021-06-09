@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type envKey struct {
+type EnvKey struct {
 	Key    string
 	Strict bool
 }
@@ -31,7 +31,7 @@ type KeystoneFile struct {
 	err         error  `yaml:"-"`
 	ProjectId   string `yaml:"project_id"`
 	ProjectName string `yaml:"name"`
-	Env         []envKey
+	Env         []EnvKey
 	Files       []FileKey
 	Options     keystoneFileOptions
 }
@@ -48,7 +48,7 @@ func NewKeystoneFile(wd string, project Project) *KeystoneFile {
 		err:         nil,
 		ProjectId:   project.UUID,
 		ProjectName: project.Name,
-		Env:         make([]envKey, 0),
+		Env:         make([]EnvKey, 0),
 		Files:       make([]FileKey, 0),
 		Options: keystoneFileOptions{
 			Strict: false,
@@ -143,12 +143,26 @@ func (file *KeystoneFile) SetEnv(varname string, strict bool) *KeystoneFile {
 
 	file.UnsetEnv(varname) // avoid duplicates
 
-	file.Env = append(file.Env, envKey{
+	file.Env = append(file.Env, EnvKey{
 		Key:    varname,
 		Strict: strict,
 	})
 
 	return file
+}
+
+func (file *KeystoneFile) HasEnv(varname string) (hasIt bool, strict bool) {
+	if file.Err() != nil {
+		return false, false
+	}
+
+	for _, ek := range file.Env {
+		if ek.Key == varname {
+			return true, ek.Strict
+		}
+	}
+
+	return false, false
 }
 
 // Removes a variable from the project
@@ -157,7 +171,7 @@ func (file *KeystoneFile) UnsetEnv(varname string) *KeystoneFile {
 		return file
 	}
 
-	envs := make([]envKey, 0)
+	envs := make([]EnvKey, 0)
 
 	// Filter out previously existing value
 	for _, env := range file.Env {

@@ -16,6 +16,8 @@ limitations under the License.
 package cmd
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
@@ -50,7 +52,9 @@ Example:
 		ms := messages.NewMessageService(ctx)
 		ms.GetMessages()
 
-		env := ctx.GetSecrets()
+		env := ctx.ListSecrets()
+		// TODO: only setup files known to the keystonefile
+		// TODO: crash on missing required files
 		ctx.FilesUseEnvironment(currentEnvironment)
 
 		if err = ctx.Err(); err != nil {
@@ -58,8 +62,16 @@ Example:
 			return
 		}
 
-		for key, value := range env {
-			ui.Print("export %s=%s;", key, value)
+		for _, secretInfo := range env {
+			value := secretInfo.Values[core.EnvironmentName(currentEnvironment)]
+			if secretInfo.Required && value == "" {
+				ui.Print("echo \"Error: secret '%s' is required, but value is missing\"", secretInfo.Name)
+				// make the eval crash in such situation
+				os.Exit(1)
+			}
+
+			ui.Print("export %s=%s", secretInfo.Name, value)
+
 		}
 	},
 }
