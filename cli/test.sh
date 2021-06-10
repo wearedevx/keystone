@@ -31,7 +31,13 @@ EXIT_STATUS_CODE=$?
 
 rm "/tmp/keystone_gorm"*
 
-
-kill -9 $(lsof -t -i:9001)
+for i in {0..10}; do
+	pid=$(lsof -t -i :9001);
+	if [ $? -eq 0 ]; then
+		kill -9 $pid;
+		break;
+	fi
+	sleep 1;
+done
 
 exit $EXIT_STATUS_CODE
