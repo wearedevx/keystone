@@ -56,6 +56,8 @@ type Handler = func(params Params, body io.ReadCloser, Repo repo.IRepo, user mod
 
 func AuthedHandler(handler Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+		dw := newDoneWriter(w)
+
 		wroteStatus := false
 		// Get user and prepare the repo
 		token := r.Header.Get("authorization")
@@ -63,10 +65,9 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		userID, err := VerifyToken(token)
 
 		if err != nil {
-			fmt.Println(err)
 			// 404 is returned purposefully, here to not reveal the existence of
 			// resources for non authorized requesters
-			http.Error(w, "", http.StatusNotFound)
+			http.Error(dw, "", http.StatusNotFound)
 			return
 		}
 
@@ -84,7 +85,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 					message = fmt.Sprintf("No user with id: %s", userID)
 				}
 
-				http.Error(w, message, status)
+				http.Error(dw, message, status)
 				return err
 			}
 
@@ -93,8 +94,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			result, status, err := handler(p, r.Body, Repo, user)
 
 			if err != nil {
-				http.Error(w, err.Error(), status)
-				wroteStatus = true
+				http.Error(dw, err.Error(), status)
 			}
 
 			// serialize the response for the user
@@ -105,26 +105,25 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			}
 
 			if err != nil {
-				http.Error(w, "Error Serializing results", http.StatusInternalServerError)
-				wroteStatus = true
+				http.Error(dw, "Error Serializing results", http.StatusInternalServerError)
 			}
 
 			out := bytes.NewBufferString(serialized)
 
 			// Write the response if any
 			if out.Len() > 0 {
-				w.Header().Add("Content-Type", "application/json; charset=utf-8")
-				w.Header().Add("Content-Length", strconv.Itoa(out.Len()))
-				w.Write(out.Bytes())
+				dw.Header().Add("Content-Type", "application/json; charset=utf-8")
+				dw.Header().Add("Content-Length", strconv.Itoa(out.Len()))
+				dw.Write(out.Bytes())
 			}
 
 			if status != 200 && !wroteStatus {
-				w.WriteHeader(status)
+				dw.WriteHeader(status)
 			}
 
-			if Repo.Err() != nil {
-				fmt.Println(Repo.Err())
-			}
+			// if Repo.Err() != nil {
+			// 	fmt.Println(Repo.Err())
+			// }
 
 			return nil
 		})

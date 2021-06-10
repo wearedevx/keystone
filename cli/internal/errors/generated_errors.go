@@ -170,6 +170,16 @@ To get the latest variables and files for '{{ .Environment }}':
 This happened because: {{ .Cause }}
 
 `,
+	"CannotRemoveDirectoryContents": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
+This happened because: {{ .Cause }}
+
+`,
+	"CannotSaveFiles": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .FileList | red }} {{- "'" | red }}
+This happened because: {{ .Cause }}
+
+`,
 	"CannotRemoveDirectory": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
@@ -210,7 +220,7 @@ This happened because: {{ .Cause }}
 {{ .Message }}
 
 You can invite those users to Keystone using
-  $ ks invite <emai>
+  $ ks invite <email>
 
 `,
 	"CannotAddMembers": `
@@ -219,6 +229,18 @@ This happened because: {{ .Cause }}
 
 `,
 	"CannotRemoveMembers": `
+{{ ERROR }} {{ .Name | red }}
+This happened because: {{ .Cause }}
+
+`,
+	"CouldNotDecryptMessages": `
+{{ ERROR }} {{ .Name | red }}
+{{ .Message }}
+
+This happened because: {{ .Cause }}
+
+`,
+	"CouldNotParseMessage": `
 {{ ERROR }} {{ .Name | red }}
 This happened because: {{ .Cause }}
 
@@ -401,6 +423,20 @@ func CannotCreateDirectory(path string, cause error) *Error {
 	return NewError("Cannot Create Directory", helpTexts["CannotCreateDirectory"], meta, cause)
 }
 
+func CannotRemoveDirectoryContents(path string, cause error) *Error {
+	meta := map[string]string{
+		"Path": string(path),
+	}
+	return NewError("Cannot Remove Directory Contents", helpTexts["CannotRemoveDirectoryContents"], meta, cause)
+}
+
+func CannotSaveFiles(filelist string, cause error) *Error {
+	meta := map[string]string{
+		"FileList": string(filelist),
+	}
+	return NewError("Cannot Save Files", helpTexts["CannotSaveFiles"], meta, cause)
+}
+
 func CannotRemoveDirectory(path string, cause error) *Error {
 	meta := map[string]string{
 		"Path": string(path),
@@ -451,4 +487,17 @@ func CannotRemoveMembers(cause error) *Error {
 	meta := map[string]string{}
 
 	return NewError("Cannot Remove Members", helpTexts["CannotRemoveMembers"], meta, cause)
+}
+
+func CouldNotDecryptMessages(message string, cause error) *Error {
+	meta := map[string]string{
+		"Message": string(message),
+	}
+	return NewError("Could not decrypt messages", helpTexts["CouldNotDecryptMessages"], meta, cause)
+}
+
+func CouldNotParseMessage(cause error) *Error {
+	meta := map[string]string{}
+
+	return NewError("Could not parse message", helpTexts["CouldNotParseMessage"], meta, cause)
 }

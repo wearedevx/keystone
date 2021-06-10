@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -14,7 +15,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func getLoginRequest(apiUrl string) (models.LoginRequest, error) {
+func getLoginRequest(apiUrl string) (loginRequest models.LoginRequest, err error) {
+	var resp *http.Response
 	timeout := time.Duration(20 * time.Second)
 	client := http.Client{
 		Timeout: timeout,
@@ -23,19 +25,18 @@ func getLoginRequest(apiUrl string) (models.LoginRequest, error) {
 	request, err := http.NewRequest("POST", apiUrl+"/login-request", nil)
 	request.Header.Set("Accept", "application/json; charset=utf-8")
 
-	if err != nil {
-		panic(err)
+	if err == nil {
+		resp, err = client.Do(request)
 	}
 
-	resp, err := client.Do(request)
-
 	if err != nil {
-		panic(err)
+		errmsg := fmt.Sprintf("Failed to send login request (%s)", err.Error())
+		println(errmsg)
+		os.Exit(1)
+		return loginRequest, err
 	}
 
 	defer resp.Body.Close()
-
-	var loginRequest models.LoginRequest
 
 	if resp.StatusCode == http.StatusOK {
 		err = json.NewDecoder(resp.Body).Decode(&loginRequest)
@@ -74,17 +75,19 @@ func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
 		q := u.Query()
 		q.Add("code", code)
 
+		var resp *http.Response
 		request, err := http.NewRequest("GET", u.String()+"?"+q.Encode(), nil)
 		request.Header.Set("Accept", "application/json; charset=utf-8")
 
-		if err != nil {
-			panic(err)
+		if err == nil {
+			resp, err = client.Do(request)
 		}
 
-		resp, err := client.Do(request)
-
 		if err != nil {
-			panic(err)
+			errmsg := fmt.Sprintf("Failed polling login request (%s)", err)
+			println(errmsg)
+			os.Exit(1)
+			return
 		}
 
 		defer resp.Body.Close()

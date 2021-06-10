@@ -91,7 +91,10 @@ Examples:
 					ui.Print(fmt.Sprintf("Enter content for file `%s` for the '%s' environment (Press any key to continue)", filePath, environment))
 					_, _, err := keyboard.GetSingleKey()
 					if err != nil {
-						panic(err)
+						errmsg := fmt.Sprintf("Failed to read user input (%s)", err.Error())
+						println(errmsg)
+						os.Exit(1)
+						return
 					}
 
 					content, err := utils.CaptureInputFromEditor(
@@ -100,7 +103,10 @@ Examples:
 					)
 
 					if err != nil {
-						panic(err)
+						errmsg := fmt.Sprintf("Failed to get content from editor (%s)", err.Error())
+						println(errmsg)
+						os.Exit(1)
+						return
 					}
 
 					environmentFileMap[environment] = content

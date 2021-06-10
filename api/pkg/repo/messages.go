@@ -2,7 +2,6 @@ package repo
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"strings"
 
@@ -70,8 +69,6 @@ func (repo *Repo) RemoveOldMessageForRecipient(userID uint, environmentID string
 	if repo.err != nil {
 		return repo
 	}
-
-	fmt.Println(userID, environmentID)
 
 	repo.err = repo.GetDb().
 		Model(&models.Message{}).

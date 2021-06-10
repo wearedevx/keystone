@@ -37,17 +37,12 @@ func GithubLoginSuccess() int {
 
 	request, err := http.NewRequest("GET", "http://localhost:9001/auth-redirect/?state="+lr.TemporaryCode+"&code=youpicode", nil)
 
-	if err != nil {
-		panic(err)
+	if err == nil {
+		_, err = client.Do(request)
 	}
 
-	resp, err := client.Do(request)
-
 	if err != nil {
 		panic(err)
-	}
-
-	if resp.StatusCode == http.StatusOK {
 	}
 
 	fmt.Println("github login success End")

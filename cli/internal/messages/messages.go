@@ -57,10 +57,9 @@ func (s *messageService) GetMessages() core.ChangesByEnvironment {
 
 	s.fetchNewMessages(&messagesByEnvironment)
 
-	changes, err := s.ctx.SaveMessages(messagesByEnvironment)
-	if err != nil {
-		// TODO error management
-		s.err = kserrors.UnkownError(err)
+	changes := s.ctx.SaveMessages(messagesByEnvironment)
+	if s.ctx.Err() != nil {
+		s.err = s.ctx.Err()
 		return core.ChangesByEnvironment{}
 	}
 
@@ -121,10 +120,7 @@ func (s *messageService) fetchNewMessages(result *models.GetMessageByEnvironment
 func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvironmentResponse) (err *kserrors.Error) {
 	privateKey, e := config.GetCurrentUserPrivateKey()
 	if e != nil {
-		// TODO: create a "Cannot get current user private key" error
-		fmt.Println("Could not get the current user private key")
-
-		return kserrors.UnkownError(e)
+		return kserrors.CouldNotDecryptMessages("Failed to get the current user private key", e)
 	}
 
 	for environmentName, environment := range byEnvironment.Environments {
@@ -132,10 +128,7 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 		if msg.Sender.UserID != "" {
 			upk, e := s.client.Users().GetUserPublicKey(msg.Sender.UserID)
 			if e != nil {
-				// TODO: create a "Cannot get user public key" error
-				fmt.Println("Could not get the sender’s public key")
-
-				return kserrors.UnkownError(e)
+				return kserrors.CouldNotDecryptMessages(fmt.Sprintf("Failed to get the public key for user %s", msg.Sender.UserID), e)
 			}
 
 			d, e := crypto.DecryptMessage(privateKey, upk.PublicKey, msg.Payload)
@@ -143,7 +136,7 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 				// TODO: create a "Decryption failed" error
 				fmt.Println("Could not decrypt the message: ", string(msg.Payload))
 
-				return kserrors.UnkownError(e)
+				return kserrors.CouldNotDecryptMessages("Decryption failed", e)
 			}
 
 			environment.Message.Payload = d
@@ -213,7 +206,10 @@ func (s *messageService) SendEnvironments(environments []models.Environment) Mes
 		Messages: make([]models.MessageToWritePayload, 0),
 	}
 
-	currentUser, senderPrivateKey := getCurrentUserInformation()
+	currentUser, senderPrivateKey := s.getCurrentUserInformation()
+	if s.err != nil {
+		return s
+	}
 
 	for _, environment := range environments {
 		messages, err := s.prepareMessages(currentUser, senderPrivateKey, environment)
@@ -243,7 +239,7 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 		Messages: make([]models.MessageToWritePayload, 0),
 	}
 
-	_, senderPrivateKey := getCurrentUserInformation()
+	_, senderPrivateKey := s.getCurrentUserInformation()
 
 	for _, environment := range environments {
 		environmentId := environment.EnvironmentID
@@ -293,20 +289,18 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 
 // getCurrentUserInformation returns the currently logged in user
 // and their private key.
-// Panics if there is no currently logged in user
-// or if the currently logged in user has no privace key (which should never happen)
-func getCurrentUserInformation() (models.User, []byte) {
+func (s *messageService) getCurrentUserInformation() (models.User, []byte) {
 	var currentUser models.User
 	currentUser, index := config.GetCurrentAccount()
 	if index < 0 {
-		// TODO: error handling
-		panic(fmt.Errorf("User must be logged in"))
+		s.err = kserrors.MustBeLoggedIn(nil)
+		return currentUser, []byte{}
 	}
 
 	senderPrivateKey, err := config.GetCurrentUserPrivateKey()
 	if err != nil {
-		// TODO: error handling
-		panic(err)
+		s.err = kserrors.MustBeLoggedIn(nil)
+		return currentUser, []byte{}
 	}
 
 	return currentUser, senderPrivateKey

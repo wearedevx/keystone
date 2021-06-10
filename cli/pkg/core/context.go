@@ -63,13 +63,17 @@ func New(flag string) *Context {
 	// Get global configuration path
 	var currentUser *user.User
 	if currentUser, err = user.Current(); err != nil {
-		panic(err)
+		errMsg := fmt.Sprintf("Failed to read current user (%s)", err.Error())
+		println(errMsg)
+		os.Exit(1)
 	}
 
 	configDir := path.Join(currentUser.HomeDir, ".config", "keystone")
 
 	if err = os.MkdirAll(configDir, 0755); err != nil {
-		panic(err)
+		errMsg := fmt.Sprintf("Failed to create keystone config (%s)", err.Error())
+		println(errMsg)
+		os.Exit(1)
 	}
 
 	context.ConfigDir = configDir

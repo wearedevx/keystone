@@ -61,26 +61,26 @@ Created files and directories:
 		if osError != nil {
 			err = kerrors.NewError("OS Error", "Error when retrieving working directory", map[string]string{}, osError)
 			err.Print()
-			return
+			os.Exit(1)
 		}
 
 		// Ask for project name if keystone file doesn't exist.
 		if !keystonefile.ExistsKeystoneFile(currentfolder) {
-			c, kcErr := client.NewKeystoneClient()
-
-			if kcErr != nil {
-				panic(kcErr)
+			c, err := client.NewKeystoneClient()
+			if err != nil {
+				err.Print()
+				os.Exit(1)
 			}
 
-			project, kerr := c.Project("").Init(projectName)
-
-			if kerr != nil {
-				panic(kerr)
+			project, initErr := c.Project("").Init(projectName)
+			if initErr != nil {
+				ui.PrintError(initErr.Error())
+				os.Exit(1)
 			}
 
 			if err = ctx.Init(project).Err(); err != nil {
 				err.Print()
-				return
+				os.Exit(1)
 			}
 
 			ui.Print(ui.RenderTemplate("Init Success", `

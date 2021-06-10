@@ -19,15 +19,17 @@ type EnvironmentService interface {
 }
 
 func NewEnvironmentService(ctx *core.Context) EnvironmentService {
-	client, err := client.NewKeystoneClient()
-	if err != nil {
-		panic(err)
+	var ksc client.KeystoneClient
+	var err *kserrors.Error
+
+	if err = ctx.Err(); err == nil {
+		ksc, err = client.NewKeystoneClient()
 	}
 
 	s := &environmentService{
-		err:    ctx.Err(),
+		err:    err,
 		ctx:    ctx,
-		client: client,
+		client: ksc,
 	}
 
 	return s

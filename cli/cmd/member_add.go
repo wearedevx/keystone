@@ -195,6 +195,7 @@ func getMemberRolesFromPrompt(c client.KeystoneClient, memberIDs []string) map[s
 func mustMembersExist(c client.KeystoneClient, memberIDs []string) {
 	r, err := c.Users().CheckUsersExist(memberIDs)
 	if err != nil {
+        // The HTTP request must have failed
 		errors.UnkownError(err).Print()
 		os.Exit(1)
 	}

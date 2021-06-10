@@ -25,7 +25,6 @@ func DoesUserHaveRightsOnEnvironment(Repo repo.IRepo, userID uint, projectID uin
 	err := Repo.GetProjectMember(&projectMember).Err()
 
 	if err != nil {
-		fmt.Println("Error:", err)
 		return false, err
 	}
 

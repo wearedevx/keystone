@@ -287,6 +287,24 @@ errors:
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
+  - type: CannotRemoveDirectoryContents
+    name: "Cannot Remove Directory Contents"
+    params: 
+      - name: Path
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
+      This happened because: {{ .Cause }}
+
+  - type: CannotSaveFiles
+    name: "Cannot Save Files"
+    params:
+      - name: FileList
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .FileList | red }} {{- "'" | red }}
+      This happened because: {{ .Cause }}
+
   - type: CannotRemoveDirectory
     name: "Cannot Remove Directory"
     params:
@@ -349,7 +367,7 @@ errors:
       {{ .Message }}
 
       You can invite those users to Keystone using
-        $ ks invite <emai>
+        $ ks invite <email>
 
   - type: CannotAddMembers
     name: "Cannot Add Members"
@@ -364,3 +382,26 @@ errors:
     template: |
       {{ ERROR }} {{ .Name | red }}
       This happened because: {{ .Cause }}
+
+  # DECRYPTION ERRORS
+  # -----------------
+  - type: CouldNotDecryptMessages
+    name: "Could not decrypt messages"
+    params:
+      - name: Message
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      {{ .Message }}
+
+      This happened because: {{ .Cause }}
+
+  # MESSAGES ERRORS
+  # ---------------
+  - type: CouldNotParseMessage
+    name: "Could not parse message"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      This happened because: {{ .Cause }}
+

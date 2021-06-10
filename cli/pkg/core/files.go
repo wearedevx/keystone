@@ -64,17 +64,19 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 
 		if err := os.MkdirAll(parentDir, 0o755); err != nil {
 			ctx.setError(CannotCreateDirectory(parentDir, err))
-			panic(err)
+			return ctx
 		}
 
 		destFile, err := os.OpenFile(dest, os.O_WRONLY|os.O_CREATE, 0o644)
-
 		if err == nil {
 			defer destFile.Close()
 
-			destFile.Write(envContentMap[environment])
-		} else {
-			panic(err)
+			_, err = destFile.Write(envContentMap[environment])
+		}
+
+		if err != nil {
+			println(fmt.Sprintf("Failed to write %s (%s)", dest, err.Error()))
+			os.Exit(1)
 		}
 	}
 

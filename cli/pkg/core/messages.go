@@ -32,7 +32,7 @@ type ChangesByEnvironment struct {
 	Environments map[string][]Change
 }
 
-func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnvironmentResponse) (ChangesByEnvironment, error) {
+func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnvironmentResponse) ChangesByEnvironment {
 	changes := ChangesByEnvironment{Environments: make(map[string][]Change)}
 
 	for environmentName, environment := range MessageByEnvironments.Environments {
@@ -47,28 +47,26 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		}
 
 		if err := json.Unmarshal(environment.Message.Payload, &PayloadContent); err != nil {
-			panic(err)
+			ctx.err = kserrors.CouldNotParseMessage(err)
+			return changes
+
 		}
 
 		environmentChanges := make([]Change, 0)
-		fileChanges, err := ctx.getFilesChanges(PayloadContent.Files, environmentName)
-		if err != nil {
-			// TODO: Error Handling
-			panic(err)
-		}
+		fileChanges := ctx.getFilesChanges(PayloadContent.Files, environmentName)
 
 		if len(fileChanges) > 0 {
 			filesDir := ctx.CachedEnvironmentFilesPath(environmentName)
 			if err := utils.RemoveContents(filesDir); err != nil {
-				// TODO: Error Handling
-				panic(err)
+				ctx.err = kserrors.CannotRemoveDirectoryContents(filesDir, err)
+				return changes
 			}
 		}
 
-		err = ctx.saveFilesChanges(fileChanges, environmentName)
+		err := ctx.saveFilesChanges(fileChanges, environmentName)
 		if err != nil {
-			// TODO: Error Handling
-			panic(err)
+			ctx.err = kserrors.CannotSaveFiles(err.Error(), err)
+			return changes
 		}
 
 		secretChanges := GetSecretsChanges(localSecrets, PayloadContent.Secrets)
@@ -96,7 +94,7 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		ctx.UpdateEnvironment(environment.Environment)
 	}
 
-	return changes, nil
+	return changes
 }
 
 func GetSecretsChanges(localSecrets []models.SecretVal, newSecrets []models.SecretVal) (changes []Change) {
@@ -158,14 +156,15 @@ func fileHasChanges(pathToExistingFile string, candidateContent []byte) (sameCon
 	return false, err
 }
 
-func (ctx *Context) getFilesChanges(files []models.File, environmentName string) (changes []Change, err error) {
+func (ctx *Context) getFilesChanges(files []models.File, environmentName string) (changes []Change) {
 	changes = make([]Change, 0)
 
 	for _, file := range files {
 		fileContent, err := base64.StdEncoding.DecodeString(file.Value)
 		if err != nil {
 			//TODO: Prettify this error
-			fmt.Println("ERROR decoding base64 decrypted file content", err.Error())
+			errmsg := fmt.Sprintln("Failed decoding base64 decrypted file content (%s)", err.Error())
+			println(errmsg)
 			continue
 		}
 
@@ -174,7 +173,9 @@ func (ctx *Context) getFilesChanges(files []models.File, environmentName string)
 		fileHasChanges, err := fileHasChanges(filePath, fileContent)
 		if err != nil {
 			//TODO: Prettify this error
-			fmt.Println("ERROR checking for file changes: ", err.Error())
+			errmsg := fmt.Sprintln("Failed checking for file changes (%s)", err.Error())
+			println(errmsg)
+			continue
 		}
 
 		if fileHasChanges {
@@ -185,7 +186,7 @@ func (ctx *Context) getFilesChanges(files []models.File, environmentName string)
 			})
 		}
 	}
-	return changes, err
+	return changes
 }
 
 func (ctx *Context) saveFilesChanges(changes []Change, environmentName string) (err error) {
@@ -258,7 +259,7 @@ func (ctx *Context) PrepareMessagePayload(environment models.Environment) (model
 }
 
 func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByEnvironmentResponse) (ChangesByEnvironment, *kserrors.Error) {
-	changes, _ := ctx.SaveMessages(messagesByEnvironments)
+	changes := ctx.SaveMessages(messagesByEnvironments)
 
 	if err := ctx.Err(); err != nil {
 		err.Print()

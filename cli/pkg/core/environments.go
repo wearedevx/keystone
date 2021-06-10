@@ -28,6 +28,8 @@ func (ctx *Context) CurrentEnvironment() string {
 	return environmentsfile.Current
 }
 
+// ListEnvironments lists all environmnts
+// present on disk
 func (ctx *Context) ListEnvironments() []string {
 	if ctx.Err() != nil {
 		return []string{}

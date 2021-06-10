@@ -2,6 +2,8 @@ package ui
 
 import (
 	"bytes"
+	"fmt"
+	"os"
 	"strings"
 	"text/template"
 
@@ -16,7 +18,8 @@ func RenderTemplate(name string, tpl string, viewData interface{}) string {
 	err := t.Execute(&buf, viewData)
 
 	if err != nil {
-		panic(err)
+		println(fmt.Sprintf("Failed to render template %s (%s)", name, err.Error()))
+		os.Exit(1)
 	}
 
 	return buf.String()
