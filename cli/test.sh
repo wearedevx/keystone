@@ -31,6 +31,11 @@ EXIT_STATUS_CODE=$?
 
 rm "/tmp/keystone_gorm"*
 
+# In case the tests failed or succeeded too fast
+# the API is not started yet, and lsof fails,
+# and the API keeps on running.
+# This little for loop here, ensures that
+# we wait long enough, ie. when lsof succeeds
 for i in {0..10}; do
 	pid=$(lsof -t -i :9001);
 	if [ $? -eq 0 ]; then
