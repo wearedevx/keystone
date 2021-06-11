@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export $(cat .env-dev | xargs)
+export $(cat .env | xargs)
 
 LDFLAGS="-X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=$KSAPI_URL"
 
