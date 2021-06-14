@@ -22,7 +22,7 @@ services:
     # image: cossacklabs/ci-py-go-themis
     build:
       context: ./
-      dockerfile: Dockerfile
+      dockerfile: tests/Dockerfile
     user: "${UID}:${GID}"
     container_name: ks_api
     working_dir: /home/golang/app

@@ -4,23 +4,18 @@
 WORK=$PWD
 commit=$(git rev-parse HEAD)
 
-function_dir=$WORK/functions
+export $(cat .env | sed 's/#.*//g' | xargs)
 
-ksauth_dir=$function_dir/ksauth
-ksapi_dir=$function_dir/ksapi
+TAG=eu.gcr.io/keystone-245200/keystone-server:${commit}
 
-echo "Entering ${ksauth_dir}"
-cd $ksauth_dir
-go get github.com/wearedevx/keystone@$commit
-sh ./deploy.sh
+gcloud auth activate-service-account --project=keystone-245200 --key-file=keystone-deploy-credentials.json
 
-echo "Done!\n\n"
-cd $WORK
+gcloud builds submit --tag $TAG
 
-echo "Entering ${ksapi_dir}"
-cd $ksapi_dir
-go get github.com/wearedevx/keystone@$commit
-sh ./deploy.sh
+gcloud run deploy keystone-server \
+	--region europe-west6 \
+	--allow-unauthenticated \
+	--set-env-vars DB_HOST=${DB_HOST},DB_NAME=${DB_NAME},DB_USER=${DB_USER},DB_PASSWORD=${DB_PASSWORD},CLOUDSQL_INSTANCE=${CLOUDSQL_INSTANCE},CLOUDSQL_CREDENTIALS=${CLOUDSQL_CREDENTIALS} \
+	--add-cloudsql-instances keystonedb \
+	--image $TAG
 
-echo "Done!\n\n"
-cd $WORK
