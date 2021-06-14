@@ -1,6 +1,8 @@
 package core
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func PrintObject(object interface{}) {
 	fmt.Printf("%+v\n", object)

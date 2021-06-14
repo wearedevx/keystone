@@ -21,6 +21,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
+
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -63,13 +65,19 @@ Example:
 
 		for _, secretInfo := range env {
 			value := secretInfo.Values[core.EnvironmentName(currentEnvironment)]
+
+			checkErr := utils.CheckSecretContent(secretInfo.Name)
+			if checkErr != nil {
+				ui.Print(`echo \"%s\"`, checkErr.Error())
+				os.Exit(1)
+			}
 			if secretInfo.Required && value == "" {
 				ui.Print("echo \"Error: secret '%s' is required, but value is missing\"", secretInfo.Name)
 				// make the eval crash in such situation
 				os.Exit(1)
 			}
 
-			ui.Print("export %s=%s", secretInfo.Name, value)
+			ui.Print(`export %s="%s"`, secretInfo.Name, value)
 
 		}
 	},

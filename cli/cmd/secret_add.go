@@ -23,6 +23,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 
@@ -55,6 +56,13 @@ Example:
 		var err *errors.Error
 		secretName, secretValue := args[0], args[1]
 		environmentValueMap := make(map[string]string)
+
+		checkSecretErr := utils.CheckSecretContent(secretName)
+
+		if checkSecretErr != nil {
+			ui.PrintError(checkSecretErr.Error())
+			os.Exit(1)
+		}
 
 		ctx := core.New(core.CTX_RESOLVE)
 
