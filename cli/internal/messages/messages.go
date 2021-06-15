@@ -107,7 +107,7 @@ func (s *messageService) fetchNewMessages(result *models.GetMessageByEnvironment
 		return
 	}
 
-	fmt.Println("Syncing data...")
+	fmt.Println("# Syncing data...")
 
 	projectID := s.ctx.GetProjectID()
 	*result, _ = s.client.Messages().GetMessages(projectID)
@@ -221,8 +221,17 @@ func (s *messageService) SendEnvironments(environments []models.Environment) Mes
 		messagesToWrite.Messages = append(messagesToWrite.Messages, messages...)
 	}
 
-	if _, err := s.client.Messages().SendMessages(messagesToWrite); err != nil {
+	result, err := s.client.Messages().SendMessages(messagesToWrite)
+	if err != nil {
 		s.err = kserrors.UnkownError(err)
+	}
+
+	for _, environment := range result.Environments {
+		if err := s.ctx.UpdateEnvironment(environment).Err(); err != nil {
+			fmt.Println(err)
+			s.err = kserrors.UnkownError(err)
+			return s
+		}
 	}
 
 	return s

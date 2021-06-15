@@ -2,6 +2,7 @@ package repo
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"strings"
 
@@ -31,12 +32,16 @@ func (repo *Repo) GetMessagesForUserOnEnvironment(user models.User, environment 
 		return repo
 	}
 
-	repo.err = repo.GetDb().
+	err := repo.GetDb().
 		Model(&models.Message{}).
 		Preload("Sender").
 		Where("recipient_id = ? AND environment_id = ?", user.ID, environment.EnvironmentID).
 		First(&message).
 		Error
+
+	if !errors.Is(err, ErrorNotFound) {
+		// repo.err = err
+	}
 
 	return repo
 }

@@ -45,7 +45,9 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 				Value: string(localSecret.Values[EnvironmentName(environmentName)]),
 			})
 		}
-
+		if len(environment.Message.Payload) == 0 {
+			continue
+		}
 		if err := json.Unmarshal(environment.Message.Payload, &PayloadContent); err != nil {
 			ctx.err = kserrors.CouldNotParseMessage(err)
 			return changes
@@ -313,6 +315,28 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 }
 
 func (ctx *Context) CompareNewSecretWithChanges(secretName string, newSecret map[string]string, changesByEnvironment ChangesByEnvironment) *kserrors.Error {
+	environmentValueMap := make(map[string]string)
+
+	for environmentName, changes := range changesByEnvironment.Environments {
+		for _, change := range changes {
+
+			if change.Name == secretName {
+				environmentValueMap[environmentName] = change.To
+			}
+		}
+	}
+
+	if len(environmentValueMap) > 0 {
+		environmentValueMapString := ""
+		for environment, value := range environmentValueMap {
+			environmentValueMapString += fmt.Sprintf("Value in '%s' is '%s'.\n", environment, value)
+		}
+		return kserrors.SecretHasChanged(secretName, environmentValueMapString, nil)
+	}
+	return nil
+}
+
+func (ctx *Context) CompareRemovedSecretWithChanges(secretName string, changesByEnvironment ChangesByEnvironment) *kserrors.Error {
 	environmentValueMap := make(map[string]string)
 
 	for environmentName, changes := range changesByEnvironment.Environments {

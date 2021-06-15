@@ -68,7 +68,7 @@ Example:
 
 			checkErr := utils.CheckSecretContent(secretInfo.Name)
 			if checkErr != nil {
-				ui.Print(`echo \"%s\"`, checkErr.Error())
+				ui.Print(`echo %s`, checkErr.Error())
 				os.Exit(1)
 			}
 			if secretInfo.Required && value == "" {

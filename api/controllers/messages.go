@@ -75,11 +75,9 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 		if can {
 			curr := models.GetMessageResponse{}
 			if err = Repo.GetMessagesForUserOnEnvironment(user, environment, &curr.Message).Err(); err != nil {
-				if !errors.Is(err, repo.ErrorNotFound) {
-					response.Error = Repo.Err()
-					response.Success = false
-					return &response, http.StatusBadRequest, nil
-				}
+				response.Error = Repo.Err()
+				response.Success = false
+				return &response, http.StatusBadRequest, nil
 			}
 
 			curr.Environment = environment
@@ -106,19 +104,19 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		projectMember := models.ProjectMember{
 			UserID: message.RecipientID,
 		}
-		environment := models.Environment{
+		environment := &models.Environment{
 			EnvironmentID: message.EnvironmentID,
 		}
 
 		if err = Repo.
 			GetProjectMember(&projectMember).
-			GetEnvironment(&environment).
+			GetEnvironment(environment).
 			Err(); err != nil {
 			return response, http.StatusNotFound, err
 		}
 
 		// - check if user has rights to write on environment
-		can, err := rights.CanUserWriteOnEnvironment(Repo, user.ID, environment.Project.ID, &environment)
+		can, err := rights.CanUserWriteOnEnvironment(Repo, user.ID, environment.Project.ID, environment)
 
 		if err != nil {
 			return response, http.StatusInternalServerError, err
@@ -129,7 +127,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		}
 
 		// - check recipient exists with read rights.
-		can, err = rights.CanUserReadEnvironment(Repo, projectMember.UserID, projectMember.ProjectID, &environment)
+		can, err = rights.CanUserReadEnvironment(Repo, projectMember.UserID, projectMember.ProjectID, environment)
 		if err != nil {
 			return response, http.StatusInternalServerError, err
 		}
@@ -150,24 +148,14 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		}
 
 		// Change environment version id.
-		err = Repo.SetNewVersionID(&environment)
+		err = Repo.SetNewVersionID(environment)
 
 		if err != nil {
 			return response, http.StatusInternalServerError, err
-		}
-		response.Environments = append(response.Environments, environment)
-
-		if err != nil {
-			fmt.Printf("err: %+v\n", err)
-			break
 		}
 
 		// Change environment version id.
-		err = Repo.SetNewVersionID(&environment)
-
-		if err != nil {
-			return response, http.StatusInternalServerError, err
-		}
+		response.Environments = append(response.Environments, *environment)
 	}
 
 	return response, status, nil
