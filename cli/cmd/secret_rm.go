@@ -16,8 +16,13 @@ limitations under the License.
 package cmd
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/internal/environments"
 	"github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/messages"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -36,11 +41,67 @@ Exemple:
 	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 		secretName := args[0]
+		environmentValueMap := make(map[string]string)
 
-		ctx := core.New(core.CTX_RESOLVE).RemoveSecret(secretName)
+		checkSecretErr := utils.CheckSecretContent(secretName)
+
+		if checkSecretErr != nil {
+			ui.PrintError(checkSecretErr.Error())
+			os.Exit(1)
+		}
+
+		ctx := core.New(core.CTX_RESOLVE)
+
+		ctx.MustHaveEnvironment(currentEnvironment)
+
+		es := environments.NewEnvironmentService(ctx)
+		if err = es.Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+		}
+
+		environmentNames := make([]string, 0)
+		accessibleEnvironments := es.GetAccessibleEnvironments()
+
+		if err = es.Err(); err != nil {
+			err.Print()
+			return
+		}
+
+		for _, environment := range accessibleEnvironments {
+			environmentNames = append(environmentNames, environment.Name)
+		}
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
+			return
+		}
+
+		ms := messages.NewMessageService(ctx)
+		changes := ms.GetMessages()
+
+		if err = ms.Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+		}
+
+		if err = ctx.CompareNewSecretWithChanges(secretName, environmentValueMap, changes); err != nil {
+			err.Print()
+			os.Exit(1)
+			return
+		}
+
+		ctx.RemoveSecret(secretName)
+
+		if err = ctx.Err(); err != nil {
+			err.Print()
+			return
+		}
+		// TODO
+		// Format beautyiful error
+		if err := ms.SendEnvironments(accessibleEnvironments).Err(); err != nil {
+			err.Print()
+			os.Exit(1)
 			return
 		}
 
