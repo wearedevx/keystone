@@ -244,7 +244,55 @@ func (ctx *Context) GetSecret(secretName string) *Secret {
 	return secret
 }
 
-// Returns all secrets, and their value in each environment.
+// List secret from .keystone/cache, and their value in each environment.
+func (ctx *Context) ListSecretsFromCache() []Secret {
+	secrets := make([]Secret, 0)
+
+	if ctx.Err() != nil {
+		return secrets
+	}
+
+	var err error
+	ksfile := new(KeystoneFile).Load(ctx.Wd)
+
+	if err = ksfile.Err(); err != nil {
+		ctx.setError(FailedToReadKeystoneFile(err))
+		return secrets
+	}
+
+	environmentValuesMap := map[string]map[string]string{}
+	allSecrets := make([]string, 0)
+
+	for _, environment := range ctx.ListEnvironments() {
+		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(environment)
+		dotEnv := new(EnvFile).Load(dotEnvPath)
+
+		environmentValuesMap[environment] = dotEnv.GetData()
+		for label, _ := range dotEnv.GetData() {
+			allSecrets = append(allSecrets, label)
+		}
+	}
+
+	allSecrets = uniq(allSecrets)
+
+	for _, envKey := range allSecrets {
+		name := envKey
+		values := map[EnvironmentName]SecretValue{}
+
+		for environment, secrets := range environmentValuesMap {
+			values[EnvironmentName(environment)] = SecretValue(secrets[name])
+		}
+
+		secrets = append(secrets, Secret{
+			Name:   name,
+			Values: values,
+		})
+	}
+
+	return secrets
+}
+
+// Returns secrets from keystone.yml, and their value in each environment.
 func (ctx *Context) ListSecrets() []Secret {
 	secrets := make([]Secret, 0)
 

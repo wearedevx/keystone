@@ -163,7 +163,15 @@ func (s *messageService) printChanges(changes core.ChangesByEnvironment, message
 				for _, change := range changes.Environments[environmentName] {
 					// No previous cotent => secret is new
 					if len(change.From) == 0 {
-						ui.Print("++ " + change.Name + " : " + change.To)
+						ui.Print(ui.RenderTemplate("secret added", ` {{ "++" | green }} {{ .Secret }} : {{ .From }} → {{ .To }}`, map[string]string{
+							"Secret": change.Name,
+							"From":   change.From,
+							"To":     change.To,
+						}))
+					} else if len(change.To) == 0 {
+						ui.Print(ui.RenderTemplate("secret deleted", ` {{ "--" | red }} {{ .Secret }}`, map[string]string{
+							"Secret": change.Name,
+						}))
 					} else {
 						ui.Print("   " + change.Name + " : " + change.From + " ↦ " + change.To)
 					}
@@ -289,8 +297,18 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 		messagesToWrite.Messages = append(messagesToWrite.Messages, message)
 	}
 
-	if _, err := s.client.Messages().SendMessages(messagesToWrite); err != nil {
+	result, err := s.client.Messages().SendMessages(messagesToWrite)
+
+	if err != nil {
 		s.err = kserrors.UnkownError(err)
+	}
+
+	for _, environment := range result.Environments {
+		if err := s.ctx.UpdateEnvironment(environment).Err(); err != nil {
+			fmt.Println(err)
+			s.err = kserrors.UnkownError(err)
+			return s
+		}
 	}
 
 	return s

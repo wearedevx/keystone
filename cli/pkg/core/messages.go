@@ -130,6 +130,26 @@ func GetSecretsChanges(localSecrets []models.SecretVal, newSecrets []models.Secr
 		}
 	}
 
+	// Check for secret that has been deleted
+	for _, localSecret := range localSecrets {
+		found := false
+		for _, newSecret := range newSecrets {
+			if newSecret.Label == localSecret.Label {
+				found = true
+			}
+		}
+
+		if !found {
+			changes = append(changes, Change{
+				Name: localSecret.Label,
+				From: localSecret.Value,
+				To:   "",
+				Type: "secret",
+			})
+
+		}
+	}
+
 	return changes
 }
 
@@ -230,7 +250,7 @@ func (ctx *Context) PrepareMessagePayload(environment models.Environment) (model
 
 	errors := make([]string, 0)
 
-	for _, secret := range ctx.ListSecrets() {
+	for _, secret := range ctx.ListSecretsFromCache() {
 		PayloadContent.Secrets = append(PayloadContent.Secrets, models.SecretVal{
 			Label: secret.Name,
 			Value: string(secret.Values[EnvironmentName(environment.Name)]),
@@ -329,7 +349,11 @@ func (ctx *Context) CompareNewSecretWithChanges(secretName string, newSecret map
 	if len(environmentValueMap) > 0 {
 		environmentValueMapString := ""
 		for environment, value := range environmentValueMap {
-			environmentValueMapString += fmt.Sprintf("Value in '%s' is '%s'.\n", environment, value)
+			if len(value) == 0 {
+				environmentValueMapString += fmt.Sprintf("Secret in %s is deleted.\n", environment)
+			} else {
+				environmentValueMapString += fmt.Sprintf("Value in %s is '%s'.\n", environment, value)
+			}
 		}
 		return kserrors.SecretHasChanged(secretName, environmentValueMapString, nil)
 	}
