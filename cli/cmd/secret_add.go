@@ -127,7 +127,8 @@ Enter a values for {{ . }}:`, secretName))
 
 		environmentValueMap[currentEnvironment] = secretValue
 
-		ms := messages.NewMessageService(ctx)
+		var printer = &ui.UiPrinter{}
+		ms := messages.NewMessageService(ctx, printer)
 		changes := ms.GetMessages()
 
 		if err = ms.Err(); err != nil {

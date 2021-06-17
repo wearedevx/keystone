@@ -35,11 +35,11 @@ var sourceCmd = &cobra.Command{
 
 Environment variables values can then be loaded using eval, for example.
 
-Example: 
+Example:
   $ ks source
   KEY=value
   OTHER_KEY=other_value
-  
+
   $ eval "$(ks source)"
   $ echo $KEY
   value
@@ -51,7 +51,9 @@ Example:
 		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		ms := messages.NewMessageService(ctx)
+		var printer = &ui.EchoPrinter{}
+
+		ms := messages.NewMessageService(ctx, printer)
 		ms.GetMessages()
 
 		env := ctx.ListSecrets()

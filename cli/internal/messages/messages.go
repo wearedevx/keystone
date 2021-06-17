@@ -15,9 +15,10 @@ import (
 )
 
 type messageService struct {
-	err    *kserrors.Error
-	ctx    *core.Context
-	client client.KeystoneClient
+	err     *kserrors.Error
+	ctx     *core.Context
+	client  client.KeystoneClient
+	printer ui.Printer
 }
 
 type MessageService interface {
@@ -28,13 +29,14 @@ type MessageService interface {
 	DeleteMessages(messagesIds []uint) MessageService
 }
 
-func NewMessageService(ctx *core.Context) (service MessageService) {
+func NewMessageService(ctx *core.Context, Printer ui.Printer) (service MessageService) {
 	client, ksErr := client.NewKeystoneClient()
 
 	service = &messageService{
-		err:    ksErr,
-		ctx:    ctx,
-		client: client,
+		err:     ksErr,
+		ctx:     ctx,
+		client:  client,
+		printer: Printer,
 	}
 
 	return service
@@ -107,7 +109,7 @@ func (s *messageService) fetchNewMessages(result *models.GetMessageByEnvironment
 		return
 	}
 
-	fmt.Println("# Syncing data...")
+	s.printer.Print("Syncing data...")
 
 	projectID := s.ctx.GetProjectID()
 	*result, _ = s.client.Messages().GetMessages(projectID)
@@ -158,27 +160,27 @@ func (s *messageService) printChanges(changes core.ChangesByEnvironment, message
 		if messageID != 0 {
 			// IF changes detected
 			if len(changes.Environments[environmentName]) > 0 {
-				ui.Print("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
+				s.printer.Print("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
 
 				for _, change := range changes.Environments[environmentName] {
 					// No previous cotent => secret is new
 					if len(change.From) == 0 {
-						ui.Print(ui.RenderTemplate("secret added", ` {{ "++" | green }} {{ .Secret }} : {{ .From }} → {{ .To }}`, map[string]string{
+						s.printer.Print(ui.RenderTemplate("secret added", ` {{ "++" | green }} {{ .Secret }} : {{ .To }}`, map[string]string{
 							"Secret": change.Name,
 							"From":   change.From,
 							"To":     change.To,
 						}))
 					} else if len(change.To) == 0 {
-						ui.Print(ui.RenderTemplate("secret deleted", ` {{ "--" | red }} {{ .Secret }}`, map[string]string{
+						s.printer.Print(ui.RenderTemplate("secret deleted", ` {{ "--" | red }} {{ .Secret }} deleted.`, map[string]string{
 							"Secret": change.Name,
 						}))
 					} else {
-						ui.Print("   " + change.Name + " : " + change.From + " ↦ " + change.To)
+						s.printer.Print("   " + change.Name + " : " + change.From + " ↦ " + change.To)
 					}
 
 				}
 			} else {
-				ui.Print("Environment " + environmentName + " up to date ✔")
+				s.printer.Print("Environment " + environmentName + " up to date ✔")
 			}
 
 			if err := s.ctx.Err(); err != nil {
@@ -189,10 +191,10 @@ func (s *messageService) printChanges(changes core.ChangesByEnvironment, message
 			environmentChanged := s.ctx.EnvironmentVersionHasChanged(environmentName, environment.Environment.VersionID)
 
 			if environmentChanged {
-				ui.Print("Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯")
+				s.printer.Print("Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯")
 				changedEnvironments = append(changedEnvironments, environmentName)
 			} else {
-				ui.Print("Environment " + environmentName + " up to date ✔")
+				s.printer.Print("Environment " + environmentName + " up to date ✔")
 			}
 		}
 	}

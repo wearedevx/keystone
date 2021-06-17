@@ -56,7 +56,8 @@ Example:
 			return
 		}
 
-		ms := messages.NewMessageService(ctx)
+		var printer = &ui.UiPrinter{}
+		ms := messages.NewMessageService(ctx, printer)
 		ms.GetMessages()
 		if err := ms.Err(); err != nil {
 			err.Print()

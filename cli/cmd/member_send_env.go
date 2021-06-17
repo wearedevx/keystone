@@ -65,7 +65,8 @@ If a member hasn't received secrets and files last time someone sent an update, 
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		ms := messages.NewMessageService(ctx)
+		var printer = &ui.UiPrinter{}
+		ms := messages.NewMessageService(ctx, printer)
 		ms.GetMessages()
 
 		if err = ms.Err(); err != nil {
