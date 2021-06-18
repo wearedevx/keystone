@@ -17,12 +17,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
-	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -46,14 +47,21 @@ Example:
 	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 
-		ctx := core.New(core.CTX_RESOLVE)
-
 		filePath := args[0]
 
 		if !utils.FileExists(filePath) {
 			err = errors.CannotRemoveFile(filePath, fmt.Errorf("file not found"))
 			err.Print()
 			return
+		}
+
+		var printer = &ui.UiPrinter{}
+		ms := messages.NewMessageService(ctx, printer)
+		ms.GetMessages()
+
+		if err := ms.Err(); err != nil {
+			err.Print()
+			os.Exit(1)
 		}
 
 		ui.Print(ui.RenderTemplate("confirm files rm", `{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
@@ -76,7 +84,7 @@ This is permanent, and cannot be undone.`, map[string]string{
 		}
 
 		if result == "y" {
-			ctx.RemoveFile(filePath, forcePrompts)
+			ctx.RemoveFile(filePath, forcePrompts, ctx.AccessibleEnvironments)
 		}
 
 		if err = ctx.Err(); err != nil {

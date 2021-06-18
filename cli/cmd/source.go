@@ -48,7 +48,6 @@ Example:
 	Run: func(_ *cobra.Command, _ []string) {
 		var err *errors.Error
 
-		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		var printer = &ui.EchoPrinter{}

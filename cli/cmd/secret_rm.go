@@ -19,11 +19,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/environments"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
-	"github.com/wearedevx/keystone/cli/internal/utils"
-	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -36,49 +33,22 @@ var secretsRmCmd = &cobra.Command{
 Removes the given secret from all environments.
 
 Exemple:
-  $ ks rmove PORT`,
+  $ ks rm PORT`,
 	Args: cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 		secretName := args[0]
-		environmentValueMap := make(map[string]string)
-
-		checkSecretErr := utils.CheckSecretContent(secretName)
-
-		if checkSecretErr != nil {
-			ui.PrintError(checkSecretErr.Error())
-			os.Exit(1)
-		}
-
-		ctx := core.New(core.CTX_RESOLVE)
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		es := environments.NewEnvironmentService(ctx)
-		if err = es.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
-
-		environmentNames := make([]string, 0)
-		accessibleEnvironments := es.GetAccessibleEnvironments()
-
-		if err = es.Err(); err != nil {
-			err.Print()
-			return
-		}
-
-		for _, environment := range accessibleEnvironments {
-			environmentNames = append(environmentNames, environment.Name)
-		}
-
-		if err = ctx.Err(); err != nil {
-			err.Print()
+		if !ctx.HasSecret(secretName) {
+			errors.SecretDoesNotExist(secretName, nil).Print()
 			return
 		}
 
 		var printer = &ui.UiPrinter{}
 		ms := messages.NewMessageService(ctx, printer)
+
 		changes := ms.GetMessages()
 
 		if err = ms.Err(); err != nil {
@@ -86,7 +56,7 @@ Exemple:
 			os.Exit(1)
 		}
 
-		if err = ctx.CompareNewSecretWithChanges(secretName, environmentValueMap, changes); err != nil {
+		if err = ctx.CompareRemovedSecretWithChanges(secretName, changes); err != nil {
 			err.Print()
 			os.Exit(1)
 			return
@@ -100,7 +70,7 @@ Exemple:
 		}
 		// TODO
 		// Format beautyiful error
-		if err := ms.SendEnvironments(accessibleEnvironments).Err(); err != nil {
+		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
 			err.Print()
 			os.Exit(1)
 			return
@@ -112,14 +82,4 @@ Exemple:
 
 func init() {
 	secretsCmd.AddCommand(secretsRmCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// unsetCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// unsetCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

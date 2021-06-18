@@ -35,7 +35,6 @@ Used without arguments, displays a table of secrets.`,
 	Run: func(_ *cobra.Command, _ []string) {
 		var err *errors.Error
 
-		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
 		environments := ctx.ListEnvironments()
 

@@ -25,7 +25,6 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 	"gopkg.in/yaml.v2"
@@ -79,7 +78,6 @@ ks member add -r developer -u john.doe@gitlab -u danny54@gitlab
 `,
 	Run: func(_ *cobra.Command, _ []string) {
 		// Auth check
-		ctx := core.New(core.CTX_RESOLVE)
 		projectID := ctx.GetProjectID()
 
 		c, kcErr := client.NewKeystoneClient()
@@ -195,7 +193,7 @@ func getMemberRolesFromPrompt(c client.KeystoneClient, memberIDs []string) map[s
 func mustMembersExist(c client.KeystoneClient, memberIDs []string) {
 	r, err := c.Users().CheckUsersExist(memberIDs)
 	if err != nil {
-        // The HTTP request must have failed
+		// The HTTP request must have failed
 		errors.UnkownError(err).Print()
 		os.Exit(1)
 	}

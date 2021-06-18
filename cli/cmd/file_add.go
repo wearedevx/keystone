@@ -24,13 +24,11 @@ import (
 
 	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
-	envservice "github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
-	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -58,7 +56,6 @@ Examples:
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
 
-		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		filePath := args[0]
@@ -127,14 +124,6 @@ Examples:
 			os.Exit(1)
 		}
 
-		es := envservice.NewEnvironmentService(ctx)
-		accessibleEnvironments := es.GetAccessibleEnvironments()
-
-		if err := es.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
-
 		file := keystonefile.FileKey{
 			Path:   filePath,
 			Strict: addOptional,
@@ -160,7 +149,7 @@ Examples:
 			return
 		}
 
-		if err := ms.SendEnvironments(accessibleEnvironments).Err(); err != nil {
+		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
 			err.Print()
 			os.Exit(1)
 		}

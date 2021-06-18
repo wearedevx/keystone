@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
-	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -33,8 +32,6 @@ Get info from your team:
 	Args: cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
 		var err *errors.Error
-
-		ctx := core.New(core.CTX_RESOLVE)
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 

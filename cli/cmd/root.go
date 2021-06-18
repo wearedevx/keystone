@@ -40,6 +40,8 @@ var currentEnvironment string
 var quietOutput bool
 var skipPrompts bool
 
+var ctx *core.Context
+
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "ks",
@@ -79,7 +81,15 @@ func Initialize() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	ctx := core.New(core.CTX_RESOLVE)
+	if len(os.Args) > 1 {
+		command := os.Args[1]
+		if command == "init" {
+			ctx = core.New(core.CTX_INIT)
+		} else {
+			ctx = core.New(core.CTX_RESOLVE)
+		}
+	}
+
 	// environments := ctx.ListEnvironments()
 	current := ctx.CurrentEnvironment()
 	currentfolder, _ := os.Getwd()
@@ -88,7 +98,19 @@ func Initialize() {
 
 	if config.IsLoggedIn() {
 		es := environments.NewEnvironmentService(ctx)
+		if err := es.Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+		}
+
 		accessibleEnvironments := es.GetAccessibleEnvironments()
+
+		if err := es.Err(); err != nil {
+			err.Print()
+			return
+		}
+
+		ctx.AccessibleEnvironments = accessibleEnvironments
 
 		ctx.RemoveForbiddenEnvironments(accessibleEnvironments)
 
@@ -131,6 +153,7 @@ func Initialize() {
 		errors.MustBeLoggedIn(nil).Print()
 		os.Exit(1)
 	}
+
 }
 
 func init() {
