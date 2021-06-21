@@ -63,52 +63,56 @@ Example:
 			err.Print()
 			os.Exit(1)
 		}
+		result := promptYesNo(filePath)
 
-		ui.Print(ui.RenderTemplate("confirm files rm", `{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
-Content for the current environment ({{ .Environment }}) will be kept.
-Its content for other environments will be lost, it will no longer be gitignored.
-This is permanent, and cannot be undone.`, map[string]string{
-			"Path":        filePath,
-			"Environment": ctx.CurrentEnvironment(),
-		}))
+		if result == "y" {
 
-		result := "y"
+			var printer = &ui.UiPrinter{}
+			ms := messages.NewMessageService(ctx, printer)
+			ms.GetMessages()
 
-		if !skipPrompts {
-			p := promptui.Prompt{
-				Label:     "Continue",
-				IsConfirm: true,
+			if err := ms.Err(); err != nil {
+				err.Print()
+				os.Exit(1)
 			}
 
-			result, _ = p.Run()
-		}
-
-		if result == "y" {
 			ctx.RemoveFile(filePath, forcePrompts, ctx.AccessibleEnvironments)
-		}
+			if err = ctx.Err(); err != nil {
+				err.Print()
+				return
+			}
 
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			return
-		}
-
-		if result == "y" {
 			ui.PrintSuccess("%s has been removed from the secret files.", filePath)
 		}
+
 	},
 }
 
 func init() {
 	filesCmd.AddCommand(filesRmCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// rmCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// rmCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	RootCmd.PersistentFlags().BoolVarP(&forcePrompts, "force", "f", false, "force remove file on system.")
+}
+
+func promptYesNo(filePath string) string {
+
+	ui.Print(ui.RenderTemplate("confirm files rm", `{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
+Content for the current environment ({{ .Environment }}) will be kept.
+Its content for other environments will be lost, it will no longer be gitignored.
+This is permanent, and cannot be undone.`, map[string]string{
+		"Path":        filePath,
+		"Environment": ctx.CurrentEnvironment(),
+	}))
+
+	result := "y"
+
+	if !skipPrompts {
+		p := promptui.Prompt{
+			Label:     "Continue",
+			IsConfirm: true,
+		}
+
+		result, _ = p.Run()
+	}
+	return result
 }

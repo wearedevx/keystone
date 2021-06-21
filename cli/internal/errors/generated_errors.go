@@ -140,6 +140,14 @@ We couldn't find data for the following environments: '{{ .EnvironmentsName }}',
 Ask someone to push their environments to make new data available to you.
 
 `,
+	"FileHasChanged": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{ .FilePath | red }}
+You are trying to update the file '{{ .FilePath }}', but another member has changed its content.
+If you want to override their changes, try again.
+
+Affected environments: {{ .AffectedEnvironments }}
+
+`,
 	"CannotAddFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
@@ -384,6 +392,14 @@ func EnvironmentsHaveChanged(environmentsname string, cause error) *Error {
 		"EnvironmentsName": string(environmentsname),
 	}
 	return NewError("Environments have changed", helpTexts["EnvironmentsHaveChanged"], meta, cause)
+}
+
+func FileHasChanged(filepath string, affectedenvironments string, cause error) *Error {
+	meta := map[string]string{
+		"FilePath":             string(filepath),
+		"AffectedEnvironments": string(affectedenvironments),
+	}
+	return NewError("File has changed", helpTexts["FileHasChanged"], meta, cause)
 }
 
 func CannotAddFile(path string, cause error) *Error {

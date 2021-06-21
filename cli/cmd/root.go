@@ -90,39 +90,36 @@ func Initialize() {
 		}
 	}
 
-	// environments := ctx.ListEnvironments()
 	current := ctx.CurrentEnvironment()
 	currentfolder, _ := os.Getwd()
 
 	isKeystoneFile := keystonefile.ExistsKeystoneFile(currentfolder)
 
 	if config.IsLoggedIn() {
-		es := environments.NewEnvironmentService(ctx)
-		if err := es.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
-
-		accessibleEnvironments := es.GetAccessibleEnvironments()
-
-		if err := es.Err(); err != nil {
-			err.Print()
-			return
-		}
-
-		ctx.AccessibleEnvironments = accessibleEnvironments
-
-		ctx.RemoveForbiddenEnvironments(accessibleEnvironments)
 
 		// If no current environment, call Init function to set default and create missing files in .keystone/
 		if ctx.Err() != nil {
 			ctx.SetError(nil)
+
+			es := environments.NewEnvironmentService(ctx)
+			if err := es.Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+			}
+
+			ctx.AccessibleEnvironments = es.GetAccessibleEnvironments()
+
+			if err := es.Err(); err != nil {
+				err.Print()
+				return
+			}
 			if isKeystoneFile {
 				ctx.Init(models.Project{
-					Environments: accessibleEnvironments,
+					Environments: ctx.AccessibleEnvironments,
 				})
 			}
 		}
+		ctx.RemoveForbiddenEnvironments(ctx.AccessibleEnvironments)
 	}
 
 	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")

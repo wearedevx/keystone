@@ -381,3 +381,20 @@ func (ctx *Context) CompareRemovedSecretWithChanges(secretName string, changesBy
 	}
 	return nil
 }
+
+func (ctx *Context) CompareNewFileWhithChanges(filePath string, changesByEnvironment ChangesByEnvironment) *kserrors.Error {
+	affectedEnvironments := make([]string, 0)
+	for environmentName, changes := range changesByEnvironment.Environments {
+		for _, change := range changes {
+			if change.Name == filePath {
+				affectedEnvironments = append(affectedEnvironments, environmentName)
+			}
+		}
+	}
+
+	if len(affectedEnvironments) > 0 {
+		return kserrors.FileHasChanged(filePath, strings.Join(affectedEnvironments, ","), nil)
+	}
+	return nil
+
+}
