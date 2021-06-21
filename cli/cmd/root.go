@@ -91,46 +91,40 @@ func Initialize() {
 		}
 	}
 
-	current := ctx.CurrentEnvironment()
 	currentfolder, _ := os.Getwd()
 
 	isKeystoneFile := keystonefile.ExistsKeystoneFile(currentfolder)
 
 	if config.IsLoggedIn() {
+		es := environments.NewEnvironmentService(ctx)
+		if err := es.Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+		}
 
-		// If no current environment, call Init function to set default and create missing files in .keystone/
-		if ctx.Err() != nil {
-			ctx.SetError(nil)
+		ctx.AccessibleEnvironments = es.GetAccessibleEnvironments()
 
-			es := environments.NewEnvironmentService(ctx)
-			if err := es.Err(); err != nil {
-				err.Print()
-				os.Exit(1)
-			}
+		if err := es.Err(); err != nil {
+			err.Print()
+			return
+		}
 
-			ctx.AccessibleEnvironments = es.GetAccessibleEnvironments()
+		// If no accessible environment, then user has no access to the project
+		if len(ctx.AccessibleEnvironments) == 0 {
+			ui.PrintError(errors.ProjectDoesntExist(ctx.GetProjectName(), ctx.GetProjectID(), nil).Error())
+			return
 
-			if err := es.Err(); err != nil {
-				err.Print()
-				return
-			}
+		}
 
-			// If no accessible environment, then user has no access to the project
-			if len(ctx.AccessibleEnvironments) == 0 {
-				ui.PrintError(errors.ProjectDoesntExist(ctx.GetProjectName(), ctx.GetProjectID(), nil).Error())
-				return
-
-			}
-
-			if isKeystoneFile {
-				ctx.Init(models.Project{
-					Environments: ctx.AccessibleEnvironments,
-				})
-			}
+		if isKeystoneFile {
+			ctx.Init(models.Project{
+				Environments: ctx.AccessibleEnvironments,
+			})
 		}
 		ctx.RemoveForbiddenEnvironments(ctx.AccessibleEnvironments)
 	}
 
+	current := ctx.CurrentEnvironment()
 	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
 
 	checkEnvironment := true
