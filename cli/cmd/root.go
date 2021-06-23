@@ -26,7 +26,6 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
-	"github.com/wearedevx/keystone/cli/ui"
 
 	"github.com/wearedevx/keystone/cli/pkg/core"
 
@@ -111,9 +110,8 @@ func Initialize() {
 
 		// If no accessible environment, then user has no access to the project
 		if len(ctx.AccessibleEnvironments) == 0 {
-			ui.PrintError(errors.ProjectDoesntExist(ctx.GetProjectName(), ctx.GetProjectID(), nil).Error())
-			return
-
+			errors.ProjectDoesntExist(ctx.GetProjectName(), ctx.GetProjectID(), nil).Print()
+			os.Exit(1)
 		}
 
 		if isKeystoneFile {
