@@ -30,7 +30,11 @@ const (
 // [varvalue] maps environment to the varable value (key is environment name,
 // and value, the value of the variable in that environment)
 // TODO: Factorize this plz
-func (ctx *Context) AddSecret(secretName string, secretValue map[string]string, flag SecretStrictFlag) *Context {
+func (ctx *Context) AddSecret(
+	secretName string,
+	secretValue map[string]string,
+	flag SecretStrictFlag,
+) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
@@ -39,7 +43,11 @@ func (ctx *Context) AddSecret(secretName string, secretValue map[string]string, 
 	var e *Error
 	var ksfile KeystoneFile
 	// Add new env key to keystone.yml
-	if err = ksfile.Load(ctx.Wd).SetEnv(secretName, flag == S_REQUIRED).Save().Err(); err != nil {
+	if err = ksfile.
+		Load(ctx.Wd).
+		SetEnv(secretName, flag == S_REQUIRED).
+		Save().
+		Err(); err != nil {
 		return ctx.setError(FailedToUpdateKeystoneFile(err))
 	}
 
@@ -56,7 +64,11 @@ func (ctx *Context) AddSecret(secretName string, secretValue map[string]string, 
 
 		envFilePath := path.Join(cachePath, ".env")
 
-		if err = new(EnvFile).Load(envFilePath).Set(secretName, value).Dump().Err(); err != nil {
+		if err = new(EnvFile).
+			Load(envFilePath).
+			Set(secretName, value).
+			Dump().
+			Err(); err != nil {
 			e = FailedToUpdateDotEnv(envFilePath, err)
 			break
 		}
@@ -85,9 +97,39 @@ func (ctx *Context) AddSecret(secretName string, secretValue map[string]string, 
 
 // Unsets a previously set environment variable
 //
-// [varname] The variable to unset
-// It will be removed in all existing environment.
+// [secretName] The variable to unset
+// It will be removed only in the keystone.yml file,
+// but kept in the cache.
+// It is done so in order to allow going back to an
+// older commit and still have a working application.
 func (ctx *Context) RemoveSecret(secretName string) *Context {
+	if ctx.Err() != nil {
+		return ctx
+	}
+
+	var err error
+	var ksfile KeystoneFile
+	// Add new env key to keystone.yml
+
+	if err = ksfile.
+		Load(ctx.Wd).
+		UnsetEnv(secretName).
+		Save().
+		Err(); err != nil {
+		return ctx.setError(FailedToUpdateKeystoneFile(err))
+	}
+
+	return ctx
+}
+
+// PurgeSecrets clears every cached environments
+// from deleted secrets.
+// If the environments are shared to other users
+// those values will be removed as well
+// They wont be available when rolling back to
+// another commit.
+// It is permanent an cannot be recoverable
+func (ctx *Context) PurgeSecrets() *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
@@ -97,20 +139,27 @@ func (ctx *Context) RemoveSecret(secretName string) *Context {
 	var ksfile KeystoneFile
 	// Add new env key to keystone.yml
 
-	if err = ksfile.Load(ctx.Wd).UnsetEnv(secretName).Save().Err(); err != nil {
-		return ctx.setError(FailedToUpdateKeystoneFile(err))
+	if err = ksfile.Load(ctx.Wd).Err(); err != nil {
+		return ctx.setError(FailedToReadKeystoneFile(err))
 	}
 
 	// Update environments' .env files
 	environments := ctx.ListEnvironments()
 
-	for _, environment := range environments {
-		dir := ctx.CachedEnvironmentPath(environment)
-		dotEnvPath := path.Join(dir, ".env")
+	for _, secret := range ksfile.Env {
 
-		if err = new(EnvFile).Load(dotEnvPath).Unset(secretName).Dump().Err(); err != nil {
-			e = FailedToUpdateDotEnv(dotEnvPath, err)
-			break
+		for _, environment := range environments {
+			dir := ctx.CachedEnvironmentPath(environment)
+			dotEnvPath := path.Join(dir, ".env")
+
+			if err = new(EnvFile).
+				Load(dotEnvPath).
+				Unset(secret.Key).
+				Dump().
+				Err(); err != nil {
+				e = FailedToUpdateDotEnv(dotEnvPath, err)
+				break
+			}
 		}
 	}
 
@@ -135,7 +184,11 @@ func (ctx *Context) RemoveSecret(secretName string) *Context {
 // [envName]     name of the target environment
 // [secretName]
 // [secretValue]
-func (ctx *Context) SetSecret(envName string, secretName string, secretValue string) *Context {
+func (ctx *Context) SetSecret(
+	envName string,
+	secretName string,
+	secretValue string,
+) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
@@ -287,7 +340,8 @@ func (ctx *Context) ListSecrets() []Secret {
 	return secrets
 }
 
-// Returns a boolean indicating wether the secret `secretName` exists in the local files
+// Returns a boolean indicating wether the secret `secretName`
+// exists in the local files
 func (ctx *Context) HasSecret(secretName string) bool {
 	haveIt := false
 
@@ -334,12 +388,19 @@ func (ctx *Context) SecretIsRequired(secretName string) bool {
 
 }
 
-func (ctx *Context) MarkSecretRequired(secretName string, required bool) *Context {
+func (ctx *Context) MarkSecretRequired(
+	secretName string,
+	required bool,
+) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
 
-	if err := new(KeystoneFile).Load(ctx.Wd).SetEnv(secretName, required).Save().Err(); err != nil {
+	if err := new(KeystoneFile).
+		Load(ctx.Wd).
+		SetEnv(secretName, required).
+		Save().
+		Err(); err != nil {
 		return ctx.setError(FailedToUpdateKeystoneFile(err))
 	}
 

@@ -16,7 +16,7 @@ import (
 
 type Repo struct {
 	err error
-    tx *gorm.DB
+	tx  *gorm.DB
 }
 
 var db *gorm.DB
@@ -39,6 +39,7 @@ func getPostgres() gorm.Dialector {
 	config := postgres.Config{
 		DSN: getDSN(),
 	}
+	fmt.Printf("config: %+v\n", config)
 
 	if driver := os.Getenv("DB_DRIVERNAME"); driver != "" {
 		config.DriverName = driver
@@ -52,15 +53,15 @@ func AutoMigrate() error {
 }
 
 func Transaction(fn func(IRepo) error) error {
-    err := db.Transaction(func (tx *gorm.DB) error {
-    repo := &Repo{
-        err: nil,
-        tx: tx,
-    }
-    return fn(repo)
+	err := db.Transaction(func(tx *gorm.DB) error {
+		repo := &Repo{
+			err: nil,
+			tx:  tx,
+		}
+		return fn(repo)
 
-        })
-    return err
+	})
+	return err
 }
 
 func (repo *Repo) Err() error {
@@ -96,8 +97,8 @@ func init() {
 	var err error
 
 	db, err = gorm.Open(getPostgres(), &gorm.Config{
-        SkipDefaultTransaction: true,
-    })
+		SkipDefaultTransaction: true,
+	})
 
 	if err != nil {
 		panic(err)

@@ -1,6 +1,6 @@
-env: 
-- label: HOSTNAME
-  value: localhost
-files:
-- path: .env.test
-  value: Yydlc3QgdW4gcGV0aXQgYm91dCBkZSBib2lz
+project_id: ac10205f-c7d7-43f8-b35b-51b840249c4b
+name: a-primary-test
+env: []
+files: []
+options:
+  strict: false

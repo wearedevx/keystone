@@ -15,7 +15,8 @@ gcloud builds submit --tag $TAG
 gcloud run deploy keystone-server \
 	--region europe-west6 \
 	--allow-unauthenticated \
-	--set-env-vars DB_HOST=${DB_HOST},DB_NAME=${DB_NAME},DB_USER=${DB_USER},DB_PASSWORD=${DB_PASSWORD},CLOUDSQL_INSTANCE=${CLOUDSQL_INSTANCE},CLOUDSQL_CREDENTIALS=${CLOUDSQL_CREDENTIALS} \
+	--service-account=keystone-server@keystone-245200.iam.gserviceaccount.com \
+	--set-env-vars JWT_SALT=${JWT_SALT},DB_HOST=${DB_HOST},DB_NAME=${DB_NAME},DB_USER=${DB_USER},DB_PASSWORD=${DB_PASSWORD},CLOUDSQL_INSTANCE=${CLOUDSQL_INSTANCE},CLOUDSQL_CREDENTIALS=${CLOUDSQL_CREDENTIALS} \
 	--add-cloudsql-instances keystonedb \
 	--image $TAG
 
