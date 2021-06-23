@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
+Copyright © 2021 NAME HERE <EMAIL ADDRESS>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,17 +24,14 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
-// secretsRmCmd represents the unset command
-var secretsRmCmd = &cobra.Command{
-	Use:   "rm",
-	Short: "Removes a secret from all environments",
-	Long: `Removes a secret from all environments.
+// purgeCmd represents the purge command
+var purgeCmd = &cobra.Command{
+	Use:   "purge",
+	Short: "Permanently purges all removed secret from the cache",
+	Long: `Permanently purges all removed secret from the cache.
 
-Removes the given secret from all environments.
-
-Exemple:
-  $ ks rm PORT`,
-	Args: cobra.ExactArgs(1),
+All values for every environments will be removed for every member.
+This is permanent an cannont be undone`,
 	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 		secretName := args[0]
@@ -69,15 +66,20 @@ Exemple:
 			return
 		}
 
-		// Unlike most of the other commands, we do not need
-		// to send the environment to other users
-		// because the only thing that needs to change is
-		// the keystone.yml file
-
-		ui.PrintSuccess("Variable '%s' removed", secretName)
+		ui.PrintSuccess("All environments pruned")
 	},
 }
 
 func init() {
-	secretsCmd.AddCommand(secretsRmCmd)
+	secretsCmd.AddCommand(purgeCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// purgeCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// purgeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
