@@ -1,15 +1,15 @@
 # Init with name
 ks init test-env
 
-ks secret add label value -s
+ks secret add LABEL value -s
 
-ks secret set label prodvalue --env prod
+ks secret set LABEL prodvalue --env prod
 
-# Check label has value "value" as we are still in dev
-grep 'label=value' .keystone/cache/.env
+# Check LABEL has value "value" as we are still in dev
+grep 'LABEL=value' .keystone/cache/.env
 
 # Switch env
 ks env prod
 
-# Check label has value "prodvalue" as we are now in prod
-grep 'label=prodvalue' .keystone/cache/.env
+# Check LABEL has value "prodvalue" as we are now in prod
+grep 'LABEL=prodvalue' .keystone/cache/.env

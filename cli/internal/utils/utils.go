@@ -115,11 +115,11 @@ func AppendIfMissing(slice []string, i string) []string {
 
 // Check if secret name is SNAKE CAPITAL
 func CheckSecretContent(name string) error {
-	sampleRegex := regexp.MustCompile("^([A-Z]|_)*$")
+	sampleRegex := regexp.MustCompile("^([A-Z0-9]|_)*$")
 	match := sampleRegex.Match([]byte(name))
 
 	if !match {
-		return errors.New("Secret " + name + "not allowed. Secret name must be capital snakecase.")
+		return errors.New("Secret " + name + " not allowed. Secret name must be capital snakecase.")
 	}
 	return nil
 }
