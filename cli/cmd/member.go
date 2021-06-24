@@ -25,7 +25,6 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -39,7 +38,6 @@ var memberCmd = &cobra.Command{
 Used without arguments, displays a list of all members,
 grouped by their role, with indication of their ownership.`,
 	Run: func(_ *cobra.Command, _ []string) {
-		ctx := core.New(core.CTX_RESOLVE)
 
 		c, kcErr := client.NewKeystoneClient()
 

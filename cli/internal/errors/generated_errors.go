@@ -72,6 +72,13 @@ You can manage roles for the current project by editing the roles file:
   .keystone/roles.yml
 
 `,
+	"ProjectDoesntExist": `
+{{ ERROR }} {{- ": '" | red }} {{- .Name | red }} {{- "'" | red }}
+Project in your keystone.yml does not exist or your are not part of it.
+
+If you have this configuration from a project member, ask them to add you in the keystone project.
+
+`,
 	"EnvironmentDoesntExist": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
 Available environments are: {{ .Available }}
@@ -138,6 +145,14 @@ If you want to override their value, try again.
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- "'" | red }}
 We couldn't find data for the following environments: '{{ .EnvironmentsName }}', but a new value has been set by another member.
 Ask someone to push their environments to make new data available to you.
+
+`,
+	"FileHasChanged": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{ .FilePath | red }}
+You are trying to update the file '{{ .FilePath }}', but another member has changed its content.
+If you want to override their changes, try again.
+
+Affected environments: {{ .AffectedEnvironments }}
 
 `,
 	"CannotAddFile": `
@@ -320,6 +335,14 @@ func RoleDoesNotExist(rolename string, available string, cause error) *Error {
 	return NewError("Role Does Not Exist", helpTexts["RoleDoesNotExist"], meta, cause)
 }
 
+func ProjectDoesntExist(name string, projectid string, cause error) *Error {
+	meta := map[string]string{
+		"Name":      string(name),
+		"ProjectId": string(projectid),
+	}
+	return NewError("Project Doesn't Exist", helpTexts["ProjectDoesntExist"], meta, cause)
+}
+
 func EnvironmentDoesntExist(environment string, available string, cause error) *Error {
 	meta := map[string]string{
 		"Environment": string(environment),
@@ -384,6 +407,14 @@ func EnvironmentsHaveChanged(environmentsname string, cause error) *Error {
 		"EnvironmentsName": string(environmentsname),
 	}
 	return NewError("Environments have changed", helpTexts["EnvironmentsHaveChanged"], meta, cause)
+}
+
+func FileHasChanged(filepath string, affectedenvironments string, cause error) *Error {
+	meta := map[string]string{
+		"FilePath":             string(filepath),
+		"AffectedEnvironments": string(affectedenvironments),
+	}
+	return NewError("File has changed", helpTexts["FileHasChanged"], meta, cause)
 }
 
 func CannotAddFile(path string, cause error) *Error {

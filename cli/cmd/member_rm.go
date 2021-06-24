@@ -24,7 +24,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -64,7 +63,6 @@ This causes secrets to be re-crypted for the remainig members.`,
 			kcErr.Print()
 			os.Exit(1)
 		}
-		ctx := core.New(core.CTX_RESOLVE)
 		projectID := ctx.GetProjectID()
 
 		r, err := c.Users().CheckUsersExist(args)

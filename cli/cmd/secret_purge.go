@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
+Copyright © 2021 NAME HERE <EMAIL ADDRESS>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,72 +16,58 @@ limitations under the License.
 package cmd
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
-// filesCmd represents the files command
-var filesCmd = &cobra.Command{
-	Use:   "file",
-	Short: "Manage secret files",
-	Long: `Manage secret files.
+// purgeCmd represents the purge command
+var purgeCmd = &cobra.Command{
+	Use:   "purge",
+	Short: "Permanently purges all removed secrets from the cache",
+	Long: `Permanently purges all removed secrets from the cache.
 
-List tracked secret files:
-  $ ks file
-  Files tracked as secret files:
-
-          config/wp-config.php
-		  config/front.config.js
-`,
-	Args: cobra.NoArgs,
+All values for every environments will be removed for every member.
+This is permanent an cannont be undone`,
 	Run: func(_ *cobra.Command, _ []string) {
 		var err *errors.Error
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		files := ctx.ListFiles()
+		var printer = &ui.UiPrinter{}
+		ms := messages.NewMessageService(ctx, printer)
+
+		ms.GetMessages()
+
+		if err = ms.Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+		}
+
+		ctx.PurgeSecrets()
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
 			return
 		}
 
-		if len(files) == 0 {
-			if !quietOutput {
-				ui.Print(`No files are currently tracked as secret files.
-
-To add files to secret files:
-  $ ks file add <path-to-secret-file>
-`)
-			}
-			return
-		}
-
-		if quietOutput {
-			for _, file := range files {
-				ui.Print(file.Path)
-			}
-			return
-		}
-
-		ui.Print(ui.RenderTemplate("files list", `Files tracked as secret files:
-
-{{ range . }} {{- . | indent 8 }} {{ end }}
-`, files))
+		ui.PrintSuccess("All environments purged")
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(filesCmd)
+	secretsCmd.AddCommand(purgeCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// filesCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// purgeCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// filesCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// purgeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

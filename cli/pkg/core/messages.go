@@ -45,7 +45,9 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 				Value: string(localSecret.Values[EnvironmentName(environmentName)]),
 			})
 		}
-
+		if len(environment.Message.Payload) == 0 {
+			continue
+		}
 		if err := json.Unmarshal(environment.Message.Payload, &PayloadContent); err != nil {
 			ctx.err = kserrors.CouldNotParseMessage(err)
 			return changes
@@ -122,6 +124,26 @@ func GetSecretsChanges(localSecrets []models.SecretVal, newSecrets []models.Secr
 				Name: secret.Label,
 				From: "",
 				To:   secret.Value,
+				Type: "secret",
+			})
+
+		}
+	}
+
+	// Check for secret that has been deleted
+	for _, localSecret := range localSecrets {
+		found := false
+		for _, newSecret := range newSecrets {
+			if newSecret.Label == localSecret.Label {
+				found = true
+			}
+		}
+
+		if !found {
+			changes = append(changes, Change{
+				Name: localSecret.Label,
+				From: localSecret.Value,
+				To:   "",
 				Type: "secret",
 			})
 
@@ -228,7 +250,7 @@ func (ctx *Context) PrepareMessagePayload(environment models.Environment) (model
 
 	errors := make([]string, 0)
 
-	for _, secret := range ctx.ListSecrets() {
+	for _, secret := range ctx.ListSecretsFromCache() {
 		PayloadContent.Secrets = append(PayloadContent.Secrets, models.SecretVal{
 			Label: secret.Name,
 			Value: string(secret.Values[EnvironmentName(environment.Name)]),
@@ -327,9 +349,52 @@ func (ctx *Context) CompareNewSecretWithChanges(secretName string, newSecret map
 	if len(environmentValueMap) > 0 {
 		environmentValueMapString := ""
 		for environment, value := range environmentValueMap {
+			if len(value) == 0 {
+				environmentValueMapString += fmt.Sprintf("Secret in %s is deleted.\n", environment)
+			} else {
+				environmentValueMapString += fmt.Sprintf("Value in %s is '%s'.\n", environment, value)
+			}
+		}
+		return kserrors.SecretHasChanged(secretName, environmentValueMapString, nil)
+	}
+	return nil
+}
+
+func (ctx *Context) CompareRemovedSecretWithChanges(secretName string, changesByEnvironment ChangesByEnvironment) *kserrors.Error {
+	environmentValueMap := make(map[string]string)
+
+	for environmentName, changes := range changesByEnvironment.Environments {
+		for _, change := range changes {
+
+			if change.Name == secretName {
+				environmentValueMap[environmentName] = change.To
+			}
+		}
+	}
+
+	if len(environmentValueMap) > 0 {
+		environmentValueMapString := ""
+		for environment, value := range environmentValueMap {
 			environmentValueMapString += fmt.Sprintf("Value in '%s' is '%s'.\n", environment, value)
 		}
 		return kserrors.SecretHasChanged(secretName, environmentValueMapString, nil)
 	}
 	return nil
+}
+
+func (ctx *Context) CompareNewFileWhithChanges(filePath string, changesByEnvironment ChangesByEnvironment) *kserrors.Error {
+	affectedEnvironments := make([]string, 0)
+	for environmentName, changes := range changesByEnvironment.Environments {
+		for _, change := range changes {
+			if change.Name == filePath {
+				affectedEnvironments = append(affectedEnvironments, environmentName)
+			}
+		}
+	}
+
+	if len(affectedEnvironments) > 0 {
+		return kserrors.FileHasChanged(filePath, strings.Join(affectedEnvironments, ","), nil)
+	}
+	return nil
+
 }

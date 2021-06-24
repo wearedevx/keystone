@@ -38,7 +38,6 @@ If they are, 'ks source' will exit with a non-zero exit code.
 	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 
-		ctx := core.New(core.CTX_RESOLVE)
 		secretName := args[0]
 
 		if !ctx.HasSecret(secretName) {

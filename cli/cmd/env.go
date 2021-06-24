@@ -45,7 +45,6 @@ With an argument name, activates the environment:
 	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 
-		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		// If no argument is given show a list of environments

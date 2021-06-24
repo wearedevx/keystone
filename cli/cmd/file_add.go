@@ -24,13 +24,12 @@ import (
 
 	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
-	envservice "github.com/wearedevx/keystone/cli/internal/environments"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
-	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -58,13 +57,11 @@ Examples:
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
 
-		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		filePath := args[0]
-		extension := filepath.Ext(filePath)
 
-		environments := ctx.ListEnvironments()
+		environments := ctx.AccessibleEnvironments
 
 		environmentFileMap := map[string][]byte{}
 
@@ -86,52 +83,26 @@ Examples:
 		environmentFileMap[currentEnvironment] = currentContent
 
 		if !skipPrompts {
-			for _, environment := range environments {
-				if environment != currentEnvironment {
-					ui.Print(fmt.Sprintf("Enter content for file `%s` for the '%s' environment (Press any key to continue)", filePath, environment))
-					_, _, err := keyboard.GetSingleKey()
-					if err != nil {
-						errmsg := fmt.Sprintf("Failed to read user input (%s)", err.Error())
-						println(errmsg)
-						os.Exit(1)
-						return
-					}
-
-					content, err := utils.CaptureInputFromEditor(
-						utils.GetPreferredEditorFromEnvironment,
-						extension,
-					)
-
-					if err != nil {
-						errmsg := fmt.Sprintf("Failed to get content from editor (%s)", err.Error())
-						println(errmsg)
-						os.Exit(1)
-						return
-					}
-
-					environmentFileMap[environment] = content
-				}
-			}
+			askContentOfFile(environments, filePath, environmentFileMap)
 		} else {
 			for _, environment := range environments {
-				environmentFileMap[environment] = currentContent
+				environmentFileMap[environment.Name] = currentContent
 			}
 		}
 
-		ms := messages.NewMessageService(ctx)
-		ms.GetMessages()
+		var printer = &ui.UiPrinter{}
+		ms := messages.NewMessageService(ctx, printer)
+		changes := ms.GetMessages()
 
 		if err := ms.Err(); err != nil {
 			err.Print()
 			os.Exit(1)
 		}
 
-		es := envservice.NewEnvironmentService(ctx)
-		accessibleEnvironments := es.GetAccessibleEnvironments()
-
-		if err := es.Err(); err != nil {
+		ctx.CompareNewFileWhithChanges(filePath, changes)
+		if err = ctx.Err(); err != nil {
 			err.Print()
-			os.Exit(1)
+			return
 		}
 
 		file := keystonefile.FileKey{
@@ -159,31 +130,52 @@ Examples:
 			return
 		}
 
-		if err := ms.SendEnvironments(accessibleEnvironments).Err(); err != nil {
+		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
 			err.Print()
 			os.Exit(1)
 		}
 
 		ui.Print(ui.RenderTemplate("file add success", `
 {{ OK }} {{ .Title | green }}
-The file has been added to all environments.
+The file has been added to {{ .NumberEnvironments }} environment(s).
 It has also been gitignored.`, map[string]string{
-			"Title": fmt.Sprintf("Added '%s'", filePath),
+			"Title":              fmt.Sprintf("Added '%s'", filePath),
+			"NumberEnvironments": fmt.Sprintf("%d", len(environments)),
 		}))
 	},
 }
 
 func init() {
 	filesCmd.AddCommand(filesAddCmd)
+}
 
-	// Here you will define your flags and configuration settings.
+func askContentOfFile(environments []models.Environment, filePath string, environmentFileMap map[string][]byte) {
+	extension := filepath.Ext(filePath)
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// pushCmd.PersistentFlags().String("foo", "", "A help for foo")
+	for _, environment := range environments {
+		if environment.Name != currentEnvironment {
+			ui.Print(fmt.Sprintf("Enter content for file `%s` for the '%s' environment (Press any key to continue)", filePath, environment.Name))
+			_, _, err := keyboard.GetSingleKey()
+			if err != nil {
+				errmsg := fmt.Sprintf("Failed to read user input (%s)", err.Error())
+				println(errmsg)
+				os.Exit(1)
+				return
+			}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// pushCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	// RootCmd.Flags().BoolVarP(&skipPrompts, "skip", "s", false, "Skip questions and use defaults")
+			content, err := utils.CaptureInputFromEditor(
+				utils.GetPreferredEditorFromEnvironment,
+				extension,
+			)
+
+			if err != nil {
+				errmsg := fmt.Sprintf("Failed to get content from editor (%s)", err.Error())
+				println(errmsg)
+				os.Exit(1)
+				return
+			}
+
+			environmentFileMap[environment.Name] = content
+		}
+	}
 }

@@ -25,7 +25,6 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
@@ -75,8 +74,6 @@ ks member set-role sandra@github`,
 			os.Exit(1)
 		}
 
-		// Read Roles from config
-		ctx := core.New(core.CTX_RESOLVE)
 		projectID := ctx.GetProjectID()
 		// Ensure member exists
 		r, err := c.Users().CheckUsersExist([]string{memberId})

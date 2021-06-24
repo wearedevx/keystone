@@ -16,11 +16,15 @@ limitations under the License.
 package cmd
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
-	core "github.com/wearedevx/keystone/cli/pkg/core"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/ui"
 )
+
+var purgeSecret bool
 
 // secretsRmCmd represents the unset command
 var secretsRmCmd = &cobra.Command{
@@ -31,33 +35,55 @@ var secretsRmCmd = &cobra.Command{
 Removes the given secret from all environments.
 
 Exemple:
-  $ ks rmove PORT`,
+  $ ks rm PORT`,
 	Args: cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 		secretName := args[0]
 
-		ctx := core.New(core.CTX_RESOLVE).RemoveSecret(secretName)
+		ctx.MustHaveEnvironment(currentEnvironment)
+
+		if !ctx.HasSecret(secretName) && !purgeSecret {
+			errors.SecretDoesNotExist(secretName, nil).Print()
+			return
+		}
+
+		var printer = &ui.UiPrinter{}
+		ms := messages.NewMessageService(ctx, printer)
+
+		changes := ms.GetMessages()
+
+		if err = ms.Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+		}
+
+		if err = ctx.CompareRemovedSecretWithChanges(secretName, changes); err != nil {
+			err.Print()
+			os.Exit(1)
+			return
+		}
+
+		ctx.RemoveSecret(secretName, purgeSecret)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
 			return
 		}
 
-		ui.PrintSuccess("Variable '%s' unset for all environments", secretName)
+		if purgeSecret {
+			if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+			}
+		}
+
+		ui.PrintSuccess("Variable '%s' removed", secretName)
 	},
 }
 
 func init() {
 	secretsCmd.AddCommand(secretsRmCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// unsetCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// unsetCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	secretsRmCmd.Flags().BoolVarP(&purgeSecret, "purge", "p", false, "purge all values from all environments aswell")
 }

@@ -17,10 +17,11 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/pkg/core"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -36,7 +37,6 @@ The secret must not be required.`,
 	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 
-		ctx := core.New(core.CTX_RESOLVE)
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		secretName := args[0]
@@ -51,10 +51,33 @@ The secret must not be required.`,
 			return
 		}
 
+		var printer = &ui.UiPrinter{}
+		ms := messages.NewMessageService(ctx, printer)
+
+		changes := ms.GetMessages()
+
+		if err = ms.Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+		}
+
+		if err = ctx.CompareRemovedSecretWithChanges(secretName, changes); err != nil {
+			err.Print()
+			os.Exit(1)
+			return
+		}
 		ctx.UnsetSecret(currentEnvironment, secretName)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
+			return
+		}
+
+		// TODO
+		// Format beautyiful error
+		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
+			err.Print()
+			os.Exit(1)
 			return
 		}
 

@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
-	"github.com/wearedevx/keystone/cli/pkg/core"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // fetchCmd represents the fetch command
@@ -32,8 +32,6 @@ Get info from your team:
 	Args: cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
 		var err *errors.Error
-
-		ctx := core.New(core.CTX_RESOLVE)
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
@@ -49,7 +47,8 @@ Get info from your team:
 			os.Exit(1)
 		}
 
-		ms := messages.NewMessageService(ctx)
+		var printer = &ui.UiPrinter{}
+		ms := messages.NewMessageService(ctx, printer)
 		ms.GetMessages()
 
 		if err := ms.Err(); err != nil {

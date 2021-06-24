@@ -7,6 +7,7 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/cli/internal/environmentsfile"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -14,10 +15,11 @@ import (
 )
 
 type Context struct {
-	err       *Error
-	Wd        string
-	TmpDir    string
-	ConfigDir string
+	err                    *Error
+	Wd                     string
+	TmpDir                 string
+	ConfigDir              string
+	AccessibleEnvironments []models.Environment
 }
 
 const CTX_INIT = "init"

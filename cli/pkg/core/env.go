@@ -97,12 +97,9 @@ func (ctx *Context) AddSecret(
 
 // Unsets a previously set environment variable
 //
-// [secretName] The variable to unset
-// It will be removed only in the keystone.yml file,
-// but kept in the cache.
-// It is done so in order to allow going back to an
-// older commit and still have a working application.
-func (ctx *Context) RemoveSecret(secretName string) *Context {
+// [varname] The variable to unset
+// It will be removed in all existing environment.
+func (ctx *Context) RemoveSecret(secretName string, purge bool) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
@@ -119,16 +116,67 @@ func (ctx *Context) RemoveSecret(secretName string) *Context {
 		return ctx.setError(FailedToUpdateKeystoneFile(err))
 	}
 
+	if purge {
+		ctx.purgeSecret(secretName)
+	}
+
 	return ctx
 }
 
-// PurgeSecrets clears every cached environments
-// from deleted secrets.
-// If the environments are shared to other users
-// those values will be removed as well
-// They wont be available when rolling back to
-// another commit.
-// It is permanent an cannot be recoverable
+// purgeSecret removes the values associated to `secretName` from the cache
+// of all environments.
+// This implies that subsequently sending the environment to other users
+// will remove those values for them aswell
+func (ctx *Context) purgeSecret(secretName string) *Context {
+	if ctx.Err() != nil {
+		return ctx
+	}
+
+	var err error
+	var e *Error
+
+	// Update environments' .env files
+	environments := ctx.ListEnvironments()
+
+	for _, environment := range environments {
+		dir := ctx.CachedEnvironmentPath(environment)
+		dotEnvPath := path.Join(dir, ".env")
+		dotEnv := new(EnvFile)
+
+		if err = dotEnv.Load(dotEnvPath).Err(); err != nil {
+			return ctx.setError(FailedToReadDotEnv(dotEnvPath, err))
+		}
+
+		for secretName := range dotEnv.GetData() {
+			dotEnv.Unset(secretName)
+		}
+
+		if err = dotEnv.Dump().Err(); err != nil {
+			return ctx.setError(FailedToUpdateDotEnv(dotEnvPath, err))
+		}
+	}
+
+	// Copy the new .env for the current environment to .keystone/cache/.env
+	currentEnvironment := ctx.CurrentEnvironment()
+
+	if e != nil {
+		return ctx.setError(e)
+	}
+
+	newDotEnv := ctx.CachedEnvironmentDotEnvPath(currentEnvironment)
+	destDotEnv := ctx.CachedDotEnvPath()
+
+	if err = CopyFile(newDotEnv, destDotEnv); err != nil {
+		return ctx.setError(CopyFailed(newDotEnv, destDotEnv, err))
+	}
+
+	return ctx
+}
+
+// PurgeSecets Removes from the cache of all environments all secrets that
+// are not found in the project’s keystone.yml
+// This implies that sending the environment to other users will remove
+// those values for them too
 func (ctx *Context) PurgeSecrets() *Context {
 	if ctx.Err() != nil {
 		return ctx
@@ -146,20 +194,23 @@ func (ctx *Context) PurgeSecrets() *Context {
 	// Update environments' .env files
 	environments := ctx.ListEnvironments()
 
-	for _, secret := range ksfile.Env {
+	for _, environment := range environments {
+		dir := ctx.CachedEnvironmentPath(environment)
+		dotEnvPath := path.Join(dir, ".env")
+		dotEnv := new(EnvFile)
 
-		for _, environment := range environments {
-			dir := ctx.CachedEnvironmentPath(environment)
-			dotEnvPath := path.Join(dir, ".env")
+		if err = dotEnv.Load(dotEnvPath).Err(); err != nil {
+			return ctx.setError(FailedToReadDotEnv(dotEnvPath, err))
+		}
 
-			if err = new(EnvFile).
-				Load(dotEnvPath).
-				Unset(secret.Key).
-				Dump().
-				Err(); err != nil {
-				e = FailedToUpdateDotEnv(dotEnvPath, err)
-				break
+		for secretName := range dotEnv.GetData() {
+			if yes, _ := ksfile.HasEnv(secretName); !yes {
+				dotEnv.Unset(secretName)
 			}
+		}
+
+		if err = dotEnv.Dump().Err(); err != nil {
+			return ctx.setError(FailedToUpdateDotEnv(dotEnvPath, err))
 		}
 	}
 
@@ -297,7 +348,55 @@ func (ctx *Context) GetSecret(secretName string) *Secret {
 	return secret
 }
 
-// Returns all secrets, and their value in each environment.
+// List secret from .keystone/cache, and their value in each environment.
+func (ctx *Context) ListSecretsFromCache() []Secret {
+	secrets := make([]Secret, 0)
+
+	if ctx.Err() != nil {
+		return secrets
+	}
+
+	var err error
+	ksfile := new(KeystoneFile).Load(ctx.Wd)
+
+	if err = ksfile.Err(); err != nil {
+		ctx.setError(FailedToReadKeystoneFile(err))
+		return secrets
+	}
+
+	environmentValuesMap := map[string]map[string]string{}
+	allSecrets := make([]string, 0)
+
+	for _, environment := range ctx.ListEnvironments() {
+		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(environment)
+		dotEnv := new(EnvFile).Load(dotEnvPath)
+
+		environmentValuesMap[environment] = dotEnv.GetData()
+		for label, _ := range dotEnv.GetData() {
+			allSecrets = append(allSecrets, label)
+		}
+	}
+
+	allSecrets = uniq(allSecrets)
+
+	for _, envKey := range allSecrets {
+		name := envKey
+		values := map[EnvironmentName]SecretValue{}
+
+		for environment, secrets := range environmentValuesMap {
+			values[EnvironmentName(environment)] = SecretValue(secrets[name])
+		}
+
+		secrets = append(secrets, Secret{
+			Name:   name,
+			Values: values,
+		})
+	}
+
+	return secrets
+}
+
+// Returns secrets from keystone.yml, and their value in each environment.
 func (ctx *Context) ListSecrets() []Secret {
 	secrets := make([]Secret, 0)
 

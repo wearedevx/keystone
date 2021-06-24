@@ -73,6 +73,7 @@ Created files and directories:
 			}
 
 			project, initErr := c.Project("").Init(projectName)
+
 			if initErr != nil {
 				ui.PrintError(initErr.Error())
 				os.Exit(1)

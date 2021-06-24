@@ -1,6 +1,8 @@
 package core
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func PrintObject(object interface{}) {
 	fmt.Printf("%+v\n", object)
@@ -13,4 +15,18 @@ func contains(arr []string, str string) bool {
 		}
 	}
 	return false
+}
+
+func uniq(arr []string) []string {
+	occured := map[string]bool{}
+	result := []string{}
+
+	for e := range arr {
+		if occured[arr[e]] != true {
+			occured[arr[e]] = true
+			result = append(result, arr[e])
+		}
+	}
+	return result
+
 }

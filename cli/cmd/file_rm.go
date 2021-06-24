@@ -17,16 +17,18 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
-	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
 var forcePrompts bool
+var purgeFile bool
 
 // filesRmCmd represents the rm command
 var filesRmCmd = &cobra.Command{
@@ -46,8 +48,6 @@ Example:
 	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 
-		ctx := core.New(core.CTX_RESOLVE)
-
 		filePath := args[0]
 
 		if !utils.FileExists(filePath) {
@@ -56,7 +56,70 @@ Example:
 			return
 		}
 
-		ui.Print(ui.RenderTemplate("confirm files rm", `{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
+		var printer = &ui.UiPrinter{}
+		ms := messages.NewMessageService(ctx, printer)
+		ms.GetMessages()
+
+		if err := ms.Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+		}
+		result := promptYesNo(filePath)
+
+		if result == "y" {
+
+			var printer = &ui.UiPrinter{}
+			ms := messages.NewMessageService(ctx, printer)
+			ms.GetMessages()
+
+			if err := ms.Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+			}
+
+			ctx.RemoveFile(filePath, forcePrompts, purgeFile, ctx.AccessibleEnvironments)
+			if err = ctx.Err(); err != nil {
+				err.Print()
+				return
+			}
+
+			if purgeFile {
+				if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
+					err.Print()
+					os.Exit(1)
+				}
+			}
+
+			ui.PrintSuccess("%s has been removed from the secret files.", filePath)
+		}
+
+	},
+}
+
+func init() {
+	filesCmd.AddCommand(filesRmCmd)
+
+	filesRmCmd.Flags().BoolVarP(
+		&forcePrompts,
+		"force",
+		"f",
+		false,
+		"force remove file on system.",
+	)
+
+	filesRmCmd.Flags().BoolVarP(
+		&purgeFile,
+		"purge",
+		"p",
+		false,
+		"purge file content from all environments",
+	)
+}
+
+func promptYesNo(filePath string) string {
+
+	ui.Print(ui.RenderTemplate("confirm files rm",
+		`{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
 Content for the current environment ({{ .Environment }}) will be kept.
 Its content for other environments will be lost, it will no longer be gitignored.
 This is permanent, and cannot be undone.`, map[string]string{
@@ -64,43 +127,15 @@ This is permanent, and cannot be undone.`, map[string]string{
 			"Environment": ctx.CurrentEnvironment(),
 		}))
 
-		result := "y"
+	result := "y"
 
-		if !skipPrompts {
-			p := promptui.Prompt{
-				Label:     "Continue",
-				IsConfirm: true,
-			}
-
-			result, _ = p.Run()
+	if !skipPrompts {
+		p := promptui.Prompt{
+			Label:     "Continue",
+			IsConfirm: true,
 		}
 
-		if result == "y" {
-			ctx.RemoveFile(filePath, forcePrompts)
-		}
-
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			return
-		}
-
-		if result == "y" {
-			ui.PrintSuccess("%s has been removed from the secret files.", filePath)
-		}
-	},
-}
-
-func init() {
-	filesCmd.AddCommand(filesRmCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// rmCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// rmCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	RootCmd.PersistentFlags().BoolVarP(&forcePrompts, "force", "f", false, "force remove file on system.")
+		result, _ = p.Run()
+	}
+	return result
 }

@@ -23,7 +23,6 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kerrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
-	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 
 	// . "github.com/wearedevx/keystone/cli/ui"
@@ -61,11 +60,10 @@ If a member hasn't received secrets and files last time someone sent an update, 
 	Run: func(_ *cobra.Command, _ []string) {
 		var err *kerrors.Error
 
-		ctx := core.New(core.CTX_RESOLVE)
-
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		ms := messages.NewMessageService(ctx)
+		var printer = &ui.UiPrinter{}
+		ms := messages.NewMessageService(ctx, printer)
 		ms.GetMessages()
 
 		if err = ms.Err(); err != nil {

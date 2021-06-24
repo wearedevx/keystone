@@ -40,6 +40,8 @@ var currentEnvironment string
 var quietOutput bool
 var skipPrompts bool
 
+var ctx *core.Context
+
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "ks",
@@ -79,30 +81,20 @@ func Initialize() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	ctx := core.New(core.CTX_RESOLVE)
-	// environments := ctx.ListEnvironments()
-	current := ctx.CurrentEnvironment()
+	if len(os.Args) > 1 {
+		command := os.Args[1]
+		if command == "init" {
+			ctx = core.New(core.CTX_INIT)
+		} else {
+			ctx = core.New(core.CTX_RESOLVE)
+		}
+	}
+
 	currentfolder, _ := os.Getwd()
 
 	isKeystoneFile := keystonefile.ExistsKeystoneFile(currentfolder)
 
-	if config.IsLoggedIn() {
-		es := environments.NewEnvironmentService(ctx)
-		accessibleEnvironments := es.GetAccessibleEnvironments()
-
-		ctx.RemoveForbiddenEnvironments(accessibleEnvironments)
-
-		// If no current environment, call Init function to set default and create missing files in .keystone/
-		if ctx.Err() != nil {
-			ctx.SetError(nil)
-			if isKeystoneFile {
-				ctx.Init(models.Project{
-					Environments: accessibleEnvironments,
-				})
-			}
-		}
-	}
-
+	current := ctx.CurrentEnvironment()
 	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
 
 	checkEnvironment := true
@@ -121,6 +113,34 @@ func Initialize() {
 		os.Exit(1)
 	}
 
+	if checkProject && config.IsLoggedIn() {
+		es := environments.NewEnvironmentService(ctx)
+		if err := es.Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+		}
+
+		ctx.AccessibleEnvironments = es.GetAccessibleEnvironments()
+
+		if err := es.Err(); err != nil {
+			err.Print()
+			return
+		}
+
+		// If no accessible environment, then user has no access to the project
+		if len(ctx.AccessibleEnvironments) == 0 {
+			errors.ProjectDoesntExist(ctx.GetProjectName(), ctx.GetProjectID(), nil).Print()
+			os.Exit(1)
+		}
+
+		if isKeystoneFile {
+			ctx.Init(models.Project{
+				Environments: ctx.AccessibleEnvironments,
+			})
+		}
+		ctx.RemoveForbiddenEnvironments(ctx.AccessibleEnvironments)
+	}
+
 	if checkEnvironment && !ctx.HasEnvironment(currentEnvironment) {
 		ctx.Init(models.Project{})
 		// errors.EnvironmentDoesntExist(currentEnvironment, strings.Join(environments, ", "), nil).Print()
@@ -131,6 +151,7 @@ func Initialize() {
 		errors.MustBeLoggedIn(nil).Print()
 		os.Exit(1)
 	}
+
 }
 
 func init() {

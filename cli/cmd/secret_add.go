@@ -20,9 +20,11 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 
@@ -54,72 +56,27 @@ Example:
 	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 		secretName, secretValue := args[0], args[1]
-		environmentValueMap := make(map[string]string)
 
-		ctx := core.New(core.CTX_RESOLVE)
+		checkSecretErr := utils.CheckSecretContent(secretName)
+
+		if checkSecretErr != nil {
+			ui.PrintError(checkSecretErr.Error())
+			os.Exit(1)
+		}
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		es := environments.NewEnvironmentService(ctx)
+
 		if err = es.Err(); err != nil {
 			err.Print()
 			os.Exit(1)
 		}
 
-		environmentNames := make([]string, 0)
-		accessibleEnvironments := es.GetAccessibleEnvironments()
+		environmentValueMap := setValuesForEnvironments(secretName, secretValue, ctx.AccessibleEnvironments)
 
-		if err = es.Err(); err != nil {
-			err.Print()
-			return
-		}
-
-		for _, environment := range accessibleEnvironments {
-			environmentNames = append(environmentNames, environment.Name)
-		}
-
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			return
-		}
-
-		// Ask value for each env
-		if !skipPrompts {
-			ui.Print(ui.RenderTemplate("ask new value for environment", `
-Enter a values for {{ . }}:`, secretName))
-
-			for _, environment := range environmentNames {
-
-				p := promptui.Prompt{
-					Label:   environment,
-					Default: secretValue,
-				}
-
-				result, err := p.Run()
-
-				// Handle user cancelation
-				// or prompt error
-				if err != nil {
-					if err.Error() != "^C" {
-						ui.PrintError(err.Error())
-						os.Exit(1)
-					}
-					os.Exit(0)
-				}
-
-				environmentValueMap[environment] = strings.Trim(result, " ")
-			}
-
-		} else {
-			for _, environment := range environmentNames {
-				environmentValueMap[environment] = strings.Trim(secretValue, " ")
-			}
-
-		}
-
-		environmentValueMap[currentEnvironment] = secretValue
-
-		ms := messages.NewMessageService(ctx)
+		var printer = &ui.UiPrinter{}
+		ms := messages.NewMessageService(ctx, printer)
 		changes := ms.GetMessages()
 
 		if err = ms.Err(); err != nil {
@@ -147,13 +104,13 @@ Enter a values for {{ . }}:`, secretName))
 
 		// TODO
 		// Format beautyiful error
-		if err := ms.SendEnvironments(accessibleEnvironments).Err(); err != nil {
+		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
 			err.Print()
 			os.Exit(1)
 			return
 		}
 
-		ui.PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(environmentNames))
+		ui.PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(ctx.AccessibleEnvironments))
 	},
 }
 
@@ -170,4 +127,45 @@ func init() {
 	// is called directly, e.g.:
 	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	secretAddCmd.Flags().BoolVarP(&addOptional, "optional", "o", false, "mark the secret as optional")
+}
+
+func setValuesForEnvironments(secretName string, secretValue string, accessibleEnvironments []models.Environment) map[string]string {
+
+	environmentValueMap := make(map[string]string)
+	// Ask value for each env
+	if !skipPrompts {
+		ui.Print(ui.RenderTemplate("ask new value for environment", `
+Enter a values for {{ . }}:`, secretName))
+
+		for _, environment := range accessibleEnvironments {
+
+			p := promptui.Prompt{
+				Label:   environment.Name,
+				Default: secretValue,
+			}
+
+			result, err := p.Run()
+
+			// Handle user cancelation
+			// or prompt error
+			if err != nil {
+				if err.Error() != "^C" {
+					ui.PrintError(err.Error())
+					os.Exit(1)
+				}
+				os.Exit(0)
+			}
+
+			environmentValueMap[environment.Name] = strings.Trim(result, " ")
+		}
+
+	} else {
+		for _, environment := range accessibleEnvironments {
+			environmentValueMap[environment.Name] = strings.Trim(secretValue, " ")
+		}
+
+	}
+
+	environmentValueMap[currentEnvironment] = secretValue
+	return environmentValueMap
 }

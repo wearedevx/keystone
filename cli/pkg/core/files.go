@@ -6,6 +6,7 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -127,7 +128,7 @@ func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 	return ctx
 }
 
-func (ctx *Context) RemoveFile(filePath string, force bool) *Context {
+func (ctx *Context) RemoveFile(filePath string, force bool, purge bool, accessibleEnvironments []models.Environment) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
@@ -152,7 +153,6 @@ func (ctx *Context) RemoveFile(filePath string, force bool) *Context {
 		return ctx.setError(FailedToUpdateKeystoneFile(err))
 	}
 
-	environments := ctx.ListEnvironments()
 	currentEnvironment := ctx.CurrentEnvironment()
 
 	currentCached := path.Join(ctx.CachedEnvironmentFilesPath(currentEnvironment), filePath)
@@ -167,11 +167,13 @@ func (ctx *Context) RemoveFile(filePath string, force bool) *Context {
 
 	CopyFile(currentCached, dest)
 
-	for _, environment := range environments {
-		cachedFilePath := path.Join(ctx.CachedEnvironmentFilesPath(environment), filePath)
+	if purge {
+		for _, environment := range accessibleEnvironments {
+			cachedFilePath := path.Join(ctx.CachedEnvironmentFilesPath(environment.Name), filePath)
 
-		if FileExists(cachedFilePath) {
-			os.Remove(cachedFilePath)
+			if FileExists(cachedFilePath) {
+				os.Remove(cachedFilePath)
+			}
 		}
 	}
 
