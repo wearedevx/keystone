@@ -128,7 +128,7 @@ func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 	return ctx
 }
 
-func (ctx *Context) RemoveFile(filePath string, force bool, accessibleEnvironments []models.Environment) *Context {
+func (ctx *Context) RemoveFile(filePath string, force bool, purge bool, accessibleEnvironments []models.Environment) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
@@ -167,11 +167,13 @@ func (ctx *Context) RemoveFile(filePath string, force bool, accessibleEnvironmen
 
 	CopyFile(currentCached, dest)
 
-	for _, environment := range accessibleEnvironments {
-		cachedFilePath := path.Join(ctx.CachedEnvironmentFilesPath(environment.Name), filePath)
+	if purge {
+		for _, environment := range accessibleEnvironments {
+			cachedFilePath := path.Join(ctx.CachedEnvironmentFilesPath(environment.Name), filePath)
 
-		if FileExists(cachedFilePath) {
-			os.Remove(cachedFilePath)
+			if FileExists(cachedFilePath) {
+				os.Remove(cachedFilePath)
+			}
 		}
 	}
 

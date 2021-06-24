@@ -28,6 +28,7 @@ import (
 )
 
 var forcePrompts bool
+var purgeFile bool
 
 // filesRmCmd represents the rm command
 var filesRmCmd = &cobra.Command{
@@ -76,10 +77,17 @@ Example:
 				os.Exit(1)
 			}
 
-			ctx.RemoveFile(filePath, forcePrompts, ctx.AccessibleEnvironments)
+			ctx.RemoveFile(filePath, forcePrompts, purgeFile, ctx.AccessibleEnvironments)
 			if err = ctx.Err(); err != nil {
 				err.Print()
 				return
+			}
+
+			if purgeFile {
+				if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
+					err.Print()
+					os.Exit(1)
+				}
 			}
 
 			ui.PrintSuccess("%s has been removed from the secret files.", filePath)
@@ -91,18 +99,33 @@ Example:
 func init() {
 	filesCmd.AddCommand(filesRmCmd)
 
-	RootCmd.PersistentFlags().BoolVarP(&forcePrompts, "force", "f", false, "force remove file on system.")
+	filesRmCmd.Flags().BoolVarP(
+		&forcePrompts,
+		"force",
+		"f",
+		false,
+		"force remove file on system.",
+	)
+
+	filesRmCmd.Flags().BoolVarP(
+		&purgeFile,
+		"purge",
+		"p",
+		false,
+		"purge file content from all environments",
+	)
 }
 
 func promptYesNo(filePath string) string {
 
-	ui.Print(ui.RenderTemplate("confirm files rm", `{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
+	ui.Print(ui.RenderTemplate("confirm files rm",
+		`{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
 Content for the current environment ({{ .Environment }}) will be kept.
 Its content for other environments will be lost, it will no longer be gitignored.
 This is permanent, and cannot be undone.`, map[string]string{
-		"Path":        filePath,
-		"Environment": ctx.CurrentEnvironment(),
-	}))
+			"Path":        filePath,
+			"Environment": ctx.CurrentEnvironment(),
+		}))
 
 	result := "y"
 

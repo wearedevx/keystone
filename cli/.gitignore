@@ -3,6 +3,5 @@
 .env
 keystone.yml
 
-TestFile
 
 config.dev

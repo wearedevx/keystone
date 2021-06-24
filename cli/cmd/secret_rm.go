@@ -24,7 +24,7 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
-var purge bool
+var purgeSecret bool
 
 // secretsRmCmd represents the unset command
 var secretsRmCmd = &cobra.Command{
@@ -43,7 +43,7 @@ Exemple:
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		if !ctx.HasSecret(secretName) {
+		if !ctx.HasSecret(secretName) && !purgeSecret {
 			errors.SecretDoesNotExist(secretName, nil).Print()
 			return
 		}
@@ -64,17 +64,19 @@ Exemple:
 			return
 		}
 
-		ctx.RemoveSecret(secretName)
+		ctx.RemoveSecret(secretName, purgeSecret)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
 			return
 		}
 
-		// Unlike most of the other commands, we do not need
-		// to send the environment to other users
-		// because the only thing that needs to change is
-		// the keystone.yml file
+		if purgeSecret {
+			if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+			}
+		}
 
 		ui.PrintSuccess("Variable '%s' removed", secretName)
 	},
@@ -83,5 +85,5 @@ Exemple:
 func init() {
 	secretsCmd.AddCommand(secretsRmCmd)
 
-	secretsRmCmd.Flags().BoolVarP(&purge, "purge", "p", false, "purge all values from all environments aswell")
+	secretsRmCmd.Flags().BoolVarP(&purgeSecret, "purge", "p", false, "purge all values from all environments aswell")
 }
