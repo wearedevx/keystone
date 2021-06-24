@@ -24,6 +24,8 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
+var purge bool
+
 // secretsRmCmd represents the unset command
 var secretsRmCmd = &cobra.Command{
 	Use:   "rm",
@@ -80,4 +82,6 @@ Exemple:
 
 func init() {
 	secretsCmd.AddCommand(secretsRmCmd)
+
+	secretsRmCmd.Flags().BoolVarP(&purge, "purge", "p", false, "purge all values from all environments aswell")
 }

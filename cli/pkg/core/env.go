@@ -87,7 +87,7 @@ func (ctx *Context) AddSecret(secretName string, secretValue map[string]string, 
 //
 // [varname] The variable to unset
 // It will be removed in all existing environment.
-func (ctx *Context) RemoveSecret(secretName string) *Context {
+func (ctx *Context) RemoveSecret(secretName string, purge bool) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
@@ -100,13 +100,67 @@ func (ctx *Context) RemoveSecret(secretName string) *Context {
 		return ctx.setError(FailedToUpdateKeystoneFile(err))
 	}
 
+	if purge {
+		ctx.purgeSecret(secretName)
+	}
+
 	return ctx
 }
 
-// Unsets a previously set environment variable
-//
-// [varname] The variable to unset
-// It will be removed in all existing environment.
+// purgeSecret removes the values associated to `secretName` from the cache
+// of all environments.
+// This implies that subsequently sending the environment to other users
+// will remove those values for them aswell
+func (ctx *Context) purgeSecret(secretName string) *Context {
+	if ctx.Err() != nil {
+		return ctx
+	}
+
+	var err error
+	var e *Error
+
+	// Update environments' .env files
+	environments := ctx.ListEnvironments()
+
+	for _, environment := range environments {
+		dir := ctx.CachedEnvironmentPath(environment)
+		dotEnvPath := path.Join(dir, ".env")
+		dotEnv := new(EnvFile)
+
+		if err = dotEnv.Load(dotEnvPath).Err(); err != nil {
+			return ctx.setError(FailedToReadDotEnv(dotEnvPath, err))
+		}
+
+		for secretName := range dotEnv.GetData() {
+			dotEnv.Unset(secretName)
+		}
+
+		if err = dotEnv.Dump().Err(); err != nil {
+			return ctx.setError(FailedToUpdateDotEnv(dotEnvPath, err))
+		}
+	}
+
+	// Copy the new .env for the current environment to .keystone/cache/.env
+	currentEnvironment := ctx.CurrentEnvironment()
+
+	if e != nil {
+		return ctx.setError(e)
+	}
+
+	newDotEnv := ctx.CachedEnvironmentDotEnvPath(currentEnvironment)
+	destDotEnv := ctx.CachedDotEnvPath()
+
+	if err = CopyFile(newDotEnv, destDotEnv); err != nil {
+		return ctx.setError(CopyFailed(newDotEnv, destDotEnv, err))
+	}
+
+	return ctx
+}
+
+// PurgeSecets Removes from the cache of all environments all secrets that
+// are not found in the project’s keystone.yml
+// This implies that sending the environment to other users will remove
+// those values for them too
 func (ctx *Context) PurgeSecrets() *Context {
 	if ctx.Err() != nil {
 		return ctx
