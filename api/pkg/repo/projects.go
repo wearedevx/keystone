@@ -64,8 +64,10 @@ func (r *Repo) createProject(project *Project) IRepo {
 		}
 
 		r.err = db.Preload("Members").First(project, project.ID).Error
-		r.err = db.Preload("Environments").First(project, project.ID).Error
 
+		if r.err == nil {
+			r.err = db.Preload("Environments").First(project, project.ID).Error
+		}
 	}
 
 	return r

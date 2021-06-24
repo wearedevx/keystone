@@ -27,46 +27,34 @@ import (
 // purgeCmd represents the purge command
 var purgeCmd = &cobra.Command{
 	Use:   "purge",
-	Short: "Permanently purges all removed secret from the cache",
-	Long: `Permanently purges all removed secret from the cache.
+	Short: "Permanently purges all removed secrets from the cache",
+	Long: `Permanently purges all removed secrets from the cache.
 
 All values for every environments will be removed for every member.
 This is permanent an cannont be undone`,
-	Run: func(_ *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		var err *errors.Error
-		secretName := args[0]
 
 		ctx.MustHaveEnvironment(currentEnvironment)
-
-		if !ctx.HasSecret(secretName) {
-			errors.SecretDoesNotExist(secretName, nil).Print()
-			return
-		}
 
 		var printer = &ui.UiPrinter{}
 		ms := messages.NewMessageService(ctx, printer)
 
-		changes := ms.GetMessages()
+		ms.GetMessages()
 
 		if err = ms.Err(); err != nil {
 			err.Print()
 			os.Exit(1)
 		}
 
-		if err = ctx.CompareRemovedSecretWithChanges(secretName, changes); err != nil {
-			err.Print()
-			os.Exit(1)
-			return
-		}
-
-		ctx.RemoveSecret(secretName)
+		ctx.PurgeSecrets()
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
 			return
 		}
 
-		ui.PrintSuccess("All environments pruned")
+		ui.PrintSuccess("All environments purged")
 	},
 }
 

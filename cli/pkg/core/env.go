@@ -93,12 +93,32 @@ func (ctx *Context) RemoveSecret(secretName string) *Context {
 	}
 
 	var err error
-	var e *Error
 	var ksfile KeystoneFile
 	// Add new env key to keystone.yml
 
 	if err = ksfile.Load(ctx.Wd).UnsetEnv(secretName).Save().Err(); err != nil {
 		return ctx.setError(FailedToUpdateKeystoneFile(err))
+	}
+
+	return ctx
+}
+
+// Unsets a previously set environment variable
+//
+// [varname] The variable to unset
+// It will be removed in all existing environment.
+func (ctx *Context) PurgeSecrets() *Context {
+	if ctx.Err() != nil {
+		return ctx
+	}
+
+	var err error
+	var e *Error
+	var ksfile KeystoneFile
+	// Add new env key to keystone.yml
+
+	if err = ksfile.Load(ctx.Wd).Err(); err != nil {
+		return ctx.setError(FailedToReadKeystoneFile(err))
 	}
 
 	// Update environments' .env files
@@ -107,10 +127,20 @@ func (ctx *Context) RemoveSecret(secretName string) *Context {
 	for _, environment := range environments {
 		dir := ctx.CachedEnvironmentPath(environment)
 		dotEnvPath := path.Join(dir, ".env")
+		dotEnv := new(EnvFile)
 
-		if err = new(EnvFile).Load(dotEnvPath).Unset(secretName).Dump().Err(); err != nil {
-			e = FailedToUpdateDotEnv(dotEnvPath, err)
-			break
+		if err = dotEnv.Load(dotEnvPath).Err(); err != nil {
+			return ctx.setError(FailedToReadDotEnv(dotEnvPath, err))
+		}
+
+		for secretName := range dotEnv.GetData() {
+			if yes, _ := ksfile.HasEnv(secretName); !yes {
+				dotEnv.Unset(secretName)
+			}
+		}
+
+		if err = dotEnv.Dump().Err(); err != nil {
+			return ctx.setError(FailedToUpdateDotEnv(dotEnvPath, err))
 		}
 	}
 
