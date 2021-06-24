@@ -94,7 +94,26 @@ func Initialize() {
 
 	isKeystoneFile := keystonefile.ExistsKeystoneFile(currentfolder)
 
-	if config.IsLoggedIn() {
+	current := ctx.CurrentEnvironment()
+	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
+
+	checkEnvironment := true
+	checkProject := true
+	checkLogin := false
+
+	if len(os.Args) > 1 {
+		command := os.Args[1]
+		checkEnvironment = !isIn(noEnvironmentCommands, command)
+		checkProject = !isIn(noProjectCommands, command)
+		checkLogin = !isIn(noLoginCommands, command)
+	}
+
+	if checkProject && !isKeystoneFile {
+		errors.NotAKeystoneProject(".", nil).Print()
+		os.Exit(1)
+	}
+
+	if checkProject && config.IsLoggedIn() {
 		es := environments.NewEnvironmentService(ctx)
 		if err := es.Err(); err != nil {
 			err.Print()
@@ -120,25 +139,6 @@ func Initialize() {
 			})
 		}
 		ctx.RemoveForbiddenEnvironments(ctx.AccessibleEnvironments)
-	}
-
-	current := ctx.CurrentEnvironment()
-	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
-
-	checkEnvironment := true
-	checkProject := true
-	checkLogin := false
-
-	if len(os.Args) > 1 {
-		command := os.Args[1]
-		checkEnvironment = !isIn(noEnvironmentCommands, command)
-		checkProject = !isIn(noProjectCommands, command)
-		checkLogin = !isIn(noLoginCommands, command)
-	}
-
-	if checkProject && !isKeystoneFile {
-		errors.NotAKeystoneProject(".", nil).Print()
-		os.Exit(1)
 	}
 
 	if checkEnvironment && !ctx.HasEnvironment(currentEnvironment) {
