@@ -21,6 +21,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-replace github.com/wearedevx/keystone/api => ../api
-
 replace github.com/wearedevx/keystone/cmd => ./cmd

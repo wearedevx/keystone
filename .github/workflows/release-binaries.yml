@@ -118,8 +118,9 @@ jobs:
 
       - name: Build
         env:
-          LDFLAGS: -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL }}
+          LDFLAGS: -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}
         run: |
+          cd cli
           mkdir -p build/
           GOOS=darwin GOARCH=amd64 go build -ldflags "${LDFLAGS}" -o ./build/ks-amd64
           GOOS=darwin GOARCH=arm64 go build -ldflags "${LDFLAGS}" -o ./build/ks-arm64
