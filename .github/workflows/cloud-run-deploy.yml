@@ -34,6 +34,7 @@ jobs:
       uses: google-github-actions/setup-gcloud@v0.2.0
       with:
         project_id: ${{ secrets.PROJECT_ID }}
+        region: ${{ env.REGION }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         export_default_credentials: true  # Set to true to authenticate the Cloud Run action
 
@@ -48,11 +49,11 @@ jobs:
         
     - name: Deploy to Cloud Run
       id: deploy
-      uses: google-github-actions/deploy-cloudrun@v0.4.0
+      uses: google-github-actions/deploy-cloudrun@v0.6.0
       with:
         service: ${{ secrets.SERVICE }}
         image: gcr.io/${{ secrets.PROJECT_ID }}/${{ secrets.SERVICE }}:${{  github.sha }}
-        region: ${{ secrets.REGION }}
+        region: ${{ env.REGION }}
         no_traffic: true
         tag: develop
         env_vars: JWT_SALT=${{ secrets.JWT_SALT }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME}},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ secrets.CLOUDSQL_CREDENTIALS }}
