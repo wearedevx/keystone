@@ -15,7 +15,7 @@ jobs:
             echo "::set-output name=go-build::$(go env GOCACHE)"
             echo "::set-output name=go-mod::$(go env GOMODCACHE)"
 
-        - name: Checbout
+        - name: Checkout
           uses: actions/checkout@v1
           with:
             # Checkout the head ref instead of the PR branch that github creates.
@@ -47,6 +47,7 @@ jobs:
           env:
             LDFLAGS: -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}
           run: |
+            cd cli
             GOOS=linux GOARCH=amd64 go build -ldflags "${LDFLAGS}" -o ./ks
             tar cfz ks-linux64.tar.gz ks
 
@@ -58,7 +59,7 @@ jobs:
   snapcraft:
     runs-on: ubuntu-latest
     steps:
-      - uses: snapcore/action-build@v1
+      - uses: snapcore/action-build@v1.0.8
         id: snapcraft
         env: 
           KSAPI_URL_DEV: https://develop---keystone-server-esk4nrfqlq-oa.a.run.app/
@@ -80,6 +81,7 @@ jobs:
       - name: Install Golang
         run: |
           brew install go@1.16
+          brew link --overwrite go
 
       - id: go-cache-paths
         run: |
