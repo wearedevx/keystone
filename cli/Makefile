@@ -5,7 +5,8 @@ endif
 build:
 	go clean
 	go mod edit -replace=github.com/wearedevx/keystone/cmd=./cmd
-	./build.sh
+	echo "$(LDFLAGS)"
+	go build -ldflags "$(LDFLAGS)" -o ks
 
 install:
 	chmod +x ks

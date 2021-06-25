@@ -22,3 +22,5 @@ require (
 )
 
 replace github.com/wearedevx/keystone/api => ../api
+
+replace github.com/wearedevx/keystone/cmd => ./cmd
