@@ -1,0 +1,81 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  annotations:
+    client.knative.dev/user-image: eu.gcr.io/keystone-245200/keystone-server:88de8fe18dd5c528d524d8bbd4b7c1cdce131f0d
+    run.googleapis.com/client-name: gcloud
+    run.googleapis.com/client-version: 343.0.0
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+    serving.knative.dev/creator: keystone-server-deploy@keystone-245200.iam.gserviceaccount.com
+    serving.knative.dev/lastModifier: keystone-server-deploy@keystone-245200.iam.gserviceaccount.com
+  creationTimestamp: '2021-06-10T15:13:14.412534Z'
+  generation: 16
+  labels:
+    cloud.googleapis.com/location: europe-west6
+  name: keystone-server
+  namespace: '742719170596'
+  resourceVersion: AAXFk4PexAM
+  selfLink: /apis/serving.knative.dev/v1/namespaces/742719170596/services/keystone-server
+  uid: e39df0aa-b19b-4b32-8847-c0a333033ebf
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: '100'
+        client.knative.dev/user-image: eu.gcr.io/keystone-245200/keystone-server:88de8fe18dd5c528d524d8bbd4b7c1cdce131f0d
+        run.googleapis.com/client-name: gcloud
+        run.googleapis.com/client-version: 343.0.0
+        run.googleapis.com/cloudsql-instances: keystone-245200:europe-west6:keystonedb
+        run.googleapis.com/sandbox: gvisor
+      name: keystone-server-0016-blz
+    spec:
+      containerConcurrency: 80
+      containers:
+      - env:
+        - name: JWT_SALT
+        - name: DB_HOST
+        - name: DB_NAME
+        - name: DB_USER
+        - name: DB_PASSWORD
+        - name: CLOUDSQL_INSTANCE
+        - name: CLOUDSQL_CREDENTIALS
+        image: gcr.io//keystone-server:3f345994ff31eb95a618f89628d4b6370f2540d8
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 512Mi
+      serviceAccountName: keystone-server@keystone-245200.iam.gserviceaccount.com
+      timeoutSeconds: 300
+  traffic:
+  - latestRevision: true
+    percent: 100
+status:
+  address:
+    url: https://keystone-server-esk4nrfqlq-oa.a.run.app
+  conditions:
+  - lastTransitionTime: '2021-06-25T09:10:46.832131Z'
+    message: Image 'gcr.io//keystone-server:3f345994ff31eb95a618f89628d4b6370f2540d8'
+      not found.
+    reason: ContainerMissing
+    status: 'False'
+    type: Ready
+  - lastTransitionTime: '2021-06-25T09:10:46.832131Z'
+    message: Image 'gcr.io//keystone-server:3f345994ff31eb95a618f89628d4b6370f2540d8'
+      not found.
+    reason: ContainerMissing
+    status: 'False'
+    type: ConfigurationsReady
+  - lastTransitionTime: '2021-06-14T09:10:11.078843Z'
+    status: 'True'
+    type: RoutesReady
+  latestCreatedRevisionName: keystone-server-0016-blz
+  latestReadyRevisionName: keystone-server-00015-sux
+  observedGeneration: 16
+  traffic:
+  - latestRevision: true
+    percent: 100
+    revisionName: keystone-server-00015-sux
+  url: https://keystone-server-esk4nrfqlq-oa.a.run.app
