@@ -1,0 +1,61 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+on:
+  push:
+    branches:
+      - develop
+
+name: Build and Deploy a Container
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT }}
+  SERVICE: keystone-server
+  REGION: europe-west6
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0.2.0
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+        srvice_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true  # Set to true to authenticate the Cloud Run action
+
+    - name: Authorize Docker push
+      run: gcloud auth configure-docker
+
+    - name: Build and Push Container
+      run: |-
+        docker build -t gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{  github.sha }} api/
+        docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{  github.sha }}
+        
+    - name: Deploy to Cloud Run
+      id: deploy
+      uses: google-github-actions/deploy-cloudrun@v0.4.0
+      with:
+        service: ${{ env.SERVICE }}
+        image: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{  github.sha }}
+        region: ${{ env.REGION }}
+        no_traffic: true
+        tag: develop
+        env_vars: JWT_SALT=${{ env.JWT_SALT }},DB_HOST=${{ env.DB_HOST }},DB_NAME=${{ env.DB_NAME}},DB_USER=${{ env.DB_USER }},DB_PASSWORD=${{ env.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ env.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ env.CLOUDSQL_CREDENTIALS }}
+        flags: --allow-unauthenticated --add-cloudsql-instances ${{ env.CLOUDSQL_INSTANCE }} --service-account=${{ env.KS_SERVER_SERVICE_ACCOUNT }}
+
+    - name: Show Output
+      run: echo ${{ steps.deploy.outputs.url }}
