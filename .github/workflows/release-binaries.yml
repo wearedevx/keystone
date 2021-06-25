@@ -60,7 +60,8 @@ jobs:
     steps:
       - uses: snapcore/action-build@v1
         id: snapcraft
-        env:
+        env: 
+          KSAPI_URL_DEV: https://develop---keystone-server-esk4nrfqlq-oa.a.run.app/
         with:
           path: cli/
       - uses: actions/upload-artifact@v2
