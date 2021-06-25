@@ -33,7 +33,7 @@ jobs:
     - name: Setup Cloud SDK
       uses: google-github-actions/setup-gcloud@v0.2.0
       with:
-        project_id: ${{ env.PROJECT_ID }}
+        project_id: ${{ secrets.PROJECT_ID }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         export_default_credentials: true  # Set to true to authenticate the Cloud Run action
 
@@ -42,21 +42,21 @@ jobs:
 
     - name: Build and Push Container
       run: |-
-        echo ${{ env.GCLOUD_PROJECT }}
-        docker build -t gcr.io/${{ env.GCLOUD_PROJECT }}/${{ env.SERVICE }}:${{  github.sha }} ./api/
-        docker push gcr.io/${{ env.GCLOUD_PROJECT }}/${{ env.SERVICE }}:${{  github.sha }}
+        echo ${{ secrets.PROJECT_ID }}
+        docker build -t gcr.io/${{ secrets.PROJECT_ID }}/${{ secrets.SERVICE }}:${{  github.sha }} ./api/
+        docker push gcr.io/${{ secrets.PROJECT_ID }}/${{ secrets.SERVICE }}:${{  github.sha }}
         
     - name: Deploy to Cloud Run
       id: deploy
       uses: google-github-actions/deploy-cloudrun@v0.4.0
       with:
-        service: ${{ env.SERVICE }}
-        image: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{  github.sha }}
-        region: ${{ env.REGION }}
+        service: ${{ secrets.SERVICE }}
+        image: gcr.io/${{ secrets.PROJECT_ID }}/${{ secrets.SERVICE }}:${{  github.sha }}
+        region: ${{ secrets.REGION }}
         no_traffic: true
         tag: develop
-        env_vars: JWT_SALT=${{ env.JWT_SALT }},DB_HOST=${{ env.DB_HOST }},DB_NAME=${{ env.DB_NAME}},DB_USER=${{ env.DB_USER }},DB_PASSWORD=${{ env.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ env.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ env.CLOUDSQL_CREDENTIALS }}
-        flags: --allow-unauthenticated --add-cloudsql-instances ${{ env.CLOUDSQL_INSTANCE }} --service-account=${{ env.KS_SERVER_SERVICE_ACCOUNT }}
+        env_vars: JWT_SALT=${{ secrets.JWT_SALT }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME}},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ secrets.CLOUDSQL_CREDENTIALS }}
+        flags: --allow-unauthenticated --add-cloudsql-instances ${{ secrets.CLOUDSQL_INSTANCE }} --service-account=${{ secrets.KS_SERVER_SERVICE_ACCOUNT }}
 
     - name: Show Output
       run: echo ${{ steps.deploy.outputs.url }}
