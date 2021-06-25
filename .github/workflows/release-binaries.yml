@@ -61,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: |
-          sudo apt install sg
+          sudo apt install libvshadow-utils
       - uses: snapcore/action-build@v1.0.8
         id: snapcraft
         env: 
@@ -116,8 +116,8 @@ jobs:
           LDFLAGS: -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL }}
         run: |
           mkdir -p build/
-          GOOS=macos GOARCH=amd64 go build -ldflags "${LDFLAGS}" -o ./build/ks-amd64
-          GOOS=macos GOARCH=arm64 go build -ldflags "${LDFLAGS}" -o ./build/ks-arm64
+          GOOS=Darwin GOARCH=amd64 go build -ldflags "${LDFLAGS}" -o ./build/ks-amd64
+          GOOS=Darwin GOARCH=arm64 go build -ldflags "${LDFLAGS}" -o ./build/ks-arm64
           lipo -create -outpup ./build/ks ./build/ks-amd64 ./build/ks-arm64
           cd build
           tar cfz ks-macos.tar.gz ks
