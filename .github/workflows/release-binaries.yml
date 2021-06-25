@@ -53,12 +53,15 @@ jobs:
 
         - uses: actions/upload-artifact@v2
           with:
-            path: ks-linux64.tar.gz
+            path: cli/ks-linux64.tar.gz
             retention-days: 1
 
   snapcraft:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
+      - uses: actions/checkout@v2
+      - run: |
+          sudo apt install sg
       - uses: snapcore/action-build@v1.0.8
         id: snapcraft
         env: 
