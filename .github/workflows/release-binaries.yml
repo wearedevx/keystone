@@ -80,6 +80,9 @@ jobs:
   macos:
     runs-on: macos-10.15
     steps:
+      - uses: actions/setup-go@v2
+        with: 
+          go-version: 1.16.5
       - name: Install homebrew
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
