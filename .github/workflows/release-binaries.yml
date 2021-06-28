@@ -78,7 +78,7 @@ jobs:
           path: ${{ steps.snapcraft.outputs.snap }}
 
   macos:
-    runs-on: macos-10.15
+    runs-on: macos-11.0
     steps:
       - uses: actions/setup-go@v2
         with: 
