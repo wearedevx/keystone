@@ -15,6 +15,7 @@ parts:
   ks:
     plugin: go
     override-build: |
+      eval "$(cat variables)"
       rm -rf themis/
       git clone https://github.com/cossacklabs/themis.git
       make -C themis
@@ -23,7 +24,6 @@ parts:
       go mod edit -dropreplace github.com/wearedevx/keystone/api
       make build
       chmod +x ks
-      ls -l
     build-packages: [make, git, libssl-dev]
     organize:
       /usr/local/lib: /lib/

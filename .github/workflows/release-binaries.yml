@@ -65,6 +65,8 @@ jobs:
           go mod edit -dropreplace github.com/wearedevx/keystone/api
       - run: |
           sudo apt install libvshadow-utils
+      - run: |
+          echo 'export KSLDFLAGS=" -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=https://develop---keystone-server-esk4nrfqlq-oa.a.run.app/"' > variables
       - uses: snapcore/action-build@v1.0.8
         id: snapcraft
         env:
