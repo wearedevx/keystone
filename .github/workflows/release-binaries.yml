@@ -63,8 +63,7 @@ jobs:
       - run: |
           cd cli
           go mod edit -dropreplace github.com/wearedevx/keystone/api
-          go get github.com/wearedevx/keystone/api@{{ github.sha }} ../api
-
+          go get github.com/wearedevx/keystone/api@{{ github.sha }}
       - run: |
           sudo apt install libvshadow-utils
       - uses: snapcore/action-build@v1.0.8
