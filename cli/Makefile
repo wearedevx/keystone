@@ -7,9 +7,9 @@ build:
 	go mod edit -replace=github.com/wearedevx/keystone/cmd=./cmd
 	echo "$(LDFLAGS)"
 	go build -ldflags "$(LDFLAGS)" -o ks
-	chmod +x ks
 
 install:
+	chmod +x ks
 	cp ks $(PREFIX)/bin
 
 run:

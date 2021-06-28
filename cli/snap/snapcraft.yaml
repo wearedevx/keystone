@@ -22,9 +22,11 @@ parts:
       rm -rf themis/
       go mod edit -dropreplace github.com/wearedevx/keystone/api
       make build
+      chmod +x ks
       ls -l
+      ls -l /
     build-packages: [make, git, libssl-dev]
     organize:
       /usr/local/lib: /lib/
-      ./ks: ks
+      ks: ./ks
     source: .
