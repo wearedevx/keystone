@@ -20,10 +20,10 @@ parts:
       make -C themis
       make install -C themis
       rm -rf themis/
-      snapcraftctl build
+      make build
     build-packages: [make, git, libssl-dev]
     organize:
        /usr/local/lib: /lib/
-       bin/keystone: /bin/ks
+       ks: /bin/ks
     source: .
 
