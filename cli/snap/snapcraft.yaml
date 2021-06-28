@@ -9,7 +9,7 @@ confinement: devmode
 
 apps:
   ks:
-    command: ks
+    command: bin/ks
 
 parts:
   ks:
@@ -24,9 +24,9 @@ parts:
       make build
       chmod +x ks
       ls -l
-      ls -l /
     build-packages: [make, git, libssl-dev]
     organize:
       /usr/local/lib: /lib/
-      ks: ./ks
+      ../build/ks: /bin/ks
     source: .
+
