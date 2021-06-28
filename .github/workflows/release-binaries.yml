@@ -63,7 +63,7 @@ jobs:
       - run: |
           cd cli
           go mod edit -dropreplace github.com/wearedevx/keystone/api
-          go get github.com/wearedevx/keystone/api@{{ github.sha }}
+          go get github.com/wearedevx/keystone/api@{{ github.sha }} ../api
 
       - run: |
           sudo apt install libvshadow-utils
@@ -71,6 +71,7 @@ jobs:
         id: snapcraft
         env: 
           KSAPI_URL_DEV: https://develop---keystone-server-esk4nrfqlq-oa.a.run.app/
+          LDFLAGS: -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}
         with:
           path: cli/
       - uses: actions/upload-artifact@v2
