@@ -62,16 +62,17 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
           cd cli
-          # go mod edit -dropreplace github.com/wearedevx/keystone/api
+          go mod edit -dropreplace github.com/wearedevx/keystone/api
+          cat go.mod
       - run: |
           sudo apt install libvshadow-utils
       - uses: snapcore/action-build@v1.0.8
         id: snapcraft
-        env: 
+        env:
           KSAPI_URL_DEV: https://develop---keystone-server-esk4nrfqlq-oa.a.run.app/
           LDFLAGS: -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}
-        # with:
-        #   path: cli/
+        with:
+          path: cli/
       - uses: actions/upload-artifact@v2
         with:
           name: ks-snap
