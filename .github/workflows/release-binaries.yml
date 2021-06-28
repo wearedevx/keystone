@@ -121,6 +121,9 @@ jobs:
         run: |
           cd cli
           mkdir -p build/
+          export CC_FOR_darwin_arm64="$(CC) -target arm64-apple-macos10.12"
+          export CC_FOR_darwin_amd64="$(CC) -target x86_64-apple-macos11"
+
           GOOS=darwin GOARCH=amd64 go build -ldflags "${LDFLAGS}" -o ./build/ks-amd64
           GOOS=darwin GOARCH=arm64 go build -ldflags "${LDFLAGS}" -o ./build/ks-arm64
           lipo -create -output ./build/ks ./build/ks-amd64 ./build/ks-arm64
