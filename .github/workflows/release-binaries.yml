@@ -70,8 +70,8 @@ jobs:
         env: 
           KSAPI_URL_DEV: https://develop---keystone-server-esk4nrfqlq-oa.a.run.app/
           LDFLAGS: -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}
-        with:
-          path: cli/
+        # with:
+        #   path: cli/
       - uses: actions/upload-artifact@v2
         with:
           name: ks-snap
@@ -79,8 +79,7 @@ jobs:
 
   macos:
     runs-on: macos-10.15
-    steps: 
-      
+    steps:
       - name: Install homebrew
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
