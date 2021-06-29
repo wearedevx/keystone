@@ -70,7 +70,6 @@ jobs:
       - uses: snapcore/action-build@v1.0.8
         id: snapcraft
         env:
-          KSAPI_URL_DEV: https://develop---keystone-server-esk4nrfqlq-oa.a.run.app/
           KSLDFLAGS: -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}
         with:
           path: cli/
