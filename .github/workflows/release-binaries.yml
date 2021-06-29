@@ -75,14 +75,14 @@ jobs:
           KSLDFLAGS: -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}
         with:
           path: cli/
+      - run: |
+        unsquashfs ${{ steps.snapcraft.outputs.snap }}
+        snapcraft pack ./squashfs-root
       - uses: actions/upload-artifact@v2
         with:
           name: ks-snap
           path: ${{ steps.snapcraft.outputs.snap }}
       - uses: snapcore/action-publish@v1
-      - run: |
-        unsquashfs ${{ steps.snapcraft.outputs.snap }}
-        snapcraft pack ./squashfs-root
         with:
           store_login: ${{ secrets.STORE_LOGIN }}
           snap: "../${{ steps.snapcraft.outputs.snap }}"
