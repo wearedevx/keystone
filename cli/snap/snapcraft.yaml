@@ -15,7 +15,7 @@ parts:
   ks:
     plugin: go
     override-build: |
-      eval "$(cat variables.sh)"
+      eval "$(cat variables)"
       rm -rf themis/
       git clone https://github.com/cossacklabs/themis.git
       make -C themis

@@ -68,8 +68,7 @@ jobs:
       - run: |
           # create variables file
           cd cli
-          echo 'export KSLDFLAGS=" -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}"' > variables.sh
-          chmod +x variables.sh
+          echo 'export KSLDFLAGS=" -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}"' > variables
       - uses: snapcore/action-build@v1.0.8
         id: snapcraft
         env:
@@ -80,6 +79,11 @@ jobs:
         with:
           name: ks-snap
           path: ${{ steps.snapcraft.outputs.snap }}
+      - uses: snapcore/action-publish@v1
+        with:
+          store_login: ${{ secrets.STORE_LOGIN }}
+          snap: ${{ steps.build.outputs.snap }}
+          release: edge
 
   macos:
     runs-on: macos-11.0
