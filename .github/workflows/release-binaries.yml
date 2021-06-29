@@ -82,7 +82,7 @@ jobs:
       - uses: snapcore/action-publish@v1
         with:
           store_login: ${{ secrets.STORE_LOGIN }}
-          snap: ${{ steps.build.outputs.snap }}
+          snap: ${{ steps.snapcraft.outputs.snap }}
           release: edge
 
   macos:
