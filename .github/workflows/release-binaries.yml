@@ -76,8 +76,8 @@ jobs:
         with:
           path: cli/
       - run: |
-        unsquashfs ${{ steps.snapcraft.outputs.snap }}
-        snapcraft pack ./squashfs-root
+         unsquashfs ${{ steps.snapcraft.outputs.snap }}
+         snapcraft pack ./squashfs-root
       - uses: actions/upload-artifact@v2
         with:
           name: ks-snap
