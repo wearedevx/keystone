@@ -76,8 +76,8 @@ jobs:
         with:
           path: cli/
       - run: |
-         unsquashfs ${{ steps.snapcraft.outputs.snap }}
-         snapcraft pack ./squashfs-root
+          unsquashfs ${{ steps.snapcraft.outputs.snap }}
+          snapcraft pack ./squashfs-root -o  ${{ steps.snapcraft.outputs.snap }}
       - uses: actions/upload-artifact@v2
         with:
           name: ks-snap
@@ -85,7 +85,7 @@ jobs:
       - uses: snapcore/action-publish@v1
         with:
           store_login: ${{ secrets.STORE_LOGIN }}
-          snap: "../${{ steps.snapcraft.outputs.snap }}"
+          snap: ${{ steps.snapcraft.outputs.snap }}
           release: edge
 
   macos:
