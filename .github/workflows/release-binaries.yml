@@ -80,9 +80,12 @@ jobs:
           name: ks-snap
           path: ${{ steps.snapcraft.outputs.snap }}
       - uses: snapcore/action-publish@v1
+      - run: |
+        unsquashfs ${{ steps.snapcraft.outputs.snap }}
+        snapcraft pack ./squashfs-root
         with:
           store_login: ${{ secrets.STORE_LOGIN }}
-          snap: ${{ steps.snapcraft.outputs.snap }}
+          snap: "../${{ steps.snapcraft.outputs.snap }}"
           release: edge
 
   macos:
