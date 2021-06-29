@@ -5,13 +5,13 @@ summary: One app for managing your secrets # 79 char long summary
 description: |
   Manage secrets got your projects in one place.
 confinement: strict
-plugs:
-  config-fs:
-    interface: system-files
-    read:
-    - /home/
-    write:
-    - /home/
+# plugs:
+#   config-fs:
+#     interface: system-files
+#     read:
+#     - /home/
+#     write:
+#     - /home/
 
 apps:
   ks:
@@ -21,7 +21,8 @@ apps:
     plugs:
       - network-bind
       - network
-      - config-fs
+      - home
+      # - config-fs
 
 parts:
   ks:
