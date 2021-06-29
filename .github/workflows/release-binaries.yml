@@ -66,7 +66,7 @@ jobs:
       - run: |
           sudo apt install libvshadow-utils
       - run: |
-          echo 'export KSLDFLAGS=" -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=https://develop---keystone-server-esk4nrfqlq-oa.a.run.app/"' > variables
+          echo 'export KSLDFLAGS=" -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ KSAPI_URL_DEV }}"' > variables.sh
       - uses: snapcore/action-build@v1.0.8
         id: snapcraft
         env:
