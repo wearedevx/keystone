@@ -69,7 +69,7 @@ jobs:
           # create variables file
           cd cli
           echo 'export KSLDFLAGS=" -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}"' > variables.sh
-          chmod +x variables
+          chmod +x variables.sh
       - uses: snapcore/action-build@v1.0.8
         id: snapcraft
         env:
