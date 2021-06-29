@@ -10,6 +10,9 @@ apps:
     command: bin/ks
     environment:
       HOME: "$SNAP_USER_COMMON"
+    plugs:
+      - network-bind
+      - network
 
 parts:
   ks:
