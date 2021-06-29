@@ -4,7 +4,7 @@ version: "0.1"
 summary: One app for managing your secrets # 79 char long summary
 description: |
   Manage secrets got your projects in one place.
-confinement: strict
+confinement: classic
 
 apps:
   ks:
