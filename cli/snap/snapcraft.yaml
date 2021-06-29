@@ -5,7 +5,7 @@ summary: One app for managing your secrets # 79 char long summary
 description: |
   Manage secrets got your projects in one place.
 grade: devel
-confinement: devmode
+confinement: strict
 
 apps:
   ks:
