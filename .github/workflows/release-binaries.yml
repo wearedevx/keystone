@@ -6,56 +6,6 @@ on:
       - master
 
 jobs:
-  linux:
-    runs-on: ubuntu-latest
-    steps:
-      # Get values for cache paths to be used in later steps
-      - id: go-cache-paths
-        run: |
-          echo "::set-output name=go-build::$(go env GOCACHE)"
-          echo "::set-output name=go-mod::$(go env GOMODCACHE)"
-
-      - name: Checkout
-        uses: actions/checkout@v1
-        with:
-          # Checkout the head ref instead of the PR branch that github creates.
-          ref: ${{ github.head_ref }}
-
-      # Cache go build cache, used to speedup go test.
-      - name: Go Build Cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.go-cache-paths.outputs.go-build }}
-          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
-
-      # Cache go mod cache, used to speedup builds
-      - name: Go Mod Cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.go-cache-paths.outputs.go-mod }}
-          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
-
-      - name: Install themis
-        run: |
-          wget -qO - https://pkgs-ce.cossacklabs.com/gpg | sudo apt-key add -
-          sudo apt install apt-transport-https
-          sudo sh -c 'echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" >  /etc/apt/sources.list.d/themis.list'
-          sudo apt update
-          sudo apt install libthemis-dev
-
-      - name: Build
-        env:
-          LDFLAGS: -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}
-        run: |
-          cd cli
-          GOOS=linux GOARCH=amd64 go build -ldflags "${LDFLAGS}" -o ./ks
-          tar cfz ks-linux64.tar.gz ks
-
-      - uses: actions/upload-artifact@v2
-        with:
-          path: cli/ks-linux64.tar.gz
-          retention-days: 1
-
   snapcraft:
     runs-on: ubuntu-20.04
     steps:
@@ -89,91 +39,20 @@ jobs:
           release: edge
 
   macos:
-    runs-on: macos-11.0
-    steps:
-      - uses: actions/setup-go@v2
-        with:
-          go-version: 1.16.5
-      - name: Install homebrew
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-      - id: go-cache-paths
-        run: |
-          echo "::set-output name=go-build::$(go env GOCACHE)"
-          echo "::set-output name=go-mod::$(go env GOMODCACHE)"
-
-      - name: Checkout
-        uses: actions/checkout@v1
-        with:
-          # Checkout the head ref instead of the PR branch that github creates.
-          ref: ${{ github.head_ref }}
-
-      # Cache go build cache, used to speedup go test.
-      - name: Go Build Cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.go-cache-paths.outputs.go-build }}
-          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
-
-      # Cache go mod cache, used to speedup builds
-      - name: Go Mod Cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.go-cache-paths.outputs.go-mod }}
-          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
-
-      - name: Install themis
-        run: |
-          brew tap cossacklabs/tap
-          brew install libthemis
-
-      - name: Build
-        env:
-          LDFLAGS: -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}
-          CGO_ENABLED: 1
-        run: |
-          cd cli
-          mkdir -p build/
-          export CC_FOR_darwin_arm64="${CC} -target arm64-apple-macos10.12"
-          export CC_FOR_darwin_amd64="${CC} -target x86_64-apple-macos11"
-
-          GOOS=darwin GOARCH=amd64 go build -ldflags "${LDFLAGS}" -o ./build/ks-amd64
-          GOOS=darwin GOARCH=arm64 go build -ldflags "${LDFLAGS}" -o ./build/ks-arm64
-          lipo -create -output ./build/ks ./build/ks-amd64 ./build/ks-arm64
-          cd build
-          tar cfz ks-macos.tar.gz ks
-
-      - uses: actions/upload-artifact@v2
-        with:
-          path: build/ks-macos64.tar.gz
-          retention-days: 1
-
-  publish:
-    needs: [macos, linux, snapcraft]
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - uses: actions/download-artifact@v2
-      - uses: meeDamian/github-release@2.0
+      - uses: actions/checkout@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: develop
-          name: Keystone Development Release
-          prerelease: true
-          commitish: ${{ github.sha }}
-          gzip: false
-          allow_override: true
-          files: |
-            ks-macos.tar.gz:./ks-macos/ks-macos.tar.gz
-            ks-linux64.tar.gz:./ks-linux64/ks-linux64.tar.gz
-          body: |
-            Keystone development release
-
-            ## Install
-            ### macOS
-            1. Download **ks-macos.tar.gz**
-            2. Extract: `tar xzvf ks-macos.tar.gz`
-            ### Linux (x64)
-            1. Download **ks.snap** or **ks-linux64.tar.gz**
+          repository: wearedevx/homebrew-keystone
+      - name: Run Template
+        env:
+          KS_API_URL: ${{ secrets.KSAPI_URL_DEV }}
+          BRANCH: develop
+        run: |-
+          ./run_release.sh
+      - name: Push
+        uses: EndBug/add-and-commit@v7
+        with:
+          add: 'Formula/keystone.rb'
+          default_author: 'github_actions'
+          message: 'release develop'
