@@ -44,6 +44,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           repository: wearedevx/homebrew-keystone
+          token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
       - name: Run Template
         env:
           KS_API_URL: ${{ secrets.KSAPI_URL_DEV }}
