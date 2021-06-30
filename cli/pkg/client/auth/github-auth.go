@@ -9,6 +9,9 @@ import (
 	"golang.org/x/oauth2"
 )
 
+var githubClientId string
+var githubClientSecret string
+
 type PublicKey struct {
 	Typ       string
 	KeyID     string
@@ -39,8 +42,8 @@ func (g *gitHubAuthService) Start() (string, error) {
 	g.loginRequest = lr
 
 	g.conf = &oauth2.Config{
-		ClientID:     "b073f661bc803aecee00",
-		ClientSecret: "c2593f5b1e063625c7ed6e542c2757fdb050de2d",
+		ClientID:     githubClientId,
+		ClientSecret: githubClientSecret,
 		Scopes:       []string{"user", "user:email"},
 		RedirectURL:  g.apiUrl + "/auth-redirect/",
 		Endpoint: oauth2.Endpoint{

@@ -13,16 +13,18 @@ jobs:
       - run: |
           cd cli
           go mod edit -dropreplace github.com/wearedevx/keystone/api
+          sh snap/gen_snapcraft.sh
+        env:
+          KSAPI_URL: ${{ secrets.KSAPI_URL_DEV }}
+          GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID_DEV }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRED_DEV }}
+          GITLAB_CLIENT_ID: ${{ secrets.GL_CLIENT_ID }}
+          GITLAB_CLIENT_SECRET: ${{ secrets.GL_CLIENT_SECRET }}
+          BRANCH: develop
       - run: |
           sudo apt install libvshadow-utils
-      - run: |
-          # create variables file
-          cd cli
-          echo 'export KSLDFLAGS=" -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}"' > variables
       - uses: snapcore/action-build@v1.0.8
         id: snapcraft
-        env:
-          KSLDFLAGS: -X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=${{ secrets.KSAPI_URL_DEV }}
         with:
           path: cli/
       - run: |
@@ -48,6 +50,10 @@ jobs:
       - name: Run Template
         env:
           KS_API_URL: ${{ secrets.KSAPI_URL_DEV }}
+          GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID_DEV }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRED_DEV }}
+          GITLAB_CLIENT_ID: ${{ secrets.GL_CLIENT_ID }}
+          GITLAB_CLIENT_SECRET: ${{ secrets.GL_CLIENT_SECRET }}
           BRANCH: develop
         run: |-
           ./run_release.sh

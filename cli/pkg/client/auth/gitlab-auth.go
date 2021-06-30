@@ -9,6 +9,9 @@ import (
 	"golang.org/x/oauth2"
 )
 
+var gitlabClientId string
+var gitlabClientSecret string
+
 type gitlabAuthService struct {
 	apiUrl       string
 	ctx          context.Context
@@ -34,8 +37,8 @@ func (g *gitlabAuthService) Start() (string, error) {
 
 	g.conf = &oauth2.Config{
 		// todo put the gitlab ones
-		ClientID:     "d372c2f3eebd9c498b41886667609fbdcf149254bcb618ddc199047cbbc46b78",
-		ClientSecret: "ffe9317fd42d32ea7db24c79f9ee25a3e30637b886f3bc99f951710c8cdc3650",
+		ClientID:     gitlabClientId,
+		ClientSecret: gitlabClientSecret,
 		Scopes:       []string{"read_user", "email"},
 		RedirectURL:  g.apiUrl + "/auth-redirect/",
 		// RedirectURL:  ksauthURL + "/auth-redirect/" + lr.TemporaryCode,

@@ -2,6 +2,16 @@
 
 export $(cat .env | xargs)
 
-LDFLAGS="-X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=$KSAPI_URL"
+BASE="github.com/wearedevx/keystone/cli"
+CLIENT_PKG="${BASE}/pkg/client"
+AUTH_PKG="${BASE}/pkg/client/auth"
+
+APIFLAG="-X ${CLIENT_PKG}.ApiURL=$KSAPI_URL"
+GITHUB_CLIENT_ID_FLAG="-X ${PKG_AUTH}.githubClientId=$GITHUB_CLIENT_ID",
+GITHUB_CLIENT_SECRET_FLAG="-X ${AUTH_PKG}.githubClientSecret=$GITHUB_CILENT_SECRET",
+GITLAB_CLIENT_ID_FLAG="-X ${AUTH_PKG}.gitlabClientId=$GITLAB_CLIENT_ID",
+GITLAB_CLIENT_SECRET_FLAG="-X ${AUTH_PKG}.gitlabClientSecret=$GITLAB_CILENT_SECRET",
+
+LDFLAGS="$APIFLAG $GITHUB_CLIENT_ID_FLAG $GITHUB_CLIENT_SECRET_FLAG $GITLAB_CLIENT_ID_FLAG $GITLAB_CILENT_SECRET_FLAG"
 
 go build -ldflags "$LDFLAGS" -o ks
