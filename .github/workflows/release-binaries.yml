@@ -54,5 +54,6 @@ jobs:
         uses: EndBug/add-and-commit@v7
         with:
           add: 'Formula/keystone.rb'
+          branch: 'main'
           default_author: 'github_actions'
           message: 'release develop'
