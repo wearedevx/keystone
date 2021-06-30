@@ -19,7 +19,7 @@ apps:
 parts:
   ks:
     plugin: go
-    build-environement:
+    build-environment:
       KSAPI_URL: <%KSAPI_URL%>
       GITHUB_CLIENT_ID: <%GITHUB_CLIENT_ID%>
       GITHUB_CLIENT_SECRET: <%GITHUB_CLIENT_SECRET%>
