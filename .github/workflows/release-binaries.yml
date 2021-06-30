@@ -17,7 +17,7 @@ jobs:
         env:
           KSAPI_URL: ${{ secrets.KSAPI_URL_DEV }}
           GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID_DEV }}
-          GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRED_DEV }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET_DEV }}
           GITLAB_CLIENT_ID: ${{ secrets.GL_CLIENT_ID }}
           GITLAB_CLIENT_SECRET: ${{ secrets.GL_CLIENT_SECRET }}
           BRANCH: develop
@@ -51,7 +51,7 @@ jobs:
         env:
           KS_API_URL: ${{ secrets.KSAPI_URL_DEV }}
           GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID_DEV }}
-          GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRED_DEV }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET_DEV }}
           GITLAB_CLIENT_ID: ${{ secrets.GL_CLIENT_ID }}
           GITLAB_CLIENT_SECRET: ${{ secrets.GL_CLIENT_SECRET }}
           BRANCH: develop

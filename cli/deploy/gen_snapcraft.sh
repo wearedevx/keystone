@@ -1,5 +1,5 @@
 #!/bin/sh
-cp "$PWD/snap/snapcraft.template.yaml" "$PWD/snap/snapcraft.yaml"
+cp "$PWD/deploy/snapcraft.template.yaml" "$PWD/snap/snapcraft.yaml"
 
 sed -i "s#<%BRANCH%>#${BRANCH}#g" "$PWD/snap/snapcraft.yaml"
 sed -i "s#<%KSAPI_URL%>#${KSAPI_URL}#g" "$PWD/snap/snapcraft.yaml"
