@@ -20,11 +20,11 @@ parts:
   ks:
     plugin: go
     build-environment:
-      KSAPI_URL: <%KSAPI_URL%>
-      GITHUB_CLIENT_ID: <%GITHUB_CLIENT_ID%>
-      GITHUB_CLIENT_SECRET: <%GITHUB_CLIENT_SECRET%>
-      GITLAB_CLIENT_ID: <%GITLAB_CLIENT_ID%>
-      GITLAB_CLIENT_SECRET: <%GITLAB_CLIENT_SECRET%>
+      - KSAPI_URL: <%KSAPI_URL%>
+      - GITHUB_CLIENT_ID: <%GITHUB_CLIENT_ID%>
+      - GITHUB_CLIENT_SECRET: <%GITHUB_CLIENT_SECRET%>
+      - GITLAB_CLIENT_ID: <%GITLAB_CLIENT_ID%>
+      - GITLAB_CLIENT_SECRET: <%GITLAB_CLIENT_SECRET%>
     override-build: |
       rm -rf themis/
       git clone https://github.com/cossacklabs/themis.git
