@@ -13,7 +13,7 @@ jobs:
       - run: |
           cd cli
           go mod edit -dropreplace github.com/wearedevx/keystone/api
-          sh snap/gen_snapcraft.sh
+          sh deploy/gen_snapcraft.sh
         env:
           KSAPI_URL: ${{ secrets.KSAPI_URL_DEV }}
           GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID_DEV }}
