@@ -10,9 +10,9 @@ env:
 on:
   push:
     tags:
-      - v*
+      - 'v*'
     tags-ignore:
-      - *develop*
+      - '*develop*'
       
 jobs:
   #####################
