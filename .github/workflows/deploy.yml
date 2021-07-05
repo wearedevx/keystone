@@ -65,6 +65,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           WITH_V: true
+          INITIAL_VERSION: v0.0.1
           DEFAULT_BUMP: patch
           RELEASE_BRANCHES: master
           PRERELEASE_SUFFIX: develop

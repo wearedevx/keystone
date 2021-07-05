@@ -86,7 +86,6 @@ jobs:
         run: echo "REF_NAME=$CI_ACTION_REF_NAME" >> $GITHUB_ENV
 
       - name: Setup Working Directory
-        uses: FranzDiebold/github-env-vars-action@v1.2.0
         env:
           KSAPI_URL: ${{ needs.deploy_server.outputs.url }}
           GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID }}
@@ -139,10 +138,11 @@ jobs:
           repository: wearedevx/homebrew-keystone
           token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
+      - uses: FranzDiebold/github-env-vars-action@v1.2.0
+
       # Make the tag name available to later steps
       # through env.REF_NAME
       - name: Export Ref Name
-        uses: FranzDiebold/github-env-vars-action@v1.2.0
         run: echo "REF_NAME=$GITHUB_REF_NAME" >> $GITHUB_ENV
 
       - name: Run Template
