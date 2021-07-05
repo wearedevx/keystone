@@ -1,6 +1,8 @@
 project_id: f2358224-4301-4241-81f1-eb7d12787465
 name: keystone
-env: []
+env:
+- key: JWT_SALT
+  strict: true
 files: []
 options:
   strict: false
