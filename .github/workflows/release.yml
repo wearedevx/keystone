@@ -80,9 +80,10 @@ jobs:
 
       # Make the tag name available to later steps
       # through env.REF_NAME
+      - uses: FranzDiebold/github-env-vars-action@v1.2.0
+
       - name: Export Ref Name
-        uses: FranzDiebold/github-env-vars-action@v1.2.0
-        run: echo "REF_NAME=$GITHUB_REF_NAME" >> $GITHUB_ENV
+        run: echo "REF_NAME=$CI_ACTION_REF_NAME" >> $GITHUB_ENV
 
       - name: Setup Working Directory
         uses: FranzDiebold/github-env-vars-action@v1.2.0
