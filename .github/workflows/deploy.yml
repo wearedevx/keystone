@@ -100,6 +100,7 @@ jobs:
 
       - name: Run Migrations
         run: |-
+          go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
           wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy
           chmod +x cloud_sql_proxy
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
