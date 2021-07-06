@@ -76,7 +76,8 @@ jobs:
     needs: end-to-end-tests
     runs-on: ubuntu-latest
     outputs:
-      url: ${{ steps.deploy_develop.outputs.url }}
+      url: ${{ steps.deploy_output.outputs.url }}
+      encoded_url: ${{ steps.deploy_output.outputs.encoded_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -124,7 +125,12 @@ jobs:
           flags: --allow-unauthenticated --add-cloudsql-instances ${{ secrets.CLOUDSQL_INSTANCE }} --service-account=${{ secrets.KS_SERVER_SERVICE_ACCOUNT }}
 
       - name: Show Develop Deploy Output
-        run: echo ${{ steps.deploy_develop.outputs.url }}
+        id: deploy_output
+        run: |
+          echo ${{ steps.deploy_develop.outputs.url }}
+          encoded_url=`base64 "${{ steps.deploy_develop.outputs.url }}"`
+          echo "::set-output name=encoded_url::${encoded_url}"
+          echo "::set-output name=url::${{ steps.deploy_develop.outputs.url }}
 
   #####################
   # Cli deployment #
@@ -142,7 +148,7 @@ jobs:
         run: |
           cd cli
           go mod edit -dropreplace github.com/wearedevx/keystone/api
-          export KSAPI_URL=${{ needs.deploy_server.outputs.url }}
+          export KSAPI_URL=`echo "${{ needs.deploy_server.outputs.encdodedurl }}" | base64 --decode`
           echo "API url: $KSAPI_URL"
           echo "Needs context: ${{ toJSON(needs) }}"
 
