@@ -76,7 +76,6 @@ jobs:
     needs: end-to-end-tests
     runs-on: ubuntu-latest
     outputs:
-      url: ${{ steps.deploy_output.outputs.url }}
       encoded_url: ${{ steps.deploy_output.outputs.encoded_url }}
     steps:
       - name: Checkout
@@ -130,7 +129,6 @@ jobs:
           echo ${{ steps.deploy_develop.outputs.url }}
           encoded_url=`echo "${{ steps.deploy_develop.outputs.url }}" | base64`
           echo "::set-output name=encoded_url::${encoded_url}"
-          echo "::set-output name=url::${{ steps.deploy_develop.outputs.url }}"
 
   #####################
   # Cli deployment #
