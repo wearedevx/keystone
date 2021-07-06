@@ -98,13 +98,15 @@ jobs:
           docker build -t ${{ env.GCR_IMAGE }} ./api/
           docker push ${{ env.GCR_IMAGE }}
 
-      - uses: mattes/gce-cloudsql-proxy-action@v1
-        with:
-          creds: ${{ secrets.GCP_SA_KEY }}
-          instance: ${{ secrets.PROJECT_ID }}:${{ env.REGION }}:keystonedb
-
       - name: Run Migrations
         run: |-
+          wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy
+          chmod +x cloud_sql_proxy
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
+
+          ./cloud_sql_proxy -instances=${{ secrets.PROJECT_ID }}:${{ env.REGION }}:keystonedb=tcp:127.0.0.1:5432 &
+          sleep 5
+          
           migrate -database=${{ env.DATABASE_URL }} -path api/db/migrations up
           
       - name: Deploy to Cloud Run as Develop
