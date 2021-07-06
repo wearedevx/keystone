@@ -127,7 +127,8 @@ jobs:
         id: deploy_output
         run: |
           echo ${{ steps.deploy_develop.outputs.url }}
-          encoded_url=`echo "${{ steps.deploy_develop.outputs.url }}" | base64`
+          encoded_url=$(echo "${{ steps.deploy_develop.outputs.url }}" | base64)
+          echo $encoded_url
           echo "::set-output name=encoded_url::${encoded_url}"
 
   #####################
@@ -136,8 +137,7 @@ jobs:
   
   snapcraft:
     runs-on: ubuntu-20.04
-    needs:
-      - deploy_server
+    needs: deploy_server
     steps:
       - name: Checkout
         uses: actions/checkout@v2
