@@ -10,7 +10,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        ref: ${{ github.event.client_payload.ref }}
+        with:
+          ref: ${{ github.event.client_payload.ref }}
 
       - name: Setup Working Directory (Develop)
         run: |
