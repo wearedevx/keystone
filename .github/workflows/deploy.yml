@@ -130,7 +130,7 @@ jobs:
           echo ${{ steps.deploy_develop.outputs.url }}
           encoded_url=`echo "${{ steps.deploy_develop.outputs.url }}" | base64`
           echo "::set-output name=encoded_url::${encoded_url}"
-          echo "::set-output name=url::${{ steps.deploy_develop.outputs.url }}
+          echo "::set-output name=url::${{ steps.deploy_develop.outputs.url }}"
 
   #####################
   # Cli deployment #
@@ -148,7 +148,7 @@ jobs:
         run: |
           cd cli
           go mod edit -dropreplace github.com/wearedevx/keystone/api
-          export KSAPI_URL=`echo "${{ needs.deploy_server.outputs.encdodedurl }}" | base64 --decode`
+          export KSAPI_URL=`echo "${{ needs.deploy_server.outputs.encoded_url }}" | base64 --decode`
           echo "API url: $KSAPI_URL"
           echo "Needs context: ${{ toJSON(needs) }}"
 
@@ -208,6 +208,7 @@ jobs:
           GITLAB_CLIENT_SECRET: ${{ secrets.GL_CLIENT_SECRET }}
           BRANCH: develop
         run: |-
+          export KSAPI_URL=`echo "${{ needs.deploy_server.outputs.encoded_url }}" | base64 --decode`
           ./run_release.sh
 
       - name: Push
