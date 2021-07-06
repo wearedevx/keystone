@@ -63,7 +63,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           repository: wearedevx/homebrew-keystone
-          ref: ${{ github.event.client_payload.ref }}
           token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
       - name: Run Template
