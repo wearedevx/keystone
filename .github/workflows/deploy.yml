@@ -143,7 +143,8 @@ jobs:
           cd cli
           go mod edit -dropreplace github.com/wearedevx/keystone/api
           export KSAPI_URL=${{ needs.deploy_server.outputs.url }}
-          echo $KSAPI_URL
+          echo "API url: $KSAPI_URL"
+          echo "Needs context: ${{ toJSON(needs) }}"
 
           sh deploy/gen_snapcraft.sh
         env:
