@@ -75,8 +75,6 @@ jobs:
   deploy_server:
     needs: end-to-end-tests
     runs-on: ubuntu-latest
-    outputs:
-      encoded_url: ${{ steps.deploy_output.outputs.encoded_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -130,6 +128,8 @@ jobs:
           encoded_url=$(echo "${{ steps.deploy_develop.outputs.url }}" | base64)
           echo $encoded_url
           echo "::set-output name=encoded_url::${encoded_url}"
+    outputs:
+      encoded_url: ${{ steps.deploy_output.outputs.encoded_url }}
 
   #####################
   # Cli deployment #
