@@ -116,7 +116,7 @@ jobs:
         uses: google-github-actions/deploy-cloudrun@v0.6.0
         with:
           service: ${{ secrets.SERVICE }}
-          image: $${{ env.GCR_IMAGE }}
+          image: ${{ env.GCR_IMAGE }}
           region: ${{ env.REGION }}
           no_traffic: true
           tag: develop
