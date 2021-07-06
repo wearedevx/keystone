@@ -100,15 +100,16 @@ jobs:
 
       - name: Run Migrations
         run: |-
-          go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
           wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy
           chmod +x cloud_sql_proxy
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
+          mv ./migrate.linux-amd64 ./migrate
+          chmod +x ./migrate
 
           ./cloud_sql_proxy -instances=${{ secrets.PROJECT_ID }}:${{ env.REGION }}:keystonedb=tcp:127.0.0.1:5432 &
           sleep 5
           
-          migrate -database=${{ env.DATABASE_URL }} -path api/db/migrations up
+          ./migrate -database=${{ env.DATABASE_URL }} -path api/db/migrations up
           
       - name: Deploy to Cloud Run as Develop
         id: deploy_develop
