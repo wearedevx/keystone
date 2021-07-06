@@ -104,7 +104,7 @@ jobs:
           chmod +x cloud_sql_proxy
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
 
-          ./cloud_sql_proxy -instances=${{ secrets.PROJECT_ID }}:${{ env.REGION }}:${{ secrets.DB_NAME }}=tcp:127.0.0.1:5432
+          ./cloud_sql_proxy -instances=${{ secrets.PROJECT_ID }}:${{ env.REGION }}:keystonedb=tcp:127.0.0.1:5432
           
           migrate -database=${{ env.DATABASE_URL }} -path api/db/migrations up
           
