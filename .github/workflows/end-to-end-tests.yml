@@ -78,7 +78,7 @@ jobs:
           TAG=${{ steps.tag_and_release.outputs.new_tag }}
           REF="refs/tags/${TAG}"
         
-          if [ BRANCH == 'develop' ]; then
+          if [ $BRANCH == 'develop' ]; then
             TAG=$BRANCH
             REF="refs/heads/${TAG}"
           fi
