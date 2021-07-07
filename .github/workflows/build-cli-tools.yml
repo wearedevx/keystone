@@ -5,8 +5,9 @@ on:
     types: [build-cli]
 
 env:
+  PROJECT_ID: ${{ secrets.PROJECT_ID
   KSAPI_URL: ${{ github.event.client_payload.url }}
-  AUTH_PROXY: https://europe-west6-${{ secrets.GCP_PROJECT }}.cloudfunctions.net/auth-proxy
+  AUTH_PROXY: https://europe-west6-${{ secrets.PROJECT_ID }}.cloudfunctions.net/auth-proxy
   REF: ${{ github.event.client_payload.ref }}
   TAG: ${{ github.event.client_payload.tag }}
 
