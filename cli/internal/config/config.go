@@ -132,6 +132,15 @@ func GetAuthToken() string {
 	return viper.Get("auth_token").(string)
 }
 
+func GetServiceApiKey(serviceName string) string {
+	return viper.Get(serviceName + "_auth_token").(string)
+}
+
+func SetServiceApiKey(serviceName string, token string) {
+	fmt.Println(serviceName)
+	viper.Set(serviceName+"_auth_token", token)
+}
+
 // Returns `true` if the user is logged in
 func IsLoggedIn() bool {
 	_, index := GetCurrentAccount()

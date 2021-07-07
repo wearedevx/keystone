@@ -34,6 +34,12 @@ type KeystoneFile struct {
 	Env         []EnvKey
 	Files       []FileKey
 	Options     keystoneFileOptions
+	CiServices  []CiService `yaml:"ci_services"`
+}
+
+type CiService struct {
+	Name string            `yaml:"name"`
+	Keys map[string]string `yaml:"keys"`
 }
 
 // Keystone file path for the given context
@@ -213,4 +219,33 @@ func (file *KeystoneFile) RemoveFile(filepath string) *KeystoneFile {
 	file.Files = files
 
 	return file
+}
+
+func (file *KeystoneFile) SetCiService(ciService CiService) *KeystoneFile {
+	if file.Err() != nil {
+		return file
+	}
+
+	services := make([]CiService, 0)
+
+	for _, service := range file.CiServices {
+		if service.Name != ciService.Name {
+			services = append(services, service)
+		}
+	}
+	services = append(services, ciService)
+
+	file.CiServices = services
+
+	return file.Save()
+}
+
+func (file *KeystoneFile) GetCiService(serviceName string) CiService {
+	var ciService CiService
+	for _, service := range file.CiServices {
+		if service.Name == serviceName {
+			ciService = service
+		}
+	}
+	return ciService
 }
