@@ -8,6 +8,9 @@ jobs:
   snapcraft:
     runs-on: ubuntu-20.04
     steps:
+      - name: Print Inputs
+        run: echo "${{ toJSON(github.event.client_payload) }}"
+
       - name: Checkout
         uses: actions/checkout@v2
         with:

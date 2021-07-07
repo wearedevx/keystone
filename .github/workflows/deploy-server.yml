@@ -21,9 +21,13 @@ jobs:
     needs: end-to-end-tests
     runs-on: ubuntu-latest
     steps:
+      - name: Print Inputs
+        run: echo "${{ toJSON(github.event.client_payload) }}"
+
       - name: Checkout
         uses: actions/checkout@v2
-        ref: env.REF
+        with: 
+          ref: env.REF
 
       - name: Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v0.2.0
