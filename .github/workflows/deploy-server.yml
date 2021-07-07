@@ -11,6 +11,7 @@ env:
   GCR_IMAGE: gcr.io/${{ secrets.PROJECT_ID }}/${{ secrets.SERVICE }}:${{  github.sha }}
   DATABASE_URL: postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@127.0.0.1:5432/${{ secrets.DB_NAME }}?sslmode=disable
   REF: ${{ github.event.client_payload.ref }}
+  TAG: ${{ github.event.client_payload.tag }}
 
       
 jobs:
@@ -60,8 +61,9 @@ jobs:
 
       - name: Cloud Run Tag
         id: cloud_run_tag
-        run:
-          TAG=$(sed -e "s/\([[:digit:]]\+\)\.\([[:digit:]]\+\)\.\([[:digit:]]\+\)/v\1-\2-\3/" <(echo ${{ github.event.client_payload.tag }}))
+        run: |
+          TAG=$(sed -e "s/\([[:digit:]]\+\)\.\([[:digit:]]\+\)\.\([[:digit:]]\+\)/v\1-\2-\3/" <(echo ${{ env.TAG }}))
+          echo "Deploying Keystone Server with tag ${TAG}"
           echo "::set-output name=tag::${TAG}"
           
       - name: Deploy to Cloud Run
@@ -71,7 +73,7 @@ jobs:
           service: ${{ secrets.SERVICE }}
           image: ${{ env.GCR_IMAGE }}
           region: ${{ env.REGION }}
-          no_traffic: ${{ github.event.client_payload.tag == 'develop' }}
+          no_traffic: ${{ env.TAG == 'develop' }}
           tag: ${{ steps.cloud_run_tag.outputs.tag }}
           env_vars: JWT_SALT=${{ secrets.JWT_SALT }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME}},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ secrets.CLOUDSQL_CREDENTIALS }}
           flags: --allow-unauthenticated --add-cloudsql-instances ${{ secrets.CLOUDSQL_INSTANCE }} --service-account=${{ secrets.KS_SERVER_SERVICE_ACCOUNT }}
