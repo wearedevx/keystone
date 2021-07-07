@@ -15,6 +15,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
+var authRedirectURL string
+
 func getLoginRequest(apiUrl string) (loginRequest models.LoginRequest, err error) {
 	var resp *http.Response
 	timeout := time.Duration(20 * time.Second)

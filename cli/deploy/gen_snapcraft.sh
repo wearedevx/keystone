@@ -1,9 +1,16 @@
 #!/bin/sh
-cp "$PWD/deploy/snapcraft.template.yaml" "$PWD/snap/snapcraft.yaml"
+TARGET="$PWD/snap/snapcraft.yaml"
+TEMPLATE="$PWD/deploy/snapcraft.template.yaml"
 
-sed -i "s#<%BRANCH%>#${BRANCH}#g" "$PWD/snap/snapcraft.yaml"
-sed -i "s#<%KSAPI_URL%>#${KSAPI_URL}#g" "$PWD/snap/snapcraft.yaml"
-sed -i "s#<%GITHUB_CLIENT_ID%>#${GITHUB_CLIENT_ID}#g" "$PWD/snap/snapcraft.yaml"
-sed -i "s#<%GITHUB_CLIENT_SECRET%>#${GITHUB_CLIENT_SECRET}#g" "$PWD/snap/snapcraft.yaml"
-sed -i "s#<%GITLAB_CLIENT_ID%>#${GITLAB_CLIENT_ID}#g" "$PWD/snap/snapcraft.yaml"
-sed -i "s#<%GITLAB_CLIENT_SECRET%>#${GITLAB_CLIENT_SECRET}#g" "$PWD/snap/snapcraft.yaml"
+cp $TEMPLATE $TARGET
+
+sed -i "s#<%BRANCH%>#${BRANCH}#g" $TARGET
+sed -i "s#<%VERSION%>#${VERSION}#g" $TARGET
+
+sed -i "s#<%KSAPI_URL%>#${KSAPI_URL}#g" $TARGET
+sed -i "s#<%AUTH_PROXY%>#${PROXY_AUTH}#g" $TARGET
+
+sed -i "s#<%GITHUB_CLIENT_ID%>#${GITHUB_CLIENT_ID}#g" $TARGET
+sed -i "s#<%GITHUB_CLIENT_SECRET%>#${GITHUB_CLIENT_SECRET}#g" $TARGET
+sed -i "s#<%GITLAB_CLIENT_ID%>#${GITLAB_CLIENT_ID}#g" $TARGET
+sed -i "s#<%GITLAB_CLIENT_SECRET%>#${GITLAB_CLIENT_SECRET}#g" $TARGET

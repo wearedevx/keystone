@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/pkg/constants"
 	"github.com/xanzy/go-gitlab"
 	"golang.org/x/oauth2"
 )
@@ -36,12 +37,10 @@ func (g *gitlabAuthService) Start() (string, error) {
 	g.loginRequest = lr
 
 	g.conf = &oauth2.Config{
-		// todo put the gitlab ones
 		ClientID:     gitlabClientId,
 		ClientSecret: gitlabClientSecret,
 		Scopes:       []string{"read_user", "email"},
-		RedirectURL:  g.apiUrl + "/auth-redirect/",
-		// RedirectURL:  ksauthURL + "/auth-redirect/" + lr.TemporaryCode,
+		RedirectURL:  authRedirectURL + "/auth-redirect/" + constants.Version,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://gitlab.com/oauth/authorize",
 			TokenURL: "https://gitlab.com/oauth/token",
