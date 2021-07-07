@@ -1,0 +1,92 @@
+name: Keystone End to End Tests
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT }}
+  SERVICE: keystone-server
+  REGION: europe-west6
+  GCR_IMAGE: gcr.io/${{ secrets.PROJECT_ID }}/${{ secrets.SERVICE }}:${{  github.sha }}
+  DATABASE_URL: postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@127.0.0.1:5432/${{ secrets.DB_NAME }}?sslmode=disable
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+      
+jobs:
+  ####################
+  # Tests and checks #
+  ####################
+  end-to-end-tests:
+    runs-on: ubuntu-20.04
+
+    steps:
+    # Get values for cache paths to be used in later steps
+      - id: go-cache-paths
+        run: |-
+          echo "::set-output name=go-build::$(go env GOCACHE)"
+          echo "::set-output name=go-mod::$(go env GOMODCACHE)"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          # Checkout the head ref instead of the PR branch that github creates.
+          ref: ${{ github.head_ref }}
+
+      # Cache go build cache, used to speedup go test.
+      - name: Go Build Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.go-cache-paths.outputs.go-build }}
+          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+
+      # Cache go mod cache, used to speedup builds
+      - name: Go Mod Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.go-cache-paths.outputs.go-mod }}
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+
+      - name: Install themis
+        run: |-
+          wget -qO - https://pkgs-ce.cossacklabs.com/gpg | sudo apt-key add -
+          sudo apt install apt-transport-https
+          sudo sh -c 'echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" >  /etc/apt/sources.list.d/themis.list'
+          sudo apt update
+          sudo apt install libthemis-dev
+
+      - name: Run End-to-end Tests
+        run: |-
+          cd cli
+          ./test.sh ./tests/...
+
+      - name: Tag and Release
+        id: tag_and_release
+        uses: anothrNick/github-tag-action@1.35.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          WITH_V: false
+          DEFAULT_BUMP: patch
+          RELEASE_BRANCHES: master
+          PRERELEASE_SUFFIX: develop
+
+      - name: Deploy tag
+        id: deploy_tag
+        run: |-
+          GITHUB_REF=${{ github.ref }}
+          REF=${GITHUB_REF#refs/heads/}
+          TAG=${{ steps.tag_and_release.outputs.new_tag }}
+        
+          if [ REF == 'develop' ]; then
+            TAG=$REF
+          fi
+
+          echo "Deploy and Release ${TAG}"
+          echo "::set-output name=tag::${TAG}"
+
+      - name: Dispatch Server Deploy
+        uses: peter-evans/repository-dispatch@v1.0.0
+        with:
+          token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
+          event-type: deploy-server
+          client-payload: '{"ref": "${{ github.ref }}", "tag": "${{ steps.deploy_tag.outputs.tag }}"}'
