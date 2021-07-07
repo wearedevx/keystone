@@ -133,11 +133,14 @@ func GetAuthToken() string {
 }
 
 func GetServiceApiKey(serviceName string) string {
-	return viper.Get(serviceName + "_auth_token").(string)
+	token := viper.Get(serviceName + "_auth_token")
+	if token != nil {
+		return token.(string)
+	}
+	return ""
 }
 
 func SetServiceApiKey(serviceName string, token string) {
-	fmt.Println(serviceName)
 	viper.Set(serviceName+"_auth_token", token)
 }
 

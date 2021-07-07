@@ -82,4 +82,5 @@ func (g gitHubCiService) GetApiKey() ApiKey {
 func (g gitHubCiService) SetApiKey(apiKey ApiKey) {
 	g.apiKey = apiKey
 	config.SetServiceApiKey(g.Name(), string(apiKey))
+	config.Write()
 }
