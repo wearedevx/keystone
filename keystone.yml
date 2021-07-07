@@ -1,0 +1,16 @@
+project_id: f2358224-4301-4241-81f1-eb7d12787465
+name: keystone
+env:
+- key: JWT_SALT
+  strict: true
+- key: GITHUB_CLIENT_ID
+  strict: true
+- key: GITHUB_CLIENT_SECRET
+  strict: true
+- key: GITLAB_CLIENT_ID
+  strict: true
+- key: GITLAB_CLIENT_SECRET
+  strict: true
+files: []
+options:
+  strict: false

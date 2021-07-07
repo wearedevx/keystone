@@ -1,0 +1,15 @@
+# Init with name
+ks init test-env
+
+ks secret add LABEL value -s
+
+ks secret set LABEL prodvalue --env prod
+
+# Check LABEL has value "value" as we are still in dev
+grep 'LABEL=value' .keystone/cache/.env
+
+# Switch env
+ks env prod
+
+# Check LABEL has value "prodvalue" as we are now in prod
+grep 'LABEL=prodvalue' .keystone/cache/.env

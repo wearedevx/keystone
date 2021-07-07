@@ -1,0 +1,16 @@
+# Init with name
+ks init test-env
+
+ks file add --skip test.txt
+
+stdout 'Syncing data\.\.\.'
+
+stdout 'OK'
+stdout 'Added .test\.txt.'
+stdout 'The file has been added to 3 environment\(s\)\.'
+stdout 'It has also been gitignored\.'
+
+
+-- test.txt --
+youpi
+

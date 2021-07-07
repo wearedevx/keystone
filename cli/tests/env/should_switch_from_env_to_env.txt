@@ -1,0 +1,17 @@
+
+# Init with name
+ks init test-env
+
+ks env
+
+# Verify dev is selected
+stdout '.*\*.*dev'
+
+# Switch env
+ks env prod
+
+stdout 'Using the .*prod.* environment'
+
+# Check prod is the current environment in settings
+exec cat .keystone/environments.yml
+stdout 'prod'

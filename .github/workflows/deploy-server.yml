@@ -1,0 +1,76 @@
+name: Keystone Server Deployment
+
+on:
+  repository_dispatch:
+    types: [deploy-server]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT }}
+  SERVICE: keystone-server
+  REGION: europe-west6
+  GCR_IMAGE: gcr.io/${{ secrets.PROJECT_ID }}/${{ secrets.SERVICE }}:${{  github.sha }}
+  DATABASE_URL: postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@127.0.0.1:5432/${{ secrets.DB_NAME }}?sslmode=disable
+  REF: refs/heads/${{ github.event.client_payload.tag }}
+
+      
+jobs:
+  #####################
+  # Server deployment #
+  #####################
+  deploy_server:
+    needs: end-to-end-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        ref: env.REF
+
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          project_id: ${{ secrets.PROJECT_ID }}
+          region: ${{ env.REGION }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          # Set to true to authenticate the Cloud Run action
+          export_default_credentials: true 
+
+      - name: Authorize Docker push
+        run: gcloud auth configure-docker
+
+      - name: Build and Push Container
+        run: |-
+          docker build -t ${{ env.GCR_IMAGE }} ./api/
+          docker push ${{ env.GCR_IMAGE }}
+
+      - name: Run Migrations
+        run: |-
+          wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy
+          chmod +x cloud_sql_proxy
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
+          mv ./migrate.linux-amd64 ./migrate
+          chmod +x ./migrate
+
+          ./cloud_sql_proxy -instances=${{ secrets.PROJECT_ID }}:${{ env.REGION }}:keystonedb=tcp:127.0.0.1:5432 &
+          sleep 5
+          
+          ./migrate -database=${{ env.DATABASE_URL }} -path api/db/migrations up
+          
+      - name: Deploy to Cloud Run as Develop
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v0.6.0
+        with:
+          service: ${{ secrets.SERVICE }}
+          image: ${{ env.GCR_IMAGE }}
+          region: ${{ env.REGION }}
+          no_traffic: ${{ github.event.client_payload.tag == 'develop' }}
+          tag: ${{ github.event.client_payload.tag }}
+          env_vars: JWT_SALT=${{ secrets.JWT_SALT }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME}},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ secrets.CLOUDSQL_CREDENTIALS }}
+          flags: --allow-unauthenticated --add-cloudsql-instances ${{ secrets.CLOUDSQL_INSTANCE }} --service-account=${{ secrets.KS_SERVER_SERVICE_ACCOUNT }}
+
+      - name: Dispatch Builds
+        uses: peter-evans/repository-dispatch@v1.0.0
+        with:
+          token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
+          event-type: build-cli
+          client-payload: '{"url": "${{ steps.deploy.outputs.url }}", "ref": "${{ env.REF }}"}'
+
