@@ -1,8 +1,8 @@
+name: Build CLI tools
+
 on:
   repository_dispatch:
-    types: [develop-build]
-
-name: Client Develop Release
+    types: [build-cli]
 
 jobs:
   snapcraft:
@@ -17,8 +17,9 @@ jobs:
         run: |
           cd cli
           go mod edit -dropreplace github.com/wearedevx/keystone/api
-          echo "API url: $KSAPI_URL"
-          echo "Needs context: ${{ toJSON(github.event.client_payload) }}"
+
+          REF=${{ github.event.client_payload.ref }}
+          BRANCH=${REF#refs/heads/}
 
           sh deploy/gen_snapcraft.sh
         env:
@@ -27,7 +28,6 @@ jobs:
           GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET_DEV }}
           GITLAB_CLIENT_ID: ${{ secrets.GL_CLIENT_ID }}
           GITLAB_CLIENT_SECRET: ${{ secrets.GL_CLIENT_SECRET }}
-          BRANCH: develop
 
       - name: Install Snapcraft dependencies
         run: |
@@ -50,12 +50,24 @@ jobs:
           name: ks-snap
           path: ${{ steps.snapcraft.outputs.snap }}
 
+      - name: Snapcraft Release Type
+        id: release_type
+        run: |-
+          REF=${{ github.event.client_payload.ref }}
+          BRANCH=${REF#refs/heads/}
+
+          if [ $BRANCH == 'develop' ]; then
+            echo "::set-output name=release_type::edge"
+          else
+            echo "::set-output name=release_type::stable"
+          fi
+
       - name: Snapcraft Publish Edge
         uses: snapcore/action-publish@v1
         with:
           store_login: ${{ secrets.STORE_LOGIN }}
           snap: ${{ steps.snapcraft.outputs.snap }}
-          release: edge
+          release: ${{ steps.release_type.outputs.release_type }}
 
   homebrew:
     runs-on: ubuntu-latest
@@ -72,8 +84,11 @@ jobs:
           GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET_DEV }}
           GITLAB_CLIENT_ID: ${{ secrets.GL_CLIENT_ID }}
           GITLAB_CLIENT_SECRET: ${{ secrets.GL_CLIENT_SECRET }}
-          BRANCH: develop
-        run: ./run_release.sh
+        run: |
+          REF=${{ github.event.client_payload.ref }}
+          BRANCH=${REF#refs/heads/}
+
+          ./run_release.sh
 
       - name: Push
         uses: EndBug/add-and-commit@v7
