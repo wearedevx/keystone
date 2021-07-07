@@ -7,7 +7,7 @@ on:
 env:
   KSAPI_URL: ${{ github.event.client_payload.url }}
   REF: ${{ github.event.client_payload.ref }}
-  TAG: ${{ github.event.client_payload.tag }}}
+  TAG: ${{ github.event.client_payload.tag }}
 
 jobs:
   snapcraft:
