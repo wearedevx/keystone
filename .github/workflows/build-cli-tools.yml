@@ -4,6 +4,11 @@ on:
   repository_dispatch:
     types: [build-cli]
 
+env:
+  KSAPI_URL: ${{ github.event.client_payload.url }}
+  REF: ${{ github.event.client_payload.ref }}
+  TAG: ${{ github.event.client_payload.tag }}}
+
 jobs:
   snapcraft:
     runs-on: ubuntu-20.04
@@ -14,19 +19,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.client_payload.ref }}
+          ref: ${{ env.REF }}
 
       - name: Setup Working Directory (Develop)
         run: |
           cd cli
           go mod edit -dropreplace github.com/wearedevx/keystone/api
 
-          REF=${{ github.event.client_payload.ref }}
-          BRANCH=${REF#refs/heads/}
-
           sh deploy/gen_snapcraft.sh
         env:
-          KSAPI_URL: ${{ github.event.client_payload.url }}
+          BRANCH: ${{ env.TAG }}
+          KSAPI_URL: ${{ env.KSAPI_URL }}
           GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID_DEV }}
           GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET_DEV }}
           GITLAB_CLIENT_ID: ${{ secrets.GL_CLIENT_ID }}
@@ -55,10 +58,9 @@ jobs:
 
       - name: Snapcraft Release Type
         id: release_type
+        env:
+          BRANCH: ${{ env.TAG }}
         run: |-
-          REF=${{ github.event.client_payload.ref }}
-          BRANCH=${REF#refs/heads/}
-
           if [ $BRANCH == 'develop' ]; then
             echo "::set-output name=release_type::edge"
           else
@@ -82,21 +84,18 @@ jobs:
 
       - name: Run Template
         env:
-          KS_API_URL: ${{ github.event.client_payload.url }}
+          BRANCH: ${{ env.TAG }}
+          KS_API_URL: ${{ env.KSAPI_URL }}
           GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID_DEV }}
           GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET_DEV }}
           GITLAB_CLIENT_ID: ${{ secrets.GL_CLIENT_ID }}
           GITLAB_CLIENT_SECRET: ${{ secrets.GL_CLIENT_SECRET }}
-        run: |
-          REF=${{ github.event.client_payload.ref }}
-          BRANCH=${REF#refs/heads/}
-
-          ./run_release.sh
+        run: ./run_release.sh
 
       - name: Push
         uses: EndBug/add-and-commit@v7
         with:
           add: '.'
-          branch: 'main'
-          default_author: 'github_actions'
-          message: 'release develop'
+          branch: main
+          default_author: github_actions
+          message: release ${{ env.TAG }}
