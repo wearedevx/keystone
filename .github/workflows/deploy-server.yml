@@ -26,7 +26,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with: 
-          ref: env.REF
+          ref: ${{ env.REF }}
 
       - name: Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v0.2.0
