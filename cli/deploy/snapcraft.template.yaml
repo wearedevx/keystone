@@ -21,6 +21,8 @@ parts:
     plugin: go
     build-environment:
       - KSAPI_URL: <%KSAPI_URL%>
+      - AUTH_PROXY: <%AUTH_PROXY%>
+      - VERSION: <%VERSION%>
       - GITHUB_CLIENT_ID: <%GITHUB_CLIENT_ID%>
       - GITHUB_CLIENT_SECRET: <%GITHUB_CLIENT_SECRET%>
       - GITLAB_CLIENT_ID: <%GITLAB_CLIENT_ID%>

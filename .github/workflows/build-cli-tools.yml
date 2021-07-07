@@ -6,6 +6,7 @@ on:
 
 env:
   KSAPI_URL: ${{ github.event.client_payload.url }}
+  AUTH_PROXY: https://europe-west6-${{ secrets.GCP_PROJECT }}.cloudfunctions.net/auth-proxy
   REF: ${{ github.event.client_payload.ref }}
   TAG: ${{ github.event.client_payload.tag }}
 
@@ -29,7 +30,11 @@ jobs:
           sh deploy/gen_snapcraft.sh
         env:
           BRANCH: ${{ env.TAG }}
+          #
           KSAPI_URL: ${{ env.KSAPI_URL }}
+          AUTH_PROXY: ${{ env.AUTH_PROXY }}
+          #
+          VERSION: ${{ env.TAG }}
           GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID_DEV }}
           GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET_DEV }}
           GITLAB_CLIENT_ID: ${{ secrets.GL_CLIENT_ID }}
@@ -85,7 +90,11 @@ jobs:
       - name: Run Template
         env:
           BRANCH: ${{ env.TAG }}
-          KS_API_URL: ${{ env.KSAPI_URL }}
+          #
+          KSAPI_URL: ${{ env.KSAPI_URL }}
+          AUTH_PROXY: ${{ env.AUTH_PROXY }}
+          #
+          VERSION: ${{ env.TAG }}
           GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID_DEV }}
           GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET_DEV }}
           GITLAB_CLIENT_ID: ${{ secrets.GL_CLIENT_ID }}
