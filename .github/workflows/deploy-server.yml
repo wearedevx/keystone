@@ -10,7 +10,7 @@ env:
   REGION: europe-west6
   GCR_IMAGE: gcr.io/${{ secrets.PROJECT_ID }}/${{ secrets.SERVICE }}:${{  github.sha }}
   DATABASE_URL: postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@127.0.0.1:5432/${{ secrets.DB_NAME }}?sslmode=disable
-  REF: refs/heads/${{ github.event.client_payload.tag }}
+  REF: ${{ github.event.client_payload.ref }}
 
       
 jobs:

@@ -74,19 +74,22 @@ jobs:
         id: deploy_tag
         run: |-
           GITHUB_REF=${{ github.ref }}
-          REF=${GITHUB_REF#refs/heads/}
+          BRANCH=${GITHUB_REF#refs/heads/}
           TAG=${{ steps.tag_and_release.outputs.new_tag }}
+          REF="refs/tags/${TAG}"
         
-          if [ REF == 'develop' ]; then
-            TAG=$REF
+          if [ BRANCH == 'develop' ]; then
+            TAG=$BRANCH
+            REF="refs/heads/${TAG}"
           fi
 
           echo "Deploy and Release ${TAG}"
           echo "::set-output name=tag::${TAG}"
+          echo "::set-output name=ref::${REF}"
 
       - name: Dispatch Server Deploy
         uses: peter-evans/repository-dispatch@v1.0.0
         with:
           token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
           event-type: deploy-server
-          client-payload: '{"ref": "${{ github.ref }}", "tag": "${{ steps.deploy_tag.outputs.tag }}"}'
+          client-payload: '{"ref": "${{ steps.deploy_tag.outputs.ref }}", "tag": "${{ steps.deploy_tag.outputs.tag }}"}'
