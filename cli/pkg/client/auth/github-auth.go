@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/go-github/v32/github"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/pkg/constants"
 	"golang.org/x/oauth2"
 )
 
@@ -39,6 +38,9 @@ func GitHubAuth(ctx context.Context, apiUrl string) AuthService {
 
 func (g *gitHubAuthService) Start() (string, error) {
 	lr, err := getLoginRequest(g.apiUrl)
+	if err != nil {
+		return "", err
+	}
 
 	g.loginRequest = lr
 
@@ -46,14 +48,17 @@ func (g *gitHubAuthService) Start() (string, error) {
 		ClientID:     githubClientId,
 		ClientSecret: githubClientSecret,
 		Scopes:       []string{"user", "user:email"},
-		RedirectURL:  authRedirectURL + constants.Version,
+		RedirectURL:  authRedirectURL,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://github.com/login/oauth/authorize",
 			TokenURL: "https://github.com/login/oauth/access_token",
 		},
 	}
 
-	state := lr.TemporaryCode
+	state, err := makeOAuthState(lr.TemporaryCode)
+	if err != nil {
+		return "", err
+	}
 
 	return g.conf.AuthCodeURL(state, oauth2.AccessTypeOffline), err
 

@@ -136,8 +136,19 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 // Route uses a redirect URI for OAuth2 requests
 func GetAuthRedirect(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var err error
+	var response string
+
 	// used to find the matching login request
-	temporaryCode := r.URL.Query().Get("state")
+	state := models.AuthState{}
+	err = state.Decode(r.URL.Query().Get("state"))
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	temporaryCode := state.TemporaryCode
+
 	// code given by the third party
 	code := r.URL.Query().Get("code")
 
@@ -145,9 +156,6 @@ func GetAuthRedirect(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-
-	var response string
-	var err error
 
 	err = repo.Transaction(func(Repo repo.IRepo) error {
 		Repo.SetLoginRequestCode(temporaryCode, code)

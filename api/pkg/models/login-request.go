@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"math/rand"
@@ -78,4 +79,39 @@ func (lr *LoginRequest) Serialize(out *string) (err error) {
 	*out = sb.String()
 
 	return err
+}
+
+// The OAuth state value. Is base64 encoded JSON data structure
+// which allows us to transit cli/api version information, enforcing
+// version matching between the two
+type AuthState struct {
+	TemporaryCode string `json:"temporary_code"`
+	Version       string `json:"version"`
+}
+
+func (state *AuthState) Decode(input string) (err error) {
+	decoded, err := base64.StdEncoding.DecodeString(input)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal([]byte(decoded), state)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (state AuthState) Encode() (out string, err error) {
+	outb, err := json.Marshal(state)
+
+	if err != nil {
+		return "", err
+	}
+
+	encoded := base64.StdEncoding.EncodeToString(outb)
+
+	return encoded, nil
 }

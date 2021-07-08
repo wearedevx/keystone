@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/pkg/constants"
 	"github.com/xanzy/go-gitlab"
 	"golang.org/x/oauth2"
 )
@@ -33,6 +32,9 @@ func GitLabAuth(ctx context.Context, apiUrl string) AuthService {
 
 func (g *gitlabAuthService) Start() (string, error) {
 	lr, err := getLoginRequest(g.apiUrl)
+	if err != nil {
+		return "", err
+	}
 
 	g.loginRequest = lr
 
@@ -40,14 +42,19 @@ func (g *gitlabAuthService) Start() (string, error) {
 		ClientID:     gitlabClientId,
 		ClientSecret: gitlabClientSecret,
 		Scopes:       []string{"read_user", "email"},
-		RedirectURL:  authRedirectURL + "/auth-redirect/" + constants.Version,
+		RedirectURL:  authRedirectURL,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://gitlab.com/oauth/authorize",
 			TokenURL: "https://gitlab.com/oauth/token",
 		},
 	}
 
-	return g.conf.AuthCodeURL(lr.TemporaryCode, oauth2.AccessTypeOffline), err
+	state, err := makeOAuthState(lr.TemporaryCode)
+	if err != nil {
+		return "", err
+	}
+
+	return g.conf.AuthCodeURL(state, oauth2.AccessTypeOffline), nil
 }
 
 func (g *gitlabAuthService) WaitForExternalLogin() error {

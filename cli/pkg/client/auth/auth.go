@@ -12,10 +12,26 @@ import (
 	"time"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/pkg/constants"
 	"golang.org/x/oauth2"
 )
 
 var authRedirectURL string
+
+func makeOAuthState(code string) (out string, err error) {
+	state := models.AuthState{
+		TemporaryCode: code,
+		Version:       constants.Version,
+	}
+
+	out, err = state.Encode()
+
+	if err != nil {
+		return "", err
+	}
+
+	return out, nil
+}
 
 func getLoginRequest(apiUrl string) (loginRequest models.LoginRequest, err error) {
 	var resp *http.Response
