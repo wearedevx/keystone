@@ -48,13 +48,19 @@ func GitHubCi(ctx core.Context, apiUrl string) CiService {
 
 func (g gitHubCiService) Name() string { return "github" }
 
+// PushSecret sends a "Message" (that's a complete encrypted environment)
+// to GitHub as one repository Secret
 func (g gitHubCiService) PushSecret(message models.MessagePayload) error {
-
 	var payload string
-	message.Serialize(&payload)
-	publicKey, _, err := g.client.Actions.GetRepoPublicKey(context.Background(), g.servicesKeys["Owner"], g.servicesKeys["Project"])
 
+	message.Serialize(&payload)
+	publicKey, _, err := g.client.Actions.GetRepoPublicKey(
+		context.Background(),
+		g.servicesKeys["Owner"],
+		g.servicesKeys["Project"],
+	)
 	data, err := base64.StdEncoding.DecodeString(publicKey.GetKey())
+
 	if err != nil {
 		panic(err)
 	}
@@ -64,7 +70,6 @@ func (g gitHubCiService) PushSecret(message models.MessagePayload) error {
 	}
 
 	encryptedValue := sodium.Bytes(payload).SealedBox(boxPK)
-
 	base64data := base64.StdEncoding.EncodeToString(encryptedValue)
 
 	encryptedSecret := &github.EncryptedSecret{
@@ -73,7 +78,12 @@ func (g gitHubCiService) PushSecret(message models.MessagePayload) error {
 		EncryptedValue: base64data,
 	}
 
-	_, err = g.client.Actions.CreateOrUpdateRepoSecret(context.Background(), g.servicesKeys["Owner"], g.servicesKeys["Project"], encryptedSecret)
+	_, err = g.client.Actions.CreateOrUpdateRepoSecret(
+		context.Background(),
+		g.servicesKeys["Owner"],
+		g.servicesKeys["Project"],
+		encryptedSecret,
+	)
 
 	if err != nil {
 		return err
@@ -87,14 +97,17 @@ func (g gitHubCiService) GetKeys() ServicesKeys {
 }
 
 func (g gitHubCiService) SetKeys(servicesKeys ServicesKeys) error {
-	g.servicesKeys = servicesKeys
 	var service keystonefile.CiService
+
+	g.servicesKeys = servicesKeys
 	service.Name = g.Name()
 	service.Keys = g.servicesKeys
 	file := g.kf.SetCiService(service)
+
 	if file.Err() != nil {
 		return file.Err()
 	}
+
 	return nil
 }
 
@@ -118,5 +131,6 @@ func (g gitHubCiService) InitClient() CiService {
 
 	client := github.NewClient(tc)
 	g.client = client
+
 	return g
 }
