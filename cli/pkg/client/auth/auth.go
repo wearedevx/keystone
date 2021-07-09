@@ -41,12 +41,10 @@ func getLoginRequest(apiUrl string) (loginRequest models.LoginRequest, err error
 	}
 
 	request, err := http.NewRequest("POST", apiUrl+"/login-request", nil)
-	fmt.Printf("err: %+v\n", err)
 	request.Header.Set("Accept", "application/json; charset=utf-8")
 
 	if err == nil {
 		resp, err = client.Do(request)
-		fmt.Printf("err: %+v\n", err)
 	}
 
 	if err != nil {
