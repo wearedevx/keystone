@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -23,8 +24,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
@@ -77,8 +79,13 @@ ks member set-role sandra@github`,
 		projectID := ctx.GetProjectID()
 		// Ensure member exists
 		r, err := c.Users().CheckUsersExist([]string{memberId})
-		if r.Error != "" || err != nil {
-			errors.UsersDontExist(r.Error, err).Print()
+		switch {
+		case errors.Is(err, auth.ErrorUnauthorized):
+			kserrors.InvalidConnectionToken(err)
+			os.Exit(1)
+
+		case err != nil || r.Error != "":
+			kserrors.UsersDontExist(r.Error, err).Print()
 			os.Exit(1)
 		}
 
@@ -116,7 +123,7 @@ ks member set-role sandra@github`,
 				roleNames[i] = r.Name
 			}
 
-			errors.RoleDoesNotExist(roleName, strings.Join(roleNames, ", "), nil).Print()
+			kserrors.RoleDoesNotExist(roleName, strings.Join(roleNames, ", "), nil).Print()
 			os.Exit(1)
 		}
 

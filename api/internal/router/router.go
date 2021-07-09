@@ -65,9 +65,8 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		userID, err := VerifyToken(token)
 
 		if err != nil {
-			// 404 is returned purposefully, here to not reveal the existence of
-			// resources for non authorized requesters
-			http.Error(dw, "", http.StatusNotFound)
+			// JWT verificatin failed
+			http.Error(dw, "", http.StatusUnauthorized)
 			return
 		}
 

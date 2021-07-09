@@ -19,7 +19,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 
 	"github.com/wearedevx/keystone/cli/internal/utils"
@@ -46,7 +46,7 @@ Example:
   $ echo $OTHER_KEY
   other_value`,
 	Run: func(_ *cobra.Command, _ []string) {
-		var err *errors.Error
+		var err *kserrors.Error
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 

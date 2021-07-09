@@ -124,7 +124,7 @@ func Initialize() {
 
 		if err := es.Err(); err != nil {
 			err.Print()
-			return
+			os.Exit(1)
 		}
 
 		// If no accessible environment, then user has no access to the project

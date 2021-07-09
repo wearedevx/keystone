@@ -16,15 +16,18 @@ limitations under the License.
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"sort"
 
 	"github.com/spf13/cobra"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -52,7 +55,11 @@ grouped by their role, with indication of their ownership.`,
 		members, err := c.Project(kf.ProjectId).GetAllMembers()
 
 		if err != nil {
-			fmt.Println(err)
+			if errors.Is(err, auth.ErrorUnauthorized) {
+				kserrors.InvalidConnectionToken(err).Print()
+			} else {
+				kserrors.UnkownError(err).Print()
+			}
 			os.Exit(1)
 		}
 

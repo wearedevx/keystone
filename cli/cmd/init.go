@@ -21,10 +21,11 @@ import (
 	"path"
 	"strings"
 
-	kerrors "github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 
@@ -51,7 +52,7 @@ Created files and directories:
                  automatically added to .gitignore
 `,
 	Run: func(_ *cobra.Command, args []string) {
-		var err *kerrors.Error
+		var err *kserrors.Error
 		projectName = strings.Join(args, " ")
 
 		// Retrieve working directry
@@ -59,7 +60,7 @@ Created files and directories:
 		ctx := core.New(core.CTX_INIT)
 
 		if osError != nil {
-			err = kerrors.NewError("OS Error", "Error when retrieving working directory", map[string]string{}, osError)
+			err = kserrors.NewError("OS Error", "Error when retrieving working directory", map[string]string{}, osError)
 			err.Print()
 			os.Exit(1)
 		}
@@ -75,7 +76,12 @@ Created files and directories:
 			project, initErr := c.Project("").Init(projectName)
 
 			if initErr != nil {
-				ui.PrintError(initErr.Error())
+				if errors.Is(initErr, auth.ErrorUnauthorized) {
+					kserrors.InvalidConnectionToken(initErr).Print()
+				} else {
+					ui.PrintError(initErr.Error())
+				}
+
 				os.Exit(1)
 			}
 
@@ -104,7 +110,7 @@ If you need help with anything:
 			if ctx.GetProjectName() != projectName {
 				// check if .keystone directory too
 				if DirExists(path.Join(ctx.Wd, ".keystone")) {
-					kerrors.AlreadyKeystoneProject(errors.New("")).Print()
+					kserrors.AlreadyKeystoneProject(errors.New("")).Print()
 				}
 			}
 		}

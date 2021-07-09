@@ -17,7 +17,7 @@ func MakeToken(user models.User) (string, error) {
 
 	claims := jwt.StandardClaims{
 		ExpiresAt: &jwt.Time{
-			time.Now().Add(24 * time.Hour),
+			time.Now().Add(30 * 24 * time.Hour),
 		},
 		IssuedAt: &jwt.Time{
 			time.Now(),
