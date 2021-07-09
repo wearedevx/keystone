@@ -39,6 +39,9 @@ func GitHubAuth(ctx context.Context, apiUrl string) AuthService {
 
 func (g *gitHubAuthService) Start() (string, error) {
 	lr, err := getLoginRequest(g.apiUrl)
+	if err != nil {
+		return "", err
+	}
 
 	g.loginRequest = lr
 
@@ -46,14 +49,25 @@ func (g *gitHubAuthService) Start() (string, error) {
 		ClientID:     githubClientId,
 		ClientSecret: githubClientSecret,
 		Scopes:       []string{"user", "user:email"},
+<<<<<<< HEAD
 		RedirectURL:  authRedirectURL + constants.Version,
+=======
+		RedirectURL:  authRedirectURL,
+>>>>>>> master
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://github.com/login/oauth/authorize",
 			TokenURL: "https://github.com/login/oauth/access_token",
 		},
 	}
 
+<<<<<<< HEAD
 	state := lr.TemporaryCode
+=======
+	state, err := makeOAuthState(lr.TemporaryCode)
+	if err != nil {
+		return "", err
+	}
+>>>>>>> master
 
 	return g.conf.AuthCodeURL(state, oauth2.AccessTypeOffline), err
 

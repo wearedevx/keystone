@@ -35,7 +35,16 @@ func GithubLoginSuccess() int {
 		Timeout: timeout,
 	}
 
-	request, err := http.NewRequest("GET", "http://localhost:9001/auth-redirect/?state="+lr.TemporaryCode+"&code=youpicode", nil)
+	state := AuthState{
+		TemporaryCode: lr.TemporaryCode,
+		Version:       "test",
+	}
+	codedState, err := state.Encode()
+	if err != nil {
+		panic(err)
+	}
+
+	request, err := http.NewRequest("GET", "http://localhost:9001/auth-redirect/?state="+codedState+"&code=youpicode", nil)
 
 	if err == nil {
 		_, err = client.Do(request)
