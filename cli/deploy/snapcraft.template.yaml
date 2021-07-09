@@ -41,5 +41,5 @@ parts:
     build-packages: [make, git, libssl-dev]
     organize:
       /usr/local/lib: /lib/
-      ./cli/ks: /bin/ks
+      ../build/cli/ks: /bin/ks
     source: .
