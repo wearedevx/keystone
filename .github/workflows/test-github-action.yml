@@ -1,0 +1,18 @@
+name: use-keystone-action
+
+on: [push]
+
+jobs:
+  use_keystone-action:
+    runs-on: ubuntu-latest
+    name: A job to make keystone-ci usable secrets
+    steps:
+      # To use this repository's private action,
+      # you must check out the repository
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Hello world action step
+        uses: wearedevx/keystone-action@v0.1
+        id: hello
+        with:
+          keystone_slot: "{{ secrets.KEYSTONE_SLOT }}"
