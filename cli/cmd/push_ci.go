@@ -32,7 +32,7 @@ to quickly create a Cobra application.`,
 			}
 		}
 
-		_, err := ctx.PrepareMessagePayload(environment)
+		message, err := ctx.PrepareMessagePayload(environment)
 
 		if err != nil {
 			ui.PrintError(err.Error())
@@ -50,7 +50,9 @@ to quickly create a Cobra application.`,
 
 		ciService = askForApiKey(ciService)
 
-		// ciService.PushSecret(ctx, message)
+		ciService = ciService.InitClient()
+
+		ciService.PushSecret(message)
 	},
 }
 

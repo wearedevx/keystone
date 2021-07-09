@@ -7,6 +7,7 @@ require (
 	github.com/cossacklabs/themis/gothemis v0.13.1
 	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
 	github.com/google/go-github/v32 v32.1.0
+	github.com/jamesruan/sodium v0.0.0-20181216154042-9620b83ffeae
 	github.com/jedib0t/go-pretty/v6 v6.2.1
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/manifoldco/promptui v0.8.0

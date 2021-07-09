@@ -1,7 +1,6 @@
 package ci
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -14,12 +13,13 @@ type ApiKey string
 
 type CiService interface {
 	Name() string
-	PushSecret(context.Context, models.MessagePayload) error
+	PushSecret(models.MessagePayload) error
 	// Finish(pkey []byte) (models.User, string, error)
 	GetKeys() ServicesKeys
 	SetKeys(ServicesKeys) error
 	GetApiKey() ApiKey
 	SetApiKey(ApiKey)
+	InitClient() CiService
 }
 
 func GetCiService(serviceName string, ctx core.Context, apiUrl string) (CiService, error) {

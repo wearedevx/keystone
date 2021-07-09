@@ -2,8 +2,10 @@ package ci
 
 import (
 	"context"
-	"fmt"
+	"encoding/base64"
 
+	"github.com/google/go-github/v32/github"
+	"github.com/jamesruan/sodium"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -21,6 +23,7 @@ type gitHubCiService struct {
 	conf         *oauth2.Config
 	servicesKeys ServicesKeys
 	apiKey       ApiKey
+	client       *github.Client
 }
 
 func GitHubCi(ctx core.Context, apiUrl string) CiService {
@@ -29,7 +32,7 @@ func GitHubCi(ctx core.Context, apiUrl string) CiService {
 
 	savedService := kf.GetCiService("github")
 
-	return &gitHubCiService{
+	ciService := &gitHubCiService{
 		apiUrl: apiUrl,
 		ctx:    ctx,
 		kf:     kf,
@@ -39,21 +42,42 @@ func GitHubCi(ctx core.Context, apiUrl string) CiService {
 		},
 		apiKey: ApiKey(config.GetServiceApiKey("github")),
 	}
+
+	return ciService
 }
 
 func (g gitHubCiService) Name() string { return "github" }
 
-func (g gitHubCiService) PushSecret(ctx context.Context, message models.MessagePayload) error {
-	token := g.GetApiKey()
+func (g gitHubCiService) PushSecret(message models.MessagePayload) error {
 
-	fmt.Println(token)
-	fmt.Println(message)
+	var payload string
+	message.Serialize(&payload)
+	publicKey, _, err := g.client.Actions.GetRepoPublicKey(context.Background(), g.servicesKeys["Owner"], g.servicesKeys["Project"])
 
-	// ts := oauth2.StaticTokenSource(token)
-	// tc := oauth2.NewClient(g.ctx, ts)
+	data, err := base64.StdEncoding.DecodeString(publicKey.GetKey())
+	if err != nil {
+		panic(err)
+	}
 
-	// g.token = token
-	// g.client = github.NewClient(tc)
+	boxPK := sodium.BoxPublicKey{
+		Bytes: sodium.Bytes(data),
+	}
+
+	encryptedValue := sodium.Bytes(payload).SealedBox(boxPK)
+
+	base64data := base64.StdEncoding.EncodeToString(encryptedValue)
+
+	encryptedSecret := &github.EncryptedSecret{
+		Name:           "keystone_slot_1",
+		KeyID:          publicKey.GetKeyID(),
+		EncryptedValue: base64data,
+	}
+
+	_, err = g.client.Actions.CreateOrUpdateRepoSecret(context.Background(), g.servicesKeys["Owner"], g.servicesKeys["Project"], encryptedSecret)
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -83,4 +107,16 @@ func (g gitHubCiService) SetApiKey(apiKey ApiKey) {
 	g.apiKey = apiKey
 	config.SetServiceApiKey(g.Name(), string(apiKey))
 	config.Write()
+}
+
+func (g gitHubCiService) InitClient() CiService {
+	context := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: string(g.apiKey)},
+	)
+	tc := oauth2.NewClient(context, ts)
+
+	client := github.NewClient(tc)
+	g.client = client
+	return g
 }
