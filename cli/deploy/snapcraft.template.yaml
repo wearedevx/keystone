@@ -35,7 +35,7 @@ parts:
       rm -rf themis/
 
       make build -C cli
-      chmod +x ks
+      chmod +x cli/ks
       ls
 
     build-packages: [make, git, libssl-dev]
