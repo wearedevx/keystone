@@ -26,7 +26,6 @@ jobs:
       - name: Setup Working Directory (Develop)
         run: |
           cd cli
-          go mod edit -dropreplace github.com/wearedevx/keystone/api
 
           sh deploy/gen_snapcraft.sh
         env:
