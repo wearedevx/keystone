@@ -67,10 +67,9 @@ func selectAuthService(ctx core.Context) (ci.CiService, error) {
 
 	if serviceName == "" {
 		prompt := promptui.Select{
-			Label: "Select an identity provider",
+			Label: "Select a ci service",
 			Items: []string{
 				"github",
-				"gitlab",
 			},
 		}
 
