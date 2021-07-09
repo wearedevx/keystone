@@ -24,10 +24,7 @@ jobs:
           ref: ${{ env.REF }}
 
       - name: Setup Working Directory (Develop)
-        run: |
-          cd cli
-
-          sh deploy/gen_snapcraft.sh
+        run: sh cli/deploy/gen_snapcraft.sh
         env:
           BRANCH: ${{ env.TAG }}
           #
@@ -47,8 +44,6 @@ jobs:
       - name: Snapcraft Build
         uses: snapcore/action-build@v1.0.8
         id: snapcraft
-        with:
-          path: cli/
 
       - name: Snapcraft Package
         run: |

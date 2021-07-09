@@ -33,11 +33,13 @@ parts:
       make -C themis
       make install -C themis
       rm -rf themis/
-      go mod edit -dropreplace github.com/wearedevx/keystone/api
-      make build
+
+      make build -C cli
       chmod +x ks
+      ls
+
     build-packages: [make, git, libssl-dev]
     organize:
       /usr/local/lib: /lib/
-      ../build/ks: /bin/ks
+      ./cli/ks: /bin/ks
     source: .

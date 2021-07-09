@@ -1,6 +1,6 @@
 #!/bin/sh
 TARGET="$PWD/snap/snapcraft.yaml"
-TEMPLATE="$PWD/deploy/snapcraft.template.yaml"
+TEMPLATE="$PWD/cli/deploy/snapcraft.template.yaml"
 
 cp $TEMPLATE $TARGET
 
