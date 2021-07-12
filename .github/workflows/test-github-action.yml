@@ -11,8 +11,15 @@ jobs:
       # you must check out the repository
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Hello world action step
-        uses: wearedevx/keystone-action@v0.1
-        id: hello
+
+      - name: Load Secrets
+        uses: wearedevx/keystone-action@feat/read-message
+        id: load_secrets
         with:
-          keystone_slot: "{{ secrets.KEYSTONE_SLOT }}"
+          keystone_slot: ${{ secrets.KEYSTONE_SLOT }}
+
+      - name: Show Secrets
+        id: show_secrets
+        run: |
+          echo "From env action context: ${{ env.TEST }}"
+          echo "From runner job environment variables $TEST"
