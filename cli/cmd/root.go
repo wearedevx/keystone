@@ -192,6 +192,9 @@ func WriteConfig() error {
 		fmt.Println(err)
 	}
 
+	// Ensure the .config exists
+	os.MkdirAll(path.Join(home, ".config"), 0o755)
+
 	configPath := path.Join(home, ".config", "keystone.yml")
 	if err = viper.WriteConfigAs(configPath); err != nil {
 		if os.IsNotExist(err) {
