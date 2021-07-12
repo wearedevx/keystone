@@ -16,6 +16,7 @@ jobs:
         uses: wearedevx/keystone-action@feat/read-message
         id: load_secrets
         with:
+          token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
           keystone_slot: ${{ secrets.KEYSTONE_SLOT }}
 
       - name: Show Secrets
