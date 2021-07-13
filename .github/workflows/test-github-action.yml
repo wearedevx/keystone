@@ -24,7 +24,7 @@ jobs:
               "secrets": [
                 {"label": "TEST", "value": "secretvalue"}
               ],
-              "files: [
+              "files": [
                 {
                   "path": "ks_temp/test.txt",
                   "content": "Q2VjaSBlc3QgdW4gdGVzdA==",
