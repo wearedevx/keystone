@@ -47,12 +47,14 @@ jobs:
             echo "$F exists";
             C=`cat $F`;
 
-            if [ $C == "Ceci est un test" ]; then
+            if [ "$C" == "Ceci est un test" ]; then
               echo "It has the right content";
             else
-              echo "::error File value is not right";
+              echo "File value is not right";
+              exit 1;
             fi
           else
-            echo "::error $F does not exits";
+            echo "$F does not exits";
+            exit 1;
           fi
 
