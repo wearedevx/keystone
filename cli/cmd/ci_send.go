@@ -6,15 +6,15 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/ci"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/client/ci"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
-// pushCiCmd represents the pushCi command
-var pushCiCmd = &cobra.Command{
-	Use:   "push-ci",
+// ciSendCmd represents the pushCi command
+var ciSendCmd = &cobra.Command{
+	Use:   "ci send",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -47,7 +47,6 @@ to quickly create a Cobra application.`,
 		}
 
 		ciService = askForKeys(ciService)
-
 		ciService = askForApiKey(ciService)
 
 		ciService = ciService.InitClient()
@@ -57,9 +56,9 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	RootCmd.AddCommand(pushCiCmd)
+	ciCmd.AddCommand(ciSendCmd)
 
-	pushCiCmd.Flags().StringVar(&serviceName, "with", "", "identity provider. Either github or gitlab")
+	ciSendCmd.Flags().StringVar(&serviceName, "with", "", "identity provider. Either github or gitlab")
 }
 
 func selectAuthService(ctx core.Context) (ci.CiService, error) {

@@ -73,7 +73,7 @@ func (g gitHubCiService) PushSecret(message models.MessagePayload) error {
 	base64data := base64.StdEncoding.EncodeToString(encryptedValue)
 
 	encryptedSecret := &github.EncryptedSecret{
-		Name:           "keystone_slot_1",
+		Name:           "KEYSTONE_SLOT_1",
 		KeyID:          publicKey.GetKeyID(),
 		EncryptedValue: base64data,
 	}
