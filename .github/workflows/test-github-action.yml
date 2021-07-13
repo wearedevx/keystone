@@ -27,7 +27,7 @@ jobs:
               "files": [
                 {
                   "path": "ks_temp/test.txt",
-                  "content": "Q2VjaSBlc3QgdW4gdGVzdA==",
+                  "content": "Q2VjaSBlc3QgdW4gdGVzdA=="
                 }
               ]
             }
