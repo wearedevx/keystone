@@ -16,11 +16,15 @@ import (
 var githubClientId string
 var githubClientSecret string
 
+type ServicesKeys map[string]string
+
+type ApiKey string
+
 type gitHubCiService struct {
+	err          error
 	apiUrl       string
 	ctx          core.Context
 	kf           keystonefile.KeystoneFile
-	conf         *oauth2.Config
 	servicesKeys ServicesKeys
 	apiKey       ApiKey
 	client       *github.Client
@@ -33,6 +37,7 @@ func GitHubCi(ctx core.Context, apiUrl string) CiService {
 	savedService := kf.GetCiService("github")
 
 	ciService := &gitHubCiService{
+		err:    nil,
 		apiUrl: apiUrl,
 		ctx:    ctx,
 		kf:     kf,
@@ -46,11 +51,26 @@ func GitHubCi(ctx core.Context, apiUrl string) CiService {
 	return ciService
 }
 
-func (g gitHubCiService) Name() string { return "github" }
+func (g gitHubCiService) Name() string { return "github-ci" }
+
+func (g *gitHubCiService) Setup() CiService {
+	if g.err != nil {
+		return g
+	}
+
+	// There should go the prompts for keys and such
+	// as those are all github specifics
+
+	return g
+}
 
 // PushSecret sends a "Message" (that's a complete encrypted environment)
 // to GitHub as one repository Secret
-func (g gitHubCiService) PushSecret(message models.MessagePayload) error {
+func (g *gitHubCiService) PushSecret(message models.MessagePayload) CiService {
+	if g.err != nil {
+		return g
+	}
+
 	var payload string
 
 	message.Serialize(&payload)
@@ -92,11 +112,24 @@ func (g gitHubCiService) PushSecret(message models.MessagePayload) error {
 	return nil
 }
 
-func (g gitHubCiService) GetKeys() ServicesKeys {
+func (g gitHubCiService) initClient() CiService {
+	context := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: string(g.apiKey)},
+	)
+	tc := oauth2.NewClient(context, ts)
+
+	client := github.NewClient(tc)
+	g.client = client
+
+	return g
+}
+
+func (g gitHubCiService) getKeys() ServicesKeys {
 	return g.servicesKeys
 }
 
-func (g gitHubCiService) SetKeys(servicesKeys ServicesKeys) error {
+func (g *gitHubCiService) setKeys(servicesKeys ServicesKeys) error {
 	var service keystonefile.CiService
 
 	g.servicesKeys = servicesKeys
@@ -111,26 +144,13 @@ func (g gitHubCiService) SetKeys(servicesKeys ServicesKeys) error {
 	return nil
 }
 
-func (g gitHubCiService) GetApiKey() ApiKey {
+func (g gitHubCiService) getApiKey() ApiKey {
 	apiKey := config.GetServiceApiKey(g.Name())
 	return ApiKey(apiKey)
 }
 
-func (g gitHubCiService) SetApiKey(apiKey ApiKey) {
+func (g gitHubCiService) setApiKey(apiKey ApiKey) {
 	g.apiKey = apiKey
 	config.SetServiceApiKey(g.Name(), string(apiKey))
 	config.Write()
-}
-
-func (g gitHubCiService) InitClient() CiService {
-	context := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: string(g.apiKey)},
-	)
-	tc := oauth2.NewClient(context, ts)
-
-	client := github.NewClient(tc)
-	g.client = client
-
-	return g
 }

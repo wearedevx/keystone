@@ -7,19 +7,16 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/core"
 )
 
-type ServicesKeys map[string]string
-
-type ApiKey string
-
 type CiService interface {
 	Name() string
-	PushSecret(models.MessagePayload) error
-	// Finish(pkey []byte) (models.User, string, error)
-	GetKeys() ServicesKeys
-	SetKeys(ServicesKeys) error
-	GetApiKey() ApiKey
-	SetApiKey(ApiKey)
-	InitClient() CiService
+	Setup() CiService
+
+	PushSecret(models.MessagePayload) CiService
+	// // Finish(pkey []byte) (models.User, string, error)
+	// GetKeys() ServicesKeys
+	// SetKeys(ServicesKeys) error
+	// GetApiKey() ApiKey
+	// SetApiKey(ApiKey)
 }
 
 func GetCiService(serviceName string, ctx core.Context, apiUrl string) (CiService, error) {
