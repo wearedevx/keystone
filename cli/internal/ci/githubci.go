@@ -3,13 +3,16 @@ package ci
 import (
 	"context"
 	"encoding/base64"
+	"os"
 
 	"github.com/google/go-github/v32/github"
 	"github.com/jamesruan/sodium"
+	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/core"
+	"github.com/wearedevx/keystone/cli/ui"
 	"golang.org/x/oauth2"
 )
 
@@ -57,6 +60,8 @@ func (g *gitHubCiService) Setup() CiService {
 	if g.err != nil {
 		return g
 	}
+	g.askForKeys()
+	g.askForApiKey()
 
 	// There should go the prompts for keys and such
 	// as those are all github specifics
@@ -98,6 +103,7 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload) CiService {
 		EncryptedValue: base64data,
 	}
 
+	g.initClient()
 	_, err = g.client.Actions.CreateOrUpdateRepoSecret(
 		context.Background(),
 		g.servicesKeys["Owner"],
@@ -106,13 +112,13 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload) CiService {
 	)
 
 	if err != nil {
-		return err
+		g.err = err
 	}
 
-	return nil
+	return g
 }
 
-func (g gitHubCiService) initClient() CiService {
+func (g gitHubCiService) initClient() {
 	context := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: string(g.apiKey)},
@@ -121,8 +127,6 @@ func (g gitHubCiService) initClient() CiService {
 
 	client := github.NewClient(tc)
 	g.client = client
-
-	return g
 }
 
 func (g gitHubCiService) getKeys() ServicesKeys {
@@ -153,4 +157,66 @@ func (g gitHubCiService) setApiKey(apiKey ApiKey) {
 	g.apiKey = apiKey
 	config.SetServiceApiKey(g.Name(), string(apiKey))
 	config.Write()
+}
+
+func (g gitHubCiService) askForKeys() {
+	serviceName := g.Name()
+	servicesKeys := g.getKeys()
+	for key, value := range servicesKeys {
+		p := promptui.Prompt{
+			Label:   serviceName + "'s " + key,
+			Default: value,
+		}
+		result, err := p.Run()
+
+		// Handle user cancelation
+		// or prompt error
+		if err != nil {
+			if err.Error() != "^C" {
+				ui.PrintError(err.Error())
+				os.Exit(1)
+			}
+			os.Exit(0)
+		}
+		servicesKeys[key] = result
+	}
+
+	err := g.setKeys(servicesKeys)
+
+	if err != nil {
+		ui.PrintError(err.Error())
+	}
+}
+
+func (g gitHubCiService) askForApiKey() {
+	serviceName := g.Name()
+
+	p := promptui.Prompt{
+		Label:   serviceName + "'s Api key",
+		Default: string(g.getApiKey()),
+	}
+
+	result, err := p.Run()
+
+	// Handle user cancelation
+	// or prompt error
+	if err != nil {
+		if err.Error() != "^C" {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
+	g.setApiKey(ApiKey(result))
+
+	if err != nil {
+		ui.PrintError(err.Error())
+	}
+
+}
+
+func (g gitHubCiService) Error() error {
+
+	return g.err
 }

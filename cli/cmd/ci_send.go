@@ -39,17 +39,15 @@ to quickly create a Cobra application.`,
 			os.Exit(1)
 		}
 
-		ciService, err := selectAuthService(*ctx)
+		ciService, err := SelectCiService(*ctx)
 
 		if err != nil {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
 
-		ciService = askForKeys(ciService)
-		ciService = askForApiKey(ciService)
-
-		ciService = ciService.InitClient()
+		// ciService = askForKeys(ciService)
+		// ciService = askForApiKey(ciService)
 
 		ciService.PushSecret(message)
 	},
@@ -61,7 +59,7 @@ func init() {
 	ciSendCmd.Flags().StringVar(&serviceName, "with", "", "identity provider. Either github or gitlab")
 }
 
-func selectAuthService(ctx core.Context) (ci.CiService, error) {
+func SelectCiService(ctx core.Context) (ci.CiService, error) {
 	var err error
 
 	if serviceName == "" {
@@ -80,64 +78,4 @@ func selectAuthService(ctx core.Context) (ci.CiService, error) {
 	}
 
 	return ci.GetCiService(serviceName, ctx, client.ApiURL)
-}
-
-func askForKeys(ciService ci.CiService) ci.CiService {
-	serviceName := ciService.Name()
-	servicesKeys := ciService.GetKeys()
-	for key, value := range servicesKeys {
-		p := promptui.Prompt{
-			Label:   serviceName + "'s " + key,
-			Default: value,
-		}
-		result, err := p.Run()
-
-		// Handle user cancelation
-		// or prompt error
-		if err != nil {
-			if err.Error() != "^C" {
-				ui.PrintError(err.Error())
-				os.Exit(1)
-			}
-			os.Exit(0)
-		}
-		servicesKeys[key] = result
-	}
-
-	err := ciService.SetKeys(servicesKeys)
-
-	if err != nil {
-		ui.PrintError(err.Error())
-	}
-
-	return ciService
-}
-
-func askForApiKey(ciService ci.CiService) ci.CiService {
-	serviceName := ciService.Name()
-
-	p := promptui.Prompt{
-		Label:   serviceName + "'s Api key",
-		Default: string(ciService.GetApiKey()),
-	}
-
-	result, err := p.Run()
-
-	// Handle user cancelation
-	// or prompt error
-	if err != nil {
-		if err.Error() != "^C" {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
-
-	ciService.SetApiKey(ci.ApiKey(result))
-
-	if err != nil {
-		ui.PrintError(err.Error())
-	}
-
-	return ciService
 }
