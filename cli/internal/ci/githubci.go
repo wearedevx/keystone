@@ -3,6 +3,7 @@ package ci
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"os"
 
 	"github.com/google/go-github/v32/github"
@@ -37,7 +38,7 @@ func GitHubCi(ctx core.Context, apiUrl string) CiService {
 	kf := keystonefile.KeystoneFile{}
 	kf.Load(ctx.Wd)
 
-	savedService := kf.GetCiService("github")
+	savedService := kf.GetCiService("github-ci")
 
 	ciService := &gitHubCiService{
 		err:    nil,
@@ -67,6 +68,12 @@ func (g *gitHubCiService) Setup() CiService {
 	// as those are all github specifics
 
 	return g
+}
+
+func (g *gitHubCiService) CheckSetup() {
+	if len(g.servicesKeys["Owner"]) == 0 || len(g.servicesKeys["Project"]) == 0 || len(g.getApiKey()) == 0 {
+		g.err = errors.New("There is missing information in CI service settings.\nUse $ ks ci setup")
+	}
 }
 
 // PushSecret sends a "Message" (that's a complete encrypted environment)
@@ -217,6 +224,5 @@ func (g gitHubCiService) askForApiKey() {
 }
 
 func (g gitHubCiService) Error() error {
-
 	return g.err
 }

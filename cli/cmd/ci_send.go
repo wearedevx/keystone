@@ -14,7 +14,7 @@ import (
 
 // ciSendCmd represents the pushCi command
 var ciSendCmd = &cobra.Command{
-	Use:   "ci send",
+	Use:   "send",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -47,7 +47,11 @@ to quickly create a Cobra application.`,
 		}
 
 		// ciService = askForKeys(ciService)
-		// ciService = askForApiKey(ciService)
+		ciService.CheckSetup()
+		if ciService.Error() != nil {
+			ui.PrintError(ciService.Error().Error())
+			os.Exit(1)
+		}
 
 		ciService.PushSecret(message)
 	},
