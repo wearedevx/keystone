@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/google/go-github/v32/github"
 	"github.com/jamesruan/sodium"
@@ -19,6 +21,8 @@ import (
 
 var githubClientId string
 var githubClientSecret string
+
+const NAME = "github-ci"
 
 type ServicesKeys map[string]string
 
@@ -38,7 +42,7 @@ func GitHubCi(ctx core.Context, apiUrl string) CiService {
 	kf := keystonefile.KeystoneFile{}
 	kf.Load(ctx.Wd)
 
-	savedService := kf.GetCiService("github-ci")
+	savedService := kf.GetCiService(NAME)
 
 	ciService := &gitHubCiService{
 		err:    nil,
@@ -49,13 +53,13 @@ func GitHubCi(ctx core.Context, apiUrl string) CiService {
 			"Owner":   savedService.Keys["Owner"],
 			"Project": savedService.Keys["Project"],
 		},
-		apiKey: ApiKey(config.GetServiceApiKey("github")),
+		apiKey: ApiKey(config.GetServiceApiKey(NAME)),
 	}
 
 	return ciService
 }
 
-func (g gitHubCiService) Name() string { return "github-ci" }
+func (g *gitHubCiService) Name() string { return NAME }
 
 func (g *gitHubCiService) Setup() CiService {
 	if g.err != nil {
@@ -78,10 +82,12 @@ func (g *gitHubCiService) CheckSetup() {
 
 // PushSecret sends a "Message" (that's a complete encrypted environment)
 // to GitHub as one repository Secret
-func (g *gitHubCiService) PushSecret(message models.MessagePayload) CiService {
+func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment string) CiService {
 	if g.err != nil {
 		return g
 	}
+
+	g.initClient()
 
 	var payload string
 
@@ -91,10 +97,16 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload) CiService {
 		g.servicesKeys["Owner"],
 		g.servicesKeys["Project"],
 	)
+	if err != nil {
+		g.err = err
+		return g
+	}
+
 	data, err := base64.StdEncoding.DecodeString(publicKey.GetKey())
 
 	if err != nil {
-		panic(err)
+		g.err = err
+		return g
 	}
 
 	boxPK := sodium.BoxPublicKey{
@@ -105,12 +117,11 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload) CiService {
 	base64data := base64.StdEncoding.EncodeToString(encryptedValue)
 
 	encryptedSecret := &github.EncryptedSecret{
-		Name:           "KEYSTONE_SLOT_1",
+		Name:           fmt.Sprintf("KEYSTONE_%s_SLOT_1", strings.ToUpper(environment)),
 		KeyID:          publicKey.GetKeyID(),
 		EncryptedValue: base64data,
 	}
 
-	g.initClient()
 	_, err = g.client.Actions.CreateOrUpdateRepoSecret(
 		context.Background(),
 		g.servicesKeys["Owner"],
@@ -125,7 +136,7 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload) CiService {
 	return g
 }
 
-func (g gitHubCiService) initClient() {
+func (g *gitHubCiService) initClient() {
 	context := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: string(g.apiKey)},
@@ -133,10 +144,11 @@ func (g gitHubCiService) initClient() {
 	tc := oauth2.NewClient(context, ts)
 
 	client := github.NewClient(tc)
+
 	g.client = client
 }
 
-func (g gitHubCiService) getKeys() ServicesKeys {
+func (g *gitHubCiService) getKeys() ServicesKeys {
 	return g.servicesKeys
 }
 
@@ -155,18 +167,18 @@ func (g *gitHubCiService) setKeys(servicesKeys ServicesKeys) error {
 	return nil
 }
 
-func (g gitHubCiService) getApiKey() ApiKey {
+func (g *gitHubCiService) getApiKey() ApiKey {
 	apiKey := config.GetServiceApiKey(g.Name())
 	return ApiKey(apiKey)
 }
 
-func (g gitHubCiService) setApiKey(apiKey ApiKey) {
+func (g *gitHubCiService) setApiKey(apiKey ApiKey) {
 	g.apiKey = apiKey
 	config.SetServiceApiKey(g.Name(), string(apiKey))
 	config.Write()
 }
 
-func (g gitHubCiService) askForKeys() {
+func (g *gitHubCiService) askForKeys() {
 	serviceName := g.Name()
 	servicesKeys := g.getKeys()
 	for key, value := range servicesKeys {
@@ -195,7 +207,7 @@ func (g gitHubCiService) askForKeys() {
 	}
 }
 
-func (g gitHubCiService) askForApiKey() {
+func (g *gitHubCiService) askForApiKey() {
 	serviceName := g.Name()
 
 	p := promptui.Prompt{
@@ -223,6 +235,6 @@ func (g gitHubCiService) askForApiKey() {
 
 }
 
-func (g gitHubCiService) Error() error {
+func (g *gitHubCiService) Error() error {
 	return g.err
 }

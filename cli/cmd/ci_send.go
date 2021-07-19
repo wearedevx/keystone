@@ -53,7 +53,13 @@ to quickly create a Cobra application.`,
 			os.Exit(1)
 		}
 
-		ciService.PushSecret(message)
+		ciService.PushSecret(message, currentEnvironment)
+
+		if ciService.Error() != nil {
+			ui.PrintError(ciService.Error().Error())
+			os.Exit(1)
+		}
+		ui.PrintSuccess("Secrets successfully sent to CI service.")
 	},
 }
 
