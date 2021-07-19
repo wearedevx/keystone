@@ -136,6 +136,27 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment 
 	return g
 }
 
+func (g *gitHubCiService) CleanSecret(environment string) CiService {
+	if g.err != nil {
+		return g
+	}
+
+	g.initClient()
+
+	_, err := g.client.Actions.DeleteRepoSecret(
+		context.Background(),
+		g.servicesKeys["Owner"],
+		g.servicesKeys["Project"],
+		fmt.Sprintf("KEYSTONE_%s_SLOT_1", strings.ToUpper(environment)),
+	)
+
+	if err != nil {
+		g.err = err
+	}
+
+	return g
+}
+
 func (g *gitHubCiService) initClient() {
 	context := context.Background()
 	ts := oauth2.StaticTokenSource(

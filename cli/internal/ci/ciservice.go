@@ -12,6 +12,7 @@ type CiService interface {
 	Setup() CiService
 
 	PushSecret(message models.MessagePayload, environment string) CiService
+	CleanSecret(environment string) CiService
 	CheckSetup()
 	Error() error
 	// // Finish(pkey []byte) (models.User, string, error)

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/manifoldco/promptui"
@@ -25,6 +26,7 @@ to quickly create a Cobra application.`,
 	Run: func(_ *cobra.Command, _ []string) {
 
 		var environment models.Environment
+		ctx.MustHaveEnvironment(currentEnvironment)
 
 		for _, accessibleEnvironment := range ctx.AccessibleEnvironments {
 			if accessibleEnvironment.Name == currentEnvironment {
@@ -59,7 +61,7 @@ to quickly create a Cobra application.`,
 			ui.PrintError(ciService.Error().Error())
 			os.Exit(1)
 		}
-		ui.PrintSuccess("Secrets successfully sent to CI service.")
+		ui.PrintSuccess(fmt.Sprintf("Secrets successfully sent to CI service, environment %s.", currentEnvironment))
 	},
 }
 
