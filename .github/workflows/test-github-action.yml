@@ -18,20 +18,19 @@ jobs:
         with:
           token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
           # Normally, we would use 
-          # kestone_slot: ${{ secrets.KEYSTONE_SLOT }}
-          keystone_slot: |-
-            {
-              "secrets": [
-                {"label": "TEST", "value": "secretvalue"}
-              ],
-              "files": [
-                {
-                  "path": "ks_temp/test.txt",
-                  "content": "Q2VjaSBlc3QgdW4gdGVzdA=="
-                }
-              ]
-            }
-
+          keystone_slot: ${{ secrets.KEYSTONE_PROD_SLOT_1 }}
+          # keystone_slot: |-
+          #  {
+          #    "secrets": [
+          #      {"label": "TEST", "value": "secretvalue"}
+          #    ],
+          #    "files": [
+          #      {
+          #        "path": "ks_temp/test.txt",
+          #        "content": "Q2VjaSBlc3QgdW4gdGVzdA=="
+          #      }
+          #    ]
+          #  }
       - name: Show Secrets
         id: show_secrets
         run: |
