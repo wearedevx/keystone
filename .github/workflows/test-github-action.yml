@@ -45,6 +45,7 @@ jobs:
           if [ -f $F ]; then
             echo "$F exists";
             C=`cat $F`;
+            echo $C;
 
             if [ "$C" == "Ceci est un test" ]; then
               echo "It has the right content";
