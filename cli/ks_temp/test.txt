@@ -1,1 +1,1 @@
-Q2VjaSBlc3QgdW4gdGVzdA==
+/home/abi/code/keystone/cli/.keystone/cache/prod/files/ks_temp/test.txt
