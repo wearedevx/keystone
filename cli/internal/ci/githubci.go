@@ -113,24 +113,29 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment 
 		Bytes: sodium.Bytes(data),
 	}
 
-	encryptedValue := sodium.Bytes(payload).SealedBox(boxPK)
-	base64data := base64.StdEncoding.EncodeToString(encryptedValue)
+	slots := g.sliceMessageInParts(payload)
 
-	encryptedSecret := &github.EncryptedSecret{
-		Name:           fmt.Sprintf("KEYSTONE_%s_SLOT_1", strings.ToUpper(environment)),
-		KeyID:          publicKey.GetKeyID(),
-		EncryptedValue: base64data,
-	}
+	for i, slot := range slots {
+		encryptedValue := sodium.Bytes(slot).SealedBox(boxPK)
 
-	_, err = g.client.Actions.CreateOrUpdateRepoSecret(
-		context.Background(),
-		g.servicesKeys["Owner"],
-		g.servicesKeys["Project"],
-		encryptedSecret,
-	)
+		base64data := base64.StdEncoding.EncodeToString(encryptedValue)
 
-	if err != nil {
-		g.err = err
+		encryptedSecret := &github.EncryptedSecret{
+			Name:           fmt.Sprintf("KEYSTONE_%s_SLOT_%o", strings.ToUpper(environment), i+1),
+			KeyID:          publicKey.GetKeyID(),
+			EncryptedValue: base64data,
+		}
+
+		_, err = g.client.Actions.CreateOrUpdateRepoSecret(
+			context.Background(),
+			g.servicesKeys["Owner"],
+			g.servicesKeys["Project"],
+			encryptedSecret,
+		)
+
+		if err != nil {
+			g.err = err
+		}
 	}
 
 	return g
@@ -258,4 +263,22 @@ func (g *gitHubCiService) askForApiKey() {
 
 func (g *gitHubCiService) Error() error {
 	return g.err
+}
+
+func (g *gitHubCiService) sliceMessageInParts(message string) []string {
+	slots := make([]string, 5)
+	slotSize := (len(message) / 5) * 3 / 4 // base64 encoding make 4 bytes out of 3
+
+	// 64Kb is maximum size for a slot in github
+	if slotSize > 64000 {
+		//Error
+	}
+
+	slots[0] = message[0:slotSize]
+	slots[1] = message[slotSize : slotSize*2]
+	slots[2] = message[slotSize*2 : slotSize*3]
+	slots[3] = message[slotSize*3 : slotSize*4]
+	slots[4] = message[slotSize*4 : slotSize*5]
+
+	return slots
 }
