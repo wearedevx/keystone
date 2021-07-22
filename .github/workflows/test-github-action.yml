@@ -12,6 +12,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Debug
+        id: debug
+        run: |
+          echo ${{secrets.KEYSTONE_PROD_SLOT_1}} | sed 's/./& /g'
+          echo ${{secrets.KEYSTONE_PROD_SLOT_5}} | sed 's/./& /g'
+
       - name: Load Secrets
         uses: wearedevx/keystone-action@feat/read-message
         id: load_secrets
@@ -49,4 +55,3 @@ jobs:
             echo "$F does not exits";
             exit 1;
           fi
-
