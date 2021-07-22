@@ -17,20 +17,12 @@ jobs:
         id: load_secrets
         with:
           token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
-          # Normally, we would use 
-          keystone_slot: ${{ secrets.KEYSTONE_PROD_SLOT_1 }}
-          # keystone_slot: |-
-          #  {
-          #    "secrets": [
-          #      {"label": "TEST", "value": "secretvalue"}
-          #    ],
-          #    "files": [
-          #      {
-          #        "path": "ks_temp/test.txt",
-          #        "content": "Q2VjaSBlc3QgdW4gdGVzdA=="
-          #      }
-          #    ]
-          #  }
+          # Normally, we would use
+          keystone_slot_1: ${{ secrets.KEYSTONE_PROD_SLOT_1 }}
+          keystone_slot_2: ${{ secrets.KEYSTONE_PROD_SLOT_2 }}
+          keystone_slot_3: ${{ secrets.KEYSTONE_PROD_SLOT_3 }}
+          keystone_slot_4: ${{ secrets.KEYSTONE_PROD_SLOT_4 }}
+          keystone_slot_5: ${{ secrets.KEYSTONE_PROD_SLOT_5 }}
       - name: Show Secrets
         id: show_secrets
         run: |
