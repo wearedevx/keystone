@@ -113,7 +113,12 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment 
 		Bytes: sodium.Bytes(data),
 	}
 
-	slots := g.sliceMessageInParts(payload)
+	slots, err := g.sliceMessageInParts(payload)
+
+	if err != nil {
+		g.err = err
+		return g
+	}
 
 	for i, slot := range slots {
 		encryptedValue := sodium.Bytes(slot).SealedBox(boxPK)
@@ -265,13 +270,16 @@ func (g *gitHubCiService) Error() error {
 	return g.err
 }
 
-func (g *gitHubCiService) sliceMessageInParts(message string) []string {
+func (g *gitHubCiService) sliceMessageInParts(message string) ([]string, error) {
 	slots := make([]string, 5)
-	slotSize := (len(message) / 5) * 3 / 4 // base64 encoding make 4 bytes out of 3
+	slotSize := (len(message) / 5) * (4 / 3) // base64 encoding make 4 bytes out of 3
+
+	var err error
 
 	// 64Kb is maximum size for a slot in github
 	if slotSize > 64000 {
 		//Error
+		err = errors.New("Secrets and files are too large to send to CI")
 	}
 
 	slots[0] = message[0:slotSize]
@@ -280,5 +288,5 @@ func (g *gitHubCiService) sliceMessageInParts(message string) []string {
 	slots[3] = message[slotSize*3 : slotSize*4]
 	slots[4] = message[slotSize*4 : slotSize*5]
 
-	return slots
+	return slots, err
 }
