@@ -278,7 +278,6 @@ func (g *gitHubCiService) sliceMessageInParts(message string) ([]string, error) 
 
 	// 64Kb is maximum size for a slot in github
 	if slotSize*(4/3) > 64000 { // base64 encoding make 4 bytes out of 3
-		//Error
 		err = errors.New("Secrets and files are too large to send to CI")
 	}
 
@@ -286,7 +285,7 @@ func (g *gitHubCiService) sliceMessageInParts(message string) ([]string, error) 
 	slots[1] = message[slotSize : slotSize*2]
 	slots[2] = message[slotSize*2 : slotSize*3]
 	slots[3] = message[slotSize*3 : slotSize*4]
-	slots[4] = message[slotSize*4 : slotSize*5]
+	slots[4] = message[slotSize*4 : slotSize*5+1]
 
 	return slots, err
 }
