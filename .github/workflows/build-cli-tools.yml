@@ -24,7 +24,9 @@ jobs:
           ref: ${{ env.REF }}
 
       - name: Setup Working Directory (Develop)
-        run: sh cli/deploy/gen_snapcraft.sh
+        run: |
+           cd cli
+           sh deploy/gen_snapcraft.sh
         env:
           BRANCH: ${{ env.TAG }}
           #
