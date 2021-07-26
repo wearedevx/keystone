@@ -45,6 +45,7 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 		json.NewEncoder(buf).Encode(&data)
 	}
 
+	fmt.Println(ApiURL + path)
 	Url, err := url.Parse(ApiURL + path)
 	if err != nil {
 		return err

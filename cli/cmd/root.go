@@ -95,6 +95,8 @@ func Initialize() {
 	isKeystoneFile := keystonefile.ExistsKeystoneFile(currentfolder)
 
 	current := ctx.CurrentEnvironment()
+	ctx.SetError(nil)
+
 	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
 
 	checkEnvironment := true
