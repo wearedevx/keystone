@@ -34,7 +34,8 @@ parts:
       go mod edit -dropreplace github.com/wearedevx/keystone/api
       make build
       chmod +x ks
-    build-packages: [make, git, libssl-dev]
+    build-packages: [make, git, libssl-dev, libsodium-dev]
+    stage-packages: [libsodium-dev]
     organize:
       /usr/local/lib: /lib/
       ../build/ks: /bin/ks
