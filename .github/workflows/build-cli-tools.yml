@@ -45,6 +45,8 @@ jobs:
 
       - name: Snapcraft Build
         uses: snapcore/action-build@v1.0.8
+        with:
+           path: cli/
         id: snapcraft
 
       - name: Snapcraft Package
