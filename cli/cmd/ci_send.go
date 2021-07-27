@@ -15,7 +15,7 @@ import (
 
 // ciSendCmd represents the pushCi command
 var ciSendCmd = &cobra.Command{
-	Use:   "ci send",
+	Use:   "send",
 	Short: "Sends environment to a CI service",
 	Long: `Sends environment to a CI service.
 

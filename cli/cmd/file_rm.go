@@ -32,7 +32,7 @@ var purgeFile bool
 
 // filesRmCmd represents the rm command
 var filesRmCmd = &cobra.Command{
-	Use:   "file rm",
+	Use:   "rm",
 	Short: "Removes a file from secrets",
 	Long: `Removes a file from secrets.
 

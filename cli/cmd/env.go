@@ -33,10 +33,9 @@ var envCmd = &cobra.Command{
 
 Displays a list of available environments:
   $ ks env
-    
-   * default
+   * dev
      staging
-	 prod
+     prod
 
 With an argument name, activates the environment:
   $ ks env staging

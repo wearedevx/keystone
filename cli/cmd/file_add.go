@@ -35,7 +35,7 @@ import (
 
 // filesAddCmd represents the push command
 var filesAddCmd = &cobra.Command{
-	Use:   "file add",
+	Use:   "add",
 	Short: "Adds a file to secrets",
 	Long: `Adds a file to secrets
 
