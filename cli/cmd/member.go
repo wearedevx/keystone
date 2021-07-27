@@ -35,8 +35,8 @@ import (
 var memberCmd = &cobra.Command{
 	Use:   "member",
 	Args:  cobra.NoArgs,
-	Short: "Manage members",
-	Long: `Manage members.
+	Short: "Manages members",
+	Long: `Manages members.
 
 Used without arguments, displays a list of all members,
 grouped by their role, with indication of their ownership.`,

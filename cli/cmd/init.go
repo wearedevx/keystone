@@ -38,12 +38,6 @@ var projectName string
 var initCmd = &cobra.Command{
 	Use:   "init [project name]",
 	Short: "Creates Keystone config files and directories",
-	Args: func(_ *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("a project name cannot be empty")
-		}
-		return nil
-	},
 	Long: `Creates Keystone config files and directories.
 
 Created files and directories:
@@ -51,6 +45,12 @@ Created files and directories:
  - .keystone:    cache and various files for internal use. 
                  automatically added to .gitignore
 `,
+	Args: func(_ *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("a project name cannot be empty")
+		}
+		return nil
+	},
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
 		projectName = strings.Join(args, " ")

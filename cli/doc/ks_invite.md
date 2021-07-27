@@ -1,30 +1,19 @@
-## ks env
+## ks invite
 
-Manages environments
+Sends an invitation to join Keystone
 
 ### Synopsis
 
-Manages environments.
-
-Displays a list of available environments:
-  $ ks env
-    
-   * default
-     staging
-	 prod
-
-With an argument name, activates the environment:
-  $ ks env staging
-
+Sends an invitation to join Keystone.
 
 ```
-ks env [flags]
+ks invite [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for env
+  -h, --help   help for invite
 ```
 
 ### Options inherited from parent commands

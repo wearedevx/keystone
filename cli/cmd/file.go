@@ -24,8 +24,8 @@ import (
 // filesCmd represents the files command
 var filesCmd = &cobra.Command{
 	Use:   "file",
-	Short: "Manage secret files",
-	Long: `Manage secret files.
+	Short: "Manages secret files",
+	Long: `Manages secret files.
 
 List tracked secret files:
   $ ks file

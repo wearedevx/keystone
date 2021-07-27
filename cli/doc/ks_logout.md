@@ -1,30 +1,19 @@
-## ks env
+## ks logout
 
-Manages environments
+Logs you out of Keystone
 
 ### Synopsis
 
-Manages environments.
-
-Displays a list of available environments:
-  $ ks env
-    
-   * default
-     staging
-	 prod
-
-With an argument name, activates the environment:
-  $ ks env staging
-
+Logs you out of Keystone.
 
 ```
-ks env [flags]
+ks logout [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for env
+  -h, --help   help for logout
 ```
 
 ### Options inherited from parent commands

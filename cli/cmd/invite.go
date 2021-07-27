@@ -24,15 +24,10 @@ import (
 // inviteCmd represents the invite command
 var inviteCmd = &cobra.Command{
 	Use:   "invite",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Sends an invitation to join Keystone",
+	Long:  `Sends an invitation to join Keystone.`,
 	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Println("invite called")
+		fmt.Println("Coming soon")
 	},
 }
 

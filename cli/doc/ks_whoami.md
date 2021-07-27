@@ -1,30 +1,22 @@
-## ks env
+## ks whoami
 
-Manages environments
+Shows the current user unique identifier
 
 ### Synopsis
 
-Manages environments.
+Shows the current user unique identifier.
 
-Displays a list of available environments:
-  $ ks env
-    
-   * default
-     staging
-	 prod
-
-With an argument name, activates the environment:
-  $ ks env staging
-
+This unique user identifier is intended te be used by projects owners,
+to add members to projects.
 
 ```
-ks env [flags]
+ks whoami [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for env
+  -h, --help   help for whoami
 ```
 
 ### Options inherited from parent commands

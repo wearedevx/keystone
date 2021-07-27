@@ -1,30 +1,22 @@
-## ks env
+## ks fetch
 
-Manages environments
+Get remote modifications.
 
 ### Synopsis
 
-Manages environments.
-
-Displays a list of available environments:
-  $ ks env
-    
-   * default
-     staging
-	 prod
-
-With an argument name, activates the environment:
-  $ ks env staging
+Get remote modifications.
+Get info from your team:
+  $ ks fetch
 
 
 ```
-ks env [flags]
+ks fetch [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for env
+  -h, --help   help for fetch
 ```
 
 ### Options inherited from parent commands

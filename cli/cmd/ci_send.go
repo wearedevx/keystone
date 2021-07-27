@@ -15,16 +15,14 @@ import (
 
 // ciSendCmd represents the pushCi command
 var ciSendCmd = &cobra.Command{
-	Use:   "send",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "ci send",
+	Short: "Sends environment to a CI service",
+	Long: `Sends environment to a CI service.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+The CI service must have been setup using:
+  $ ks ci setup
+`,
 	Run: func(_ *cobra.Command, _ []string) {
-
 		var environment models.Environment
 		ctx.MustHaveEnvironment(currentEnvironment)
 

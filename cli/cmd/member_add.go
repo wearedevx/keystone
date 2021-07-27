@@ -67,8 +67,8 @@ var memberAddCmd = &cobra.Command{
 
 		return nil
 	},
-	Short: "Add members to the current project",
-	Long: `Add members to the current project.
+	Short: "Adds members to the current project",
+	Long: `Adds members to the current project.
 
 Passed arguments are list member ids, which users can 
 obtain using ks whoami.

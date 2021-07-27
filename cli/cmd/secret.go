@@ -28,8 +28,8 @@ import (
 // secretsCmd represents the secrets command
 var secretsCmd = &cobra.Command{
 	Use:   "secret",
-	Short: "Manage secrets",
-	Long: `Manage secrets.
+	Short: "Manages secrets",
+	Long: `Manages secrets.
 
 Used without arguments, displays a table of secrets.`,
 	Run: func(_ *cobra.Command, _ []string) {

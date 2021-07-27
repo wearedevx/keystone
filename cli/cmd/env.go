@@ -28,8 +28,8 @@ import (
 // envCmd represents the env command
 var envCmd = &cobra.Command{
 	Use:   "env",
-	Short: "Manage environments",
-	Long: `Manage environments.
+	Short: "Manages environments",
+	Long: `Manages environments.
 
 Displays a list of available environments:
   $ ks env

@@ -9,9 +9,11 @@ import (
 
 // setupCmd represents the setup command
 var setupCmd = &cobra.Command{
-	Use:   "setup",
-	Short: "Setup CI service settings to push secrets.",
-	Long: `Use this command to modify CI service specific settings
+	Use:   "ci setup",
+	Short: "Sets up CI service settings to push secrets and files",
+	Long: `Sets up CI service settings to push secrets and files.
+
+Use this command to modify CI service specific settings
 like API key and project name.`,
 
 	Run: func(cmd *cobra.Command, args []string) {

@@ -46,10 +46,14 @@ var ctx *core.Context
 var RootCmd = &cobra.Command{
 	Use:   "ks",
 	Short: "A safe system for developers to store, share and use secrets.",
-	Long:  ``,
+	Long: `A safe system for developers to store, share and use secrets,
+	:
+`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Usage()
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -78,6 +82,10 @@ func isIn(haystack []string, needle string) bool {
 }
 
 func Initialize() {
+	if len(os.Args) == 0 {
+		return
+	}
+
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
@@ -88,6 +96,10 @@ func Initialize() {
 		} else {
 			ctx = core.New(core.CTX_RESOLVE)
 		}
+	}
+
+	if ctx == nil {
+		return
 	}
 
 	currentfolder, _ := os.Getwd()

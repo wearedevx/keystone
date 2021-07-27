@@ -16,23 +16,21 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
 // ciCmd represents the ci command
 var ciCmd = &cobra.Command{
 	Use:   "ci",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Manages CI services",
+	Long: `Manages CI services.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	ks ci setup: to get started with CI services;
+	ks ci send:  to send environment to a setup CI service;
+	ks ci clean: to remove all secrets and files from a CI service.
+`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("ci called")
+		cmd.Usage()
 	},
 }
 
