@@ -41,7 +41,7 @@ jobs:
 
       - name: Install Snapcraft dependencies
         run: |
-          sudo apt install libvshadow-utils
+          sudo apt install libvshadow-utils pkg-config
 
       - name: Snapcraft Build
         uses: snapcore/action-build@v1.0.8
