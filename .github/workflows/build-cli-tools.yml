@@ -37,6 +37,7 @@ jobs:
       - name: Setup Working Directory (Develop)
         run: |
           cd cli
+          mkdir snap
 
           sh deploy/gen_snapcraft.sh
         env:
