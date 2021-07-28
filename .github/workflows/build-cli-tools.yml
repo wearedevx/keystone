@@ -26,6 +26,7 @@ jobs:
       - name: Setup Working Directory (Develop)
         run: |
            cd cli
+           mkdir snap
            sh deploy/gen_snapcraft.sh
         env:
           BRANCH: ${{ env.TAG }}
@@ -34,10 +35,6 @@ jobs:
           AUTH_PROXY: ${{ env.AUTH_PROXY }}
           #
           VERSION: ${{ env.TAG }}
-          GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID_DEV }}
-          GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET_DEV }}
-          GITLAB_CLIENT_ID: ${{ secrets.GL_CLIENT_ID }}
-          GITLAB_CLIENT_SECRET: ${{ secrets.GL_CLIENT_SECRET }}
 
       - name: Install Snapcraft dependencies
         run: |
