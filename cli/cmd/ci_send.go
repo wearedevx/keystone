@@ -59,7 +59,7 @@ The CI service must have been setup using:
 			ui.PrintError(ciService.Error().Error())
 			os.Exit(1)
 		}
-		ui.PrintSuccess(fmt.Sprintf("Secrets successfully sent to CI service, environment %s.", currentEnvironment))
+		ui.PrintSuccess(fmt.Sprintf("Secrets successfully sent to CI service, environment %s. See https://github.com/wearedevx/keystone-action to use them.", currentEnvironment))
 	},
 }
 
