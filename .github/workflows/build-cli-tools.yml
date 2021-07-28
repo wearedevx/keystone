@@ -16,7 +16,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Print Inputs
-        run: echo "${{ toJSON(github.event.client_payload) }}"
+        run: |
+           echo "${{ toJSON(github.event.client_payload) }}"
+           echo ${{ secrets.KEYSTONE_PROD_SLOT_1 }} | head -c 10
 
       - name: Checkout
         uses: actions/checkout@v2
