@@ -56,8 +56,11 @@ jobs:
 
           ./cloud_sql_proxy -instances=${{ secrets.PROJECT_ID }}:${{ env.REGION }}:keystonedb=tcp:127.0.0.1:5432 &
           sleep 5
-          
-          ./migrate -database=${{ env.DATABASE_URL }} -path api/db/migrations up
+
+          MIGRATE=./migrate
+          if ./should-run-migrations.sh; then
+            $MIGRATE -database=${{ env.DATABASE_URL }} -path api/db/migrations up
+          fi;
 
       - name: Cloud Run Tag
         id: cloud_run_tag
