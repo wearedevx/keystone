@@ -14,3 +14,8 @@ env:
 files: []
 options:
   strict: false
+ci_services:
+- name: github-ci
+  keys:
+    Owner: wearedevx
+    Project: keystone

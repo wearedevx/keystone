@@ -20,7 +20,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -36,12 +36,12 @@ If they are, 'ks source' will exit with a non-zero exit code.
 `,
 	Args: cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *errors.Error
+		var err *kserrors.Error
 
 		secretName := args[0]
 
 		if !ctx.HasSecret(secretName) {
-			errors.SecretDoesNotExist(secretName, nil).Print()
+			kserrors.SecretDoesNotExist(secretName, nil).Print()
 			return
 		}
 

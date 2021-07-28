@@ -6,6 +6,14 @@ var helpTexts map[string]string = map[string]string{
 This happened because: {{ .Cause }}
 
 `,
+	"InvalidConnectionToken": `
+{{ ERROR }} {{ .Name | red }}
+Your current connection token has probably expired.
+
+Try to login again:
+  $ ks login
+
+`,
 	"NotAKeystoneProject": `
 {{ ERROR }} {{ .Name | red }}
 It seems you are not in a keystone project.
@@ -266,6 +274,12 @@ func InitFailed(cause error) *Error {
 	meta := map[string]string{}
 
 	return NewError("Init Failed", helpTexts["InitFailed"], meta, cause)
+}
+
+func InvalidConnectionToken(cause error) *Error {
+	meta := map[string]string{}
+
+	return NewError("Invalid Connection Token", helpTexts["InvalidConnectionToken"], meta, cause)
 }
 
 func NotAKeystoneProject(path string, cause error) *Error {

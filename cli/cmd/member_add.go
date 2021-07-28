@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -23,8 +24,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 	"gopkg.in/yaml.v2"
@@ -65,8 +67,8 @@ var memberAddCmd = &cobra.Command{
 
 		return nil
 	},
-	Short: "Add members to the current project",
-	Long: `Add members to the current project.
+	Short: "Adds members to the current project",
+	Long: `Adds members to the current project.
 
 Passed arguments are list member ids, which users can 
 obtain using ks whoami.
@@ -101,7 +103,12 @@ ks member add -r developer -u john.doe@gitlab -u danny54@gitlab
 		err := c.Project(projectID).AddMembers(memberRoles)
 
 		if err != nil {
-			errors.CannotAddMembers(err).Print()
+			if errors.Is(err, auth.ErrorUnauthorized) {
+				kserrors.InvalidConnectionToken(err)
+			} else {
+				kserrors.CannotAddMembers(err).Print()
+			}
+
 			os.Exit(1)
 		}
 
@@ -157,7 +164,7 @@ func getMemberRolesFromArgs(c client.KeystoneClient, roleName string, memberIDs 
 			roleNames = append(roleNames, role.Name)
 		}
 
-		errors.RoleDoesNotExist(roleName, strings.Join(roleNames, ", "), nil).Print()
+		kserrors.RoleDoesNotExist(roleName, strings.Join(roleNames, ", "), nil).Print()
 		os.Exit(1)
 	}
 
@@ -194,12 +201,12 @@ func mustMembersExist(c client.KeystoneClient, memberIDs []string) {
 	r, err := c.Users().CheckUsersExist(memberIDs)
 	if err != nil {
 		// The HTTP request must have failed
-		errors.UnkownError(err).Print()
+		kserrors.UnkownError(err).Print()
 		os.Exit(1)
 	}
 
 	if r.Error != "" {
-		errors.UsersDontExist(r.Error, nil).Print()
+		kserrors.UsersDontExist(r.Error, nil).Print()
 		os.Exit(1)
 	}
 }
@@ -234,7 +241,7 @@ func mapRoleNamesToRoles(memberRoleNames map[string]string, roles []models.Role)
 				roleNames = append(roleNames, role.Name)
 			}
 
-			errors.RoleDoesNotExist(roleName, strings.Join(roleNames, ", "), nil).Print()
+			kserrors.RoleDoesNotExist(roleName, strings.Join(roleNames, ", "), nil).Print()
 			os.Exit(1)
 		}
 

@@ -1,9 +1,12 @@
 package environments
 
 import (
+	"errors"
+
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 )
 
@@ -47,7 +50,11 @@ func (s *environmentService) GetAccessibleEnvironments() []models.Environment {
 
 	accessibleEnvironments, err := s.client.Project(projectID).GetAccessibleEnvironments()
 	if err != nil {
-		s.ctx.SetError(kserrors.UnkownError(err))
+		if errors.Is(err, auth.ErrorUnauthorized) {
+			s.ctx.SetError(kserrors.InvalidConnectionToken(err))
+		} else {
+			s.ctx.SetError(kserrors.UnkownError(err))
+		}
 	}
 
 	return accessibleEnvironments

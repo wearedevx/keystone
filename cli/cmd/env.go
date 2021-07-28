@@ -28,15 +28,14 @@ import (
 // envCmd represents the env command
 var envCmd = &cobra.Command{
 	Use:   "env",
-	Short: "Manage environments",
-	Long: `Manage environments.
+	Short: "Manages environments",
+	Long: `Manages environments.
 
 Displays a list of available environments:
   $ ks env
-    
-   * default
+   * dev
      staging
-	 prod
+     prod
 
 With an argument name, activates the environment:
   $ ks env staging

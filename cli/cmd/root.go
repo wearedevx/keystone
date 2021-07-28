@@ -46,10 +46,14 @@ var ctx *core.Context
 var RootCmd = &cobra.Command{
 	Use:   "ks",
 	Short: "A safe system for developers to store, share and use secrets.",
-	Long:  ``,
+	Long: `A safe system for developers to store, share and use secrets,
+	:
+`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Usage()
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -78,6 +82,10 @@ func isIn(haystack []string, needle string) bool {
 }
 
 func Initialize() {
+	if len(os.Args) == 0 {
+		return
+	}
+
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
@@ -90,11 +98,17 @@ func Initialize() {
 		}
 	}
 
+	if ctx == nil {
+		return
+	}
+
 	currentfolder, _ := os.Getwd()
 
 	isKeystoneFile := keystonefile.ExistsKeystoneFile(currentfolder)
 
 	current := ctx.CurrentEnvironment()
+	ctx.SetError(nil)
+
 	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
 
 	checkEnvironment := true
@@ -124,7 +138,7 @@ func Initialize() {
 
 		if err := es.Err(); err != nil {
 			err.Print()
-			return
+			os.Exit(1)
 		}
 
 		// If no accessible environment, then user has no access to the project
@@ -191,6 +205,9 @@ func WriteConfig() error {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	// Ensure the .config exists
+	os.MkdirAll(path.Join(home, ".config"), 0o755)
 
 	configPath := path.Join(home, ".config", "keystone.yml")
 	if err = viper.WriteConfigAs(configPath); err != nil {

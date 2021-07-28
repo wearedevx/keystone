@@ -19,7 +19,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -38,13 +38,13 @@ Exemple:
   $ ks rm PORT`,
 	Args: cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *errors.Error
+		var err *kserrors.Error
 		secretName := args[0]
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		if !ctx.HasSecret(secretName) && !purgeSecret {
-			errors.SecretDoesNotExist(secretName, nil).Print()
+			kserrors.SecretDoesNotExist(secretName, nil).Print()
 			return
 		}
 

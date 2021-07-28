@@ -111,7 +111,7 @@ jobs:
       - name: Push
         uses: EndBug/add-and-commit@v7
         with:
-          add: '.'
+          add: "."
           branch: main
           default_author: github_actions
           message: release ${{ env.TAG }}

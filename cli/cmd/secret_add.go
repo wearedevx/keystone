@@ -22,7 +22,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/environments"
-	"github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
@@ -54,7 +54,7 @@ Example:
 `,
 	Args: cobra.ExactArgs(2),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *errors.Error
+		var err *kserrors.Error
 		secretName, secretValue := args[0], args[1]
 
 		checkSecretErr := utils.CheckSecretContent(secretName)

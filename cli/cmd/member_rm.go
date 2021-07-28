@@ -16,14 +16,16 @@ limitations under the License.
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -68,12 +70,16 @@ This causes secrets to be re-crypted for the remainig members.`,
 		r, err := c.Users().CheckUsersExist(args)
 
 		if err != nil {
-			ui.PrintError(err.Error())
+			if errors.Is(err, auth.ErrorUnauthorized) {
+				kserrors.InvalidConnectionToken(err)
+			} else {
+				kserrors.UnkownError(err)
+			}
 			os.Exit(1)
 		}
 
 		if r.Error != "" {
-			errors.UsersDontExist(r.Error, nil).Print()
+			kserrors.UsersDontExist(r.Error, nil).Print()
 
 			os.Exit(1)
 		}
@@ -103,7 +109,7 @@ This causes secrets to be re-crypted for the remainig members.`,
 		err = c.Project(projectID).RemoveMembers(membersToRevoke)
 
 		if err != nil {
-			errors.CannotRemoveMembers(err).Print()
+			kserrors.CannotRemoveMembers(err).Print()
 			os.Exit(1)
 		}
 

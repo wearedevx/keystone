@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 )
 
 type methodType string
@@ -43,6 +45,7 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 		json.NewEncoder(buf).Encode(&data)
 	}
 
+	// fmt.Println(ApiURL + path)
 	Url, err := url.Parse(ApiURL + path)
 	if err != nil {
 		return err
@@ -87,6 +90,10 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 		if err != nil {
 			return fmt.Errorf("Error parsing data : %v", string(bodyBytes))
 		}
+	}
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		return auth.ErrorUnauthorized
 	}
 
 	if resp.StatusCode != expectedStatusCode && resp.StatusCode != http.StatusOK {

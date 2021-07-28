@@ -1,6 +1,7 @@
 package messages
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/crypto"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -58,6 +60,9 @@ func (s *messageService) GetMessages() core.ChangesByEnvironment {
 	}
 
 	s.fetchNewMessages(&messagesByEnvironment)
+	if s.err != nil {
+		return core.ChangesByEnvironment{}
+	}
 
 	changes := s.ctx.SaveMessages(messagesByEnvironment)
 	if s.ctx.Err() != nil {
@@ -82,8 +87,11 @@ func (s *messageService) DeleteMessages(messagesIds []uint) MessageService {
 	for _, id := range messagesIds {
 		_, err := s.client.Messages().DeleteMessage(id)
 		if err != nil {
-			// TODO: handle error
-			s.err = kserrors.UnkownError(err)
+			if errors.Is(err, auth.ErrorUnauthorized) {
+				s.err = kserrors.InvalidConnectionToken(err)
+			} else {
+				s.err = kserrors.UnkownError(err)
+			}
 			break
 		}
 	}
@@ -105,6 +113,8 @@ func getMessagesIds(messagesByEnvironment models.GetMessageByEnvironmentResponse
 
 // fetchNewMessages fetches Messages and dercrypts them
 func (s *messageService) fetchNewMessages(result *models.GetMessageByEnvironmentResponse) {
+	var err error
+
 	if s.err != nil {
 		return
 	}
@@ -112,7 +122,16 @@ func (s *messageService) fetchNewMessages(result *models.GetMessageByEnvironment
 	s.printer.Print("Syncing data...")
 
 	projectID := s.ctx.GetProjectID()
-	*result, _ = s.client.Messages().GetMessages(projectID)
+	*result, err = s.client.Messages().GetMessages(projectID)
+
+	if err != nil {
+		if errors.Is(err, auth.ErrorUnauthorized) {
+			s.err = kserrors.InvalidConnectionToken(err)
+		}
+
+		return
+	}
+
 	s.err = s.decryptMessages(result)
 }
 
@@ -135,9 +154,6 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 
 			d, e := crypto.DecryptMessage(privateKey, upk.PublicKey, msg.Payload)
 			if e != nil {
-				// TODO: create a "Decryption failed" error
-				fmt.Println("Could not decrypt the message: ", string(msg.Payload))
-
 				return kserrors.CouldNotDecryptMessages("Decryption failed", e)
 			}
 
@@ -233,14 +249,24 @@ func (s *messageService) SendEnvironments(environments []models.Environment) Mes
 
 	result, err := s.client.Messages().SendMessages(messagesToWrite)
 	if err != nil {
-		s.err = kserrors.UnkownError(err)
+		if errors.Is(err, auth.ErrorUnauthorized) {
+			s.err = kserrors.InvalidConnectionToken(err)
+			return s
+		} else {
+			s.err = kserrors.UnkownError(err)
+			return s
+		}
 	}
 
 	for _, environment := range result.Environments {
 		if err := s.ctx.UpdateEnvironment(environment).Err(); err != nil {
-			fmt.Println(err)
-			s.err = kserrors.UnkownError(err)
-			return s
+			if errors.Is(err, auth.ErrorUnauthorized) {
+				s.err = kserrors.InvalidConnectionToken(err)
+				return s
+			} else {
+				s.err = kserrors.UnkownError(err)
+				return s
+			}
 		}
 	}
 
@@ -262,12 +288,17 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 
 	for _, environment := range environments {
 		environmentId := environment.EnvironmentID
-		userPublicKeys, err := s.client.Users().GetEnvironmentPublicKeys(environmentId)
 
+		userPublicKeys, err := s.client.Users().GetEnvironmentPublicKeys(environmentId)
 		if err != nil {
-			s.err = kserrors.UnkownError(err)
+			if errors.Is(err, auth.ErrorUnauthorized) {
+				s.err = kserrors.InvalidConnectionToken(err)
+			} else {
+				s.err = kserrors.UnkownError(err)
+			}
 			return s
 		}
+
 		var recipientPublicKey models.UserPublicKey
 		var found bool = false
 
@@ -291,7 +322,6 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 
 		message, err := s.prepareMessage(senderPrivateKey, environment, recipientPublicKey, PayloadContent)
 		if err != nil {
-			// TODO: handle error
 			s.err = kserrors.UnkownError(err)
 			return s
 		}
@@ -302,13 +332,22 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 	result, err := s.client.Messages().SendMessages(messagesToWrite)
 
 	if err != nil {
-		s.err = kserrors.UnkownError(err)
+		if errors.Is(err, auth.ErrorUnauthorized) {
+			s.err = kserrors.InvalidConnectionToken(err)
+		} else {
+			s.err = kserrors.UnkownError(err)
+		}
+		return s
+
 	}
 
 	for _, environment := range result.Environments {
 		if err := s.ctx.UpdateEnvironment(environment).Err(); err != nil {
-			fmt.Println(err)
-			s.err = kserrors.UnkownError(err)
+			if errors.Is(err, auth.ErrorUnauthorized) {
+				s.err = kserrors.InvalidConnectionToken(err)
+			} else {
+				s.err = kserrors.UnkownError(err)
+			}
 			return s
 		}
 	}
@@ -320,6 +359,7 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 // and their private key.
 func (s *messageService) getCurrentUserInformation() (models.User, []byte) {
 	var currentUser models.User
+
 	currentUser, index := config.GetCurrentAccount()
 	if index < 0 {
 		s.err = kserrors.MustBeLoggedIn(nil)

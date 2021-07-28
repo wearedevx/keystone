@@ -8,6 +8,16 @@ errors:
       {{ ERROR }} {{ .Name | red }}
       This happened because: {{ .Cause }}
 
+  - type: InvalidConnectionToken
+    name: "Invalid Connection Token"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      Your current connection token has probably expired.
+      
+      Try to login again:
+        $ ks login
+
   - type: NotAKeystoneProject
     name: "Not A Keystone Project"
     params:

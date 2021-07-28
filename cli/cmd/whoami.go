@@ -21,7 +21,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
-	"github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 )
 
 // whoamiCmd represents the whoami command
@@ -36,7 +36,7 @@ to add members to projects.`,
 		currentAccount, index := config.GetCurrentAccount()
 
 		if index < 0 {
-			errors.MustBeLoggedIn(nil).Print()
+			kserrors.MustBeLoggedIn(nil).Print()
 			os.Exit(1)
 		}
 

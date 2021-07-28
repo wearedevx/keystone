@@ -5,7 +5,6 @@ summary: One app for managing your secrets # 79 char long summary
 description: |
   Manage secrets got your projects in one place.
 confinement: strict
-
 apps:
   ks:
     command: bin/ks
@@ -33,12 +32,11 @@ parts:
       make -C themis
       make install -C themis
       rm -rf themis/
-
-      make build -C cli
-      chmod +x cli/ks
-      ls
-
-    build-packages: [make, git, libssl-dev]
+      go mod edit -dropreplace github.com/wearedevx/keystone/api
+      make build
+      chmod +x ks
+    build-packages: [make, git, libssl-dev, libsodium-dev, pkg-config]
+    stage-packages: [libsodium-dev]
     organize:
       /usr/local/lib: /lib/
       ../build/cli/ks: /bin/ks

@@ -21,7 +21,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -42,7 +42,7 @@ Example:
 `,
 	Args: cobra.ExactArgs(2),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *errors.Error
+		var err *kserrors.Error
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
@@ -50,7 +50,7 @@ Example:
 		secretValue := args[1]
 
 		if !ctx.HasSecret(secretName) {
-			errors.SecretDoesNotExist(secretName, nil).Print()
+			kserrors.SecretDoesNotExist(secretName, nil).Print()
 			return
 		}
 
