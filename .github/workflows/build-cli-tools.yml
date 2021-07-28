@@ -18,8 +18,6 @@ jobs:
       - name: Print Inputs
         run: |
            echo "${{ toJSON(github.event.client_payload) }}"
-           echo ${{ secrets.KEYSTONE_PROD_SLOT_1 }} | head -c 1
-
       - name: Checkout
         uses: actions/checkout@v2
         with:
