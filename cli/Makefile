@@ -28,7 +28,7 @@ LDFLAGS := $(API_FLAG) \
 build:
 	go clean
 	go mod edit -replace=github.com/wearedevx/keystone/cmd=./cmd
-	go mod edit -replace=github.com/wearedevx/keystone/api=../api
+	# go mod edit -replace=github.com/wearedevx/keystone/api=../api
 	go build -ldflags "$(LDFLAGS)" -o ks
 
 install:
