@@ -28,6 +28,7 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 
 	router.GET("/environments/:envID/public-keys", AuthedHandler(GetEnvironmentPublicKeys))
 	router.POST("/messages", AuthedHandler(WriteMessages))
+	router.DELETE("/messaegs/expired", DeleteExpiredMessages)
 
 	router.GET("/roles", AuthedHandler(GetRoles))
 

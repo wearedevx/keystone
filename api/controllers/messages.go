@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 
@@ -182,4 +183,21 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 	}
 
 	return response, status, nil
+}
+
+// Delete every message older than a week
+func DeleteExpiredMessages(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	// TODO: check caller with some sort of token
+
+	err := repo.Transaction(func(Repo repo.IRepo) error {
+		Repo.DeleteExpiredMessages()
+
+		return Repo.Err()
+	})
+
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+
+	http.Error(w, "OK", http.StatusOK)
 }
