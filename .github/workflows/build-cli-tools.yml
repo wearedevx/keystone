@@ -87,7 +87,7 @@ jobs:
           release: edge
 
       - name: Snapcraft Publish Stable
-        if: ${{ steps.release_type.outputs.release_type == "stable" }}
+        if: ${{ steps.release_type.outputs.release_type == 'stable' }}
         uses: snapcore/action-publish@v1
         with:
           store_login: ${{ secrets.STORE_LOGIN }}
