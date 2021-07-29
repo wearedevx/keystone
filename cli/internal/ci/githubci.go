@@ -241,8 +241,9 @@ func (g *gitHubCiService) askForKeys() {
 func (g *gitHubCiService) askForApiKey() {
 	serviceName := g.Name()
 
+	fmt.Println("Personal access token can be generated here: https://github.com/settings/tokens/new\nIt should have access to \"repo\" scope.")
 	p := promptui.Prompt{
-		Label:   serviceName + "'s Api key",
+		Label:   serviceName + "'s Access token",
 		Default: string(g.getApiKey()),
 	}
 
