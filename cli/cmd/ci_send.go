@@ -66,7 +66,7 @@ The CI service must have been setup using:
 func init() {
 	ciCmd.AddCommand(ciSendCmd)
 
-	ciSendCmd.Flags().StringVar(&serviceName, "with", "", "identity provider. Either github or gitlab")
+	ciSendCmd.Flags().StringVar(&serviceName, "with", "", "Ci service name.")
 }
 
 func SelectCiService(ctx core.Context) (ci.CiService, error) {
