@@ -15,6 +15,7 @@ import (
 
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
+	"github.com/wearedevx/keystone/api/internal/utils"
 )
 
 type GenericResponse struct {
@@ -185,10 +186,42 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 	return response, status, nil
 }
 
+func getTTLToken(r *http.Request) (string, bool) {
+	headers := r.Header["X-Ks-Ttl"]
+
+	if len(headers) > 0 {
+		if t := headers[0]; t != "" {
+			return t, true
+		}
+
+		return "", false
+	}
+
+	return "", false
+}
+
 // Delete every message older than a week
 func DeleteExpiredMessages(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	// TODO: check caller with some sort of token
+	// Check caller with some sort of token
+	token, ok := getTTLToken(r)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
+	actual := utils.GetEnv("X_KS_TTL", "")
+	if actual == "" {
+		fmt.Println("Missing TTL authorization key")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	if token == "" || token != actual {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Actual work
 	err := repo.Transaction(func(Repo repo.IRepo) error {
 		Repo.DeleteExpiredMessages()
 
