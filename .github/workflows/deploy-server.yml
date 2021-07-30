@@ -85,7 +85,7 @@ jobs:
         id: setup-traffic
         if: ${{ env.TAG != 'develop' }}
         run: |-
-          gcloud run services update-traffic ${{ secrets.SERVICE }} --to-tags=${{ env.TAG }}=100 --region=${{ env.REGION }}
+          gcloud run services update-traffic ${{ secrets.SERVICE }} --to-tags=${{ steps.cloud_run_tag.outputs.tag }}=100 --region=${{ env.REGION }}
 
       - name: Dispatch Builds
         uses: peter-evans/repository-dispatch@v1.0.0
