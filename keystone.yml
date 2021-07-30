@@ -11,6 +11,8 @@ env:
   strict: true
 - key: GITLAB_CLIENT_SECRET
   strict: true
+- key: SNAP_STORE_LOGIN
+  strict: true
 files: []
 options:
   strict: false
