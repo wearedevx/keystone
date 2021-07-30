@@ -15,6 +15,7 @@ type CiService interface {
 	CleanSecret(environment string) CiService
 	CheckSetup()
 	Error() error
+	PrintSuccess(string)
 	// // Finish(pkey []byte) (models.User, string, error)
 	// GetKeys() ServicesKeys
 	// SetKeys(ServicesKeys) error
