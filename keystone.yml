@@ -13,6 +13,8 @@ env:
   strict: true
 - key: DEPLOY_GITHUB_TOKEN
   strict: true
+- key: SNAP_STORE_LOGIN
+  strict: true
 files: []
 options:
   strict: false
