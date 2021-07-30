@@ -48,6 +48,8 @@ jobs:
 
       - name: Run Migrations
         shell: bash
+        env:
+          MIGRATE: ./migrate
         run: |-
           wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy
           chmod +x cloud_sql_proxy
@@ -58,7 +60,6 @@ jobs:
           ./cloud_sql_proxy -instances=${{ secrets.PROJECT_ID }}:${{ env.REGION }}:keystonedb=tcp:127.0.0.1:5432 &
           sleep 5
 
-          MIGRATE=./migrate
           if ./should-run-migrations.sh; then
             $MIGRATE -database=${{ env.DATABASE_URL }} -path api/db/migrations up
           fi;
