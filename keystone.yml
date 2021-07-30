@@ -11,6 +11,8 @@ env:
   strict: true
 - key: GITLAB_CLIENT_SECRET
   strict: true
+- key: DEPLOY_GITHUB_TOKEN
+  strict: true
 files: []
 options:
   strict: false
