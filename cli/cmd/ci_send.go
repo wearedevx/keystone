@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/manifoldco/promptui"
@@ -18,6 +17,7 @@ var ciSendCmd = &cobra.Command{
 	Use:   "send",
 	Short: "Sends environment to a CI service",
 	Long: `Sends environment to a CI service.
+This command will send all your secrets and files followed by keystone to your CI service.
 
 The CI service must have been setup using:
   $ ks ci setup
@@ -59,7 +59,7 @@ The CI service must have been setup using:
 			ui.PrintError(ciService.Error().Error())
 			os.Exit(1)
 		}
-		ui.PrintSuccess(fmt.Sprintf("Secrets successfully sent to CI service, environment %s. See https://github.com/wearedevx/keystone-action to use them.", currentEnvironment))
+		ciService.PrintSuccess(currentEnvironment)
 	},
 }
 
