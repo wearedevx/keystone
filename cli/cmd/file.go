@@ -64,10 +64,15 @@ To add files to secret files:
 			return
 		}
 
+		filePaths := make([]string, len(files))
+		for idx, file := range files {
+			filePaths[idx] = file.Path
+		}
+
 		ui.Print(ui.RenderTemplate("files list", `Files tracked as secret files:
 
 {{ range . }} {{- . | indent 8 }} {{ end }}
-`, files))
+`, filePaths))
 	},
 }
 
