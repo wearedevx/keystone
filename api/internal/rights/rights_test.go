@@ -102,6 +102,10 @@ func (f *FakeRepo) DeleteMessage(_ uint, _ uint) IRepo {
 	panic("not implemented")
 }
 
+func (f *FakeRepo) DeleteExpiredMessages(_ uint, _ uint) IRepo {
+	panic("not implemented")
+}
+
 func (f *FakeRepo) FindUsers(_ []string, _ *map[string]User, _ *[]string) IRepo {
 	panic("not implemented")
 }

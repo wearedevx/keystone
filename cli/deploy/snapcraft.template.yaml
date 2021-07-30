@@ -39,5 +39,5 @@ parts:
     stage-packages: [libsodium-dev]
     organize:
       /usr/local/lib: /lib/
-      ../build/cli/ks: /bin/ks
+      ../build/ks: /bin/ks
     source: .

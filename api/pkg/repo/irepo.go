@@ -15,6 +15,7 @@ type IRepo interface {
 	CreateRoleEnvironmentType(*models.RolesEnvironmentType) IRepo
 	DeleteLoginRequest(string) bool
 	DeleteMessage(messageID uint, userID uint) IRepo
+	DeleteExpiredMessages() IRepo
 	Err() error
 	FindUsers(userIDs []string, users *map[string]models.User, notFounds *[]string) IRepo
 	GetChildrenRoles(role models.Role, roles *[]models.Role) IRepo
