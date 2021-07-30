@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
@@ -66,6 +67,29 @@ func (repo *Repo) DeleteMessage(messageID uint, userID uint) IRepo {
 		Where("recipient_id = ?", userID).
 		Where("id = ?", messageID).
 		Delete(messageID).Error
+
+	return repo
+}
+
+// Deletes all messages older than a week
+func (repo *Repo) DeleteExpiredMessages() IRepo {
+	if repo.err != nil {
+		return repo
+	}
+
+	// FIXME: Should this time not be defined in code,
+	// but in a configuration, or in call parameters ?
+	aWeekAgo := time.Now().
+		Add(-1 * 7 * 24 * time.Hour).
+		Truncate(time.Minute)
+
+	repo.err = repo.GetDb().
+		Delete(
+			&models.Message{},
+			"created_at < ?",
+			aWeekAgo,
+		).
+		Error
 
 	return repo
 }
