@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -157,6 +158,11 @@ Enter a values for {{ . }}:`, secretName))
 					"",
 					defaultContent.String(),
 				)
+				stringResult := string(result)
+
+				// remove blank line and comment from secret
+				stringResult = regexp.MustCompile(`#.*$`).ReplaceAllString(strings.TrimSpace(stringResult), "")
+				stringResult = regexp.MustCompile(`[\t\r\n]+`).ReplaceAllString(strings.TrimSpace(stringResult), "\n")
 
 				if err != nil {
 					if err.Error() != "^C" {
