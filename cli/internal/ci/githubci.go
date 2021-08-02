@@ -290,6 +290,11 @@ func (g *gitHubCiService) Error() error {
 
 func (g *gitHubCiService) sliceMessageInParts(message string) ([]string, error) {
 	slots := make([]string, 5)
+
+	// Add spaces to message to make it divisible by 5 (number of slots)
+	for len(message)%5 != 0 {
+		message += " "
+	}
 	slotSize := (len(message) / 5)
 
 	var err error
@@ -303,7 +308,7 @@ func (g *gitHubCiService) sliceMessageInParts(message string) ([]string, error) 
 	slots[1] = message[slotSize : slotSize*2]
 	slots[2] = message[slotSize*2 : slotSize*3]
 	slots[3] = message[slotSize*3 : slotSize*4]
-	slots[4] = message[slotSize*4 : slotSize*5+1]
+	slots[4] = message[slotSize*4 : slotSize*5]
 
 	return slots, err
 }
