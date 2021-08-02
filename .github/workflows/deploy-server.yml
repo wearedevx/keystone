@@ -13,7 +13,6 @@ env:
   REF: ${{ github.event.client_payload.ref }}
   TAG: ${{ github.event.client_payload.tag }}
 
-      
 jobs:
   #####################
   # Server deployment #
@@ -26,7 +25,7 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2
-        with: 
+        with:
           ref: ${{ env.REF }}
 
       - name: Setup Cloud SDK
@@ -36,7 +35,7 @@ jobs:
           region: ${{ env.REGION }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           # Set to true to authenticate the Cloud Run action
-          export_default_credentials: true 
+          export_default_credentials: true
 
       - name: Authorize Docker push
         run: gcloud auth configure-docker
@@ -47,6 +46,9 @@ jobs:
           docker push ${{ env.GCR_IMAGE }}
 
       - name: Run Migrations
+        shell: bash
+        env:
+          MIGRATE: ./migrate
         run: |-
           wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy
           chmod +x cloud_sql_proxy
@@ -56,8 +58,10 @@ jobs:
 
           ./cloud_sql_proxy -instances=${{ secrets.PROJECT_ID }}:${{ env.REGION }}:keystonedb=tcp:127.0.0.1:5432 &
           sleep 5
-          
-          ./migrate -database=${{ env.DATABASE_URL }} -path api/db/migrations up
+
+          if ./should-run-migrations.sh; then
+            $MIGRATE -database=${{ env.DATABASE_URL }} -path api/db/migrations up
+          fi;
 
       - name: Cloud Run Tag
         id: cloud_run_tag
@@ -65,7 +69,7 @@ jobs:
           TAG=$(sed -e "s/\([[:digit:]]\+\)\.\([[:digit:]]\+\)\.\([[:digit:]]\+\)/v\1-\2-\3/" <(echo ${{ env.TAG }}))
           echo "Deploying Keystone Server with tag ${TAG}"
           echo "::set-output name=tag::${TAG}"
-          
+
       - name: Deploy to Cloud Run
         id: deploy
         uses: google-github-actions/deploy-cloudrun@v0.6.0
@@ -75,8 +79,14 @@ jobs:
           region: ${{ env.REGION }}
           no_traffic: ${{ env.TAG == 'develop' }}
           tag: ${{ steps.cloud_run_tag.outputs.tag }}
-          env_vars: JWT_SALT=${{ secrets.JWT_SALT }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME}},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ secrets.CLOUDSQL_CREDENTIALS }}
+          env_vars: JWT_SALT=${{ secrets.JWT_SALT }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME}},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ secrets.CLOUDSQL_CREDENTIALS }},X_KS_TTL=${{ secrets.X_KS_TTL }}
           flags: --allow-unauthenticated --add-cloudsql-instances ${{ secrets.CLOUDSQL_INSTANCE }} --service-account=${{ secrets.KS_SERVER_SERVICE_ACCOUNT }}
+
+      - name: Setup Traffic
+        id: setup-traffic
+        if: ${{ env.TAG != 'develop' }}
+        run: |-
+          gcloud run services update-traffic ${{ secrets.SERVICE }} --to-tags=${{ steps.cloud_run_tag.outputs.tag }}=100 --region=${{ env.REGION }}
 
       - name: Dispatch Builds
         uses: peter-evans/repository-dispatch@v1.0.0
@@ -84,4 +94,3 @@ jobs:
           token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
           event-type: build-cli
           client-payload: '{"url": "${{ steps.deploy.outputs.url }}", "ref": "${{ env.REF }}", "tag": "${{ env.TAG }}"}'
-

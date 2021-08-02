@@ -1,0 +1,41 @@
+name: keystone-cli # you probably want to 'snapcraft register <name>'
+base: core20
+version: <%BRANCH%>
+summary: One app for managing your secrets # 79 char long summary
+description: |
+  Manage secrets got your projects in one place.
+confinement: strict
+
+apps:
+  ks:
+    command: bin/ks
+    environment:
+      HOME: "$SNAP_USER_COMMON"
+    plugs:
+      - network-bind
+      - network
+      - home
+
+parts:
+  ks:
+    plugin: go
+    build-environment:
+      KSAPI_URL: <%KSAPI_URL%>
+      GITHUB_CLIENT_ID: <%GITHUB_CLIENT_ID%>
+      GITHUB_CLIENT_SECRET: <%GITHUB_CLIENT_SECRET%>
+      GITLAB_CLIENT_ID: <%GITLAB_CLIENT_ID%>
+      GITLAB_CLIENT_SECRET: <%GITLAB_CLIENT_SECRET%>
+    override-build: |
+      rm -rf themis/
+      git clone https://github.com/cossacklabs/themis.git
+      make -C themis
+      make install -C themis
+      rm -rf themis/
+      go mod edit -dropreplace github.com/wearedevx/keystone/api
+      make build
+      chmod +x ks
+    build-packages: [make, git, libssl-dev]
+    organize:
+      /usr/local/lib: /lib/
+      ../build/ks: /bin/ks
+    source: .

@@ -92,11 +92,22 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment 
 	var payload string
 
 	message.Serialize(&payload)
-	publicKey, _, err := g.client.Actions.GetRepoPublicKey(
+	publicKey, resp, err := g.client.Actions.GetRepoPublicKey(
 		context.Background(),
 		g.servicesKeys["Owner"],
 		g.servicesKeys["Project"],
 	)
+
+	if resp.StatusCode == 403 {
+		g.err = errors.New("You don't have rights to send secrets to the repo. Please ensure your personal access token has access to \"repo\" scope.")
+		return g
+	}
+
+	if resp.StatusCode == 404 {
+		g.err = errors.New("You are trying to send secret to a repository that doesn't exist. Please make sure repo's name and owner is correct.")
+		return g
+	}
+
 	if err != nil {
 		g.err = err
 		return g
@@ -131,15 +142,21 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment 
 			EncryptedValue: base64data,
 		}
 
-		_, err = g.client.Actions.CreateOrUpdateRepoSecret(
+		resp, err := g.client.Actions.CreateOrUpdateRepoSecret(
 			context.Background(),
 			g.servicesKeys["Owner"],
 			g.servicesKeys["Project"],
 			encryptedSecret,
 		)
 
+		if resp.StatusCode == 401 {
+			g.err = errors.New("You don't have rights to send secrets to the repo. Please ensure your personal access token has access to \"repo\" scope.")
+			continue
+		}
+
 		if err != nil {
 			g.err = err
+			continue
 		}
 	}
 
@@ -241,8 +258,9 @@ func (g *gitHubCiService) askForKeys() {
 func (g *gitHubCiService) askForApiKey() {
 	serviceName := g.Name()
 
+	fmt.Println("Personal access token can be generated here: https://github.com/settings/tokens/new\nIt should have access to \"repo\" scope.")
 	p := promptui.Prompt{
-		Label:   serviceName + "'s Api key",
+		Label:   serviceName + "'s Access token",
 		Default: string(g.getApiKey()),
 	}
 
@@ -272,6 +290,11 @@ func (g *gitHubCiService) Error() error {
 
 func (g *gitHubCiService) sliceMessageInParts(message string) ([]string, error) {
 	slots := make([]string, 5)
+
+	// Add spaces to message to make it divisible by 5 (number of slots)
+	for len(message)%5 != 0 {
+		message += " "
+	}
 	slotSize := (len(message) / 5)
 
 	var err error
@@ -285,7 +308,11 @@ func (g *gitHubCiService) sliceMessageInParts(message string) ([]string, error) 
 	slots[1] = message[slotSize : slotSize*2]
 	slots[2] = message[slotSize*2 : slotSize*3]
 	slots[3] = message[slotSize*3 : slotSize*4]
-	slots[4] = message[slotSize*4 : slotSize*5+1]
+	slots[4] = message[slotSize*4 : slotSize*5]
 
 	return slots, err
+}
+
+func (g *gitHubCiService) PrintSuccess(environment string) {
+	ui.PrintSuccess(fmt.Sprintf("Secrets successfully sent to CI service, environment %s. See https://github.com/wearedevx/keystone-action to use them.", environment))
 }
