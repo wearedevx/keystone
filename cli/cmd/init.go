@@ -23,6 +23,7 @@ import (
 
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/internal/spinner"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
@@ -73,7 +74,10 @@ Created files and directories:
 				os.Exit(1)
 			}
 
+			sp := spinner.Spinner("Creating project...")
+			sp.Start()
 			project, initErr := c.Project("").Init(projectName)
+			sp.Stop()
 
 			if initErr != nil {
 				if errors.Is(initErr, auth.ErrorUnauthorized) {

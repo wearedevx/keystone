@@ -24,6 +24,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -67,7 +68,10 @@ This causes secrets to be re-crypted for the remainig members.`,
 		}
 		projectID := ctx.GetProjectID()
 
+		sp := spinner.Spinner(" Checking users exist...")
+		sp.Start()
 		r, err := c.Users().CheckUsersExist(args)
+		sp.Stop()
 
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
@@ -106,7 +110,10 @@ This causes secrets to be re-crypted for the remainig members.`,
 			os.Exit(0)
 		}
 
+		sp = spinner.Spinner(" Removing members...")
+		sp.Start()
 		err = c.Project(projectID).RemoveMembers(membersToRevoke)
+		sp.Stop()
 
 		if err != nil {
 			kserrors.CannotRemoveMembers(err).Print()

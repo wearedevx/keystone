@@ -48,6 +48,7 @@ Get info from your team:
 		}
 
 		var printer = &ui.UiPrinter{}
+
 		ms := messages.NewMessageService(ctx, printer)
 		ms.GetMessages()
 

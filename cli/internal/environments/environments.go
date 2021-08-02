@@ -5,6 +5,7 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/pkg/core"
@@ -48,7 +49,12 @@ func (s *environmentService) GetAccessibleEnvironments() []models.Environment {
 	}
 	projectID := s.ctx.GetProjectID()
 
+	sp := spinner.Spinner(" ")
+	sp.Start()
+
 	accessibleEnvironments, err := s.client.Project(projectID).GetAccessibleEnvironments()
+	sp.Stop()
+
 	if err != nil {
 		if errors.Is(err, auth.ErrorUnauthorized) {
 			s.ctx.SetError(kserrors.InvalidConnectionToken(err))

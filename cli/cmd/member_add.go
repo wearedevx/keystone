@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -100,7 +101,11 @@ ks member add -r developer -u john.doe@gitlab -u danny54@gitlab
 			memberRoles = getMemberRolesFromPrompt(c, manyMembers)
 		}
 
+		sp := spinner.Spinner(" ")
+		sp.Start()
+
 		err := c.Project(projectID).AddMembers(memberRoles)
+		sp.Stop()
 
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {

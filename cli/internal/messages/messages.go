@@ -10,6 +10,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/crypto"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/pkg/core"
@@ -119,7 +120,8 @@ func (s *messageService) fetchNewMessages(result *models.GetMessageByEnvironment
 		return
 	}
 
-	s.printer.Print("Syncing data...")
+	sp := spinner.Spinner(" Syncing data...")
+	sp.Start()
 
 	projectID := s.ctx.GetProjectID()
 	*result, err = s.client.Messages().GetMessages(projectID)
@@ -131,6 +133,8 @@ func (s *messageService) fetchNewMessages(result *models.GetMessageByEnvironment
 
 		return
 	}
+
+	sp.Stop()
 
 	s.err = s.decryptMessages(result)
 }
@@ -247,7 +251,12 @@ func (s *messageService) SendEnvironments(environments []models.Environment) Mes
 		messagesToWrite.Messages = append(messagesToWrite.Messages, messages...)
 	}
 
+	sp := spinner.Spinner(" Syncing...")
+	sp.Start()
+
 	result, err := s.client.Messages().SendMessages(messagesToWrite)
+	sp.Stop()
+
 	if err != nil {
 		if errors.Is(err, auth.ErrorUnauthorized) {
 			s.err = kserrors.InvalidConnectionToken(err)
@@ -329,7 +338,11 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 		messagesToWrite.Messages = append(messagesToWrite.Messages, message)
 	}
 
+	sp := spinner.Spinner(" Syncing...")
+	sp.Start()
+
 	result, err := s.client.Messages().SendMessages(messagesToWrite)
+	sp.Stop()
 
 	if err != nil {
 		if errors.Is(err, auth.ErrorUnauthorized) {
