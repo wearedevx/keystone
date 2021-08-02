@@ -76,6 +76,11 @@ Used without arguments, displays a table of secrets.`,
 			for _, environment := range environments {
 				value := secret.Values[core.EnvironmentName(environment)]
 
+				if len(value) > 40 {
+					value = value[:40]
+					value += "..."
+				}
+
 				row = append(row, value)
 			}
 
