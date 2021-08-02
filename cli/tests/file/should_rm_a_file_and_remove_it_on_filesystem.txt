@@ -4,7 +4,6 @@ ks init test-env
 ks file rm --skip --force  test.txt
 
 
-stdout 'Syncing data...'
 stdout 'Environment dev up to date ✔'
 stdout 'Environment prod up to date ✔'
 stdout 'Environment staging up to date ✔'
@@ -12,7 +11,6 @@ stdout '\[30;43m CAREFUL \[0m You are about to remove test\.txt from the secre
 stdout 'Content for the current environment \(dev\) will be kept\.'
 stdout 'Its content for other environments will be lost, it will no longer be gitignored\.'
 stdout 'This is permanent, and cannot be undone\.'
-stdout 'Syncing data\.\.\.'
 stdout 'Environment dev up to date ✔'
 stdout 'Environment prod up to date ✔'
 stdout 'Environment staging up to date ✔'
