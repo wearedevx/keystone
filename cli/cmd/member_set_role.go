@@ -73,11 +73,9 @@ ks member set-role sandra@github`,
 		c, kcErr := client.NewKeystoneClient()
 		sp := spinner.Spinner(" ")
 		sp.Start()
-		defer func () {
-			sp.Stop()
-		}
 
 		if kcErr != nil {
+			sp.Stop()
 			kcErr.Print()
 			os.Exit(1)
 		}
