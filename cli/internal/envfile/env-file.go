@@ -1,8 +1,8 @@
 package envfile
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -38,20 +38,29 @@ func (f *EnvFile) Load(path string) *EnvFile {
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
+	myEnv, err := readFile(path)
+	fmt.Println(myEnv["GITLAB_CLIENT_ID"])
 
-	for scanner.Scan() {
-		if scanner.Err() == nil {
-			line := scanner.Text()
-			if !strings.HasPrefix(line, "#") && len(line) > 0 {
-				key, value := split(line)
+	// for scanner.Scan() {
+	// 	if scanner.Err() == nil {
+	// 		line := scanner.Text()
+	// 		if !strings.HasPrefix(line, "#") && len(line) > 0 {
+	// 			if strings.HasSuffix(line, `"`) {
+	// 				key, value2 := split(line)
+	// 				value = value2
 
-				f.data[key] = value
-			}
-		} else {
-			return f.SetError("Failed to read `%s` (%w)", path, err)
-		}
-	}
+	// 				f.data[key] = value
+	// 			} else {
+	// 				 value =
+
+	// 			// key, value := split(line)
+
+	// 			// f.data[key] = value
+	// 		}
+	// 	} else {
+	// 		return f.SetError("Failed to read `%s` (%w)", path, err)
+	// 	}
+	// }
 
 	return f
 }
@@ -79,7 +88,9 @@ func (f *EnvFile) Dump() *EnvFile {
 	for key, value := range f.data {
 		sb.WriteString(key)
 		sb.WriteRune('=')
+		sb.WriteRune('"')
 		sb.WriteString(value)
+		sb.WriteRune('"')
 		sb.WriteRune('\n')
 	}
 
@@ -140,9 +151,48 @@ func (f *EnvFile) Unset(key string) *EnvFile {
 	return f
 }
 
-// Utility: slits on equal
-func split(s string) (string, string) {
+// Parse reads an env file from io.Reader, returning a map of keys and values.
+func Parse(r io.Reader) (map[string]string, error) {
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
 
-	slice := strings.Split(s, "=")
-	return slice[0], slice[1]
+	return UnmarshalBytes(data)
+}
+
+// Read all env (with same file loading semantics as Load) but return values as
+// a map rather than automatically writing values into env
+func Read(filename string) (envMap map[string]string, err error) {
+	envMap = make(map[string]string)
+
+	individualEnvMap, individualErr := readFile(filename)
+
+	if individualErr != nil {
+		err = individualErr
+		return // return early on a spazout
+	}
+
+	for key, value := range individualEnvMap {
+		envMap[key] = value
+	}
+
+	return
+}
+
+// UnmarshalBytes parses env file from byte slice of chars, returning a map of keys and values.
+func UnmarshalBytes(src []byte) (map[string]string, error) {
+	out := make(map[string]string)
+	err := parseBytes(src, out)
+	return out, err
+}
+
+func readFile(filename string) (envMap map[string]string, err error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	return Parse(file)
 }
