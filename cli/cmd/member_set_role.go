@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -70,6 +71,11 @@ ks member set-role sandra@github`,
 	Run: func(_ *cobra.Command, _ []string) {
 		// Auth check
 		c, kcErr := client.NewKeystoneClient()
+		sp := spinner.Spinner(" ")
+		sp.Start()
+		defer func () {
+			sp.Stop()
+		}
 
 		if kcErr != nil {
 			kcErr.Print()

@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
+	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -176,8 +177,12 @@ Waiting for you to login with your {{ .Service }} Account...`, struct {
 			Url:     url,
 		}))
 
+		sp := spinner.Spinner(" ")
+		sp.Start()
+
 		// Blocking call
 		err = c.WaitForExternalLogin()
+		sp.Stop()
 
 		if err != nil {
 			ui.PrintError(err.Error())
