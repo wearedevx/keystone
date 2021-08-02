@@ -38,8 +38,11 @@ func (f *EnvFile) Load(path string) *EnvFile {
 	}
 	defer file.Close()
 
-	myEnv, err := readFile(path)
-	fmt.Println(myEnv["GITLAB_CLIENT_ID"])
+	envFile, err := readFile(path)
+
+	for key, value := range envFile {
+		f.data[key] = value
+	}
 
 	// for scanner.Scan() {
 	// 	if scanner.Err() == nil {
