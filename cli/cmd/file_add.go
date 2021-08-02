@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/eiannone/keyboard"
@@ -65,7 +66,7 @@ Examples:
 
 		environmentFileMap := map[string][]byte{}
 
-		if !utils.FileExists(filePath) {
+		if !utils.FileExists(path.Join(ctx.Wd, filePath)) {
 			err = kserrors.CannotAddFile(filePath, errors.New("file not found"))
 			err.Print()
 
@@ -166,6 +167,7 @@ func askContentOfFile(environments []models.Environment, filePath string, enviro
 			content, err := utils.CaptureInputFromEditor(
 				utils.GetPreferredEditorFromEnvironment,
 				extension,
+				"",
 			)
 
 			if err != nil {

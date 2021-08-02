@@ -59,9 +59,14 @@ func OpenFileInEditor(filename string, resolveEditor PreferredEditorResolver) er
 // CaptureInputFromEditor opens a temporary file in a text editor and returns
 // the written bytes on success or an error on failure. It handles deletion
 // of the temporary file behind the scenes.
-func CaptureInputFromEditor(resolveEditor PreferredEditorResolver, extension string) ([]byte, error) {
+func CaptureInputFromEditor(resolveEditor PreferredEditorResolver, extension string, defaultContent string) ([]byte, error) {
 	file, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("*%s", extension))
 	if err != nil {
+		return []byte{}, err
+	}
+
+	content := []byte(defaultContent)
+	if _, err = file.Write(content); err != nil {
 		return []byte{}, err
 	}
 
