@@ -29,7 +29,6 @@ const (
 // [varname] is the name of the variable to set
 // [varvalue] maps environment to the varable value (key is environment name,
 // and value, the value of the variable in that environment)
-// TODO: Factorize this plz
 func (ctx *Context) AddSecret(
 	secretName string,
 	secretValue map[string]string,
@@ -53,29 +52,10 @@ func (ctx *Context) AddSecret(
 
 	// Generate .env files in cache for each environment in map
 	for env, value := range secretValue {
-		cachePath := ctx.CachedEnvironmentPath(env)
-		if !DirExists(cachePath) {
-			if err = CreateDirIfNotExist(cachePath); err != nil {
-				e = CannotCreateDirectory(cachePath, err)
-
-				break
-			}
+		e = generateEnvFileInCache(ctx, env, secretName, value)
+		if e != nil {
+			return ctx.setError(e)
 		}
-
-		envFilePath := path.Join(cachePath, ".env")
-
-		if err = new(EnvFile).
-			Load(envFilePath).
-			Set(secretName, value).
-			Dump().
-			Err(); err != nil {
-			e = FailedToUpdateDotEnv(envFilePath, err)
-			break
-		}
-	}
-
-	if e != nil {
-		return ctx.setError(e)
 	}
 
 	// Copy the new .env for the current environment to .keystone/cache/.env
@@ -93,6 +73,32 @@ func (ctx *Context) AddSecret(
 	}
 
 	return ctx
+}
+
+func generateEnvFileInCache(ctx *Context, env string, secretName string, value string) (e *Error) {
+	var err error
+
+	cachePath := ctx.CachedEnvironmentPath(env)
+	if !DirExists(cachePath) {
+		if err = CreateDirIfNotExist(cachePath); err != nil {
+			e = CannotCreateDirectory(cachePath, err)
+
+			return e
+		}
+	}
+
+	envFilePath := path.Join(cachePath, ".env")
+
+	if err = new(EnvFile).
+		Load(envFilePath).
+		Set(secretName, value).
+		Dump().
+		Err(); err != nil {
+		e = FailedToUpdateDotEnv(envFilePath, err)
+		return e
+	}
+
+	return nil
 }
 
 // Unsets a previously set environment variable

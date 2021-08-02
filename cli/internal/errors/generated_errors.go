@@ -125,6 +125,13 @@ Change to another environment:
   $ ks env default
 
 `,
+	"CannotGetEnvironmentKeys": `
+{{ ERROR }} {{ .Name | red }}
+Public keys for the '{{ .Environment }}' could not be retrieved.
+
+This happened because: {{ .Cause }}
+
+`,
 	"SecretDoesNotExist": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
 
@@ -263,8 +270,32 @@ This happened because: {{ .Cause }}
 This happened because: {{ .Cause }}
 
 `,
+	"CouldNotEncryptMessages": `
+{{ ERROR }} {{ .Name | red }}
+This happened because: {{ .Cause }}
+
+`,
 	"CouldNotParseMessage": `
 {{ ERROR }} {{ .Name | red }}
+This happened because: {{ .Cause }}
+
+`,
+	"PayloadErrors": `
+{{ ERROR }} {{ .Name | red }}
+This happend because: {{ .Cause }}
+
+`,
+	"InvalidFileContent": `
+{{ ERROR }} {{ .Name | red }}
+The file '{{ .Path }}' content could not be decoded from a base64 string
+
+This happend because: {{ .Cause }}
+
+`,
+	"FailedCheckingChanges": `
+{{ ERROR }} {{ .Name | red }}
+Error were encountered for file: '{{ .Path }}'
+
 This happened because: {{ .Cause }}
 
 `,
@@ -392,6 +423,13 @@ func CannotRemoveCurrentEnvironment(environment string, cause error) *Error {
 		"Environment": string(environment),
 	}
 	return NewError("Cannot Remove Current Environment", helpTexts["CannotRemoveCurrentEnvironment"], meta, cause)
+}
+
+func CannotGetEnvironmentKeys(environment string, cause error) *Error {
+	meta := map[string]string{
+		"Environment": string(environment),
+	}
+	return NewError("Cannot Get Environment Puplic Keys", helpTexts["CannotGetEnvironmentKeys"], meta, cause)
 }
 
 func SecretDoesNotExist(secret string, cause error) *Error {
@@ -541,8 +579,34 @@ func CouldNotDecryptMessages(message string, cause error) *Error {
 	return NewError("Could not decrypt messages", helpTexts["CouldNotDecryptMessages"], meta, cause)
 }
 
+func CouldNotEncryptMessages(cause error) *Error {
+	meta := map[string]string{}
+
+	return NewError("Could not encrypt messages", helpTexts["CouldNotEncryptMessages"], meta, cause)
+}
+
 func CouldNotParseMessage(cause error) *Error {
 	meta := map[string]string{}
 
 	return NewError("Could not parse message", helpTexts["CouldNotParseMessage"], meta, cause)
+}
+
+func PayloadErrors(cause error) *Error {
+	meta := map[string]string{}
+
+	return NewError("Errors occured while preparing the payload", helpTexts["PayloadErrors"], meta, cause)
+}
+
+func InvalidFileContent(path string, cause error) *Error {
+	meta := map[string]string{
+		"Path": string(path),
+	}
+	return NewError("Invalid file content", helpTexts["InvalidFileContent"], meta, cause)
+}
+
+func FailedCheckingChanges(path string, cause error) *Error {
+	meta := map[string]string{
+		"Path": string(path),
+	}
+	return NewError("Failed While Checking for Changes", helpTexts["FailedCheckingChanges"], meta, cause)
 }

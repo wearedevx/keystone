@@ -73,8 +73,6 @@ The secret must not be required.`,
 			return
 		}
 
-		// TODO
-		// Format beautyiful error
 		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
 			err.Print()
 			os.Exit(1)
