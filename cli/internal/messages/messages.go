@@ -244,8 +244,7 @@ func (s *messageService) SendEnvironments(environments []models.Environment) Mes
 	for _, environment := range environments {
 		messages, err := s.prepareMessages(currentUser, senderPrivateKey, environment)
 		if err != nil {
-			// TODO: handle error
-			s.err = kserrors.UnkownError(err)
+			s.err = err
 			return s
 		}
 		messagesToWrite.Messages = append(messagesToWrite.Messages, messages...)
@@ -390,18 +389,18 @@ func (s *messageService) getCurrentUserInformation() (models.User, []byte) {
 
 // prepareMessages creates and encrypts messages
 // for oll the user allowed to read the given environment
-func (s *messageService) prepareMessages(currentUser models.User, senderPrivateKey []byte, environment models.Environment) ([]models.MessageToWritePayload, error) {
+func (s *messageService) prepareMessages(currentUser models.User, senderPrivateKey []byte, environment models.Environment) ([]models.MessageToWritePayload, *kserrors.Error) {
 	environmentId := environment.EnvironmentID
 	messages := make([]models.MessageToWritePayload, 0)
 
 	userPublicKeys, err := s.client.Users().GetEnvironmentPublicKeys(environmentId)
 	if err != nil {
-		return messages, err
+		return messages, kserrors.CannotGetEnvironmentKeys(environment.Name, err)
 	}
 
 	PayloadContent, err := s.ctx.PrepareMessagePayload(environment)
 	if err != nil {
-		return messages, err
+		return messages, kserrors.PayloadErrors(err)
 	}
 
 	// Create one message per user
@@ -410,7 +409,7 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 		if userPublicKey.UserUID != currentUser.UserID {
 			message, err := s.prepareMessage(senderPrivateKey, environment, userPublicKey, PayloadContent)
 			if err != nil {
-				return messages, err
+				return messages, kserrors.CouldNotEncryptMessages(err)
 			}
 
 			messages = append(messages, message)

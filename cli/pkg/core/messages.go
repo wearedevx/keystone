@@ -184,9 +184,10 @@ func (ctx *Context) getFilesChanges(files []models.File, environmentName string)
 	for _, file := range files {
 		fileContent, err := base64.StdEncoding.DecodeString(file.Value)
 		if err != nil {
+			kserrors.InvalidFileContent(file.Path, err).Print()
 			//TODO: Prettify this error
-			errmsg := fmt.Sprintln("Failed decoding base64 decrypted file content (%s)", err.Error())
-			println(errmsg)
+			// errmsg := fmt.Sprintln("Failed decoding base64 decrypted file content (%s)", err.Error())
+			// println(errmsg)
 			continue
 		}
 
@@ -194,9 +195,10 @@ func (ctx *Context) getFilesChanges(files []models.File, environmentName string)
 
 		fileHasChanges, err := fileHasChanges(filePath, fileContent)
 		if err != nil {
+			kserrors.FailedCheckingChanges(filePath, err)
 			//TODO: Prettify this error
-			errmsg := fmt.Sprintln("Failed checking for file changes (%s)", err.Error())
-			println(errmsg)
+			// errmsg := fmt.Sprintln("Failed checking for file changes (%s)", err.Error())
+			// println(errmsg)
 			continue
 		}
 

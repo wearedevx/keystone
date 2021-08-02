@@ -204,6 +204,17 @@ errors:
       Change to another environment:
         $ ks env default
 
+  - type: CannotGetEnvironmentKeys
+    name: "Cannot Get Environment Puplic Keys"
+    params:
+      - name: Environment
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      Public keys for the '{{ .Environment }}' could not be retrieved.
+
+      This happened because: {{ .Cause }}
+
   # SECRETS_ERRORS
   # ––––––––––––––
   - type: SecretDoesNotExist
@@ -435,6 +446,15 @@ errors:
 
       This happened because: {{ .Cause }}
 
+  # DECRYPTION ERRORS
+  # -----------------
+  - type: CouldNotEncryptMessages
+    name: "Could not encrypt messages"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      This happened because: {{ .Cause }}
+
   # MESSAGES ERRORS
   # ---------------
   - type: CouldNotParseMessage
@@ -442,5 +462,34 @@ errors:
     params: []
     template: |
       {{ ERROR }} {{ .Name | red }}
+      This happened because: {{ .Cause }}
+
+  - type: PayloadErrors
+    name: "Errors occured while preparing the payload"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      This happend because: {{ .Cause }}
+
+  - type: InvalidFileContent
+    name: "Invalid file content"
+    params:
+      - name: Path
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      The file '{{ .Path }}' content could not be decoded from a base64 string
+
+      This happend because: {{ .Cause }}
+
+  - type: FailedCheckingChanges
+    name: "Failed While Checking for Changes"
+    params: 
+      - name: Path
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      Error were encountered for file: '{{ .Path }}'
+
       This happened because: {{ .Cause }}
 

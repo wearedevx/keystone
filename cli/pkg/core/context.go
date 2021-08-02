@@ -33,7 +33,6 @@ const CTX_RESOLVE = "resolve"
 // in a parent directory. En error is returned if none is found.
 //
 // An error will be returned if flag is neither of those values
-// TODO: This might need refactiring: too long
 func New(flag string) *Context {
 	var cwd string
 	var err error
