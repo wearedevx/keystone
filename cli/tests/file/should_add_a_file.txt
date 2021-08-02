@@ -3,7 +3,6 @@ ks init test-env
 
 ks file add --skip test.txt
 
-stdout 'Syncing data\.\.\.'
 
 stdout 'OK'
 stdout 'Added .test\.txt.'
