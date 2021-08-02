@@ -139,24 +139,55 @@ Enter a values for {{ . }}:`, secretName))
 
 		for _, environment := range accessibleEnvironments {
 
-			p := promptui.Prompt{
-				Label:   environment.Name,
-				Default: secretValue,
-			}
+			// multiline edit
+			if strings.Contains(secretValue, "\n") {
+				var defaultContent strings.Builder
 
-			result, err := p.Run()
+				defaultContent.WriteString(secretValue)
+				defaultContent.WriteRune('\n')
+				defaultContent.WriteRune('\n')
+				defaultContent.WriteRune('\n')
+				defaultContent.WriteString("# Enter value for secret ")
+				defaultContent.WriteString(secretName)
+				defaultContent.WriteString(" on environment ")
+				defaultContent.WriteString(environment.Name)
 
-			// Handle user cancelation
-			// or prompt error
-			if err != nil {
-				if err.Error() != "^C" {
-					ui.PrintError(err.Error())
-					os.Exit(1)
+				result, err := utils.CaptureInputFromEditor(
+					utils.GetPreferredEditorFromEnvironment,
+					"",
+					defaultContent.String(),
+				)
+
+				if err != nil {
+					if err.Error() != "^C" {
+						ui.PrintError(err.Error())
+						os.Exit(1)
+					}
+					os.Exit(0)
 				}
-				os.Exit(0)
-			}
 
-			environmentValueMap[environment.Name] = strings.Trim(result, " ")
+				environmentValueMap[environment.Name] = strings.Trim(string(result), " ")
+
+			} else {
+				p := promptui.Prompt{
+					Label:   environment.Name,
+					Default: secretValue,
+				}
+
+				result, err := p.Run()
+
+				// Handle user cancelation
+				// or prompt error
+				if err != nil {
+					if err.Error() != "^C" {
+						ui.PrintError(err.Error())
+						os.Exit(1)
+					}
+					os.Exit(0)
+				}
+
+				environmentValueMap[environment.Name] = strings.Trim(result, " ")
+			}
 		}
 
 	} else {

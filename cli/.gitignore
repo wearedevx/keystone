@@ -10,3 +10,4 @@ config.dev
 .env3
 .env4
 ks_temp/test.txt
+file
