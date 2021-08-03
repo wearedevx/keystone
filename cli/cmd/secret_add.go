@@ -172,7 +172,7 @@ Enter a values for {{ . }}:`, secretName))
 					os.Exit(0)
 				}
 
-				environmentValueMap[environment.Name] = strings.Trim(string(result), " ")
+				environmentValueMap[environment.Name] = strings.Trim(string(stringResult), " ")
 
 			} else {
 				p := promptui.Prompt{
