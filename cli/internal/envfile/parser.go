@@ -28,7 +28,7 @@ const doubleQuoteSpecialChars = "\\\n\r\"!$`"
 
 var exportRegex = regexp.MustCompile(`^\s*(?:export\s+)?(.*?)\s*$`)
 
-func parseBytes(src []byte, out map[string]string) error {
+func parseBytes(src []byte, out map[string]string, opts LoadOptions) error {
 	cutset := src
 	for {
 		cutset = getStatementStart(cutset)
@@ -42,7 +42,7 @@ func parseBytes(src []byte, out map[string]string) error {
 			return err
 		}
 
-		value, left, err := extractVarValue(left, out)
+		value, left, err := extractVarValue(left, out, opts)
 		if err != nil {
 			return err
 		}
@@ -121,7 +121,7 @@ loop:
 }
 
 // extractVarValue extracts variable value and returns rest of slice
-func extractVarValue(src []byte, vars map[string]string) (value string, rest []byte, err error) {
+func extractVarValue(src []byte, vars map[string]string, opts LoadOptions) (value string, rest []byte, err error) {
 	quote, hasPrefix := hasQuotePrefix(src)
 	if !hasPrefix {
 		// unquoted value - read until whitespace
@@ -150,7 +150,12 @@ func extractVarValue(src []byte, vars map[string]string) (value string, rest []b
 		if quote == prefixDoubleQuote {
 			// unescape newlines for double quote (this is compat feature)
 			// and expand environment variables
-			value = expandVariables(expandEscapes(value), vars)
+			if !opts.DontUnescapeChars {
+				value = expandEscapes(value)
+			}
+
+			value = expandVariables(value, vars)
+
 		}
 
 		return value, src[i+1:], nil

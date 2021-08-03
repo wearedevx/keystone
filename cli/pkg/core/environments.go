@@ -150,7 +150,7 @@ func (ctx *Context) SetAllSecrets(name string, secrets map[string]string) *Conte
 	if ctx.HasEnvironment(name) {
 		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(name)
 
-		if err := new(EnvFile).Load(dotEnvPath).SetData(secrets).Dump().Err(); err != nil {
+		if err := new(EnvFile).Load(dotEnvPath, nil).SetData(secrets).Dump().Err(); err != nil {
 			return ctx.setError(FailedToUpdateDotEnv(dotEnvPath, err))
 		}
 
@@ -171,7 +171,7 @@ func (ctx *Context) GetAllSecrets(envName string) map[string]string {
 	if ctx.HasEnvironment(envName) {
 		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(envName)
 
-		envFile := new(EnvFile).Load(dotEnvPath)
+		envFile := new(EnvFile).Load(dotEnvPath, nil)
 
 		if err := envFile.Err(); err != nil {
 			ctx.setError(FailedToReadDotEnv(dotEnvPath, err))
