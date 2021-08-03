@@ -99,11 +99,13 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment 
 	)
 
 	if resp.StatusCode == 403 {
+		// TODO: print porper error
 		g.err = errors.New("You don't have rights to send secrets to the repo. Please ensure your personal access token has access to \"repo\" scope.")
 		return g
 	}
 
 	if resp.StatusCode == 404 {
+		// TODO: print proper error
 		g.err = errors.New("You are trying to send secret to a repository that doesn't exist. Please make sure repo's name and owner is correct.")
 		return g
 	}

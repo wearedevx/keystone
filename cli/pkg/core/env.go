@@ -65,7 +65,7 @@ func (ctx *Context) AddSecret(
 		envFilePath := path.Join(cachePath, ".env")
 
 		if err = new(EnvFile).
-			Load(envFilePath).
+			Load(envFilePath, nil).
 			Set(secretName, value).
 			Dump().
 			Err(); err != nil {
@@ -143,7 +143,7 @@ func (ctx *Context) purgeSecret(secretName string) *Context {
 		dotEnvPath := path.Join(dir, ".env")
 		dotEnv := new(EnvFile)
 
-		if err = dotEnv.Load(dotEnvPath).Err(); err != nil {
+		if err = dotEnv.Load(dotEnvPath, nil).Err(); err != nil {
 			return ctx.setError(FailedToReadDotEnv(dotEnvPath, err))
 		}
 
@@ -199,7 +199,7 @@ func (ctx *Context) PurgeSecrets() *Context {
 		dotEnvPath := path.Join(dir, ".env")
 		dotEnv := new(EnvFile)
 
-		if err = dotEnv.Load(dotEnvPath).Err(); err != nil {
+		if err = dotEnv.Load(dotEnvPath, nil).Err(); err != nil {
 			return ctx.setError(FailedToReadDotEnv(dotEnvPath, err))
 		}
 
@@ -245,7 +245,7 @@ func (ctx *Context) SetSecret(
 	}
 
 	dotEnvPath := ctx.CachedEnvironmentDotEnvPath(envName)
-	dotEnv := new(EnvFile).Load(ctx.CachedEnvironmentDotEnvPath(envName))
+	dotEnv := new(EnvFile).Load(ctx.CachedEnvironmentDotEnvPath(envName), nil)
 
 	if err := dotEnv.Err(); err != nil {
 		return ctx.setError(FailedToReadDotEnv(dotEnvPath, err))
@@ -278,7 +278,7 @@ func (ctx *Context) GetSecrets() map[string]string {
 	var err error
 	var env map[string]string
 
-	dotEnv := new(EnvFile).Load(ctx.CachedDotEnvPath())
+	dotEnv := new(EnvFile).Load(ctx.CachedDotEnvPath(), nil)
 
 	if err = dotEnv.Err(); err != nil {
 		ctx.setError(FailedToUpdateDotEnv(ctx.CachedDotEnvPath(), err))
@@ -292,7 +292,7 @@ func (ctx *Context) GetSecrets() map[string]string {
 	// at the root of the project
 	localDotEnvPath := path.Join(ctx.Wd, ".env")
 	if FileExists(localDotEnvPath) {
-		localDotEnv := new(EnvFile).Load(localDotEnvPath).GetData()
+		localDotEnv := new(EnvFile).Load(localDotEnvPath, nil).GetData()
 
 		for key, value := range localDotEnv {
 			env[key] = value
@@ -321,7 +321,7 @@ func (ctx *Context) GetSecret(secretName string) *Secret {
 	environmentValuesMap := map[string]map[string]string{}
 	for _, environment := range ctx.ListEnvironments() {
 		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(environment)
-		dotEnv := new(EnvFile).Load(dotEnvPath)
+		dotEnv := new(EnvFile).Load(dotEnvPath, nil)
 
 		environmentValuesMap[environment] = dotEnv.GetData()
 	}
@@ -369,7 +369,7 @@ func (ctx *Context) ListSecretsFromCache() []Secret {
 
 	for _, environment := range ctx.ListEnvironments() {
 		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(environment)
-		dotEnv := new(EnvFile).Load(dotEnvPath)
+		dotEnv := new(EnvFile).Load(dotEnvPath, nil)
 
 		environmentValuesMap[environment] = dotEnv.GetData()
 		for label, _ := range dotEnv.GetData() {
@@ -415,7 +415,7 @@ func (ctx *Context) ListSecrets() []Secret {
 	environmentValuesMap := map[string]map[string]string{}
 	for _, environment := range ctx.ListEnvironments() {
 		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(environment)
-		dotEnv := new(EnvFile).Load(dotEnvPath)
+		dotEnv := new(EnvFile).Load(dotEnvPath, nil)
 
 		environmentValuesMap[environment] = dotEnv.GetData()
 	}

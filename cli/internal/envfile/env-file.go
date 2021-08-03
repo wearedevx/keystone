@@ -18,12 +18,29 @@ type EnvFile struct {
 	path string
 	// .env variables
 	data map[string]string
+	opts LoadOptions
+}
+
+// Options for loading the .env file
+type LoadOptions struct {
+	// Don’t unescape double quotes and other special characters on read.
+	// If loaded with this option, dumping will panic.
+	DontUnescapeChars bool
+}
+
+func DefaultLoadOptions() LoadOptions {
+	return LoadOptions{}
 }
 
 // Loads a .env file from disk
-func (f *EnvFile) Load(path string) *EnvFile {
+func (f *EnvFile) Load(path string, opts *LoadOptions) *EnvFile {
 	f.path = path
 	f.data = make(map[string]string)
+	if opts == nil {
+		f.opts = DefaultLoadOptions()
+	} else {
+		f.opts = *opts
+	}
 
 	err := utils.CreateFileIfNotExists(path, "")
 	if err != nil {
@@ -38,7 +55,7 @@ func (f *EnvFile) Load(path string) *EnvFile {
 	}
 	defer file.Close()
 
-	envFile, err := readFile(path)
+	envFile, err := readFile(path, f.opts)
 
 	for key, value := range envFile {
 		f.data[key] = value
@@ -81,15 +98,23 @@ func (f *EnvFile) SetError(message string, args ...interface{}) *EnvFile {
 }
 
 // Writes the .env to the disk
+// Panics if the EnvFile was loaded with the DontUnescapeChars option
 func (f *EnvFile) Dump() *EnvFile {
 	if f.Err() != nil {
 		return f
 	}
 
+	if f.opts.DontUnescapeChars {
+		panic("Writing .env file with unescaped chars should not happen")
+	}
+
 	var sb strings.Builder
 
 	for key, value := range f.data {
-		sb.WriteString(fmt.Sprintf(`%s="%s"\n`, key, doubleQuoteEscape(value)))
+		trimed := strings.Trim(value, " \n\r\t")
+		escaped := doubleQuoteEscape(trimed)
+
+		sb.WriteString(fmt.Sprintf("%s=\"%s\"\n", key, escaped))
 	}
 
 	contents := sb.String()
@@ -150,21 +175,21 @@ func (f *EnvFile) Unset(key string) *EnvFile {
 }
 
 // Parse reads an env file from io.Reader, returning a map of keys and values.
-func Parse(r io.Reader) (map[string]string, error) {
+func Parse(r io.Reader, opts LoadOptions) (map[string]string, error) {
 	data, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
 
-	return UnmarshalBytes(data)
+	return UnmarshalBytes(data, opts)
 }
 
 // Read all env (with same file loading semantics as Load) but return values as
 // a map rather than automatically writing values into env
-func Read(filename string) (envMap map[string]string, err error) {
+func Read(filename string, opts LoadOptions) (envMap map[string]string, err error) {
 	envMap = make(map[string]string)
 
-	individualEnvMap, individualErr := readFile(filename)
+	individualEnvMap, individualErr := readFile(filename, opts)
 
 	if individualErr != nil {
 		err = individualErr
@@ -179,32 +204,18 @@ func Read(filename string) (envMap map[string]string, err error) {
 }
 
 // UnmarshalBytes parses env file from byte slice of chars, returning a map of keys and values.
-func UnmarshalBytes(src []byte) (map[string]string, error) {
+func UnmarshalBytes(src []byte, opts LoadOptions) (map[string]string, error) {
 	out := make(map[string]string)
-	err := parseBytes(src, out)
+	err := parseBytes(src, out, opts)
 	return out, err
 }
 
-func readFile(filename string) (envMap map[string]string, err error) {
+func readFile(filename string, opts LoadOptions) (envMap map[string]string, err error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return
 	}
 	defer file.Close()
 
-	return Parse(file)
-}
-
-func writingDoubleQuoteEscape(line string) string {
-	for _, c := range doubleQuoteSpecialChars {
-		toReplace := "\\" + string(c)
-		if c == '\n' {
-			toReplace = `\n`
-		}
-		if c == '\r' {
-			toReplace = `\r`
-		}
-		line = strings.Replace(line, string(c), toReplace, -1)
-	}
-	return line
+	return Parse(file, opts)
 }
