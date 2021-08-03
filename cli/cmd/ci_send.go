@@ -33,6 +33,8 @@ The CI service must have been setup using:
 		}
 
 		message, err := ctx.PrepareMessagePayload(environment)
+		var payload string
+		message.Serialize(&payload)
 
 		if err != nil {
 			ui.PrintError(err.Error())
