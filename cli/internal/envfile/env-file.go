@@ -219,3 +219,17 @@ func readFile(filename string, opts LoadOptions) (envMap map[string]string, err 
 
 	return Parse(file, opts)
 }
+
+func writingDoubleQuoteEscape(line string) string {
+	for _, c := range doubleQuoteSpecialChars {
+		toReplace := "\\" + string(c)
+		if c == '\n' {
+			toReplace = `\n`
+		}
+		if c == '\r' {
+			toReplace = `\r`
+		}
+		line = strings.Replace(line, string(c), toReplace, -1)
+	}
+	return line
+}
