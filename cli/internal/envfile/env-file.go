@@ -112,7 +112,8 @@ func (f *EnvFile) Dump() *EnvFile {
 
 	for key, value := range f.data {
 		trimed := strings.Trim(value, " \n\r\t")
-		escaped := doubleQuoteEscape(trimed)
+		prepared := overEscape(trimed)
+		escaped := doubleQuoteEscape(prepared)
 
 		sb.WriteString(fmt.Sprintf("%s=\"%s\"\n", key, escaped))
 	}
