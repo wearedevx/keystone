@@ -81,7 +81,7 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		if len(PayloadContent.Secrets) > 0 {
 			envFilePath := ctx.CachedEnvironmentDotEnvPath(environmentName)
 			envFile := new(envfile.EnvFile)
-			envFile.Load(envFilePath)
+			envFile.Load(envFilePath, nil)
 
 			for _, secret := range PayloadContent.Secrets {
 				envFile.Set(secret.Label, secret.Value)
