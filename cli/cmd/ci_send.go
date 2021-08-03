@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/manifoldco/promptui"
@@ -35,6 +36,7 @@ The CI service must have been setup using:
 		message, err := ctx.PrepareMessagePayload(environment)
 		var payload string
 		message.Serialize(&payload)
+		fmt.Printf("payload: %+v\n", payload)
 
 		if err != nil {
 			ui.PrintError(err.Error())
