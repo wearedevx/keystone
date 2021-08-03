@@ -89,12 +89,7 @@ func (f *EnvFile) Dump() *EnvFile {
 	var sb strings.Builder
 
 	for key, value := range f.data {
-		sb.WriteString(key)
-		sb.WriteRune('=')
-		sb.WriteRune('"')
-		sb.WriteString(value)
-		sb.WriteRune('"')
-		sb.WriteRune('\n')
+		sb.WriteString(fmt.Sprintf(`%s="%s"\n`, key, doubleQuoteEscape(value)))
 	}
 
 	contents := sb.String()
@@ -198,4 +193,18 @@ func readFile(filename string) (envMap map[string]string, err error) {
 	defer file.Close()
 
 	return Parse(file)
+}
+
+func writingDoubleQuoteEscape(line string) string {
+	for _, c := range doubleQuoteSpecialChars {
+		toReplace := "\\" + string(c)
+		if c == '\n' {
+			toReplace = `\n`
+		}
+		if c == '\r' {
+			toReplace = `\r`
+		}
+		line = strings.Replace(line, string(c), toReplace, -1)
+	}
+	return line
 }
