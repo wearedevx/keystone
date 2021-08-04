@@ -16,9 +16,13 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
+	"os"
+	"regexp"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/internal/spinner"
+	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // inviteCmd represents the invite command
@@ -26,8 +30,39 @@ var inviteCmd = &cobra.Command{
 	Use:   "invite",
 	Short: "Sends an invitation to join Keystone",
 	Long:  `Sends an invitation to join Keystone.`,
-	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Println("Coming soon")
+	Run: func(_ *cobra.Command, args []string) {
+		emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+		argc := len(args)
+
+		if argc == 0 || argc > 1 {
+			ui.PrintError("invalid number of arguments. Expected 1 got %d", argc)
+			os.Exit(1)
+		}
+		email := args[0]
+
+		if !emailRegex.Match([]byte(email)) {
+			ui.PrintError("invalid email address: %s", email)
+			os.Exit(1)
+		}
+		c, kcErr := client.NewKeystoneClient()
+
+		sp := spinner.Spinner("Inviting user")
+		sp.Start()
+
+		if kcErr != nil {
+			sp.Stop()
+			kcErr.Print()
+			os.Exit(1)
+		}
+
+		_, err := c.Users().InviteUser(email)
+
+		if err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+
 	},
 }
 
