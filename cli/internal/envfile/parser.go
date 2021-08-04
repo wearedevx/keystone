@@ -26,20 +26,6 @@ var (
 
 const doubleQuoteSpecialChars = "\\\n\r\"!$`"
 
-var overEscapeChars []string
-
-func init() {
-	overEscapeChars = []string{
-		"\\\\",
-		"\\n",
-		"\\r",
-		"\\\"",
-		"\\!",
-		"\\$",
-		"\\`",
-	}
-}
-
 var exportRegex = regexp.MustCompile(`^\s*(?:export\s+)?(.*?)\s*$`)
 
 func parseBytes(src []byte, out map[string]string, opts LoadOptions) error {
@@ -273,10 +259,5 @@ func doubleQuoteEscape(line string) string {
 // a value that has \n or \" sequence, like GCP credentials files,
 // which contain a private key
 func overEscape(line string) string {
-	for _, c := range overEscapeChars {
-		toReplace := "\\" + c
-		line = strings.Replace(line, c, toReplace, -1)
-	}
-
-	return line
+	return strings.Replace(line, "\\", "\\\\", -1)
 }
