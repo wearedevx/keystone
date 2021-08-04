@@ -255,6 +255,26 @@ errors:
 
       {{ .Values }}
 
+  - type: RequiredSecretsAreMissing
+    name: "Required Secrets Are Missing"
+    params:
+      - name: MissingSecrets
+        type: "[]string"
+      - name: EnvironmentName
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} 
+      You are trying to send the environment '{{ .EnvironmentName }}' to a CI/CD service, but some required secrets are missing their value:
+      {{ range $secretName := .MissingSecrets }}
+        - {{ $secretName }}
+      {{ end }}
+
+      You may set value for those secrets with:
+        $ ks --env {{ .EnvironmentName }} secret set <SECRET_NAME> <SECRET_VALUE>
+
+      Or make them optional using:
+        $ ks secret optional <SECRET_NAME>
+
   - type: EnvironmentsHaveChanged
     name: "Environments have changed"
     params:

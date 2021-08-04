@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/ci"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -30,6 +31,16 @@ The CI service must have been setup using:
 			if accessibleEnvironment.Name == currentEnvironment {
 				environment = accessibleEnvironment
 			}
+		}
+
+		missing, hasMissing := ctx.MissingSecretsForEnvironment(
+			environment.Name,
+		)
+
+		if hasMissing {
+			error := kserrors.RequiredSecretsAreMissing(missing, environment.Name, nil)
+			error.Print()
+			os.Exit(1)
 		}
 
 		message, err := ctx.PrepareMessagePayload(environment)

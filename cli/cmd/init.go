@@ -61,7 +61,7 @@ Created files and directories:
 		ctx := core.New(core.CTX_INIT)
 
 		if osError != nil {
-			err = kserrors.NewError("OS Error", "Error when retrieving working directory", map[string]string{}, osError)
+			err = kserrors.NewError("OS Error", "Error when retrieving working directory", map[string]interface{}{}, osError)
 			err.Print()
 			os.Exit(1)
 		}

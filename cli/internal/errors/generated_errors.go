@@ -156,6 +156,20 @@ If you want to override their value, try again.
 {{ .Values }}
 
 `,
+	"RequiredSecretsAreMissing": `
+{{ ERROR }} {{ .Name | red }} 
+You are trying to send the environment '{{ .EnvironmentName }}' to a CI/CD service, but some required secrets are missing their value:
+{{ range $secretName := .MissingSecrets }}
+  - {{ $secretName }}
+{{ end }}
+
+You may set value for those secrets with:
+  $ ks --env {{ .EnvironmentName }} secret set <SECRET_NAME> <SECRET_VALUE>
+
+Or make them optional using:
+  $ ks secret optional <SECRET_NAME>
+
+`,
 	"EnvironmentsHaveChanged": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- "'" | red }}
 We couldn't find data for the following environments: '{{ .EnvironmentsName }}', but a new value has been set by another member.
@@ -302,78 +316,78 @@ This happened because: {{ .Cause }}
 }
 
 func InitFailed(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("Init Failed", helpTexts["InitFailed"], meta, cause)
 }
 
 func InvalidConnectionToken(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("Invalid Connection Token", helpTexts["InvalidConnectionToken"], meta, cause)
 }
 
 func NotAKeystoneProject(path string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path": string(path),
 	}
 	return NewError("Not A Keystone Project", helpTexts["NotAKeystoneProject"], meta, cause)
 }
 
 func NoWorkingDirectory(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("No Working Directory", helpTexts["NoWorkingDirectory"], meta, cause)
 }
 
 func UnsupportedFlag(flag string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Flag": string(flag),
 	}
 	return NewError("Unsupported Flag", helpTexts["UnsupportedFlag"], meta, cause)
 }
 
 func AlreadyKeystoneProject(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("Already a Keystone project", helpTexts["AlreadyKeystoneProject"], meta, cause)
 }
 
 func FailedToReadKeystoneFile(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("Failed To Read Keystone File", helpTexts["FailedToReadKeystoneFile"], meta, cause)
 }
 
 func FailedToUpdateKeystoneFile(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("Failed To Update Keystone File", helpTexts["FailedToUpdateKeystoneFile"], meta, cause)
 }
 
 func FailedToUpdateDotEnv(path string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path": string(path),
 	}
 	return NewError("Failed To Update .env", helpTexts["FailedToUpdateDotEnv"], meta, cause)
 }
 
 func FailedToReadDotEnv(path string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path": string(path),
 	}
 	return NewError("Failed To Read .env", helpTexts["FailedToReadDotEnv"], meta, cause)
 }
 
 func FailedToReadRolesFile(path string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path": string(path),
 	}
 	return NewError("Failed To Read Roles File", helpTexts["FailedToReadRolesFile"], meta, cause)
 }
 
 func RoleDoesNotExist(rolename string, available string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"RoleName":  string(rolename),
 		"Available": string(available),
 	}
@@ -381,7 +395,7 @@ func RoleDoesNotExist(rolename string, available string, cause error) *Error {
 }
 
 func ProjectDoesntExist(name string, projectid string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Name":      string(name),
 		"ProjectId": string(projectid),
 	}
@@ -389,7 +403,7 @@ func ProjectDoesntExist(name string, projectid string, cause error) *Error {
 }
 
 func EnvironmentDoesntExist(environment string, available string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Environment": string(environment),
 		"Available":   string(available),
 	}
@@ -397,14 +411,14 @@ func EnvironmentDoesntExist(environment string, available string, cause error) *
 }
 
 func EnvironmentAlreadyExists(environment string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Environment": string(environment),
 	}
 	return NewError("Environment Already Exists", helpTexts["EnvironmentAlreadyExists"], meta, cause)
 }
 
 func FailedToSetCurrentEnvironment(environment string, path string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Environment": string(environment),
 		"Path":        string(path),
 	}
@@ -412,57 +426,65 @@ func FailedToSetCurrentEnvironment(environment string, path string, cause error)
 }
 
 func CannotReadEnvironment(path string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path": string(path),
 	}
 	return NewError("Cannot Read Environment", helpTexts["CannotReadEnvironment"], meta, cause)
 }
 
 func CannotRemoveCurrentEnvironment(environment string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Environment": string(environment),
 	}
 	return NewError("Cannot Remove Current Environment", helpTexts["CannotRemoveCurrentEnvironment"], meta, cause)
 }
 
 func CannotGetEnvironmentKeys(environment string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Environment": string(environment),
 	}
 	return NewError("Cannot Get Environment Puplic Keys", helpTexts["CannotGetEnvironmentKeys"], meta, cause)
 }
 
 func SecretDoesNotExist(secret string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Secret": string(secret),
 	}
 	return NewError("Secret Doesn't Exist", helpTexts["SecretDoesNotExist"], meta, cause)
 }
 
 func SecretRequired(secret string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Secret": string(secret),
 	}
 	return NewError("Secret Required", helpTexts["SecretRequired"], meta, cause)
 }
 
 func SecretHasChanged(secret string, values string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Secret": string(secret),
 		"Values": string(values),
 	}
 	return NewError("Secret has changed", helpTexts["SecretHasChanged"], meta, cause)
 }
 
+func RequiredSecretsAreMissing(missingsecrets []string, environmentname string, cause error) *Error {
+	meta := map[string]interface{}{
+		"MissingSecrets":  []string(missingsecrets),
+		"EnvironmentName": string(environmentname),
+	}
+	return NewError("Required Secrets Are Missing", helpTexts["RequiredSecretsAreMissing"], meta, cause)
+}
+
 func EnvironmentsHaveChanged(environmentsname string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"EnvironmentsName": string(environmentsname),
 	}
 	return NewError("Environments have changed", helpTexts["EnvironmentsHaveChanged"], meta, cause)
 }
 
 func FileHasChanged(filepath string, affectedenvironments string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"FilePath":             string(filepath),
 		"AffectedEnvironments": string(affectedenvironments),
 	}
@@ -470,21 +492,21 @@ func FileHasChanged(filepath string, affectedenvironments string, cause error) *
 }
 
 func CannotAddFile(path string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path": string(path),
 	}
 	return NewError("Cannot Add File", helpTexts["CannotAddFile"], meta, cause)
 }
 
 func CannotRemoveFile(path string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path": string(path),
 	}
 	return NewError("Cannot Remove File", helpTexts["CannotRemoveFile"], meta, cause)
 }
 
 func CannotLinkFile(path string, cachepath string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path":      string(path),
 		"CachePath": string(cachepath),
 	}
@@ -492,7 +514,7 @@ func CannotLinkFile(path string, cachepath string, cause error) *Error {
 }
 
 func FileNotInEnvironment(path string, environment string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path":        string(path),
 		"Environment": string(environment),
 	}
@@ -500,35 +522,35 @@ func FileNotInEnvironment(path string, environment string, cause error) *Error {
 }
 
 func CannotCreateDirectory(path string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path": string(path),
 	}
 	return NewError("Cannot Create Directory", helpTexts["CannotCreateDirectory"], meta, cause)
 }
 
 func CannotRemoveDirectoryContents(path string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path": string(path),
 	}
 	return NewError("Cannot Remove Directory Contents", helpTexts["CannotRemoveDirectoryContents"], meta, cause)
 }
 
 func CannotSaveFiles(filelist string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"FileList": string(filelist),
 	}
 	return NewError("Cannot Save Files", helpTexts["CannotSaveFiles"], meta, cause)
 }
 
 func CannotRemoveDirectory(path string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path": string(path),
 	}
 	return NewError("Cannot Remove Directory", helpTexts["CannotRemoveDirectory"], meta, cause)
 }
 
 func CopyFailed(source string, destination string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Source":      string(source),
 		"Destination": string(destination),
 	}
@@ -536,76 +558,76 @@ func CopyFailed(source string, destination string, cause error) *Error {
 }
 
 func MustBeLoggedIn(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("You must be logged in", helpTexts["MustBeLoggedIn"], meta, cause)
 }
 
 func CannotFindProjectID(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("Cannot find project ID in config file", helpTexts["CannotFindProjectID"], meta, cause)
 }
 
 func UnkownError(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("Unkown Error", helpTexts["UnkownError"], meta, cause)
 }
 
 func UsersDontExist(message string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Message": string(message),
 	}
 	return NewError("Users Don't Exist", helpTexts["UsersDontExist"], meta, cause)
 }
 
 func CannotAddMembers(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("Cannot Add Members", helpTexts["CannotAddMembers"], meta, cause)
 }
 
 func CannotRemoveMembers(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("Cannot Remove Members", helpTexts["CannotRemoveMembers"], meta, cause)
 }
 
 func CouldNotDecryptMessages(message string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Message": string(message),
 	}
 	return NewError("Could not decrypt messages", helpTexts["CouldNotDecryptMessages"], meta, cause)
 }
 
 func CouldNotEncryptMessages(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("Could not encrypt messages", helpTexts["CouldNotEncryptMessages"], meta, cause)
 }
 
 func CouldNotParseMessage(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("Could not parse message", helpTexts["CouldNotParseMessage"], meta, cause)
 }
 
 func PayloadErrors(cause error) *Error {
-	meta := map[string]string{}
+	meta := map[string]interface{}{}
 
 	return NewError("Errors occured while preparing the payload", helpTexts["PayloadErrors"], meta, cause)
 }
 
 func InvalidFileContent(path string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path": string(path),
 	}
 	return NewError("Invalid file content", helpTexts["InvalidFileContent"], meta, cause)
 }
 
 func FailedCheckingChanges(path string, cause error) *Error {
-	meta := map[string]string{
+	meta := map[string]interface{}{
 		"Path": string(path),
 	}
 	return NewError("Failed While Checking for Changes", helpTexts["FailedCheckingChanges"], meta, cause)
