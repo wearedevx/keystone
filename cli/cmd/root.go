@@ -101,10 +101,14 @@ func Initialize() {
 	if ctx == nil {
 		return
 	}
+	if ctx.Err() != nil {
+		ctx.Err().Print()
+		os.Exit(1)
+	}
 
-	currentfolder, _ := os.Getwd()
+	// currentfolder, _ := os.Getwd()
 
-	isKeystoneFile := keystonefile.ExistsKeystoneFile(currentfolder)
+	isKeystoneFile := keystonefile.ExistsKeystoneFile(ctx.Wd)
 
 	current := ctx.CurrentEnvironment()
 	ctx.SetError(nil)
