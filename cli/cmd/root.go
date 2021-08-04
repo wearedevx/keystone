@@ -83,7 +83,6 @@ func isIn(haystack []string, needle string) bool {
 
 func Initialize() {
 
-	fmt.Println(len(os.Args))
 	if len(os.Args) <= 1 {
 		return
 	}
