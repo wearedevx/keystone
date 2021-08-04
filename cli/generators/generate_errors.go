@@ -73,7 +73,7 @@ package errors
 
 	var helpMap string
 	if len(kv_pairs) == 0 {
-		helpMap = "var helpTexts stristring]string = map[string]string {}\n\n"
+		helpMap = "var helpTexts map[string]string = map[string]string {}\n\n"
 	} else {
 		helpMap = Sprintf("var helpTexts map[string]string = map[string]string {\n %s,\n }\n\n", Join(kv_pairs, ",\n"))
 	}
@@ -108,9 +108,9 @@ package errors
 
 		var metaMap string
 		if len(kv_pairs) == 0 {
-			metaMap = "  meta := map[string]string{}\n\n"
+			metaMap = "  meta := map[string]interface{}{}\n\n"
 		} else {
-			metaMap = Sprintf("meta := map[string]string{\n  %s,\n}\n", Join(kv_pairs, ", \n"))
+			metaMap = Sprintf("meta := map[string]interface{}{\n  %s,\n}\n", Join(kv_pairs, ", \n"))
 		}
 
 		sb.WriteString(metaMap)

@@ -470,6 +470,29 @@ func (ctx *Context) HasSecret(secretName string) bool {
 	return haveIt
 }
 
+func (ctx *Context) MissingSecretsForEnvironment(environmentName string) ([]string, bool) {
+	missing := []string{}
+	hasMissing := false
+	if ctx.Err() != nil {
+		return missing, hasMissing
+	}
+
+	secrets := ctx.ListSecrets()
+
+	for _, secret := range secrets {
+		if secret.Required {
+			value, ok := secret.Values[EnvironmentName(environmentName)]
+
+			if !ok || value == "" {
+				missing = append(missing, secret.Name)
+				hasMissing = true
+			}
+		}
+	}
+
+	return missing, hasMissing
+}
+
 func (ctx *Context) SecretIsRequired(secretName string) bool {
 	required := false
 	if ctx.Err() != nil {
