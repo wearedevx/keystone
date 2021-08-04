@@ -5,7 +5,7 @@ import (
 	"text/template"
 )
 
-var templates map[string]*template.Template
+var templates = make(map[string]*template.Template)
 
 func init() {
 	templates["invite/html"] = template.Must(template.New("invite/html").Parse(`

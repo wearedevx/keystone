@@ -93,7 +93,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 
 // WriteMessages writes messages to users
 // TODO: on the client side, each message should be associated with the target EnvironmentID,
-// 		 and therefore, there is no need to pass envID in the url, query or body in the HTTP query
+// and therefore, there is no need to pass envID in the url, query or body in the HTTP query
 func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	response := &models.GetEnvironmentsResponse{}

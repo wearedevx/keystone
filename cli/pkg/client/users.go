@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/wearedevx/keystone/api/controllers"
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
@@ -31,6 +32,16 @@ func (u *Users) GetEnvironmentPublicKeys(environmentId string) (models.PublicKey
 
 func (u *Users) GetUserPublicKey(userID string) (result models.UserPublicKey, err error) {
 	err = u.r.get("/users/"+userID+"/key", &result, nil)
+
+	return result, err
+}
+
+func (u *Users) InviteUser(userEmail string) (result GenericResponse, err error) {
+	payload := controllers.InvitePayload{
+		Email:       userEmail,
+		ProjectName: "keystone",
+	}
+	err = u.r.post("/users/invite", payload, &result, nil)
 
 	return result, err
 }

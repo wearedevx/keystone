@@ -11,6 +11,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/keighl/mandrill v0.0.0-20170605120353-1775dd4b3b41
 	github.com/kr/text v0.2.0 // indirect
+	github.com/mattbaird/gochimp v0.0.0-20200820164431-f1082bcdf63f
 	github.com/mitranim/gow v0.0.0-20210623102858-76f93562d1cb // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -26,6 +27,4 @@ require (
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.9
-)
-m v1.21.9
 )
