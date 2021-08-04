@@ -30,3 +30,9 @@ And to update the development version
 ```
 $ brew reinstall wearedevx/keystone/keystone-development
 ```
+
+### Usage
+To start using Keystone you will need to login with [`ks login`](https://github.com/wearedevx/keystone/blob/master/cli/doc/ks_login.md).  
+If your project is not keystone-managed yet, bootstrap it with [`ks init <YOUR_PROJECT_NAME>`](https://github.com/wearedevx/keystone/blob/master/cil/doc/ks_init.md).  
+  
+To start managing secrets and files, and access all of Keystone’s features, refer to the [complete CLI documentation](https://github.com/wearedevx/keystone/blob/master/cli/doc/ks.md)
