@@ -19,6 +19,25 @@ type PublicKey struct {
 	Key []byte `json:"key"`
 }
 
+type InvitePayload struct {
+	Email       string
+	ProjectName string
+}
+
+func (pm *InvitePayload) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(pm)
+}
+
+func (pm *InvitePayload) Serialize(out *string) (err error) {
+	var sb strings.Builder
+
+	err = json.NewEncoder(&sb).Encode(pm)
+
+	*out = sb.String()
+
+	return err
+}
+
 type User struct {
 	ID          uint        `json:"id" gorm:"primaryKey" faker:"-"`
 	AccountType AccountType `json:"account_type" gorm:"default:custom" faker:"oneof: github, gitlab"`
