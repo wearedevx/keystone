@@ -56,12 +56,13 @@ var inviteCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		_, err := c.Users().InviteUser(email)
+		err := c.Users().InviteUser(email)
 
 		if err != nil {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
+		ui.PrintSuccess("A email has been sent to %s, they will get back to you when their Keystone account will be created", email)
 
 	},
 }

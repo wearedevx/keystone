@@ -1,10 +1,8 @@
 package controllers
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/internal/router"
@@ -12,27 +10,8 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
-type InvitePayload struct {
-	Email       string
-	ProjectName string
-}
-
-func (pm *InvitePayload) Deserialize(in io.Reader) error {
-	return json.NewDecoder(in).Decode(pm)
-}
-
-func (pm *InvitePayload) Serialize(out *string) (err error) {
-	var sb strings.Builder
-
-	err = json.NewEncoder(&sb).Encode(pm)
-
-	*out = sb.String()
-
-	return err
-}
-
 func PostInvite(_ router.Params, body io.ReadCloser, _ repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
-	payload := InvitePayload{}
+	payload := models.InvitePayload{}
 	payload.Deserialize(body)
 
 	senderEmail := user.Email
