@@ -86,35 +86,6 @@ func Initialize() {
 		return
 	}
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-	if len(os.Args) > 1 {
-		command := os.Args[1]
-		if command == "init" {
-			ctx = core.New(core.CTX_INIT)
-		} else {
-			ctx = core.New(core.CTX_RESOLVE)
-		}
-	}
-
-	if ctx == nil {
-		return
-	}
-	if ctx.Err() != nil {
-		ctx.Err().Print()
-		os.Exit(1)
-	}
-
-	// currentfolder, _ := os.Getwd()
-
-	isKeystoneFile := keystonefile.ExistsKeystoneFile(ctx.Wd)
-
-	current := ctx.CurrentEnvironment()
-	ctx.SetError(nil)
-
-	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
-
 	checkEnvironment := true
 	checkProject := true
 	checkLogin := false
@@ -124,7 +95,29 @@ func Initialize() {
 		checkEnvironment = !isIn(noEnvironmentCommands, command)
 		checkProject = !isIn(noProjectCommands, command)
 		checkLogin = !isIn(noLoginCommands, command)
+
+		if command == "init" {
+			ctx = core.New(core.CTX_INIT)
+		} else {
+			ctx = core.New(core.CTX_RESOLVE)
+		}
 	}
+
+	// Here you will define your flags and configuration settings.
+	// Cobra supports persistent flags, which, if defined here,
+	// will be global for your application.
+
+	if ctx.Err() != nil && checkProject {
+		ctx.Err().Print()
+		os.Exit(1)
+	}
+
+	isKeystoneFile := keystonefile.ExistsKeystoneFile(ctx.Wd)
+
+	current := ctx.CurrentEnvironment()
+	ctx.SetError(nil)
+
+	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
 
 	if checkProject && !isKeystoneFile {
 		errors.NotAKeystoneProject(".", nil).Print()
