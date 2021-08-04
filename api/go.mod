@@ -9,6 +9,7 @@ require (
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/google/go-github/v32 v32.1.0
 	github.com/julienschmidt/httprouter v1.3.0
+	github.com/keighl/mandrill v0.0.0-20170605120353-1775dd4b3b41 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mitranim/gow v0.0.0-20210623102858-76f93562d1cb // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
