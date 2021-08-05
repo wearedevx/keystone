@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks file add"
 slug: ks_file_add
 url: /docs/cli/ks_file_add/
@@ -13,25 +13,26 @@ Adds a file to secrets
 
 ### Synopsis
 
-Adds a file to secrets
+Adds a file to secrets.
 
-A secret file is a file which have content that can changge
+A secret file is a file which have content that can change
 across environments, such as configuration files, credentials,
 certificates and so on.
 
 When adding a file, you will be asked for a version of its content
 for all known environments.
 
-Examples:
-  $ ks file add ./config/config.exs
-  
-  $ ks file add ./wp-config.php
-
-  $ ks file add ./certs/my-website.cert
-
 
 ```
-ks file add [flags]
+ks file add <path to a file> [flags]
+```
+
+### Examples
+
+```
+ks file add ./config/config.exs
+ks file add ./wp-config.php
+ks file add ./certs/my-website.cert
 ```
 
 ### Options

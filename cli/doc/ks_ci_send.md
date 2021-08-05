@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks ci send"
 slug: ks_ci_send
 url: /docs/cli/ks_ci_send/
@@ -14,14 +14,25 @@ Sends environment to a CI service
 ### Synopsis
 
 Sends environment to a CI service.
+
 This command will send all your secrets and files followed by keystone to your CI service.
 
-The CI service must have been setup using:
-  $ ks ci setup
+The CI service must have been setup using: `ks ci setup`
 
 
 ```
 ks ci send [flags]
+```
+
+### Examples
+
+```
+# To send the current environment:
+ks ci send
+
+# To send a specific environment:
+ks ci send --env prod
+
 ```
 
 ### Options

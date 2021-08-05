@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks ci setup"
 slug: ks_ci_setup
 url: /docs/cli/ks_ci_setup/
@@ -20,6 +20,12 @@ like API key and project name.
 
 ```
 ks ci setup [flags]
+```
+
+### Examples
+
+```
+ks ci setup
 ```
 
 ### Options

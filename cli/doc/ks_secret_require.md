@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks secret require"
 slug: ks_secret_require
 url: /docs/cli/ks_secret_require/
@@ -16,13 +16,19 @@ Marks a secret as required
 Marks a secret as required.
 
 Secrets marked as required cannot be unset or set to blank value.
-If they are, 'ks source' will exit with a non-zero exit code.
+If they are, `ks source` will exit with a non-zero exit code.
 
-Additionally, 'ks ci send' will fail if a required secrets are missing.
+Additionally, `ks ci send` will fail if a required secrets are missing.
 
 
 ```
-ks secret require [flags]
+ks secret require <secret name> [flags]
+```
+
+### Examples
+
+```
+ks secret require PORT
 ```
 
 ### Options

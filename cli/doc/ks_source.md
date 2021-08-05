@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks source"
 slug: ks_source
 url: /docs/cli/ks_source/
@@ -18,15 +18,18 @@ Prints all environment variables.
 Environment variables values can then be loaded using eval, for example.
 
 Example:
-  $ ks source
-  KEY=value
-  OTHER_KEY=other_value
+```
+$ ks source
+export KEY="value"
+export OTHER_KEY="other_value"
 
-  $ eval "$(ks source)"
-  $ echo $KEY
-  value
-  $ echo $OTHER_KEY
-  other_value
+$ eval "$(ks source)"
+$ echo $KEY
+value
+$ echo $OTHER_KEY
+other_value
+```
+
 
 ```
 ks source [flags]

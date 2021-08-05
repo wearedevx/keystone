@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks logout"
 slug: ks_logout
 url: /docs/cli/ks_logout/
@@ -17,6 +17,12 @@ Logs you out of Keystone.
 
 ```
 ks logout [flags]
+```
+
+### Examples
+
+```
+ks logout
 ```
 
 ### Options

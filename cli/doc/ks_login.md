@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks login"
 slug: ks_login
 url: /docs/cli/ks_login/
@@ -13,10 +13,23 @@ Login or sign up to your keystone accounts
 
 ### Synopsis
 
-Login or sign up to your keystone accounts
+Login or sign up to your keystone accounts.
+
+When singing up, you will be asked to log into either your GitHub or GitLab
+account, to verify your identity.
+We do not use any information other than your email address and your username.
+	
 
 ```
 ks login [flags]
+```
+
+### Examples
+
+```
+ks login
+ks login --with=gitlab
+ks login ––with=github
 ```
 
 ### Options

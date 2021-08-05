@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks secret optional"
 slug: ks_secret_optional
 url: /docs/cli/ks_secret_optional/
@@ -19,7 +19,13 @@ Blank values for the given secret will be allowed.
 
 
 ```
-ks secret optional [flags]
+ks secret optional <secret name> [flags]
+```
+
+### Examples
+
+```
+ks secret optional PORT
 ```
 
 ### Options

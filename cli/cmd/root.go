@@ -44,9 +44,9 @@ var ctx *core.Context
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   "ks",
+	Use:   "ks <command> [sub-command] [inputs]...",
 	Short: "A safe system for developers to store, share and use secrets.",
-	Long:  `A safe system for developers to store, share and use secrets`,
+	Long:  `A safe system for developers to store, share and use secrets.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {

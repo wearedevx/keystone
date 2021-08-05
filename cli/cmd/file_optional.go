@@ -23,7 +23,7 @@ import (
 
 // optionalCmd represents the optional command
 var fileOptionalCmd = &cobra.Command{
-	Use:   "optional [path to a file]",
+	Use:   "optional <path to a file>",
 	Short: "Marks a file as optional",
 	Long: `Marks a file as optional.
 

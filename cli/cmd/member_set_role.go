@@ -43,8 +43,10 @@ var memberSetRoleCmd = &cobra.Command{
 If no role argument is provided, it will be prompted.
 
 Roles determine access rights to environments.`,
-	Example: `ks member set-role john@gitlab devops
+	Example: `# Set the role directly
+ks member set-role john@gitlab devops
 
+# Set the role with a prompt
 ks member set-role sandra@github`,
 	Args: func(_ *cobra.Command, args []string) error {
 		r := regexp.MustCompile(`[\w-_.]+@(gitlab|github)`)

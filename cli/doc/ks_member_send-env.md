@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks member send-env"
 slug: ks_member_send-env
 url: /docs/cli/ks_member_send-env/
