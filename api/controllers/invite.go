@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -21,8 +20,6 @@ func PostInvite(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user model
 
 	targetUsers := []models.User{}
 	result := &models.GetInviteResponse{}
-
-	fmt.Println(payload)
 
 	// check if user exist
 	if err = Repo.GetUserByEmail(targetEmail, &targetUsers).Err(); err != nil {
