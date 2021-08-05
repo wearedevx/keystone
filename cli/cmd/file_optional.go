@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
+Copyright © 2021 NAME HERE <EMAIL ADDRESS>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,41 +22,40 @@ import (
 )
 
 // optionalCmd represents the optional command
-var optionalCmd = &cobra.Command{
+var fileOptionalCmd = &cobra.Command{
 	Use:   "optional",
-	Short: "Marks a secret as optional",
-	Long: `Marks a secret as optional.
+	Short: "Marks a file as optional",
+	Long: `Marks a file as optional.
 
-Blank values for the given secret will be allowed.
+Empty or non-existing files will be allowed.
 `,
-	Args: cobra.ExactArgs(1),
-	Run: func(_ *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, args []string) {
 		var err *kserrors.Error
 
-		secretName := args[0]
+		fileName := args[0]
 
-		if !ctx.HasSecret(secretName) {
-			kserrors.SecretDoesNotExist(secretName, nil).Print()
+		if !ctx.HasFile(fileName) {
+			kserrors.FileDoesNotExist(fileName, nil).Print()
 			return
 		}
 
-		ctx.MarkSecretRequired(secretName, false)
+		ctx.MarkFileRequired(fileName, false)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
 			return
 		}
 
-		template := `Secret {{ .SecertName }} is now optional.`
+		template := `File {{ .FilePath }} is now optional.`
 
-		ui.Print(ui.RenderTemplate("set secret optional", template, struct{ SecretName string }{
-			SecretName: secretName,
+		ui.Print(ui.RenderTemplate("set file optional", template, struct{ FilePath string }{
+			FilePath: fileName,
 		}))
 	},
 }
 
 func init() {
-	secretsCmd.AddCommand(optionalCmd)
+	filesCmd.AddCommand(fileOptionalCmd)
 
 	// Here you will define your flags and configuration settings.
 

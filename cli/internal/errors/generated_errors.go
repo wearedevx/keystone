@@ -139,7 +139,7 @@ To list secrets:
   $ ks secret
 
 To add a {{ .Secret }} secret to all environments:
-  $ ks secret {{ .Secret }} <secret-value>
+  $ ks secret add {{ .Secret }} <secret-value>
 
 `,
 	"SecretRequired": `
@@ -168,6 +168,30 @@ You may set value for those secrets with:
 
 Or make them optional using:
   $ ks secret optional <SECRET_NAME>
+
+`,
+	"FileDoesNotExist": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .FileName | red }} {{- "'" | red }}
+
+To list files:
+  $ ks file
+
+To add {{ .FileName }} to all environments:
+  $ ks file add {{ .FileName }}
+
+`,
+	"RequiredFilesAreMissing": `
+{{ ERROR }} {{ .Name | red }}
+You are trying to send the environment '{{ .EnvironmentName }}' to a CI/CD service, but some required files are missing or empty:
+{{ range $filePath := .MissingFiles }}
+ - {{ $filePath }}
+{{ end }}
+
+You may set the content for those files with:
+  $ ks file add <FILE_PATH>
+
+Or make them optional using:
+  $ ks file optional <FILE_PATH>
 
 `,
 	"EnvironmentsHaveChanged": `
@@ -474,6 +498,21 @@ func RequiredSecretsAreMissing(missingsecrets []string, environmentname string, 
 		"EnvironmentName": string(environmentname),
 	}
 	return NewError("Required Secrets Are Missing", helpTexts["RequiredSecretsAreMissing"], meta, cause)
+}
+
+func FileDoesNotExist(filename string, cause error) *Error {
+	meta := map[string]interface{}{
+		"FileName": string(filename),
+	}
+	return NewError("File Doesn't Exist", helpTexts["FileDoesNotExist"], meta, cause)
+}
+
+func RequiredFilesAreMissing(missingfiles []string, environmentname string, cause error) *Error {
+	meta := map[string]interface{}{
+		"MissingFiles":    []string(missingfiles),
+		"EnvironmentName": string(environmentname),
+	}
+	return NewError("Required Files Are Missing", helpTexts["RequiredFilesAreMissing"], meta, cause)
 }
 
 func EnvironmentsHaveChanged(environmentsname string, cause error) *Error {

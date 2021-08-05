@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -56,12 +57,13 @@ Example:
 		ms.GetMessages()
 
 		env := ctx.ListSecrets()
-		// TODO: crash on missing required files
 		ctx.FilesUseEnvironment(currentEnvironment)
+
+		mustNotHaveAnyRequiredThingMissing(ctx)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
-			return
+			os.Exit(1)
 		}
 
 		for _, secretInfo := range env {
@@ -96,4 +98,24 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// sourceCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func mustNotHaveAnyRequiredThingMissing(ctx *core.Context) {
+	missingSecrets, hasMisssingSecrets := ctx.
+		MissingSecretsForEnvironment(currentEnvironment)
+
+	for _, ms := range missingSecrets {
+		fmt.Fprintf(os.Stderr, "Required Secret is missing: %s\n", ms)
+	}
+
+	missingFiles, hasMissingFiles := ctx.
+		MissingFilesForEnvironment(currentEnvironment)
+
+	for _, mf := range missingFiles {
+		fmt.Fprintf(os.Stderr, "Required file is missing or empty: %s\n", mf)
+	}
+
+	if hasMissingFiles || hasMisssingSecrets {
+		os.Exit(1)
+	}
 }

@@ -4,7 +4,7 @@ import (
 	"path"
 
 	. "github.com/wearedevx/keystone/cli/internal/envfile"
-	. "github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
 )
@@ -39,7 +39,7 @@ func (ctx *Context) AddSecret(
 	}
 
 	var err error
-	var e *Error
+	var e *kserrors.Error
 	var ksfile KeystoneFile
 	// Add new env key to keystone.yml
 	if err = ksfile.
@@ -47,7 +47,7 @@ func (ctx *Context) AddSecret(
 		SetEnv(secretName, flag == S_REQUIRED).
 		Save().
 		Err(); err != nil {
-		return ctx.setError(FailedToUpdateKeystoneFile(err))
+		return ctx.setError(kserrors.FailedToUpdateKeystoneFile(err))
 	}
 
 	// Generate .env files in cache for each environment in map
@@ -69,19 +69,19 @@ func (ctx *Context) AddSecret(
 	destDotEnv := ctx.CachedDotEnvPath()
 
 	if err = CopyFile(newDotEnv, destDotEnv); err != nil {
-		return ctx.setError(CopyFailed(newDotEnv, destDotEnv, err))
+		return ctx.setError(kserrors.CopyFailed(newDotEnv, destDotEnv, err))
 	}
 
 	return ctx
 }
 
-func generateEnvFileInCache(ctx *Context, env string, secretName string, value string) (e *Error) {
+func generateEnvFileInCache(ctx *Context, env string, secretName string, value string) (e *kserrors.Error) {
 	var err error
 
 	cachePath := ctx.CachedEnvironmentPath(env)
 	if !DirExists(cachePath) {
 		if err = CreateDirIfNotExist(cachePath); err != nil {
-			e = CannotCreateDirectory(cachePath, err)
+			e = kserrors.CannotCreateDirectory(cachePath, err)
 
 			return e
 		}
@@ -94,7 +94,7 @@ func generateEnvFileInCache(ctx *Context, env string, secretName string, value s
 		Set(secretName, value).
 		Dump().
 		Err(); err != nil {
-		e = FailedToUpdateDotEnv(envFilePath, err)
+		e = kserrors.FailedToUpdateDotEnv(envFilePath, err)
 		return e
 	}
 
@@ -119,7 +119,7 @@ func (ctx *Context) RemoveSecret(secretName string, purge bool) *Context {
 		UnsetEnv(secretName).
 		Save().
 		Err(); err != nil {
-		return ctx.setError(FailedToUpdateKeystoneFile(err))
+		return ctx.setError(kserrors.FailedToUpdateKeystoneFile(err))
 	}
 
 	if purge {
@@ -139,7 +139,7 @@ func (ctx *Context) purgeSecret(secretName string) *Context {
 	}
 
 	var err error
-	var e *Error
+	var e *kserrors.Error
 
 	// Update environments' .env files
 	environments := ctx.ListEnvironments()
@@ -150,7 +150,7 @@ func (ctx *Context) purgeSecret(secretName string) *Context {
 		dotEnv := new(EnvFile)
 
 		if err = dotEnv.Load(dotEnvPath, nil).Err(); err != nil {
-			return ctx.setError(FailedToReadDotEnv(dotEnvPath, err))
+			return ctx.setError(kserrors.FailedToReadDotEnv(dotEnvPath, err))
 		}
 
 		for secretName := range dotEnv.GetData() {
@@ -158,7 +158,7 @@ func (ctx *Context) purgeSecret(secretName string) *Context {
 		}
 
 		if err = dotEnv.Dump().Err(); err != nil {
-			return ctx.setError(FailedToUpdateDotEnv(dotEnvPath, err))
+			return ctx.setError(kserrors.FailedToUpdateDotEnv(dotEnvPath, err))
 		}
 	}
 
@@ -173,7 +173,7 @@ func (ctx *Context) purgeSecret(secretName string) *Context {
 	destDotEnv := ctx.CachedDotEnvPath()
 
 	if err = CopyFile(newDotEnv, destDotEnv); err != nil {
-		return ctx.setError(CopyFailed(newDotEnv, destDotEnv, err))
+		return ctx.setError(kserrors.CopyFailed(newDotEnv, destDotEnv, err))
 	}
 
 	return ctx
@@ -189,12 +189,12 @@ func (ctx *Context) PurgeSecrets() *Context {
 	}
 
 	var err error
-	var e *Error
+	var e *kserrors.Error
 	var ksfile KeystoneFile
 	// Add new env key to keystone.yml
 
 	if err = ksfile.Load(ctx.Wd).Err(); err != nil {
-		return ctx.setError(FailedToReadKeystoneFile(err))
+		return ctx.setError(kserrors.FailedToReadKeystoneFile(err))
 	}
 
 	// Update environments' .env files
@@ -206,7 +206,7 @@ func (ctx *Context) PurgeSecrets() *Context {
 		dotEnv := new(EnvFile)
 
 		if err = dotEnv.Load(dotEnvPath, nil).Err(); err != nil {
-			return ctx.setError(FailedToReadDotEnv(dotEnvPath, err))
+			return ctx.setError(kserrors.FailedToReadDotEnv(dotEnvPath, err))
 		}
 
 		for secretName := range dotEnv.GetData() {
@@ -216,7 +216,7 @@ func (ctx *Context) PurgeSecrets() *Context {
 		}
 
 		if err = dotEnv.Dump().Err(); err != nil {
-			return ctx.setError(FailedToUpdateDotEnv(dotEnvPath, err))
+			return ctx.setError(kserrors.FailedToUpdateDotEnv(dotEnvPath, err))
 		}
 	}
 
@@ -231,7 +231,7 @@ func (ctx *Context) PurgeSecrets() *Context {
 	destDotEnv := ctx.CachedDotEnvPath()
 
 	if err = CopyFile(newDotEnv, destDotEnv); err != nil {
-		return ctx.setError(CopyFailed(newDotEnv, destDotEnv, err))
+		return ctx.setError(kserrors.CopyFailed(newDotEnv, destDotEnv, err))
 	}
 
 	return ctx
@@ -254,13 +254,13 @@ func (ctx *Context) SetSecret(
 	dotEnv := new(EnvFile).Load(ctx.CachedEnvironmentDotEnvPath(envName), nil)
 
 	if err := dotEnv.Err(); err != nil {
-		return ctx.setError(FailedToReadDotEnv(dotEnvPath, err))
+		return ctx.setError(kserrors.FailedToReadDotEnv(dotEnvPath, err))
 	}
 
 	dotEnv.Set(secretName, secretValue).Dump()
 
 	if err := dotEnv.Err(); err != nil {
-		return ctx.setError(FailedToUpdateDotEnv(dotEnvPath, err))
+		return ctx.setError(kserrors.FailedToUpdateDotEnv(dotEnvPath, err))
 	}
 
 	return ctx
@@ -287,7 +287,7 @@ func (ctx *Context) GetSecrets() map[string]string {
 	dotEnv := new(EnvFile).Load(ctx.CachedDotEnvPath(), nil)
 
 	if err = dotEnv.Err(); err != nil {
-		ctx.setError(FailedToUpdateDotEnv(ctx.CachedDotEnvPath(), err))
+		ctx.setError(kserrors.FailedToUpdateDotEnv(ctx.CachedDotEnvPath(), err))
 
 		return env
 	}
@@ -320,7 +320,7 @@ func (ctx *Context) GetSecret(secretName string) *Secret {
 	ksfile := new(KeystoneFile).Load(ctx.Wd)
 
 	if err = ksfile.Err(); err != nil {
-		ctx.setError(FailedToReadKeystoneFile(err))
+		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
 		return secret
 	}
 
@@ -366,7 +366,7 @@ func (ctx *Context) ListSecretsFromCache() []Secret {
 	ksfile := new(KeystoneFile).Load(ctx.Wd)
 
 	if err = ksfile.Err(); err != nil {
-		ctx.setError(FailedToReadKeystoneFile(err))
+		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
 		return secrets
 	}
 
@@ -414,7 +414,7 @@ func (ctx *Context) ListSecrets() []Secret {
 	ksfile := new(KeystoneFile).Load(ctx.Wd)
 
 	if err = ksfile.Err(); err != nil {
-		ctx.setError(FailedToReadKeystoneFile(err))
+		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
 		return secrets
 	}
 
@@ -456,7 +456,7 @@ func (ctx *Context) HasSecret(secretName string) bool {
 
 	ksfile := new(KeystoneFile).Load(ctx.Wd)
 	if err := ksfile.Err(); err != nil {
-		ctx.setError(FailedToReadKeystoneFile(err))
+		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
 		return haveIt
 	}
 
@@ -470,7 +470,9 @@ func (ctx *Context) HasSecret(secretName string) bool {
 	return haveIt
 }
 
-func (ctx *Context) MissingSecretsForEnvironment(environmentName string) ([]string, bool) {
+func (ctx *Context) MissingSecretsForEnvironment(
+	environmentName string,
+) ([]string, bool) {
 	missing := []string{}
 	hasMissing := false
 	if ctx.Err() != nil {
@@ -501,7 +503,7 @@ func (ctx *Context) SecretIsRequired(secretName string) bool {
 
 	ksfile := new(KeystoneFile).Load(ctx.Wd)
 	if err := ksfile.Err(); err != nil {
-		ctx.setError(FailedToReadKeystoneFile(err))
+		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
 		return required
 	}
 
@@ -529,7 +531,7 @@ func (ctx *Context) MarkSecretRequired(
 		SetEnv(secretName, required).
 		Save().
 		Err(); err != nil {
-		return ctx.setError(FailedToUpdateKeystoneFile(err))
+		return ctx.setError(kserrors.FailedToUpdateKeystoneFile(err))
 	}
 
 	return ctx

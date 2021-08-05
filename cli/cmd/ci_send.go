@@ -33,15 +33,8 @@ The CI service must have been setup using:
 			}
 		}
 
-		missing, hasMissing := ctx.MissingSecretsForEnvironment(
-			environment.Name,
-		)
-
-		if hasMissing {
-			error := kserrors.RequiredSecretsAreMissing(missing, environment.Name, nil)
-			error.Print()
-			os.Exit(1)
-		}
+		mustNotHaveMissingSecrets(environment)
+		mustNotHaveMissingFiles(environment)
 
 		message, err := ctx.PrepareMessagePayload(environment)
 
@@ -99,4 +92,28 @@ func SelectCiService(ctx core.Context) (ci.CiService, error) {
 	}
 
 	return ci.GetCiService(serviceName, ctx, client.ApiURL)
+}
+
+func mustNotHaveMissingSecrets(environment models.Environment) {
+	missing, hasMissing := ctx.MissingSecretsForEnvironment(
+		environment.Name,
+	)
+
+	if hasMissing {
+		error := kserrors.RequiredSecretsAreMissing(missing, environment.Name, nil)
+		error.Print()
+		os.Exit(1)
+	}
+}
+
+func mustNotHaveMissingFiles(environment models.Environment) {
+	missing, hasMissing := ctx.MissingFilesForEnvironment(
+		environment.Name,
+	)
+
+	if hasMissing {
+		error := kserrors.RequiredFilesAreMissing(missing, environment.Name, nil)
+		error.Print()
+		os.Exit(1)
+	}
 }

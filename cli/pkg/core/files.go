@@ -2,12 +2,13 @@ package core
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	. "github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
@@ -29,7 +30,7 @@ func (ctx *Context) ListFiles() []FileKey {
 	ksfile := new(KeystoneFile).Load(ctx.Wd)
 
 	if err := ksfile.Err(); err != nil {
-		ctx.setError(FailedToReadKeystoneFile(err))
+		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
 		return make([]FileKey, 0)
 	}
 
@@ -43,7 +44,7 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 
 	// Add file path to the keystone file
 	if err := new(KeystoneFile).Load(ctx.Wd).AddFile(file).Save().Err(); err != nil {
-		return ctx.setError(FailedToUpdateKeystoneFile(err))
+		return ctx.setError(kserrors.FailedToUpdateKeystoneFile(err))
 	}
 
 	environments := ctx.ListEnvironments()
@@ -55,7 +56,7 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 	os.MkdirAll(dir, 0o755)
 
 	if err := CopyFile(file.Path, dest); err != nil {
-		return ctx.setError(CopyFailed(file.Path, dest, err))
+		return ctx.setError(kserrors.CopyFailed(file.Path, dest, err))
 	}
 
 	// Set content for every other environment
@@ -64,7 +65,7 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 		parentDir := filepath.Dir(dest) + string(os.PathSeparator)
 
 		if err := os.MkdirAll(parentDir, 0o755); err != nil {
-			ctx.setError(CannotCreateDirectory(parentDir, err))
+			ctx.setError(kserrors.CannotCreateDirectory(parentDir, err))
 			return ctx
 		}
 
@@ -93,7 +94,7 @@ func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 
 	ksfile := new(KeystoneFile).Load(ctx.Wd)
 	if err := ksfile.Err(); err != nil {
-		return ctx.setError(FailedToReadKeystoneFile(err))
+		return ctx.setError(kserrors.FailedToReadKeystoneFile(err))
 	}
 
 	cachePath := ctx.CachedEnvironmentFilesPath(envname)
@@ -109,7 +110,7 @@ func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 
 		if !FileExists(cachedFilePath) {
 			if file.Strict {
-				return ctx.setError(FileNotInEnvironment(file.Path, envname, nil))
+				return ctx.setError(kserrors.FileNotInEnvironment(file.Path, envname, nil))
 			}
 			ui.Print("File \"%s\" not in envrironment", file.Path)
 		}
@@ -117,11 +118,11 @@ func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 		parentDir := filepath.Dir(linkPath)
 
 		if err := os.MkdirAll(parentDir, 0755); err != nil {
-			return ctx.setError(CannotLinkFile(file.Path, cachedFilePath, err))
+			return ctx.setError(kserrors.CannotLinkFile(file.Path, cachedFilePath, err))
 		}
 
 		if err := os.Symlink(cachedFilePath, linkPath); err != nil {
-			return ctx.setError(CannotLinkFile(file.Path, cachedFilePath, err))
+			return ctx.setError(kserrors.CannotLinkFile(file.Path, cachedFilePath, err))
 		}
 	}
 
@@ -136,7 +137,7 @@ func (ctx *Context) RemoveFile(filePath string, force bool, purge bool, accessib
 	ksfile := new(KeystoneFile).Load(ctx.Wd)
 
 	if err := ksfile.Err(); err != nil {
-		return ctx.setError(FailedToReadKeystoneFile(err))
+		return ctx.setError(kserrors.FailedToReadKeystoneFile(err))
 	}
 
 	filteredFiles := make([]FileKey, 0)
@@ -150,7 +151,7 @@ func (ctx *Context) RemoveFile(filePath string, force bool, purge bool, accessib
 	ksfile.Save()
 
 	if err := ksfile.Err(); err != nil {
-		return ctx.setError(FailedToUpdateKeystoneFile(err))
+		return ctx.setError(kserrors.FailedToUpdateKeystoneFile(err))
 	}
 
 	currentEnvironment := ctx.CurrentEnvironment()
@@ -180,4 +181,97 @@ func (ctx *Context) RemoveFile(filePath string, force bool, purge bool, accessib
 	GitUnignore(ctx.Wd, filePath)
 
 	return ctx
+}
+
+// Returns a boolean indicating wether the secret `secretName`
+// exists in the local files
+func (ctx *Context) HasFile(fileName string) bool {
+	haveIt := false
+
+	if ctx.Err() != nil {
+		return haveIt
+	}
+
+	ksfile := new(KeystoneFile).Load(ctx.Wd)
+	if err := ksfile.Err(); err != nil {
+		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		return haveIt
+	}
+
+	for _, fileKey := range ksfile.Files {
+		if fileKey.Path == fileName {
+			haveIt = true
+			break
+		}
+	}
+
+	return haveIt
+}
+
+func (ctx *Context) MarkFileRequired(
+	filePath string,
+	required bool,
+) *Context {
+	if ctx.Err() != nil {
+		return ctx
+	}
+
+	if err := new(KeystoneFile).
+		Load(ctx.Wd).
+		SetFileRequired(filePath, required).
+		Save().
+		Err(); err != nil {
+		return ctx.setError(kserrors.FailedToUpdateKeystoneFile(err))
+	}
+
+	return ctx
+}
+
+// GetFileContents returns the file contents for the given envsrionment
+// as a slice of bytes.
+// It returns an error if reading the file fails (Pemission denied, no exists…)
+// or if the file is empty (content length equals 0)
+func (ctx *Context) GetFileContents(
+	fileName string, environmentName string,
+) (contents []byte, err error) {
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
+
+	cachePath := ctx.CachedEnvironmentFilesPath(environmentName)
+	filePath := path.Join(cachePath, fileName)
+
+	contents, err = ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	if len(contents) == 0 {
+		return nil, fmt.Errorf("No contents")
+	}
+
+	return contents, err
+}
+
+// MissingFilesForEnvironment return a list of missing files for the given
+// environment.
+// The second returned value indicates whether the list contains something
+// or not.
+func (ctx *Context) MissingFilesForEnvironment(
+	environmentName string,
+) ([]string, bool) {
+	missing := []string{}
+	hasMissing := false
+
+	files := ctx.ListFiles()
+
+	for _, file := range files {
+		if file.Strict {
+			if _, err := ctx.GetFileContents(file.Path, environmentName); err != nil {
+				hasMissing = true
+				missing = append(missing, file.Path)
+			}
+		}
+	}
+
+	return missing, hasMissing
 }
