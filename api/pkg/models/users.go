@@ -135,3 +135,22 @@ func (upk UserPublicKey) Serialize(out *string) (err error) {
 
 	return err
 }
+
+type GetInviteResponse struct {
+	UserUIDs []string `json:"user_uids"`
+}
+
+func (e *GetInviteResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(e)
+}
+
+func (u *GetInviteResponse) Serialize(out *string) error {
+	var sb strings.Builder
+	var err error
+
+	err = json.NewEncoder(&sb).Encode(u)
+
+	*out = sb.String()
+
+	return err
+}

@@ -279,19 +279,3 @@ func GetUserKey(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models
 
 	return &userPublicKey, status, err
 }
-
-// func InviteUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-// 	payload := models.InvitePayload{}
-// 	// status := http.StatusNoContent
-// 	response := &GenericResponse{}
-// 	response.Success = true
-// 	es := email.EmailService{}
-
-// 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-// 		http.Error(w, "Bad Request", http.StatusBadRequest)
-// 		return
-// 	}
-// 	es.InitClient()
-// 	es.SendInviteEmail(payload.Email)
-
-// }
