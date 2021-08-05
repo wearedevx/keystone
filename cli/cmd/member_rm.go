@@ -34,7 +34,7 @@ var forceYes bool
 
 // memberRmCmd represents the memberRm command
 var memberRmCmd = &cobra.Command{
-	Use:   "rm <list of member ids>",
+	Use:   "rm <member-id>...",
 	Short: "Removes members from the current project",
 	Long: `Removes members from the current project,
 effecively preventing them from accessing future version

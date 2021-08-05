@@ -49,7 +49,7 @@ var flow Flow
 
 // memberAddCmd represents the memberAdd command
 var memberAddCmd = &cobra.Command{
-	Use: "add <list of member ids>",
+	Use: "add <member-id>...",
 	Args: func(_ *cobra.Command, args []string) error {
 		// r := regexp.MustCompile(`[\w-_.]+@(gitlab|github)`)
 		flow = PromptFlow

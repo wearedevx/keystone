@@ -37,7 +37,7 @@ var projectName string
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
-	Use:   "init [project name]",
+	Use:   "init <project-name>",
 	Short: "Creates Keystone config files and directories",
 	Long: `Creates Keystone config files and directories.
 
@@ -46,6 +46,7 @@ Created files and directories:
  - .keystone:    cache and various files for internal use. 
                  automatically added to .gitignore
 `,
+	Example: "ks init my-awesome-project",
 	Args: func(_ *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return errors.New("a project name cannot be empty")

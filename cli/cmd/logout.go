@@ -22,9 +22,10 @@ import (
 
 // logoutCmd represents the logout command
 var logoutCmd = &cobra.Command{
-	Use:   "logout",
-	Short: "Logs you out of Keystone",
-	Long:  `Logs you out of Keystone.`,
+	Use:     "logout",
+	Short:   "Logs you out of Keystone",
+	Long:    `Logs you out of Keystone.`,
+	Example: "ks logout",
 	Run: func(_ *cobra.Command, _ []string) {
 		config.SetCurrentAccount(-1)
 		config.SetAuthToken("")

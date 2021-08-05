@@ -17,6 +17,10 @@ package cmd
 
 import (
 	"fmt"
+	"path"
+	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
@@ -50,7 +54,7 @@ keystone documentation man`,
 		Args: cobra.ExactValidArgs(1),
 		Run: func(_ *cobra.Command, _ []string) {
 			fmt.Println("Doc generation command")
-			err := doc.GenMarkdownTree(rootCmd, "./doc")
+			err := doc.GenMarkdownTreeCustom(rootCmd, "./doc", prepender, linkHandler)
 
 			if err != nil {
 				panic(err)
@@ -58,6 +62,32 @@ keystone documentation man`,
 		},
 	}
 	return cmd
+}
+
+const fmTemplate = `---
+date: %s
+title: "%s"
+slug: %s
+url: %s
+menu:
+  docs:
+    parent: "%s"
+---
+`
+
+func prepender(filename string) string {
+	now := time.Now().Format(time.RFC3339)
+	name := filepath.Base(filename)
+	base := strings.TrimSuffix(name, path.Ext(name))
+	url := "/docs/cli/" + strings.ToLower(base) + "/"
+	parent := "cli"
+
+	return fmt.Sprintf(fmTemplate, now, strings.Replace(base, "_", " ", -1), base, url, parent)
+}
+
+func linkHandler(name string) string {
+	base := strings.TrimSuffix(name, path.Ext(name))
+	return "/docs/cli/" + strings.ToLower(base) + "/"
 }
 
 func init() {

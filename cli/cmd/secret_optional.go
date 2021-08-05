@@ -23,13 +23,14 @@ import (
 
 // optionalCmd represents the optional command
 var optionalCmd = &cobra.Command{
-	Use:   "optional",
+	Use:   "optional <secret name>",
 	Short: "Marks a secret as optional",
 	Long: `Marks a secret as optional.
 
 Blank values for the given secret will be allowed.
 `,
-	Args: cobra.ExactArgs(1),
+	Example: "ks secret optinal PORT",
+	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
 

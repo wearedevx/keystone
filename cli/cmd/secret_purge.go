@@ -32,6 +32,7 @@ var purgeCmd = &cobra.Command{
 
 All values for every environments will be removed for every member.
 This is permanent an cannont be undone`,
+	Example: "ks secret purge",
 	Run: func(_ *cobra.Command, _ []string) {
 		var err *kserrors.Error
 

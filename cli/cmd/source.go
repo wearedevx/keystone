@@ -37,15 +37,18 @@ var sourceCmd = &cobra.Command{
 Environment variables values can then be loaded using eval, for example.
 
 Example:
+` + "```" + `
   $ ks source
-  KEY=value
-  OTHER_KEY=other_value
+  export KEY="value"
+  export OTHER_KEY="other_value"
 
   $ eval "$(ks source)"
   $ echo $KEY
   value
   $ echo $OTHER_KEY
-  other_value`,
+  other_value
+` + "```" + `
+`,
 	Run: func(_ *cobra.Command, _ []string) {
 		var err *kserrors.Error
 
