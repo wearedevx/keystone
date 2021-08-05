@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
@@ -61,13 +62,24 @@ var inviteCmd = &cobra.Command{
 
 		result, err := c.Users().InviteUser(email, projectName)
 
-		fmt.Println(result)
-
 		if err != nil {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
-		ui.PrintSuccess("A email has been sent to %s, they will get back to you when their Keystone account will be created", email)
+
+		if len(result.UserUIDs) > 0 {
+
+			ui.Print(ui.RenderTemplate("file add success", `
+{{ OK }} {{ .Title | green }}
+The email is associated with a Keystone account. They are registered as: {{ .Usernames | bright_green }}.
+To add them to the project use "member add" command:
+  $ ks member add <username>`, map[string]string{
+				"Title":     "User already on Keystone",
+				"Usernames": fmt.Sprintf("%s", strings.Join(result.UserUIDs, ", ")),
+			}))
+		} else {
+			ui.PrintSuccess("A email has been sent to %s, they will get back to you when their Keystone account will be created", email)
+		}
 
 	},
 }
