@@ -2,7 +2,7 @@ package core
 
 import (
 	. "github.com/wearedevx/keystone/cli/internal/environmentsfile"
-	. "github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
@@ -92,7 +92,7 @@ func (ctx *Context) Init(project models.Project) *Context {
 
 	for _, op := range ops {
 		if err = op(); err != nil {
-			return ctx.setError(InitFailed(err))
+			return ctx.setError(kserrors.InitFailed(err))
 		}
 	}
 

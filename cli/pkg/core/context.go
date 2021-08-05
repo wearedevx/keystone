@@ -9,13 +9,13 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/cli/internal/environmentsfile"
-	. "github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
 )
 
 type Context struct {
-	err                    *Error
+	err                    *kserrors.Error
 	Wd                     string
 	TmpDir                 string
 	ConfigDir              string
@@ -39,7 +39,7 @@ func New(flag string) *Context {
 	context := new(Context)
 
 	if cwd, err = os.Getwd(); err != nil {
-		return context.setError(NoWorkingDirectory(err))
+		return context.setError(kserrors.NoWorkingDirectory(err))
 	}
 
 	// Get Wd
@@ -49,12 +49,12 @@ func New(flag string) *Context {
 		wd, err := resolveKeystoneRootDir(cwd)
 
 		if err != nil {
-			return context.setError(NotAKeystoneProject(cwd, err))
+			return context.setError(kserrors.NotAKeystoneProject(cwd, err))
 		} else {
 			context.Wd = wd
 		}
 	} else {
-		context.err = UnsupportedFlag(flag, nil)
+		context.err = kserrors.UnsupportedFlag(flag, nil)
 	}
 
 	// Get a temporary directory
@@ -130,16 +130,16 @@ func (context *Context) CleanUp() {
 }
 
 // Accessor for error
-func (context *Context) Err() *Error {
+func (context *Context) Err() *kserrors.Error {
 	return context.err
 }
 
-func (ctx *Context) SetError(err *Error) *Context {
+func (ctx *Context) SetError(err *kserrors.Error) *Context {
 	ctx.err = err
 
 	return ctx
 }
-func (ctx *Context) setError(err *Error) *Context {
+func (ctx *Context) setError(err *kserrors.Error) *Context {
 	ctx.err = err
 
 	return ctx

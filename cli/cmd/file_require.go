@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
+Copyright © 2021 NAME HERE <EMAIL ADDRESS>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,78 +16,52 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // requireCmd represents the require command
-var requireCmd = &cobra.Command{
+var fileRequireCmd = &cobra.Command{
 	Use:   "require",
-	Short: "Marks a secret as required",
-	Long: `Marks a secret as required.
+	Short: "Marks a file as required",
+	Long: `Marks a file as required.
 
-Secrets marked as required cannot be unset or set to blank value.
-If they are, 'ks source' will exit with a non-zero exit code.
+Files marked as required must exist and have content.
+If they don’t, 'ks source' will exit with a non-zero exit code.
 
-Additionally, 'ks ci send' will fail if a required secrets are missing.
+Additionally, 'ks ci send' will fail if a required file is empty or missing.
 `,
-	Args: cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
 
-		secretName := args[0]
+		fileName := args[0]
 
-		if !ctx.HasSecret(secretName) {
-			kserrors.SecretDoesNotExist(secretName, nil).Print()
+		if !ctx.HasFile(fileName) {
+			kserrors.FileDoesNotExist(fileName, nil).Print()
 			return
 		}
 
-		// Check for blank values in environments
-		environments := ctx.ListEnvironments()
-
-		secret := ctx.GetSecret(secretName)
-
-		for _, environment := range environments {
-			value := string(secret.Values[core.EnvironmentName(environment)])
-
-			for len(value) == 0 {
-				ui.Print("Enter the value of '%s' for the '%s' environment", secretName, environment)
-
-				p := promptui.Prompt{
-					Label: secretName,
-				}
-
-				result, _ := p.Run()
-				value = result
-			}
-
-			ctx.SetSecret(environment, secretName, value)
-		}
-
-		// All is OK, set is as optional
-		ctx.MarkSecretRequired(secretName, true)
+		ctx.MarkFileRequired(fileName, true)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
 			return
 		}
 
-		template := `Secret {{ .SecretName }} is now required.
+		template := `File {{ .FilePath }} is now required.
 If you have setup a CI service, don’t forget to run:
   $ ks ci send
 		`
 
-		ui.Print(ui.RenderTemplate("set secret required", template, struct{ SecretName string }{
-			SecretName: secretName,
+		ui.Print(ui.RenderTemplate("set file required", template, struct{ FilePath string }{
+			FilePath: fileName,
 		}))
 	},
 }
 
 func init() {
-	secretsCmd.AddCommand(requireCmd)
+	filesCmd.AddCommand(fileRequireCmd)
 
 	// Here you will define your flags and configuration settings.
 

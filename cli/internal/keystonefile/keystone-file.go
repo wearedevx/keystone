@@ -221,6 +221,20 @@ func (file *KeystoneFile) RemoveFile(filepath string) *KeystoneFile {
 	return file
 }
 
+func (file *KeystoneFile) SetFileRequired(filepath string, required bool) *KeystoneFile {
+	if file.Err() != nil {
+		return file
+	}
+
+	for index, f := range file.Files {
+		if f.Path == filepath {
+			file.Files[index].Strict = required
+		}
+	}
+
+	return file
+}
+
 func (file *KeystoneFile) SetCiService(ciService CiService) *KeystoneFile {
 	if file.Err() != nil {
 		return file

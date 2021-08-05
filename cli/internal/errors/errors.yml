@@ -229,7 +229,7 @@ errors:
         $ ks secret
 
       To add a {{ .Secret }} secret to all environments:
-        $ ks secret {{ .Secret }} <secret-value>
+        $ ks secret add {{ .Secret }} <secret-value>
 
   - type: SecretRequired
     name: "Secret Required"
@@ -274,6 +274,40 @@ errors:
 
       Or make them optional using:
         $ ks secret optional <SECRET_NAME>
+
+  - type: FileDoesNotExist
+    name: "File Doesn't Exist"
+    params:
+      - name: FileName
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .FileName | red }} {{- "'" | red }}
+
+      To list files:
+        $ ks file
+
+      To add {{ .FileName }} to all environments:
+        $ ks file add {{ .FileName }}
+
+  - type: RequiredFilesAreMissing
+    name: "Required Files Are Missing"
+    params:
+      - name: MissingFiles
+        type: "[]string"
+      - name: EnvironmentName
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      You are trying to send the environment '{{ .EnvironmentName }}' to a CI/CD service, but some required files are missing or empty:
+      {{ range $filePath := .MissingFiles }}
+       - {{ $filePath }}
+      {{ end }}
+
+      You may set the content for those files with:
+        $ ks file add <FILE_PATH>
+
+      Or make them optional using:
+        $ ks file optional <FILE_PATH>
 
   - type: EnvironmentsHaveChanged
     name: "Environments have changed"
