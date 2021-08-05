@@ -71,9 +71,12 @@ var inviteCmd = &cobra.Command{
 
 			ui.Print(ui.RenderTemplate("file add success", `
 {{ OK }} {{ .Title | green }}
+
 The email is associated with a Keystone account. They are registered as: {{ .Usernames | bright_green }}.
+
 To add them to the project use "member add" command:
-  $ ks member add <username>`, map[string]string{
+  $ ks member add <username>
+`, map[string]string{
 				"Title":     "User already on Keystone",
 				"Usernames": fmt.Sprintf("%s", strings.Join(result.UserUIDs, ", ")),
 			}))
