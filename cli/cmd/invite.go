@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"regexp"
 
@@ -56,7 +57,11 @@ var inviteCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		err := c.Users().InviteUser(email)
+		projectName := ctx.GetProjectName()
+
+		result, err := c.Users().InviteUser(email, projectName)
+
+		fmt.Println(result)
 
 		if err != nil {
 			ui.PrintError(err.Error())
