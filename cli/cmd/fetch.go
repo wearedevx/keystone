@@ -23,13 +23,12 @@ import (
 
 // fetchCmd represents the fetch command
 var fetchCmd = &cobra.Command{
-	Use:   "fetch",
-	Short: "Get remote modifications.",
-	Long: `Get remote modifications.
-Get info from your team:
-  $ ks fetch
-`,
-	Args: cobra.NoArgs,
+	Use:        "fetch",
+	Short:      "Fetch the latest version of all secrets and files",
+	Long:       `Fetch the latest version of all secrets and files.`,
+	Example:    `ks fetch`,
+	Deprecated: "Secrets and files are fetched on every other command, making this one redundant.",
+	Args:       cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
 		var err *errors.Error
 

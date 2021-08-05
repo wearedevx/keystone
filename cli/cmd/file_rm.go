@@ -32,7 +32,7 @@ var purgeFile bool
 
 // filesRmCmd represents the rm command
 var filesRmCmd = &cobra.Command{
-	Use:   "rm",
+	Use:   "rm [path to a file]",
 	Short: "Removes a file from secrets",
 	Long: `Removes a file from secrets.
 
@@ -41,10 +41,9 @@ will no longer be updated when changing environment.
 
 The content of the file for other environments will be lost.
 This is permanent, and cannot be undone.
-
-Example:
-  $ ks file rm config/old-test-config.php`,
-	Args: cobra.ExactArgs(1),
+`,
+	Example: `ks file rm config/old-test-config.php`,
+	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 

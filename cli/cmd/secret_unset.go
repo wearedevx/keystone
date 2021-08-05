@@ -27,13 +27,14 @@ import (
 
 // secretsUnsetCmd represents the unset command
 var secretsUnsetCmd = &cobra.Command{
-	Use:   "unset",
+	Use:   "unset <secret name>",
 	Short: "Clears a secret for the current environment",
 	Long: `Clears a secret for the current environment.
 
 Other environments will not be afftected.
 The secret must not be required.`,
-	Args: cobra.ExactArgs(1),
+	Example: "ks unset PORT",
+	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
 

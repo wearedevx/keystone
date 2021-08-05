@@ -13,14 +13,14 @@ import (
 var cleanCmd = &cobra.Command{
 	Use:   "clean",
 	Short: "Removes all secrets and files from a CI service.",
-	Long: `Removes all secrets and from a CI service.
+	Long:  `Removes all secrets and files from a CI service.`,
+	Example: `
+# To remove everything regarding the current environment:
+ks ci clean
 
-To remove everything regarding the current environment:
-  $ ks ci clean
-
-You can specify the target environment with the --env flag:
-  $ ks ci clean --env prod
-  `,
+# You can specify the target environment with the --env flag:
+ks ci clean --env prod
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		ctx.MustHaveEnvironment(currentEnvironment)

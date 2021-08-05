@@ -28,15 +28,14 @@ var purgeSecret bool
 
 // secretsRmCmd represents the unset command
 var secretsRmCmd = &cobra.Command{
-	Use:   "rm",
+	Use:   "rm <secret name>",
 	Short: "Removes a secret from all environments",
 	Long: `Removes a secret from all environments.
 
 Removes the given secret from all environments.
-
-Exemple:
-  $ ks rm PORT`,
-	Args: cobra.ExactArgs(1),
+`,
+	Example: "ks rm PORT",
+	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
 		secretName := args[0]
