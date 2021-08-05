@@ -21,10 +21,13 @@ var ciSendCmd = &cobra.Command{
 
 This command will send all your secrets and files followed by keystone to your CI service.
 
-The CI service must have been setup using:
-` + "```" + `
-  $ ks ci setup
-` + "```" + `
+The CI service must have been setup using: ` + "`" + `ks ci setup` + "`" + `
+`,
+	Example: `# To send the current environment:
+ks ci send
+
+# To send a specific environment:
+ks ci send --env prod
 `,
 	Run: func(_ *cobra.Command, _ []string) {
 		var environment models.Environment

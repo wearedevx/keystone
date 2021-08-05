@@ -29,10 +29,10 @@ var filesCmd = &cobra.Command{
 
 List tracked secret files:
 ` + "```" + `
-  $ ks file
+$ ks file
   Files tracked as secret files:
-            config/wp-config.php
-            config/front.config.js
+    config/wp-config.php
+    config/front.config.js
 ` + "```" + `
 `,
 	Args: cobra.NoArgs,

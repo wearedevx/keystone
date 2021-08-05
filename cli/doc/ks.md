@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks"
 slug: ks
 url: /docs/cli/ks/
@@ -13,12 +13,10 @@ A safe system for developers to store, share and use secrets.
 
 ### Synopsis
 
-A safe system for developers to store, share and use secrets,
-	:
-
+A safe system for developers to store, share and use secrets.
 
 ```
-ks [flags]
+ks <command> [sub-command] [inputs]... [flags]
 ```
 
 ### Options
@@ -35,7 +33,6 @@ ks [flags]
 
 * [ks ci](/docs/cli/ks_ci/)	 - Manages CI services
 * [ks env](/docs/cli/ks_env/)	 - Manages environments
-* [ks fetch](/docs/cli/ks_fetch/)	 - Get remote modifications.
 * [ks file](/docs/cli/ks_file/)	 - Manages secret files
 * [ks init](/docs/cli/ks_init/)	 - Creates Keystone config files and directories
 * [ks invite](/docs/cli/ks_invite/)	 - Sends an invitation to join Keystone

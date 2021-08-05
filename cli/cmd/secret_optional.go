@@ -29,7 +29,7 @@ var optionalCmd = &cobra.Command{
 
 Blank values for the given secret will be allowed.
 `,
-	Example: "ks secret optinal PORT",
+	Example: "ks secret optional PORT",
 	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error

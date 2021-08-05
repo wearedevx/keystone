@@ -75,8 +75,13 @@ Passed arguments are list member ids, which users can
 obtain using ks whoami.
 
 This will cause secrets to be encryted for all members, existing and new.`,
-	Example: `ks member add john.doe@gitlab danny54@github helena@gitlab
+	Example: `# Add a list of members:
+ks member add john.doe@gitlab danny54@github helena@gitlab
+
+# Add members with their roles from a file:
 ks member add --from-file team.yml
+
+# Add members and defining their roles from the command line:
 ks member add -r developer -u john.doe@gitlab -u danny54@gitlab
 `,
 	Run: func(_ *cobra.Command, _ []string) {

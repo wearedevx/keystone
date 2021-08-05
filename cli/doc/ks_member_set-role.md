@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks member set-role"
 slug: ks_member_set-role
 url: /docs/cli/ks_member_set-role/
@@ -25,8 +25,10 @@ ks member set-role <member id> [role] [flags]
 ### Examples
 
 ```
+# Set the role directly
 ks member set-role john@gitlab devops
 
+# Set the role with a prompt
 ks member set-role sandra@github
 ```
 

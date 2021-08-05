@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks ci"
 slug: ks_ci
 url: /docs/cli/ks_ci/
@@ -15,9 +15,9 @@ Manages CI services
 
 Manages CI services.
 
-	ks ci setup: to get started with CI services;
-	ks ci send:  to send environment to a setup CI service;
-	ks ci clean: to remove all secrets and files from a CI service.
+  `ks ci setup`: to get started with CI services;  
+  `ks ci send`:  to send environment to a setup CI service;  
+  `ks ci clean`: to remove all secrets and files from a CI service.
 
 
 ```

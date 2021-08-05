@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks env"
 slug: ks_env
 url: /docs/cli/ks_env/
@@ -16,19 +16,21 @@ Manages environments
 Manages environments.
 
 Displays a list of available environments:
-  $ ks env
-   * dev
-     staging
-     prod
+```
+$ ks env
+ * dev
+   staging
+   prod
+```
 
 With an argument name, activates the environment:
 ```
-  $ ks env staging
+$ ks env staging
 ```
 
 
 ```
-ks env [flags]
+ks env [environment] [flags]
 ```
 
 ### Options

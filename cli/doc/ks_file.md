@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks file"
 slug: ks_file
 url: /docs/cli/ks_file/
@@ -16,10 +16,12 @@ Manages secret files
 Manages secret files.
 
 List tracked secret files:
-  $ ks file
+```
+$ ks file
   Files tracked as secret files:
-            config/wp-config.php
-            config/front.config.js
+    config/wp-config.php
+    config/front.config.js
+```
 
 
 ```

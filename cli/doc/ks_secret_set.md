@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks secret set"
 slug: ks_secret_set
 url: /docs/cli/ks_secret_set/
@@ -17,15 +17,19 @@ Updates a secret's value for the current environment.
 
 Changes the value of a secret without altering other environments.
 
-Example:
-  $ ks secrets set PORT 3000
-
-  Change the value of PORT for the 'staging' environment:
-  $ ks --env staging set PORT 4545
-
 
 ```
-ks secret set [flags]
+ks secret set <secret name> [secret value] [flags]
+```
+
+### Examples
+
+```
+ks secret set PORT 3000
+
+# Chanege the value of PORT for the 'staging' environment:
+ks --env stagin PORT 4545
+
 ```
 
 ### Options

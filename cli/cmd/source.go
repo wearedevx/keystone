@@ -38,15 +38,15 @@ Environment variables values can then be loaded using eval, for example.
 
 Example:
 ` + "```" + `
-  $ ks source
-  export KEY="value"
-  export OTHER_KEY="other_value"
+$ ks source
+export KEY="value"
+export OTHER_KEY="other_value"
 
-  $ eval "$(ks source)"
-  $ echo $KEY
-  value
-  $ echo $OTHER_KEY
-  other_value
+$ eval "$(ks source)"
+$ echo $KEY
+value
+$ echo $OTHER_KEY
+other_value
 ` + "```" + `
 `,
 	Run: func(_ *cobra.Command, _ []string) {

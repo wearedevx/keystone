@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks member add"
 slug: ks_member_add
 url: /docs/cli/ks_member_add/
@@ -21,14 +21,19 @@ obtain using ks whoami.
 This will cause secrets to be encryted for all members, existing and new.
 
 ```
-ks member add <list of member ids> [flags]
+ks member add <member-id>... [flags]
 ```
 
 ### Examples
 
 ```
+# Add a list of members:
 ks member add john.doe@gitlab danny54@github helena@gitlab
+
+# Add members with their roles from a file:
 ks member add --from-file team.yml
+
+# Add members and defining their roles from the command line:
 ks member add -r developer -u john.doe@gitlab -u danny54@gitlab
 
 ```

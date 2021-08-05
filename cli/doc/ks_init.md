@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks init"
 slug: ks_init
 url: /docs/cli/ks_init/
@@ -22,7 +22,13 @@ Created files and directories:
 
 
 ```
-ks init [project name] [flags]
+ks init <project-name> [flags]
+```
+
+### Examples
+
+```
+ks init my-awesome-project
 ```
 
 ### Options

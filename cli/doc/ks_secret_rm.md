@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks secret rm"
 slug: ks_secret_rm
 url: /docs/cli/ks_secret_rm/
@@ -17,11 +17,15 @@ Removes a secret from all environments.
 
 Removes the given secret from all environments.
 
-Exemple:
-  $ ks rm PORT
 
 ```
-ks secret rm [flags]
+ks secret rm <secret name> [flags]
+```
+
+### Examples
+
+```
+ks rm PORT
 ```
 
 ### Options

@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks ci clean"
 slug: ks_ci_clean
 url: /docs/cli/ks_ci_clean/
@@ -13,17 +13,22 @@ Removes all secrets and files from a CI service.
 
 ### Synopsis
 
-Removes all secrets and from a CI service.
-
-To remove everything regarding the current environment:
-  $ ks ci clean
-
-You can specify the target environment with the --env flag:
-  $ ks ci clean --env prod
-  
+Removes all secrets and files from a CI service.
 
 ```
 ks ci clean [flags]
+```
+
+### Examples
+
+```
+
+# To remove everything regarding the current environment:
+ks ci clean
+
+# You can specify the target environment with the --env flag:
+ks ci clean --env prod
+
 ```
 
 ### Options

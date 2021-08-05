@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks secret add"
 slug: ks_secret_add
 url: /docs/cli/ks_secret_add/
@@ -22,15 +22,20 @@ and 'development' environments.
 The varible name will be added to all such environments,
 you will be asked its value for each environment
 
-Example:
-  Add an environment variable PORT to all environments
-  and set its value to 3000 for the current one.
-  $ ks set PORT 3000
-
-
 
 ```
-ks secret add [flags]
+ks secret add <secret name> [secret value] [flags]
+```
+
+### Examples
+
+```
+# Add a secret `PORT` to all envrionments
+# and set its value to 3000 for the current one.
+ks secret add PORT 3000
+
+# Add a secret `PORT`without setting a default:
+ks secret add PORT
 ```
 
 ### Options

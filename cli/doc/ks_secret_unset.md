@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks secret unset"
 slug: ks_secret_unset
 url: /docs/cli/ks_secret_unset/
@@ -19,7 +19,13 @@ Other environments will not be afftected.
 The secret must not be required.
 
 ```
-ks secret unset [flags]
+ks secret unset <secret name> [flags]
+```
+
+### Examples
+
+```
+ks unset PORT
 ```
 
 ### Options

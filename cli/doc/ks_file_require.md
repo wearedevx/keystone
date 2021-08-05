@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks file require"
 slug: ks_file_require
 url: /docs/cli/ks_file_require/
@@ -16,13 +16,19 @@ Marks a file as required
 Marks a file as required.
 
 Files marked as required must exist and have content.
-If they don’t, 'ks source' will exit with a non-zero exit code.
+If they don’t, `ks source` will exit with a non-zero exit code.
 
-Additionally, 'ks ci send' will fail if a required file is empty or missing.
+Additionally, `ks ci send` will fail if a required file is empty or missing.
 
 
 ```
-ks file require [flags]
+ks file require [path to a file] [flags]
+```
+
+### Examples
+
+```
+ks file require ./config.json
 ```
 
 ### Options

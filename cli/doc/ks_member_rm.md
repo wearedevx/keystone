@@ -1,5 +1,5 @@
 ---
-date: 2021-08-05T17:00:24+02:00
+date: 2021-08-05T18:30:25+02:00
 title: "ks member rm"
 slug: ks_member_rm
 url: /docs/cli/ks_member_rm/
@@ -20,7 +20,7 @@ of the secrets and files.
 This causes secrets to be re-crypted for the remainig members.
 
 ```
-ks member rm <list of member ids> [flags]
+ks member rm <member-id>... [flags]
 ```
 
 ### Examples
