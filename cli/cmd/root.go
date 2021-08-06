@@ -146,8 +146,14 @@ func Initialize() {
 		}
 
 		if isKeystoneFile {
+			environmentsToSave := make([]models.Environment, 0)
+			for _, env := range ctx.AccessibleEnvironments {
+				env.VersionID = ""
+				environmentsToSave = append(environmentsToSave, env)
+			}
+
 			ctx.Init(models.Project{
-				Environments: ctx.AccessibleEnvironments,
+				Environments: environmentsToSave,
 			})
 		}
 		ctx.RemoveForbiddenEnvironments(ctx.AccessibleEnvironments)
