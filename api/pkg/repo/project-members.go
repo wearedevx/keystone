@@ -14,7 +14,7 @@ func (repo *Repo) GetProjectMember(projectMember *ProjectMember) IRepo {
 
 	repo.err = repo.GetDb().
 		Preload("Role").
-		Where(*projectMember).
+		Where(projectMember).
 		First(projectMember).
 		Error
 
