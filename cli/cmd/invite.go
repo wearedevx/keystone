@@ -17,8 +17,14 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"regexp"
+	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/internal/spinner"
+	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // inviteCmd represents the invite command
@@ -26,8 +32,58 @@ var inviteCmd = &cobra.Command{
 	Use:   "invite",
 	Short: "Sends an invitation to join Keystone",
 	Long:  `Sends an invitation to join Keystone.`,
-	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Println("Coming soon")
+	Run: func(_ *cobra.Command, args []string) {
+		emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+		argc := len(args)
+
+		if argc == 0 || argc > 1 {
+			ui.PrintError("invalid number of arguments. Expected 1 got %d", argc)
+			os.Exit(1)
+		}
+		email := args[0]
+
+		if !emailRegex.Match([]byte(email)) {
+			ui.PrintError("invalid email address: %s", email)
+			os.Exit(1)
+		}
+		c, kcErr := client.NewKeystoneClient()
+
+		sp := spinner.Spinner("Inviting user")
+		sp.Start()
+
+		if kcErr != nil {
+			sp.Stop()
+			kcErr.Print()
+			os.Exit(1)
+		}
+
+		projectName := ctx.GetProjectName()
+
+		result, err := c.Users().InviteUser(email, projectName)
+
+		if err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+
+		if len(result.UserUIDs) > 0 {
+
+			ui.Print(ui.RenderTemplate("file add success", `
+{{ OK }} {{ .Title | green }}
+
+The email is associated with a Keystone account. They are registered as: {{ .Usernames | bright_green }}.
+
+To add them to the project use "member add" command:
+  $ ks member add <username>
+`, map[string]string{
+				"Title":     "User already on Keystone",
+				"Usernames": fmt.Sprintf("%s", strings.Join(result.UserUIDs, ", ")),
+			}))
+		} else {
+			ui.PrintSuccess("A email has been sent to %s, they will get back to you when their Keystone account will be created", email)
+		}
+
 	},
 }
 

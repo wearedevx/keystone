@@ -76,7 +76,22 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 		return &result, status, err
 	}
 
+	members := make([]string, 0)
+	for _, member := range input.Members {
+		members = append(members, member.MemberID)
+	}
+
+	areInProjects, err := Repo.CheckMembersAreInProject(project, members)
+
+	if len(areInProjects) > 0 {
+		status = http.StatusConflict
+		result.Error = "user already in project"
+
+		return &result, status, err
+	}
+
 	can, err := checkUserCanAddMembers(Repo, user, project, input.Members)
+
 	if err != nil {
 		status = http.StatusInternalServerError
 		result.Error = err.Error()
@@ -85,7 +100,7 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 	}
 
 	if can {
-		err = Repo.ProjectAddMembers(project, input.Members).Err()
+		err = Repo.ProjectAddMembers(project, input.Members, user).Err()
 
 		if err != nil {
 			status = http.StatusInternalServerError
@@ -122,6 +137,15 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 			status = http.StatusInternalServerError
 			result.Error = err.Error()
 		}
+	}
+
+	areInProjects, err := Repo.CheckMembersAreInProject(project, input.Members)
+
+	if len(areInProjects) != len(input.Members) {
+		status = http.StatusConflict
+		result.Error = "user not in project"
+
+		return &result, status, err
 	}
 
 	can, err := checkUserCanRemoveMembers(Repo, user, project, input.Members)

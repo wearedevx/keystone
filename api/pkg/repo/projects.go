@@ -8,6 +8,8 @@ import (
 
 	"gorm.io/gorm/clause"
 
+	"github.com/wearedevx/keystone/api/internal/emailer"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
@@ -162,7 +164,7 @@ func (r *Repo) usersInMemberRoles(mers []MemberRole) (map[string]User, []string)
 	return users, notFounds
 }
 
-func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole) IRepo {
+func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole, currentUser models.User) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -195,6 +197,22 @@ func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole) IRep
 		Columns:   []clause.Column{{Name: "user_id"}, {Name: "project_id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"role_id"}),
 	}).Create(&pms).Error
+
+	if r.err == nil {
+		for _, memberRole := range memberRoles {
+			userEmail := users[memberRole.MemberID].Email
+			e, err := emailer.AddedMail(currentUser.Email, project.Name)
+			if err != nil {
+				r.err = err
+				return r
+			}
+
+			if err = e.Send([]string{userEmail}); err != nil {
+				r.err = err
+				return r
+			}
+		}
+	}
 
 	return r
 }
@@ -265,4 +283,33 @@ func (r *Repo) ProjectSetRoleForUser(project Project, user User, role Role) IRep
 		Error
 
 	return r
+}
+
+func (r *Repo) CheckMembersAreInProject(project models.Project, members []string) (areInProjects []string, err error) {
+	for _, member := range members {
+		user := &models.User{UserID: member}
+
+		if r.err = r.GetUser(user).Err(); r.err != nil {
+			if errors.Is(r.err, ErrorNotFound) {
+				r.err = nil
+			}
+			return areInProjects, r.err
+		}
+
+		projectMember := models.ProjectMember{
+			UserID:    user.ID,
+			ProjectID: project.ID,
+		}
+
+		if r.err = r.GetProjectMember(&projectMember).Err(); r.err == nil {
+			areInProjects = append(areInProjects, member)
+		} else {
+			if errors.Is(r.err, ErrorNotFound) {
+				r.err = nil
+			}
+
+		}
+	}
+
+	return areInProjects, r.err
 }

@@ -34,3 +34,13 @@ func (u *Users) GetUserPublicKey(userID string) (result models.UserPublicKey, er
 
 	return result, err
 }
+
+func (u *Users) InviteUser(userEmail string, projectName string) (result models.GetInviteResponse, err error) {
+	payload := models.InvitePayload{
+		Email:       userEmail,
+		ProjectName: projectName,
+	}
+	err = u.r.post("/users/invite", payload, &result, nil)
+
+	return result, err
+}

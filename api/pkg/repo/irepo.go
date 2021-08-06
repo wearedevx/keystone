@@ -42,12 +42,14 @@ type IRepo interface {
 	GetRolesEnvironmentType(*models.RolesEnvironmentType) IRepo
 	GetRolesMemberCanInvite(projectMember models.ProjectMember, roles *[]models.Role) IRepo
 	GetUser(*models.User) IRepo
+	GetUserByEmail(string, *[]models.User) IRepo
 	ListProjectMembers(userIDList []string, projectMember *[]models.ProjectMember) IRepo
-	ProjectAddMembers(models.Project, []models.MemberRole) IRepo
+	ProjectAddMembers(models.Project, []models.MemberRole, models.User) IRepo
 	ProjectGetMembers(*models.Project, *[]models.ProjectMember) IRepo
 	ProjectLoadUsers(*models.Project) IRepo
 	ProjectRemoveMembers(models.Project, []string) IRepo
 	ProjectSetRoleForUser(models.Project, models.User, models.Role) IRepo
+	CheckMembersAreInProject(models.Project, []string) ([]string, error)
 	RemoveOldMessageForRecipient(userID uint, environmentID string) IRepo
 	SetLoginRequestCode(string, string) models.LoginRequest
 	SetNewVersionID(environment *models.Environment) error

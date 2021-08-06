@@ -85,3 +85,13 @@ func (r *Repo) FindUsers(userIDs []string, users *map[string]User, notFounds *[]
 
 	return r
 }
+
+func (r *Repo) GetUserByEmail(email string, users *[]User) IRepo {
+	if r.Err() != nil {
+		return r
+	}
+
+	r.err = r.GetDb().Where("email = ?", email).Find(users).Error
+
+	return r
+}
