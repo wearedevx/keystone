@@ -44,7 +44,7 @@ type IRepo interface {
 	GetUser(*models.User) IRepo
 	GetUserByEmail(string, *[]models.User) IRepo
 	ListProjectMembers(userIDList []string, projectMember *[]models.ProjectMember) IRepo
-	ProjectAddMembers(models.Project, []models.MemberRole) IRepo
+	ProjectAddMembers(models.Project, []models.MemberRole, models.User) IRepo
 	ProjectGetMembers(*models.Project, *[]models.ProjectMember) IRepo
 	ProjectLoadUsers(*models.Project) IRepo
 	ProjectRemoveMembers(models.Project, []string) IRepo

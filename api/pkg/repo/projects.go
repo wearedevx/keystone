@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
@@ -163,7 +164,7 @@ func (r *Repo) usersInMemberRoles(mers []MemberRole) (map[string]User, []string)
 	return users, notFounds
 }
 
-func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole) IRepo {
+func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole, currentUser models.User) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -197,10 +198,10 @@ func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole) IRep
 		DoUpdates: clause.AssignmentColumns([]string{"role_id"}),
 	}).Create(&pms).Error
 
-	if r.err != nil {
+	if r.err == nil {
 		for _, memberRole := range memberRoles {
 			userEmail := users[memberRole.MemberID].Email
-			e, err := emailer.AddedMail("", project.Name)
+			e, err := emailer.AddedMail(currentUser.Email, project.Name)
 			if err != nil {
 				r.err = err
 				return r

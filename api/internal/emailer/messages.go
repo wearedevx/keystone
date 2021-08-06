@@ -119,8 +119,6 @@ To get it:
   2. login into your account: <pre>ks login</pre>;
   3. use secret: <pre>eval "$(ks source)"<pre>
 
-The way you transmit your Keystone username to {{.Inviter}} is up to you.
-
 Have a nice day!
 
 The Keystone team
