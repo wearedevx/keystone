@@ -284,3 +284,32 @@ func (r *Repo) ProjectSetRoleForUser(project Project, user User, role Role) IRep
 
 	return r
 }
+
+func (r *Repo) CheckMembersAreInProject(project models.Project, members []string) (areInProjects []string, err error) {
+	for _, member := range members {
+		user := &models.User{UserID: member}
+
+		if r.err = r.GetUser(user).Err(); r.err != nil {
+			if errors.Is(r.err, ErrorNotFound) {
+				r.err = nil
+			}
+			return areInProjects, r.err
+		}
+
+		projectMember := models.ProjectMember{
+			UserID:    user.ID,
+			ProjectID: project.ID,
+		}
+
+		if r.err = r.GetProjectMember(&projectMember).Err(); r.err == nil {
+			areInProjects = append(areInProjects, member)
+		} else {
+			if errors.Is(r.err, ErrorNotFound) {
+				r.err = nil
+			}
+
+		}
+	}
+
+	return areInProjects, r.err
+}
