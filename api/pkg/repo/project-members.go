@@ -28,7 +28,9 @@ func (repo *Repo) ListProjectMembers(userIDList []string, projectMember *[]Proje
 
 	repo.err = repo.GetDb().
 		Preload("Role").
-		Find(projectMember, "user_id IN ?", userIDList).
+		Joins("left join users on users.id = project_members.user_id").
+		Where("users.user_id IN (?)", userIDList).
+		Find(projectMember).
 		Error
 
 	return repo

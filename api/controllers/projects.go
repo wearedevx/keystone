@@ -85,7 +85,7 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 	}
 
 	if can {
-		err = Repo.ProjectAddMembers(project, input.Members).Err()
+		err = Repo.ProjectAddMembers(project, input.Members, user).Err()
 
 		if err != nil {
 			status = http.StatusInternalServerError
