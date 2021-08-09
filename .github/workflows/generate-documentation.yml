@@ -17,8 +17,9 @@ jobs:
       - name: Checkout Keystone Documentation
         uses: actions/checkout@v2
         with:
+          token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
           path: keystone-docs
-          branch: main
+          ref: main
           repository: wearedevx/keystone-documentation
 
       - name: Generate Documentation
@@ -30,6 +31,7 @@ jobs:
       - name: Commint Documentation version
         uses: EndBug/add-and-commit@v7
         with:
+          token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
           add: keystone-docs/contents/docs/cli/*
           branch: main
           message: "Generated documentation update"
