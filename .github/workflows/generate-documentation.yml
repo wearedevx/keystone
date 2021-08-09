@@ -24,11 +24,22 @@ jobs:
 
       - name: Generate Documentation
         run: |-
+          # Install deps
+          wget -qO - https://pkgs-ce.cossacklabs.com/gpg | sudo apt-key add -
+          apt install -y apt-transport-https
+
+          touch /etc/apt/sources.list.d/cossacklabs.list
+          echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" > /etc/apt/sources.list.d/cossacklabs.list 
+
+          apt update
+          apt install -y libthemis-dev libsodium-dev golang
+
+          # Actual generation
           cd keystone/cli
           go run main.go documentation -t hugo -d ../../keystone-docs/contents/docs/cli
           cd ../..
 
-      - name: Commint Documentation version
+      - name: Commit Documentation version
         uses: EndBug/add-and-commit@v7
         with:
           token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
