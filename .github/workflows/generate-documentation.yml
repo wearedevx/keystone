@@ -30,7 +30,7 @@ jobs:
 
           sudo mkdir -p /etc/apt/sources.list.d
           sudo touch /etc/apt/sources.list.d/cossacklabs.list
-          sudo -c "echo 'deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main' > /etc/apt/sources.list.d/cossacklabs.list"
+          echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" | sudo tee -a /etc/apt/sources.list.d/cossacklabs.list
 
           sudo apt-get update
           sudo apt-get install -y libthemis-dev libsodium-dev golang
