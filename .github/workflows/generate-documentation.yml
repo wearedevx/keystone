@@ -26,13 +26,14 @@ jobs:
         run: |-
           # Install deps
           wget -qO - https://pkgs-ce.cossacklabs.com/gpg | sudo apt-key add -
-          sudo apt install -y apt-transport-https
+          sudo apt-get install -y apt-transport-https
 
+          sudo mkdir -p /etc/apt/sources.list.d
           sudo touch /etc/apt/sources.list.d/cossacklabs.list
-          sudo echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" > /etc/apt/sources.list.d/cossacklabs.list 
+          sudo -c "echo 'deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main' > /etc/apt/sources.list.d/cossacklabs.list"
 
-          sudo apt update
-          sudo apt install -y libthemis-dev libsodium-dev golang
+          sudo apt-get update
+          sudo apt-get install -y libthemis-dev libsodium-dev golang
 
           # Actual generation
           cd keystone/cli
