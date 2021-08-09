@@ -46,9 +46,7 @@ var ctx *core.Context
 var RootCmd = &cobra.Command{
 	Use:   "ks",
 	Short: "A safe system for developers to store, share and use secrets.",
-	Long: `A safe system for developers to store, share and use secrets,
-	:
-`,
+	Long:  `A safe system for developers to store, share and use secrets`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
@@ -91,11 +89,13 @@ func Initialize() {
 	checkProject := true
 	checkLogin := false
 
+	askHelp := core.Contains(os.Args, "--help")
+
 	if len(os.Args) > 1 {
 		command := os.Args[1]
-		checkEnvironment = !isIn(noEnvironmentCommands, command)
-		checkProject = !isIn(noProjectCommands, command)
-		checkLogin = !isIn(noLoginCommands, command)
+		checkEnvironment = !isIn(noEnvironmentCommands, command) && !askHelp
+		checkProject = !isIn(noProjectCommands, command) && !askHelp
+		checkLogin = !isIn(noLoginCommands, command) && !askHelp
 
 		if command == "init" {
 			ctx = core.New(core.CTX_INIT)
@@ -194,11 +194,11 @@ func init() {
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	noEnvironmentCommands = []string{
-		"login", "logout", "documentation", "init", "whoami", "invite",
+		"login", "logout", "documentation", "init", "whoami", "invite", "version",
 	}
 	noProjectCommands = noEnvironmentCommands
 
-	noLoginCommands = []string{"login"}
+	noLoginCommands = []string{"login", "version"}
 
 }
 

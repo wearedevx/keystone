@@ -277,7 +277,7 @@ func (ctx *Context) RemoveForbiddenEnvironments(accessibleEnvironments []models.
 
 	for _, localEnvironment := range ctx.ListEnvironments() {
 		// If environment is not accessible, remove directory in cache
-		if !contains(accessibleEnvironmentsNames, localEnvironment) {
+		if !Contains(accessibleEnvironmentsNames, localEnvironment) {
 			ctx.RemoveEnvironment(localEnvironment)
 		}
 
