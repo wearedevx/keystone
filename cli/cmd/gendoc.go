@@ -43,6 +43,17 @@ import (
 // 	},
 // }
 
+type documentationType string
+
+const (
+	Hugo documentationType = "hugo"
+	Md                     = "md"
+	Man                    = "man"
+)
+
+var doctype string
+var destination string
+
 func newGenDocCommand(rootCmd *cobra.Command) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "documentation",
@@ -51,10 +62,28 @@ func newGenDocCommand(rootCmd *cobra.Command) *cobra.Command {
 		Long:   "Generate keystone documentation as markdown or man page",
 		Example: `keystone documentation md
 keystone documentation man`,
-		Args: cobra.ExactValidArgs(1),
+		Args: cobra.NoArgs,
 		Run: func(_ *cobra.Command, _ []string) {
 			fmt.Println("Doc generation command")
-			err := doc.GenMarkdownTreeCustom(rootCmd, "./doc", prepender, linkHandler)
+			var err error
+
+			switch documentationType(doctype) {
+			case Hugo:
+				err = doc.GenMarkdownTreeCustom(rootCmd, destination, prepender, linkHandler)
+
+			case Md:
+				err = doc.GenMarkdownTree(rootCmd, destination)
+
+			case Man:
+				err = doc.GenManTree(
+					rootCmd,
+					&doc.GenManHeader{
+						Title:   "ks",
+						Section: "1",
+					},
+					destination,
+				)
+			}
 
 			if err != nil {
 				panic(err)
@@ -91,8 +120,12 @@ func linkHandler(name string) string {
 }
 
 func init() {
-	RootCmd.AddCommand(newGenDocCommand(RootCmd))
+	genCmd := newGenDocCommand(RootCmd)
 
+	genCmd.Flags().StringVarP(&doctype, "type", "t", "md", "either 'hugo' or 'md'")
+	genCmd.Flags().StringVarP(&destination, "destination", "d", "./doc", "target directory")
+
+	RootCmd.AddCommand(genCmd)
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
