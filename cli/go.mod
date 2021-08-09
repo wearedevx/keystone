@@ -17,12 +17,10 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.0
 	github.com/udhos/equalfile v0.3.0
-	github.com/wearedevx/keystone/api v0.0.0-20210727120514-53b74e65257d
+	github.com/wearedevx/keystone/api v0.0.0-20210806152000-7c08541c8183
 	github.com/xanzy/go-gitlab v0.49.0
 	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
 	gopkg.in/yaml.v2 v2.4.0
 )
 
 replace github.com/wearedevx/keystone/cmd => ./cmd
-
-replace github.com/wearedevx/keystone/api => ../api
