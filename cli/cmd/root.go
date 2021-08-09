@@ -194,7 +194,7 @@ func init() {
 	}
 	noProjectCommands = noEnvironmentCommands
 
-	noLoginCommands = []string{"login"}
+	noLoginCommands = []string{"login", "documentation"}
 
 }
 
