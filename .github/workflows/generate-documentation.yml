@@ -1,0 +1,36 @@
+name: Keystone Documentation
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  generate_documentation:
+    runs_on: ubuntu-latest
+    steps:
+      - name: Checkout Keystone
+        uses: actions/checkout@v2
+        with:
+          path: keystone
+
+      - name: Checkout Keystone Documentation
+        uses: actions/checkout@v2
+        with:
+          path: keystone-docs
+          branch: main
+          repository: wearedevx/keystone-docs
+
+      - name: Generate Documentation
+        run: |-
+          cd keystone/cli
+          go run main.go documentation -t hugo -d ../../keystone-docs/contents/docs/cli
+          cd ../..
+
+      - name: Commint Documentation version
+        uses: EndBug/add-and-commit@v7
+        with:
+          add: keystone-docs/contents/docs/cli/*
+          branch: main
+          message: "Generated documentation update"
+          push: true
