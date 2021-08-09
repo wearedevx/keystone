@@ -7,7 +7,7 @@ on:
 
 jobs:
   generate_documentation:
-    runs_on: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Keystone
         uses: actions/checkout@v2
