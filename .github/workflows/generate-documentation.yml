@@ -19,7 +19,7 @@ jobs:
         with:
           path: keystone-docs
           branch: main
-          repository: wearedevx/keystone-docs
+          repository: wearedevx/keystone-documentation
 
       - name: Generate Documentation
         run: |-
