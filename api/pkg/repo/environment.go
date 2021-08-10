@@ -92,3 +92,16 @@ func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *Pub
 
 	return repo
 }
+
+func (repo *Repo) DeleteProjectsEnvironments(project *models.Project) IRepo {
+	if repo.Err() != nil {
+		return repo
+	}
+
+	repo.err = repo.
+		GetDb().
+		Delete(models.Environment{}, "project_id = ?", project.ID).
+		Error
+
+	return repo
+}

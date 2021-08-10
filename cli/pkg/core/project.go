@@ -1,6 +1,8 @@
 package core
 
 import (
+	"os"
+
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
 )
@@ -28,6 +30,7 @@ func (ctx *Context) GetProjectID() string {
 
 	if ksFile.Err() != nil {
 		ctx.err = kserrors.FailedToReadKeystoneFile(ksFile.Err())
+		return ""
 	}
 
 	return ksFile.ProjectId
@@ -38,5 +41,21 @@ func (ctx *Context) MustHaveProject() {
 
 	if projectID == "" {
 		ctx.err = kserrors.CannotFindProjectID(nil)
+	}
+}
+
+// Removes the keystone.yml, and the .keystone file
+func (ctx *Context) Destroy() {
+	var err error
+
+	if err = new(KeystoneFile).
+		Load(ctx.Wd).
+		Remove().
+		Err(); err != nil {
+		panic(err)
+	}
+
+	if err = os.RemoveAll(ctx.dotKeystonePath()); err != nil {
+		panic(err)
 	}
 }
