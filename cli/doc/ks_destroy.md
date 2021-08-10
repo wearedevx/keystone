@@ -1,25 +1,30 @@
-## ks logout
+## ks destroy
 
-Logs you out of Keystone
+Destroy the whole Keystone project
 
 ### Synopsis
 
-Logs you out of Keystone.
+Destroy the whole Keystone project.
+
+The project will be deleted, members won’t be able to send or receive
+updates about it. 
+This is irreversible.
+
 
 ```
-ks logout [flags]
+ks destroy [flags]
 ```
 
 ### Examples
 
 ```
-ks logout
+ks destroy
 ```
 
 ### Options
 
 ```
-  -h, --help   help for logout
+  -h, --help   help for destroy
 ```
 
 ### Options inherited from parent commands

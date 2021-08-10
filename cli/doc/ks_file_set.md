@@ -33,7 +33,7 @@ ks --env staging file set ./config.php
 
 ```
       --config string   config file (default is $HOME/.config/keystone.yaml)
-      --env string      environment to use instead of the current one (default "prod")
+      --env string      environment to use instead of the current one (default "dev")
   -q, --quiet           make the output machine readable
   -s, --skip            skip prompts and use default
 ```
