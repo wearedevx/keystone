@@ -197,8 +197,21 @@ func (ctx *Context) HasEnvironment(name string) bool {
 func (ctx *Context) MustHaveEnvironment(name string) {
 	if !ctx.HasEnvironment(name) {
 		kserrors.EnvironmentDoesntExist(name, strings.Join(ctx.ListEnvironments(), ", "), nil).Print()
-		os.Exit(0)
+		os.Exit(1)
 	}
+}
+
+func (ctx *Context) MustHaveAccessToEnvironment(environmentName string) *Context {
+	for _, accessible := range ctx.AccessibleEnvironments {
+		if accessible.Name == environmentName {
+			return ctx
+		}
+	}
+
+	kserrors.PermissionDenied(environmentName, nil).Print()
+	os.Exit(1)
+
+	return ctx
 }
 
 func (ctx *Context) UpdateEnvironment(environment models.Environment) *Context {

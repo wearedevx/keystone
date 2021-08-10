@@ -96,8 +96,7 @@ ks file add ./certs/my-website.cert`,
 			os.Exit(1)
 		}
 
-		ctx.CompareNewFileWhithChanges(filePath, changes)
-		if err = ctx.Err(); err != nil {
+		if err = ctx.CompareNewFileWhithChanges(filePath, changes).Err(); err != nil {
 			err.Print()
 			return
 		}

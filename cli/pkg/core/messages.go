@@ -330,12 +330,15 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 	return changes, nil
 }
 
-func (ctx *Context) CompareNewSecretWithChanges(secretName string, newSecret map[string]string, changesByEnvironment ChangesByEnvironment) *kserrors.Error {
+func (ctx *Context) CompareNewSecretWithChanges(secretName string, newSecret map[string]string, changesByEnvironment ChangesByEnvironment) *Context {
+	if ctx.err != nil {
+		return ctx
+	}
+
 	environmentValueMap := make(map[string]string)
 
 	for environmentName, changes := range changesByEnvironment.Environments {
 		for _, change := range changes {
-
 			if change.Name == secretName {
 				environmentValueMap[environmentName] = change.To
 			}
@@ -344,6 +347,7 @@ func (ctx *Context) CompareNewSecretWithChanges(secretName string, newSecret map
 
 	if len(environmentValueMap) > 0 {
 		environmentValueMapString := ""
+
 		for environment, value := range environmentValueMap {
 			if len(value) == 0 {
 				environmentValueMapString += fmt.Sprintf("Secret in %s is deleted.\n", environment)
@@ -351,17 +355,22 @@ func (ctx *Context) CompareNewSecretWithChanges(secretName string, newSecret map
 				environmentValueMapString += fmt.Sprintf("Value in %s is '%s'.\n", environment, value)
 			}
 		}
-		return kserrors.SecretHasChanged(secretName, environmentValueMapString, nil)
+
+		ctx.err = kserrors.SecretHasChanged(secretName, environmentValueMapString, nil)
 	}
-	return nil
+
+	return ctx
 }
 
-func (ctx *Context) CompareRemovedSecretWithChanges(secretName string, changesByEnvironment ChangesByEnvironment) *kserrors.Error {
+func (ctx *Context) CompareRemovedSecretWithChanges(secretName string, changesByEnvironment ChangesByEnvironment) *Context {
+	if ctx.err != nil {
+		return ctx
+	}
+
 	environmentValueMap := make(map[string]string)
 
 	for environmentName, changes := range changesByEnvironment.Environments {
 		for _, change := range changes {
-
 			if change.Name == secretName {
 				environmentValueMap[environmentName] = change.To
 			}
@@ -370,15 +379,22 @@ func (ctx *Context) CompareRemovedSecretWithChanges(secretName string, changesBy
 
 	if len(environmentValueMap) > 0 {
 		environmentValueMapString := ""
+
 		for environment, value := range environmentValueMap {
 			environmentValueMapString += fmt.Sprintf("Value in '%s' is '%s'.\n", environment, value)
 		}
-		return kserrors.SecretHasChanged(secretName, environmentValueMapString, nil)
+
+		ctx.err = kserrors.SecretHasChanged(secretName, environmentValueMapString, nil)
 	}
-	return nil
+
+	return ctx
 }
 
-func (ctx *Context) CompareNewFileWhithChanges(filePath string, changesByEnvironment ChangesByEnvironment) *kserrors.Error {
+func (ctx *Context) CompareNewFileWhithChanges(filePath string, changesByEnvironment ChangesByEnvironment) *Context {
+	if ctx.err != nil {
+		return ctx
+	}
+
 	affectedEnvironments := make([]string, 0)
 	for environmentName, changes := range changesByEnvironment.Environments {
 		for _, change := range changes {
@@ -389,8 +405,9 @@ func (ctx *Context) CompareNewFileWhithChanges(filePath string, changesByEnviron
 	}
 
 	if len(affectedEnvironments) > 0 {
-		return kserrors.FileHasChanged(filePath, strings.Join(affectedEnvironments, ","), nil)
+		ctx.err = kserrors.FileHasChanged(filePath, strings.Join(affectedEnvironments, ","), nil)
 	}
-	return nil
+
+	return ctx
 
 }

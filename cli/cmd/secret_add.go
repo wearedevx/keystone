@@ -85,19 +85,20 @@ ks secret add PORT`,
 			os.Exit(1)
 		}
 
-		if err = ctx.CompareNewSecretWithChanges(secretName, environmentValueMap, changes); err != nil {
-			err.Print()
-			os.Exit(1)
-			return
-		}
-
 		flag := core.S_REQUIRED
 
 		if addOptional {
 			flag = core.S_OPTIONAL
 		}
 
-		if err = ctx.AddSecret(secretName, environmentValueMap, flag).Err(); err != nil {
+		if err = ctx.
+			CompareNewSecretWithChanges(
+				secretName,
+				environmentValueMap,
+				changes,
+			).
+			AddSecret(secretName, environmentValueMap, flag).
+			Err(); err != nil {
 			err.Print()
 			os.Exit(1)
 			return

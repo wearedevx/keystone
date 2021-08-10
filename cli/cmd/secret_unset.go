@@ -62,12 +62,14 @@ The secret must not be required.`,
 			os.Exit(1)
 		}
 
-		if err = ctx.CompareRemovedSecretWithChanges(secretName, changes); err != nil {
+		if err = ctx.
+			CompareRemovedSecretWithChanges(secretName, changes).
+			UnsetSecret(currentEnvironment, secretName).
+			Err(); err != nil {
 			err.Print()
 			os.Exit(1)
 			return
 		}
-		ctx.UnsetSecret(currentEnvironment, secretName)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
