@@ -22,6 +22,7 @@ ks member send-env john@gitlab
 
 ```
       --all string   Member to send env to. (default "a")
+      --all-env      Send secrets from all environments to member.
   -h, --help         help for send-env
 ```
 
@@ -29,7 +30,7 @@ ks member send-env john@gitlab
 
 ```
       --config string   config file (default is $HOME/.config/keystone.yaml)
-      --env string      environment to use instead of the current one (default "prod")
+      --env string      environment to use instead of the current one (default "dev")
   -q, --quiet           make the output machine readable
   -s, --skip            skip prompts and use default
 ```
