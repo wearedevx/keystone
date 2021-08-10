@@ -11,6 +11,8 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/core"
 )
 
+var NoAccess = errors.New("has no access")
+
 type environmentService struct {
 	err    *kserrors.Error
 	ctx    *core.Context
