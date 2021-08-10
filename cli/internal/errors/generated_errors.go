@@ -116,6 +116,11 @@ This happened because: {{ .Cause }}
 This happened because: {{ .Cause }}
 
 `,
+	"PermissionDenied": `
+{{ ERROR }} {{ .Name | red }} 
+You do not have the rights to change the '{{ .Environment }}' environment.
+
+`,
 	"CannotRemoveCurrentEnvironment": `
 {{ ERROR }} {{ .Name | red }}
 You are trying to remove the '{{ .Environment }}' environment,
@@ -210,6 +215,15 @@ Affected environments: {{ .AffectedEnvironments }}
 `,
 	"CannotAddFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
+This happened because: {{ .Cause }}
+
+`,
+	"CannotSetFile": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
+You tried to set the content of '{{ .FilePath }}', but it could not be read or found.
+Make sure the file exists, and has been added to the project using:
+  $ ks file add {{ .FilePath }}
+
 This happened because: {{ .Cause }}
 
 `,
@@ -461,6 +475,13 @@ func CannotReadEnvironment(path string, cause error) *Error {
 	return NewError("Cannot Read Environment", helpTexts["CannotReadEnvironment"], meta, cause)
 }
 
+func PermissionDenied(environment string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Environment": string(environment),
+	}
+	return NewError("Permission Denied", helpTexts["PermissionDenied"], meta, cause)
+}
+
 func CannotRemoveCurrentEnvironment(environment string, cause error) *Error {
 	meta := map[string]interface{}{
 		"Environment": string(environment),
@@ -540,6 +561,13 @@ func CannotAddFile(path string, cause error) *Error {
 		"Path": string(path),
 	}
 	return NewError("Cannot Add File", helpTexts["CannotAddFile"], meta, cause)
+}
+
+func CannotSetFile(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Cannot Set File", helpTexts["CannotSetFile"], meta, cause)
 }
 
 func CannotRemoveFile(path string, cause error) *Error {
