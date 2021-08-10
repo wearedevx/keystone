@@ -96,3 +96,21 @@ func (svp *SetVariablePayload) Serialize(out *string) (err error) {
 
 	return err
 }
+
+type DestroyProjectPayload struct {
+	ProjectId string `json:"project_id"`
+}
+
+func (svp *DestroyProjectPayload) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(svp)
+}
+
+func (svp *DestroyProjectPayload) Serialize(out *string) (err error) {
+	var sb strings.Builder
+
+	err = json.NewEncoder(&sb).Encode(svp)
+
+	*out = sb.String()
+
+	return err
+}
