@@ -98,7 +98,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 	status = http.StatusOK
 	response := &models.GetEnvironmentsResponse{}
 
-	payload := &repo.MessagesPayload{}
+	payload := &models.MessagesToWritePayload{}
 	payload.Deserialize(body)
 
 	for _, message := range payload.Messages {
@@ -144,16 +144,25 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			break
 		}
 
-		if err = Repo.WriteMessage(user, message).Err(); err != nil {
+		messageToWrite := &models.Message{
+			RecipientID:   message.RecipientID,
+			Payload:       message.Payload,
+			EnvironmentID: message.EnvironmentID,
+			SenderID:      user.ID,
+		}
+
+		if err = Repo.WriteMessage(user, *messageToWrite).Err(); err != nil {
 			fmt.Printf("err: %+v\n", err)
 			break
 		}
 
-		// Change environment version id.
-		err = Repo.SetNewVersionID(environment)
+		if message.UpdateEnvironmentVersion {
+			// Change environment version id.
+			err = Repo.SetNewVersionID(environment)
 
-		if err != nil {
-			return response, http.StatusInternalServerError, err
+			if err != nil {
+				return response, http.StatusInternalServerError, err
+			}
 		}
 
 		// Change environment version id.

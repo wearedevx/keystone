@@ -122,8 +122,6 @@ ks member add -r developer -u john.doe@gitlab -u danny54@gitlab
 			os.Exit(1)
 		}
 
-		// sendEnvironmentsToNewUser()
-
 		ui.Print(ui.RenderTemplate("added members", `
 {{ OK }} {{ "Members Added" | green }}
 
