@@ -14,7 +14,7 @@ errors:
     template: |
       {{ ERROR }} {{ .Name | red }}
       Your current connection token has probably expired.
-      
+
       Try to login again:
         $ ks login
 
@@ -56,7 +56,6 @@ errors:
       {{ ERROR }} {{ .Name | red }}
       You are trying to create a Keystone project but there already is keystone files in your current directory.
       Please remove the .keystone directory and keystone.yml file beforehand.
-
 
   # KEYSTONE_YAML_ERRORS
   # ––––––––––––––––––––
@@ -393,7 +392,7 @@ errors:
 
   - type: CannotRemoveDirectoryContents
     name: "Cannot Remove Directory Contents"
-    params: 
+    params:
       - name: Path
         type: string
     template: |
@@ -487,6 +486,13 @@ errors:
       {{ ERROR }} {{ .Name | red }}
       This happened because: {{ .Cause }}
 
+  - type: MemberHasNoAccessToEnv
+    name: "Member has no access to environment"
+    param: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      {{ .Cause }}
+
   # DECRYPTION ERRORS
   # -----------------
   - type: CouldNotDecryptMessages
@@ -538,7 +544,7 @@ errors:
 
   - type: FailedCheckingChanges
     name: "Failed While Checking for Changes"
-    params: 
+    params:
       - name: Path
         type: string
     template: |
@@ -546,4 +552,3 @@ errors:
       Error were encountered for file: '{{ .Path }}'
 
       This happened because: {{ .Cause }}
-

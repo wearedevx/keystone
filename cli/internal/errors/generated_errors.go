@@ -301,6 +301,11 @@ This happened because: {{ .Cause }}
 This happened because: {{ .Cause }}
 
 `,
+	"MemberHasNoAccessToEnv": `
+{{ ERROR }} {{ .Name | red }}
+{{ .Cause }}
+
+`,
 	"CouldNotDecryptMessages": `
 {{ ERROR }} {{ .Name | red }}
 {{ .Message }}
@@ -631,6 +636,12 @@ func CannotRemoveMembers(cause error) *Error {
 	meta := map[string]interface{}{}
 
 	return NewError("Cannot Remove Members", helpTexts["CannotRemoveMembers"], meta, cause)
+}
+
+func MemberHasNoAccessToEnv(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Member has no access to environment", helpTexts["MemberHasNoAccessToEnv"], meta, cause)
 }
 
 func CouldNotDecryptMessages(message string, cause error) *Error {

@@ -317,9 +317,10 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 			}
 		}
 
+		// If receiver has no access to environment, print error and continue to other environments
 		if !found {
-			s.err = kserrors.UnkownError(fmt.Errorf("%s has no public key associated with the environment %s", member, environment.Name))
-			return s
+			kserrors.MemberHasNoAccessToEnv(fmt.Errorf("%s has no public key associated with the environment %s", member, environment.Name)).Print()
+			continue
 		}
 
 		PayloadContent, err := s.ctx.PrepareMessagePayload(environment)
@@ -362,6 +363,8 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 			}
 			return s
 		}
+
+		ui.PrintSuccess("Environment '" + environment.Name + "' sent to user.")
 	}
 
 	return s
