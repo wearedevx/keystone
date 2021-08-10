@@ -85,6 +85,35 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 	return ctx
 }
 
+func (ctx *Context) SetFile(filePath string, content []byte) *Context {
+	if ctx.Err() != nil {
+		return ctx
+	}
+
+	// Add file path to the keystone file
+	ksfile := new(KeystoneFile).Load(ctx.Wd)
+	if err := ksfile.Err(); err != nil {
+		return ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+	}
+
+	currentEnvironment := ctx.CurrentEnvironment()
+	dest := path.Join(ctx.CachedEnvironmentFilesPath(currentEnvironment), filePath)
+
+	destFile, err := os.OpenFile(dest, os.O_WRONLY|os.O_TRUNC, 0o644)
+	if err == nil {
+		defer destFile.Close()
+
+		_, err = destFile.Write(content)
+	}
+
+	if err != nil {
+		println(fmt.Sprintf("Failed to write %s (%s)", dest, err.Error()))
+		os.Exit(1)
+	}
+
+	return ctx
+}
+
 // FilesUseEnvironment creates symlinks for files found in the project’s
 // keystone.yml file, pointing them to the environment `envname` in cache.
 func (ctx *Context) FilesUseEnvironment(envname string) *Context {
@@ -183,7 +212,7 @@ func (ctx *Context) RemoveFile(filePath string, force bool, purge bool, accessib
 	return ctx
 }
 
-// Returns a boolean indicating wether the secret `secretName`
+// Returns a boolean indicating wether the file `fileName`
 // exists in the local files
 func (ctx *Context) HasFile(fileName string) bool {
 	haveIt := false

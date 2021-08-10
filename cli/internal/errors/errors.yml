@@ -190,6 +190,15 @@ errors:
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
+  - type: PermissionDenied
+    name: "Permission Denied"
+    params:
+      - name: Environment
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} 
+      You do not have the rights to change the '{{ .Environment }}' environment.
+
   - type: CannotRemoveCurrentEnvironment
     name: "Cannot Remove Current Environment"
     params:
@@ -341,6 +350,19 @@ errors:
         type: string
     template: |
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
+      This happened because: {{ .Cause }}
+
+  - type: CannotSetFile
+    name: "Cannot Set File"
+    params:
+      - name: Path
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
+      You tried to set the content of '{{ .FilePath }}', but it could not be read or found.
+      Make sure the file exists, and has been added to the project using:
+        $ ks file add {{ .FilePath }}
+
       This happened because: {{ .Cause }}
 
   - type: CannotRemoveFile
