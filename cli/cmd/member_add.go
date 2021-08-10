@@ -122,8 +122,13 @@ ks member add -r developer -u john.doe@gitlab -u danny54@gitlab
 			os.Exit(1)
 		}
 
+		// sendEnvironmentsToNewUser()
+
 		ui.Print(ui.RenderTemplate("added members", `
 {{ OK }} {{ "Members Added" | green }}
+
+To send secrets and files to new member, use "member add" command.
+  $ ks member send-env --all-env <member-id>
 `, struct {
 		}{}))
 	},
@@ -268,14 +273,4 @@ func init() {
 
 	memberAddCmd.Flags().StringVarP(&oneRole, "role", "r", "", "role to set users, when not using the prompt")
 	memberAddCmd.Flags().StringSliceVarP(&manyMembers, "user", "u", []string{}, "user to add, when not using the prompt")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// memberAddCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// memberAddCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
