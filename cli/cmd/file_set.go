@@ -67,10 +67,12 @@ ks --env staging file set ./config.php
 
 		currentContent, erro := ctx.GetFileContents(filePath, currentEnvironment)
 		if erro != nil {
-			err = kserrors.CannotSetFile(filePath, erro)
-			err.Print()
+			if erro.Error() != "No contents" {
+				err = kserrors.CannotSetFile(filePath, erro)
+				err.Print()
 
-			return
+				os.Exit(1)
+			}
 		}
 
 		content := currentContent

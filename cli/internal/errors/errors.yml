@@ -360,9 +360,9 @@ errors:
         type: string
     template: |
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
-      You tried to set the content of '{{ .FilePath }}', but it could not be read or found.
+      You tried to set the content of '{{ .Path }}', but it could not be read or found.
       Make sure the file exists, and has been added to the project using:
-        $ ks file add {{ .FilePath }}
+        $ ks file add {{ .Path }}
 
       This happened because: {{ .Cause }}
 
