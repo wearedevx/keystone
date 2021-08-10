@@ -334,6 +334,7 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 			s.err = kserrors.UnkownError(err)
 			return s
 		}
+		message.UpdateEnvironmentVersion = false
 
 		messagesToWrite.Messages = append(messagesToWrite.Messages, message)
 	}
@@ -439,9 +440,10 @@ func (s *messageService) prepareMessage(senderPrivateKey []byte, environment mod
 	RecipientIDUint := uint(RecipientID)
 
 	return models.MessageToWritePayload{
-		Payload:       encryptedPayload,
-		UserID:        userPublicKey.UserID,
-		RecipientID:   RecipientIDUint,
-		EnvironmentID: environment.EnvironmentID,
+		Payload:                  encryptedPayload,
+		UserID:                   userPublicKey.UserID,
+		RecipientID:              RecipientIDUint,
+		EnvironmentID:            environment.EnvironmentID,
+		UpdateEnvironmentVersion: true,
 	}, nil
 }
