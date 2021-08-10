@@ -1,32 +1,15 @@
-## ks init
+## ks version
 
-Creates Keystone config files and directories
-
-### Synopsis
-
-Creates Keystone config files and directories.
-
-Created files and directories:
- - keystone.yml: the project's config,
- - .keystone:    cache and various files for internal use. 
-                 automatically added to .gitignore
 
 
 ```
-ks init <project-name> [flags]
-```
-
-### Examples
-
-```
-ks init my-awesome-project
+ks version [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help             help for init
-      --project string   Define the project name
+  -h, --help   help for version
 ```
 
 ### Options inherited from parent commands
