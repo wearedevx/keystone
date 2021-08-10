@@ -44,7 +44,7 @@ jobs:
         uses: EndBug/add-and-commit@v7
         with:
           token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
-          add: keystone-docs/contents/docs/cli/*
+          add: ./content/docs/cli/*
           branch: main
           cwd: keystone-documentation
           message: "Generated documentation update"
