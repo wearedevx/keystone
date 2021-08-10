@@ -57,16 +57,12 @@ Removes the given secret from all environments.
 			os.Exit(1)
 		}
 
-		if err = ctx.CompareRemovedSecretWithChanges(secretName, changes); err != nil {
+		if err = ctx.
+			CompareRemovedSecretWithChanges(secretName, changes).
+			RemoveSecret(secretName, purgeSecret).
+			Err(); err != nil {
 			err.Print()
 			os.Exit(1)
-			return
-		}
-
-		ctx.RemoveSecret(secretName, purgeSecret)
-
-		if err = ctx.Err(); err != nil {
-			err.Print()
 			return
 		}
 
