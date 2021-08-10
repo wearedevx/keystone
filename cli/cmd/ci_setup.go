@@ -15,7 +15,7 @@ var setupCmd = &cobra.Command{
 
 Use this command to modify CI service specific settings
 like API key and project name.`,
-
+	Example: "ks ci setup",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		ciService, err := SelectCiService(*ctx)

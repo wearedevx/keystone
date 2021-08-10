@@ -29,7 +29,7 @@ import (
 
 // inviteCmd represents the invite command
 var inviteCmd = &cobra.Command{
-	Use:   "invite",
+	Use:   "invite <email address>",
 	Short: "Sends an invitation to join Keystone",
 	Long:  `Sends an invitation to join Keystone.`,
 	Run: func(_ *cobra.Command, args []string) {

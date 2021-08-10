@@ -23,15 +23,16 @@ import (
 
 // requireCmd represents the require command
 var fileRequireCmd = &cobra.Command{
-	Use:   "require",
+	Use:   "require [path to a file]",
 	Short: "Marks a file as required",
 	Long: `Marks a file as required.
 
 Files marked as required must exist and have content.
-If they don’t, 'ks source' will exit with a non-zero exit code.
+If they don’t, ` + "`" + `ks source` + "`" + ` will exit with a non-zero exit code.
 
-Additionally, 'ks ci send' will fail if a required file is empty or missing.
+Additionally, ` + "`" + `ks ci send` + "`" + ` will fail if a required file is empty or missing.
 `,
+	Example: "ks file require ./config.json",
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
 

@@ -27,18 +27,22 @@ import (
 
 // envCmd represents the env command
 var envCmd = &cobra.Command{
-	Use:   "env",
+	Use:   "env [environment]",
 	Short: "Manages environments",
 	Long: `Manages environments.
 
 Displays a list of available environments:
-  $ ks env
-   * dev
-     staging
-     prod
+` + "```" + `
+$ ks env
+ * dev
+   staging
+   prod
+` + "```" + `
 
 With an argument name, activates the environment:
-  $ ks env staging
+` + "```" + `
+$ ks env staging
+` + "```" + `
 `,
 	Args: cobra.MaximumNArgs(1),
 	Run: func(_ *cobra.Command, args []string) {

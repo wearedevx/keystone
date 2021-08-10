@@ -25,16 +25,17 @@ import (
 
 // requireCmd represents the require command
 var requireCmd = &cobra.Command{
-	Use:   "require",
+	Use:   "require <secret name>",
 	Short: "Marks a secret as required",
 	Long: `Marks a secret as required.
 
 Secrets marked as required cannot be unset or set to blank value.
-If they are, 'ks source' will exit with a non-zero exit code.
+If they are, ` + "`" + `ks source` + "`" + ` will exit with a non-zero exit code.
 
-Additionally, 'ks ci send' will fail if a required secrets are missing.
+Additionally, ` + "`" + `ks ci send` + "`" + ` will fail if a required secrets are missing.
 `,
-	Args: cobra.ExactArgs(1),
+	Example: "ks secret require PORT",
+	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
 

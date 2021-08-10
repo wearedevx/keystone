@@ -36,7 +36,7 @@ var addOptional bool = false
 
 // secretAddCmd represents the set command
 var secretAddCmd = &cobra.Command{
-	Use:   "add",
+	Use:   "add <secret name> [secret value]",
 	Short: "Adds a secret to all environments",
 	Long: `Adds a secret to all environments.
 
@@ -46,13 +46,13 @@ and 'development' environments.
 
 The varible name will be added to all such environments,
 you will be asked its value for each environment
-
-Example:
-  Add an environment variable PORT to all environments
-  and set its value to 3000 for the current one.
-  $ ks set PORT 3000
-
 `,
+	Example: `# Add a secret ` + "`" + `PORT` + "`" + ` to all envrionments
+# and set its value to 3000 for the current one.
+ks secret add PORT 3000
+
+# Add a secret ` + "`" + `PORT` + "`" + `without setting a default:
+ks secret add PORT`,
 	Args: cobra.ExactArgs(2),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error

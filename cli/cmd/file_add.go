@@ -36,24 +36,20 @@ import (
 
 // filesAddCmd represents the push command
 var filesAddCmd = &cobra.Command{
-	Use:   "add",
+	Use:   "add <path to a file>",
 	Short: "Adds a file to secrets",
-	Long: `Adds a file to secrets
+	Long: `Adds a file to secrets.
 
-A secret file is a file which have content that can changge
+A secret file is a file which have content that can change
 across environments, such as configuration files, credentials,
 certificates and so on.
 
 When adding a file, you will be asked for a version of its content
 for all known environments.
-
-Examples:
-  $ ks file add ./config/config.exs
-  
-  $ ks file add ./wp-config.php
-
-  $ ks file add ./certs/my-website.cert
 `,
+	Example: `ks file add ./config/config.exs
+ks file add ./wp-config.php
+ks file add ./certs/my-website.cert`,
 	Args: cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error

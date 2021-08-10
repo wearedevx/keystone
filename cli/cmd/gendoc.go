@@ -17,6 +17,10 @@ package cmd
 
 import (
 	"fmt"
+	"path"
+	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
@@ -39,6 +43,17 @@ import (
 // 	},
 // }
 
+type documentationType string
+
+const (
+	Hugo documentationType = "hugo"
+	Md                     = "md"
+	Man                    = "man"
+)
+
+var doctype string
+var destination string
+
 func newGenDocCommand(rootCmd *cobra.Command) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "documentation",
@@ -47,10 +62,28 @@ func newGenDocCommand(rootCmd *cobra.Command) *cobra.Command {
 		Long:   "Generate keystone documentation as markdown or man page",
 		Example: `keystone documentation md
 keystone documentation man`,
-		Args: cobra.ExactValidArgs(1),
+		Args: cobra.NoArgs,
 		Run: func(_ *cobra.Command, _ []string) {
 			fmt.Println("Doc generation command")
-			err := doc.GenMarkdownTree(rootCmd, "./doc")
+			var err error
+
+			switch documentationType(doctype) {
+			case Hugo:
+				err = doc.GenMarkdownTreeCustom(rootCmd, destination, prepender, linkHandler)
+
+			case Md:
+				err = doc.GenMarkdownTree(rootCmd, destination)
+
+			case Man:
+				err = doc.GenManTree(
+					rootCmd,
+					&doc.GenManHeader{
+						Title:   "ks",
+						Section: "1",
+					},
+					destination,
+				)
+			}
 
 			if err != nil {
 				panic(err)
@@ -60,9 +93,39 @@ keystone documentation man`,
 	return cmd
 }
 
-func init() {
-	RootCmd.AddCommand(newGenDocCommand(RootCmd))
+const fmTemplate = `---
+date: %s
+title: "%s"
+slug: %s
+url: %s
+menu:
+  docs:
+    parent: "%s"
+---
+`
 
+func prepender(filename string) string {
+	now := time.Now().Format(time.RFC3339)
+	name := filepath.Base(filename)
+	base := strings.TrimSuffix(name, path.Ext(name))
+	url := "/docs/cli/" + strings.ToLower(base) + "/"
+	parent := "cli"
+
+	return fmt.Sprintf(fmTemplate, now, strings.Replace(base, "_", " ", -1), base, url, parent)
+}
+
+func linkHandler(name string) string {
+	base := strings.TrimSuffix(name, path.Ext(name))
+	return "/docs/cli/" + strings.ToLower(base) + "/"
+}
+
+func init() {
+	genCmd := newGenDocCommand(RootCmd)
+
+	genCmd.Flags().StringVarP(&doctype, "type", "t", "md", "either 'hugo' or 'md'")
+	genCmd.Flags().StringVarP(&destination, "destination", "d", "./doc", "target directory")
+
+	RootCmd.AddCommand(genCmd)
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command

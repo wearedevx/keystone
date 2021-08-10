@@ -23,12 +23,13 @@ import (
 
 // optionalCmd represents the optional command
 var fileOptionalCmd = &cobra.Command{
-	Use:   "optional",
+	Use:   "optional <path to a file>",
 	Short: "Marks a file as optional",
 	Long: `Marks a file as optional.
 
 Empty or non-existing files will be allowed.
 `,
+	Example: `ks file optional ./config.json`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err *kserrors.Error
 

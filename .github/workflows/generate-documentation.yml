@@ -1,0 +1,50 @@
+name: Keystone Documentation
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  generate_documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Keystone
+        uses: actions/checkout@v2
+        with:
+          path: keystone
+
+      - name: Checkout Keystone Documentation
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
+          path: keystone-docs
+          ref: main
+          repository: wearedevx/keystone-documentation
+
+      - name: Generate Documentation
+        run: |-
+          # Install deps
+          wget -qO - https://pkgs-ce.cossacklabs.com/gpg | sudo apt-key add -
+          sudo apt-get install -y apt-transport-https
+
+          sudo mkdir -p /etc/apt/sources.list.d
+          sudo touch /etc/apt/sources.list.d/cossacklabs.list
+          echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" | sudo tee -a /etc/apt/sources.list.d/cossacklabs.list
+
+          sudo apt-get update
+          sudo apt-get install -y libthemis-dev libsodium-dev golang
+
+          # Actual generation
+          cd keystone/cli
+          go run main.go documentation -t hugo -d ../../keystone-docs/contents/docs/cli
+          cd ../..
+
+      - name: Commit Documentation version
+        uses: EndBug/add-and-commit@v7
+        with:
+          token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
+          add: keystone-docs/contents/docs/cli/*
+          branch: main
+          message: "Generated documentation update"
+          push: true
