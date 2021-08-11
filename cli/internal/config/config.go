@@ -171,8 +171,6 @@ func FindAccount(c auth.AuthService) (user models.User, current int) {
 
 // Create conf file if not exist
 func createFileIfNotExist(filePath string) {
-
-	fmt.Println(filePath)
 	// Check if need to create file
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		// path/to/whatever does not exist
