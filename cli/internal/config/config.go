@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"reflect"
 
 	"github.com/spf13/viper"
@@ -171,9 +172,14 @@ func FindAccount(c auth.AuthService) (user models.User, current int) {
 // Create conf file if not exist
 func createFileIfNotExist(filePath string) {
 
+	fmt.Println(filePath)
 	// Check if need to create file
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		// path/to/whatever does not exist
+
+		if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
+			fmt.Printf("Unable to write file: %v", err)
+		}
 
 		err := ioutil.WriteFile(filePath, []byte(""), 0755)
 
