@@ -17,7 +17,7 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.0
 	github.com/udhos/equalfile v0.3.0
-	github.com/wearedevx/keystone/api v0.0.0-20210810105357-8a0473523928
+	github.com/wearedevx/keystone/api v0.0.0-20210810142209-1b3277f2a4b3
 	github.com/xanzy/go-gitlab v0.49.0
 	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
 	gopkg.in/yaml.v2 v2.4.0

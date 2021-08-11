@@ -22,7 +22,7 @@ type dummyAuthService struct {
 	token        *oauth2.Token
 }
 
-func (g dummyAuthService) Name() string { return "GitLab" }
+func (g dummyAuthService) Name() string { return "Gitlab" }
 
 func DummyAuth(ctx context.Context, apiUrl string) AuthService {
 	return &dummyAuthService{
@@ -82,7 +82,7 @@ func (g *dummyAuthService) WaitForExternalLogin() error {
 }
 
 func (g dummyAuthService) Finish(pk []byte) (models.User, string, error) {
-	return completeLogin(g.apiUrl, models.GitLabAccountType, g.token, pk)
+	return completeLogin(g.apiUrl, models.GitlabAccountType, g.token, pk)
 }
 
 func (g dummyAuthService) CheckAccount(account map[string]string) (bool, error) {
@@ -92,7 +92,7 @@ func (g dummyAuthService) CheckAccount(account map[string]string) (bool, error) 
 		return false, err
 	}
 
-	if account["account_type"] != string(models.GitLabAccountType) {
+	if account["account_type"] != string(models.GitlabAccountType) {
 		return false, nil
 	}
 

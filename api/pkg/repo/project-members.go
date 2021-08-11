@@ -81,3 +81,16 @@ func (repo *Repo) GetOrCreateProjectMember(projectMember *ProjectMember, roleNam
 
 	return repo
 }
+
+func (repo *Repo) DeleteAllProjectMembers(project *Project) IRepo {
+	if repo.Err() != nil {
+		return repo
+	}
+
+	repo.err = repo.
+		GetDb().
+		Delete(ProjectMember{}, "project_id = ?", project.ID).
+		Error
+
+	return repo
+}

@@ -10,8 +10,8 @@ import (
 // setupCmd represents the setup command
 var setupCmd = &cobra.Command{
 	Use:   "setup",
-	Short: "Sets up CI service settings to push secrets and files",
-	Long: `Sets up CI service settings to push secrets and files.
+	Short: "Sets up CI service integration",
+	Long: `Sets up CI service integration.
 
 Use this command to modify CI service specific settings
 like API key and project name.`,

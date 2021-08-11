@@ -37,10 +37,9 @@ var memberRmCmd = &cobra.Command{
 	Use:   "rm <member-id>...",
 	Short: "Removes members from the current project",
 	Long: `Removes members from the current project,
-effecively preventing them from accessing future version
+effectively preventing them from accessing future version
 of the secrets and files.
-
-This causes secrets to be re-crypted for the remainig members.`,
+`,
 	Example: "ks member rm aster_23@github sam@gitlab",
 	Args: func(_ *cobra.Command, args []string) error {
 		r := regexp.MustCompile(`[\w-_.]+@(gitlab|github)`)

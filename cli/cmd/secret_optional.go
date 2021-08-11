@@ -27,7 +27,8 @@ var optionalCmd = &cobra.Command{
 	Short: "Marks a secret as optional",
 	Long: `Marks a secret as optional.
 
-Blank values for the given secret will be allowed.
+When a file is marked as optional, its absence or emptiness won’t cause
+` + "`" + `ks source` + "`" + ` or ` + "`" + `ks ci send` + "`" + ` to fail.
 `,
 	Example: "ks secret optional PORT",
 	Args:    cobra.ExactArgs(1),

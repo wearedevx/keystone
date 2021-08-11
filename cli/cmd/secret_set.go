@@ -29,15 +29,15 @@ import (
 // secretsSetCmd represents the set command
 var secretsSetCmd = &cobra.Command{
 	Use:   "set <secret name> [secret value]",
-	Short: "Updates a secret's value for the current environment",
-	Long: `Updates a secret's value for the current environment.
+	Short: "Updates a secret’s value for the current environment",
+	Long: `Updates a secret’s value for the current environment.
 
 Changes the value of a secret without altering other environments.
 `,
 	Example: `ks secret set PORT 3000
 
-# Chanege the value of PORT for the 'staging' environment:
-ks --env stagin PORT 4545
+# Change the value of PORT for the 'staging' environment:
+ks --env staging PORT 4545
 `,
 	Args: cobra.ExactArgs(2),
 	Run: func(_ *cobra.Command, args []string) {

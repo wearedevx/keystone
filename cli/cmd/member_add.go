@@ -71,18 +71,19 @@ var memberAddCmd = &cobra.Command{
 	Short: "Adds members to the current project",
 	Long: `Adds members to the current project.
 
-Passed arguments are list member ids, which users can 
-obtain using ks whoami.
+Passed arguments are a list of member ids, which users can 
+obtain using ` + "`" + `ks whoami` + "`" + `.
 
-This will cause secrets to be encryted for all members, existing and new.`,
+Added members will be able to access secrets after a ` + "`" + `ks source` + "`" + `.
+`,
 	Example: `# Add a list of members:
 ks member add john.doe@gitlab danny54@github helena@gitlab
 
-# Add members with their roles from a file:
-ks member add --from-file team.yml
-
 # Add members and defining their roles from the command line:
 ks member add -r developer -u john.doe@gitlab -u danny54@gitlab
+
+# Add members with their roles from a file:
+ks member add --from-file team.yml
 `,
 	Run: func(_ *cobra.Command, _ []string) {
 		// Auth check
@@ -267,7 +268,7 @@ func mapRoleNamesToRoles(memberRoleNames map[string]string, roles []models.Role)
 func init() {
 	memberCmd.AddCommand(memberAddCmd)
 
-	memberAddCmd.Flags().StringVar(&membersFile, "from-file", "", "yml file to import a known list of members")
+	memberAddCmd.Flags().StringVar(&membersFile, "from-file", "", "yaml file to import a known list of members")
 
 	memberAddCmd.Flags().StringVarP(&oneRole, "role", "r", "", "role to set users, when not using the prompt")
 	memberAddCmd.Flags().StringSliceVarP(&manyMembers, "user", "u", []string{}, "user to add, when not using the prompt")

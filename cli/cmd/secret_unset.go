@@ -31,7 +31,7 @@ var secretsUnsetCmd = &cobra.Command{
 	Short: "Clears a secret for the current environment",
 	Long: `Clears a secret for the current environment.
 
-Other environments will not be afftected.
+Other environments will not be affected.
 The secret must not be required.`,
 	Example: "ks unset PORT",
 	Args:    cobra.ExactArgs(1),

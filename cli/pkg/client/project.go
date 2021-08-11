@@ -94,3 +94,11 @@ func (p *Project) GetAccessibleEnvironments() ([]models.Environment, error) {
 
 	return result.Environments, err
 }
+
+// Destroys the project, its environments, environments versions,
+// project members, messages, etc. Permanently
+func (p *Project) Destroy() (err error) {
+	err = p.r.del("/projects/"+p.id, nil, nil, nil)
+
+	return err
+}

@@ -42,7 +42,7 @@ var initCmd = &cobra.Command{
 	Long: `Creates Keystone config files and directories.
 
 Created files and directories:
- - keystone.yml: the project's config,
+ - keystone.yml: the project’s config,
  - .keystone:    cache and various files for internal use. 
                  automatically added to .gitignore
 `,
@@ -134,6 +134,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	initCmd.Flags().StringVar(&projectName, "project", "", "Define the project name")
 }

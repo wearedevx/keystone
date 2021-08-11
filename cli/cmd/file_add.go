@@ -45,7 +45,7 @@ across environments, such as configuration files, credentials,
 certificates and so on.
 
 When adding a file, you will be asked for a version of its content
-for all known environments.
+for all known environments – the current contend will be used as default.
 `,
 	Example: `ks file add ./config/config.exs
 ks file add ./wp-config.php
@@ -80,7 +80,12 @@ ks file add ./certs/my-website.cert`,
 		environmentFileMap[currentEnvironment] = currentContent
 
 		if !skipPrompts {
-			askContentOfFile(environments, filePath, environmentFileMap)
+			askContentOfFile(
+				environments,
+				filePath,
+				environmentFileMap,
+				currentContent,
+			)
 		} else {
 			for _, environment := range environments {
 				environmentFileMap[environment.Name] = currentContent
@@ -145,7 +150,12 @@ func init() {
 	filesCmd.AddCommand(filesAddCmd)
 }
 
-func askContentOfFile(environments []models.Environment, filePath string, environmentFileMap map[string][]byte) {
+func askContentOfFile(
+	environments []models.Environment,
+	filePath string,
+	environmentFileMap map[string][]byte,
+	currentContent []byte,
+) {
 	extension := filepath.Ext(filePath)
 
 	for _, environment := range environments {
@@ -162,7 +172,7 @@ func askContentOfFile(environments []models.Environment, filePath string, enviro
 			content, err := utils.CaptureInputFromEditor(
 				utils.GetPreferredEditorFromEnvironment,
 				extension,
-				"",
+				string(currentContent),
 			)
 
 			if err != nil {

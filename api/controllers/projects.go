@@ -263,3 +263,23 @@ func GetAccessibleEnvironments(params router.Params, _ io.ReadCloser, Repo repo.
 	}
 	return &result, status, err
 }
+
+func DeleteProject(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
+	status = http.StatusNoContent
+
+	var projectId = params.Get("projectID").(string)
+
+	var project models.Project
+
+	Repo.
+		GetProjectByUUID(projectId, &project).
+		DeleteAllProjectMembers(&project).
+		DeleteProjectsEnvironments(&project).
+		DeleteProject(&project)
+
+	if err = Repo.Err(); err != nil {
+		status = http.StatusInternalServerError
+	}
+
+	return nil, status, err
+}

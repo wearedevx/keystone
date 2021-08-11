@@ -128,16 +128,16 @@ func (file *KeystoneFile) Save() *KeystoneFile {
 }
 
 // Removes the keystone file from disk
-func (file *KeystoneFile) Remove() {
+func (file *KeystoneFile) Remove() *KeystoneFile {
 	if file.Err() != nil {
-		return
+		return file
 	}
 
 	if err := os.Remove(file.path); err != nil {
 		file.err = fmt.Errorf("Could not remove `keystone.yml` (%w)", err)
 	}
 
-	return
+	return file
 }
 
 // Adds a variable to the project

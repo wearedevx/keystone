@@ -19,7 +19,7 @@ func setupFunc(env *testscript.Env) error {
 	utils.SetupEnvVars(env)
 	utils.CreateAndLogUser(env)
 
-	utils.CreateFakeUserWithUsername("john.doe", models.GitLabAccountType, env)
+	utils.CreateFakeUserWithUsername("john.doe", models.GitlabAccountType, env)
 	utils.CreateFakeUserWithUsername("jane.to", models.GitHubAccountType, env)
 
 	return nil

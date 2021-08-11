@@ -313,3 +313,21 @@ func (r *Repo) CheckMembersAreInProject(project models.Project, members []string
 
 	return areInProjects, r.err
 }
+
+func (r *Repo) DeleteProject(project *models.Project) IRepo {
+	if r.Err() != nil {
+		return r
+	}
+
+	db := r.GetDb()
+
+	r.err = db.
+		Delete(
+			models.Project{},
+			"uuid = ?",
+			project.UUID,
+		).
+		Error
+
+	return r
+}
