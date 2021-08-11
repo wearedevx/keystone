@@ -55,6 +55,12 @@ This is permanent an cannot be undone`,
 			return
 		}
 
+		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+			return
+		}
+
 		ui.PrintSuccess("All environments purged")
 	},
 }
