@@ -18,6 +18,7 @@ jobs:
       - name: Print Inputs
         run: |
            echo "${{ toJSON(github.event.client_payload) }}"
+
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -97,6 +98,12 @@ jobs:
   homebrew:
     runs-on: ubuntu-latest
     steps:
+
+      - uses: actions/checkout@v2
+        with:
+          repository: wearedevx/homebrew-keystone
+          token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
+
       - name: Load Secrets
         uses: wearedevx/keystone-action@main
         id: load_secrets
@@ -106,11 +113,6 @@ jobs:
           keystone_slot_3: ${{ secrets.KEYSTONE_PROD_SLOT_3 }}
           keystone_slot_4: ${{ secrets.KEYSTONE_PROD_SLOT_4 }}
           keystone_slot_5: ${{ secrets.KEYSTONE_PROD_SLOT_5 }}
-
-      - uses: actions/checkout@v2
-        with:
-          repository: wearedevx/homebrew-keystone
-          token: ${{ env.DEPLOY_GITHUB_TOKEN }}
 
       - name: Run Template
         env:
