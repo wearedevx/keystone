@@ -41,13 +41,13 @@ var secretAddCmd = &cobra.Command{
 	Long: `Adds a secret to all environments.
 
 Secrets are environment variables which value may vary
-across environments, such as 'staging', 'prduction',
-and 'development' environments.
+across environments, such as 'staging', 'prod',
+and 'dev' environments.
 
-The varible name will be added to all such environments,
+The variable name will be added to all such environments,
 you will be asked its value for each environment
 `,
-	Example: `# Add a secret ` + "`" + `PORT` + "`" + ` to all envrionments
+	Example: `# Add a secret ` + "`" + `PORT` + "`" + ` to all environments
 # and set its value to 3000 for the current one.
 ks secret add PORT 3000
 

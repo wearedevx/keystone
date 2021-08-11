@@ -26,7 +26,7 @@ func GetAuthService(serviceName string, ctx context.Context, apiUrl string) (Aut
 		c = GitHubAuth(ctx, apiUrl)
 
 	case "gitlab":
-		c = GitLabAuth(ctx, apiUrl)
+		c = GitlabAuth(ctx, apiUrl)
 
 	default:
 		err = fmt.Errorf("Unknown service name %s", serviceName)

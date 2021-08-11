@@ -137,10 +137,10 @@ func SelectAuthService(ctx context.Context) (auth.AuthService, error) {
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "Login or sign up to your keystone accounts",
-	Long: `Login or sign up to your keystone accounts.
+	Short: "Login or sign up to your Keystone accounts",
+	Long: `Login or sign up to your Keystone accounts.
 
-When singing up, you will be asked to log into either your GitHub or GitLab
+When singing up, you will be asked to log into either your GitHub or Gitlab
 account, to verify your identity.
 We do not use any information other than your email address and your username.
 	`,

@@ -27,7 +27,8 @@ var fileOptionalCmd = &cobra.Command{
 	Short: "Marks a file as optional",
 	Long: `Marks a file as optional.
 
-Empty or non-existing files will be allowed.
+When a file is marked as optional, its absence or emptiness won’t cause
+` + "`" + `ks source` + "`" + ` or ` + "`" + `ks ci send` + "`" + ` to fail.
 `,
 	Example: `ks file optional ./config.json`,
 	Run: func(cmd *cobra.Command, args []string) {

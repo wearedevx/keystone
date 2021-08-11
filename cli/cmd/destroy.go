@@ -37,6 +37,10 @@ var destroyCmd = &cobra.Command{
 
 The project will be deleted, members won’t be able to send or receive
 updates about it. 
+
+All secrets and files managed by Keystone *WILL BE LOST*.
+It is highly recommended that you backup everything up beforehand.
+
 This is irreversible.
 `,
 	Example: "ks destroy",

@@ -39,7 +39,7 @@ var memberCmd = &cobra.Command{
 	Long: `Manages members.
 
 Used without arguments, displays a list of all members,
-grouped by their role, with indication of their ownership.`,
+grouped by their role.`,
 	Run: func(_ *cobra.Command, _ []string) {
 
 		c, kcErr := client.NewKeystoneClient()

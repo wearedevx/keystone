@@ -33,8 +33,8 @@ import (
 // setCmd represents the set command
 var setCmd = &cobra.Command{
 	Use:   "set <path to a file>",
-	Short: "Updates a file's content for the current environment",
-	Long: `Updates a file's content for the current environment.
+	Short: "Updates a file’s content for the current environment",
+	Long: `Updates a file’s content for the current environment.
 
 Changes the content of a file without altering other environments.
 `,
