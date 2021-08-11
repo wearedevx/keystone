@@ -13,9 +13,10 @@ type EnvironmentName string
 type SecretValue string
 
 type Secret struct {
-	Name     string
-	Required bool
-	Values   map[EnvironmentName]SecretValue
+	Name      string
+	Required  bool
+	Values    map[EnvironmentName]SecretValue
+	FromCache bool
 }
 
 type SecretStrictFlag int
