@@ -31,8 +31,8 @@ import (
 // sourceCmd represents the source command
 var sourceCmd = &cobra.Command{
 	Use:   "source",
-	Short: "Prints all environment variables",
-	Long: `Prints all environment variables.
+	Short: "Echo a script to load secrets, and writes files",
+	Long: `Echo a script to load secrets, and writes files.
 
 Environment variables values can then be loaded using eval, for example.
 

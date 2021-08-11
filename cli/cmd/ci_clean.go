@@ -12,7 +12,7 @@ import (
 // cleanCmd represents the clean command
 var cleanCmd = &cobra.Command{
 	Use:   "clean",
-	Short: "Removes all secrets and files from a CI service.",
+	Short: "Removes all secrets and files from a CI service",
 	Long:  `Removes all secrets and files from a CI service.`,
 	Example: `
 # To remove everything regarding the current environment:

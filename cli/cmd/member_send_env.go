@@ -21,9 +21,11 @@ var allEnv = false
 // initCmd represents the init command
 var sendEnvCmd = &cobra.Command{
 	Use:   "send-env <member id>",
-	Short: "Sends current environment to member.",
+	Short: "Sends secrets and files from current environment to member.",
 	Long: `Sends secrets and files from current environment to member.
-If a member hasn't received secrets and files last time someone sent an update, it can be done again with this command.
+
+If a member hasn't received secrets and files last time someone sent an update,
+it can be done again with this command.
 `,
 	Example: `ks member send-env john@gitlab`,
 

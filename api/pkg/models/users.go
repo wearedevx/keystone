@@ -104,7 +104,7 @@ type AccountType string
 
 const (
 	GitHubAccountType AccountType = "github"
-	GitLabAccountType AccountType = "gitlab"
+	GitlabAccountType AccountType = "gitlab"
 	CustomAccountType AccountType = "custom"
 )
 

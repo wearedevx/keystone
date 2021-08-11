@@ -23,7 +23,7 @@ func GetConnectoForAccountType(accountType models.AccountType) (AuthConnector, e
 	case models.GitHubAccountType:
 		return new(githubAuthConnector), nil
 
-	case models.GitLabAccountType:
+	case models.GitlabAccountType:
 		return new(gitlabAuthConnector), nil
 
 	default:

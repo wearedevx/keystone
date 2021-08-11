@@ -21,9 +21,9 @@ type gitlabAuthService struct {
 	token        *oauth2.Token
 }
 
-func (g gitlabAuthService) Name() string { return "GitLab" }
+func (g gitlabAuthService) Name() string { return "Gitlab" }
 
-func GitLabAuth(ctx context.Context, apiUrl string) AuthService {
+func GitlabAuth(ctx context.Context, apiUrl string) AuthService {
 	return &gitlabAuthService{
 		apiUrl: apiUrl,
 		ctx:    ctx,
@@ -82,7 +82,7 @@ func (g *gitlabAuthService) WaitForExternalLogin() error {
 }
 
 func (g gitlabAuthService) Finish(pk []byte) (models.User, string, error) {
-	return completeLogin(g.apiUrl, models.GitLabAccountType, g.token, pk)
+	return completeLogin(g.apiUrl, models.GitlabAccountType, g.token, pk)
 }
 
 func (g gitlabAuthService) CheckAccount(account map[string]string) (bool, error) {
@@ -92,7 +92,7 @@ func (g gitlabAuthService) CheckAccount(account map[string]string) (bool, error)
 		return false, err
 	}
 
-	if account["account_type"] != string(models.GitLabAccountType) {
+	if account["account_type"] != string(models.GitlabAccountType) {
 		return false, nil
 	}
 

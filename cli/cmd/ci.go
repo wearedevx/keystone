@@ -26,7 +26,7 @@ var ciCmd = &cobra.Command{
 	Long: `Manages CI services.
 
   ` + "`" + `ks ci setup` + "`" + `: to get started with CI services;  
-  ` + "`" + `ks ci send` + "`" + `:  to send environment to a setup CI service;  
+  ` + "`" + `ks ci send` + "`" + `:  to send environment to a CI service;  
   ` + "`" + `ks ci clean` + "`" + `: to remove all secrets and files from a CI service.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
