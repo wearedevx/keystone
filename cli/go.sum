@@ -573,6 +573,11 @@ github.com/wearedevx/keystone/api v0.0.0-20210810105357-8a0473523928 h1:MYDWDHqp
 github.com/wearedevx/keystone/api v0.0.0-20210810105357-8a0473523928/go.mod h1:Rxn5CJdsUoat+2BQ8ieyko2Vvp7KLI26IPSaQqdQ4LA=
 github.com/wearedevx/keystone/api v0.0.0-20210810142209-1b3277f2a4b3 h1:KV3sv8vnA4LUGJGwkbBkaHPU07BThfO0Y8H72xAEZSA=
 github.com/wearedevx/keystone/api v0.0.0-20210810142209-1b3277f2a4b3/go.mod h1:Rxn5CJdsUoat+2BQ8ieyko2Vvp7KLI26IPSaQqdQ4LA=
+<<<<<<< HEAD
+=======
+github.com/wearedevx/keystone/api v0.0.0-20210811094331-565e6a81f3ff h1:V4kqyBBskrmVqwjzzuHb957K9VZ50rFItpxikabUkmI=
+github.com/wearedevx/keystone/api v0.0.0-20210811094331-565e6a81f3ff/go.mod h1:Rxn5CJdsUoat+2BQ8ieyko2Vvp7KLI26IPSaQqdQ4LA=
+>>>>>>> origin/master
 github.com/xanzy/go-gitlab v0.49.0 h1:alk636Xc1SUyvtiuJH+5jo1BQdKI/M+TSqBE/6J+c7A=
 github.com/xanzy/go-gitlab v0.49.0/go.mod h1:Q+hQhV508bDPoBijv7YjK/Lvlb4PhVhJdKqXVQrUoAE=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=

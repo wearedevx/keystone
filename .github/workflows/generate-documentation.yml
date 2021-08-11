@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
-          path: keystone-docs
+          path: keystone-documentation
           ref: main
           repository: wearedevx/keystone-documentation
 
@@ -37,14 +37,15 @@ jobs:
 
           # Actual generation
           cd keystone/cli
-          go run main.go documentation -t hugo -d ../../keystone-docs/contents/docs/cli
+          go run main.go documentation -t hugo -d ../../keystone-documentation/content/docs/cli
           cd ../..
 
       - name: Commit Documentation version
         uses: EndBug/add-and-commit@v7
         with:
           token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
-          add: keystone-docs/contents/docs/cli/*
+          add: ./content/docs/cli/*
           branch: main
+          cwd: keystone-documentation
           message: "Generated documentation update"
           push: true

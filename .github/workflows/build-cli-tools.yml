@@ -18,6 +18,7 @@ jobs:
       - name: Print Inputs
         run: |
            echo "${{ toJSON(github.event.client_payload) }}"
+
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -39,6 +40,10 @@ jobs:
            cd cli
            mkdir snap
            sh deploy/gen_snapcraft.sh
+
+           go mod -dropreplace github.com/wearedevx/keystone/api
+           go get github.com/wearedevx/keystone/api@${{ env.TAG }}
+           go mod -replace github.com/wearedevx/keystone/api ../api
         env:
           BRANCH: ${{ env.TAG }}
           #
@@ -111,6 +116,16 @@ jobs:
         with:
           repository: wearedevx/homebrew-keystone
           token: ${{ env.DEPLOY_GITHUB_TOKEN }}
+
+      - name: Load Secrets
+        uses: wearedevx/keystone-action@main
+        id: load_secrets
+        with:
+          keystone_slot_1: ${{ secrets.KEYSTONE_PROD_SLOT_1 }}
+          keystone_slot_2: ${{ secrets.KEYSTONE_PROD_SLOT_2 }}
+          keystone_slot_3: ${{ secrets.KEYSTONE_PROD_SLOT_3 }}
+          keystone_slot_4: ${{ secrets.KEYSTONE_PROD_SLOT_4 }}
+          keystone_slot_5: ${{ secrets.KEYSTONE_PROD_SLOT_5 }}
 
       - name: Run Template
         env:
