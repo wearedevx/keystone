@@ -16,7 +16,9 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"reflect"
 	"regexp"
 	"strings"
 
@@ -24,6 +26,7 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
@@ -67,47 +70,66 @@ ks secret add PORT`,
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		es := environments.NewEnvironmentService(ctx)
+		useValuesInCache := checkSecretAlreadyInCache(secretName)
 
-		if err = es.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+		if !useValuesInCache {
 
-		environmentValueMap := setValuesForEnvironments(secretName, secretValue, ctx.AccessibleEnvironments)
+			es := environments.NewEnvironmentService(ctx)
 
-		var printer = &ui.UiPrinter{}
-		ms := messages.NewMessageService(ctx, printer)
-		changes := ms.GetMessages()
+			if err = es.Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+			}
 
-		if err = ms.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+			environmentValueMap := setValuesForEnvironments(secretName, secretValue, ctx.AccessibleEnvironments)
 
-		flag := core.S_REQUIRED
+			var printer = &ui.UiPrinter{}
+			ms := messages.NewMessageService(ctx, printer)
+			changes := ms.GetMessages()
 
-		if addOptional {
-			flag = core.S_OPTIONAL
-		}
+			if err = ms.Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+			}
 
-		if err = ctx.
-			CompareNewSecretWithChanges(
-				secretName,
-				environmentValueMap,
-				changes,
-			).
-			AddSecret(secretName, environmentValueMap, flag).
-			Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-			return
-		}
+			flag := core.S_REQUIRED
 
-		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-			return
+			if addOptional {
+				flag = core.S_OPTIONAL
+			}
+
+			if err = ctx.
+				CompareNewSecretWithChanges(
+					secretName,
+					environmentValueMap,
+					changes,
+				).
+				AddSecret(secretName, environmentValueMap, flag).
+				Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+				return
+			}
+
+			if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+				return
+			}
+		} else {
+			// If use values in cache, just add secret to keystone.yml
+
+			var ksfile keystonefile.KeystoneFile
+			// Add new env key to keystone.yml
+			if err := ksfile.
+				Load(ctx.Wd).
+				SetEnv(secretName, true).
+				Save().
+				Err(); err != nil {
+				kserrors.FailedToUpdateKeystoneFile(err).Print()
+				os.Exit(1)
+			}
+			os.Exit(0)
 		}
 
 		ui.PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(ctx.AccessibleEnvironments))
@@ -204,4 +226,37 @@ Enter a values for {{ . }}:`, secretName))
 
 	environmentValueMap[currentEnvironment] = secretValue
 	return environmentValueMap
+}
+
+func checkSecretAlreadyInCache(secretName string) bool {
+	secrets := ctx.ListSecretsFromCache()
+	var found core.Secret
+	for _, secret := range secrets {
+		if secret.Name == secretName {
+			found = secret
+		}
+	}
+	fmt.Println(found)
+	if !reflect.ValueOf(found).IsZero() {
+		ui.Print(`The secret already exist. Values are:`)
+		for env, value := range found.Values {
+			ui.Print(`%s: %s`, env, value)
+		}
+
+		result := "n"
+
+		if !skipPrompts {
+			p := promptui.Prompt{
+				Label:     "Do you want to override the values ?",
+				IsConfirm: true,
+			}
+
+			result, _ = p.Run()
+		}
+
+		if result == "n" {
+			return true
+		}
+	}
+	return false
 }
