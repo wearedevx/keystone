@@ -15,6 +15,8 @@ env:
   strict: true
 - key: SNAP_STORE_LOGIN
   strict: true
+- key: AUTH_PROXY
+  strict: true
 files: []
 options:
   strict: false
