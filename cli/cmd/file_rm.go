@@ -19,12 +19,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 var forcePrompts bool
@@ -63,10 +63,8 @@ This is permanent, and cannot be undone.
 			err.Print()
 			os.Exit(1)
 		}
-		result := promptYesNo(filePath)
 
-		if result == "y" {
-
+		if promptYesNo(filePath) {
 			var printer = &ui.UiPrinter{}
 			ms := messages.NewMessageService(ctx, printer)
 			ms.GetMessages()
@@ -115,7 +113,10 @@ func init() {
 	)
 }
 
-func promptYesNo(filePath string) string {
+func promptYesNo(filePath string) bool {
+	if skipPrompts {
+		return true
+	}
 
 	ui.Print(ui.RenderTemplate("confirm files rm",
 		`{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
@@ -126,15 +127,5 @@ This is permanent, and cannot be undone.`, map[string]string{
 			"Environment": ctx.CurrentEnvironment(),
 		}))
 
-	result := "y"
-
-	if !skipPrompts {
-		p := promptui.Prompt{
-			Label:     "Continue",
-			IsConfirm: true,
-		}
-
-		result, _ = p.Run()
-	}
-	return result
+	return prompts.Confirm("Continue")
 }

@@ -21,7 +21,8 @@ files: []
 options:
   strict: false
 ci_services:
-- name: github-ci
+- name: Keytone CI
+  type: github-ci
   keys:
     Owner: wearedevx
     Project: keystone

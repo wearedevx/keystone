@@ -17,6 +17,11 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/internal/ci"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/pkg/core"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // ciCmd represents the ci command
@@ -25,12 +30,28 @@ var ciCmd = &cobra.Command{
 	Short: "Manages CI services",
 	Long: `Manages CI services.
 
-  ` + "`" + `ks ci setup` + "`" + `: to get started with CI services;  
-  ` + "`" + `ks ci send` + "`" + `:  to send environment to a CI service;  
-  ` + "`" + `ks ci clean` + "`" + `: to remove all secrets and files from a CI service.
+Used without arguments, lists CI services this project has been setup with.
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Usage()
+	Run: func(_ *cobra.Command, _ []string) {
+		ctx := core.New(core.CTX_RESOLVE)
+
+		services, err := ci.ListCiServices(ctx)
+		if err != nil {
+			kserrors.UnkownError(err)
+		}
+
+		if len(services) != 0 {
+			ui.Print(ui.RenderTemplate("ci list", `
+CI Services:
+{{ range $service := .Services }} 
+ - {{ $service.Name }} ({{ $service.Type }})
+{{end}}`, struct {
+				Services []keystonefile.CiService
+			}{
+				Services: services,
+			}))
+		}
+
 	},
 }
 
