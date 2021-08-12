@@ -212,13 +212,6 @@ func (g *gitHubCiService) setKeys(servicesKeys ServicesKeys) CiService {
 	service.Type = string(GithubCI)
 	service.Options = g.servicesKeys
 
-	// if err = g.kf.
-	// 	AddCiService(service).
-	// 	Save().
-	// 	Err(); err != nil {
-	// 	return err
-	// }
-
 	return g
 }
 
