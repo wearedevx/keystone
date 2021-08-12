@@ -22,7 +22,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
@@ -31,6 +30,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 
 	"github.com/spf13/cobra"
 )
@@ -196,24 +196,10 @@ Enter a values for {{ . }}:`, secretName))
 				environmentValueMap[environment.Name] = strings.Trim(string(stringResult), " ")
 
 			} else {
-				p := promptui.Prompt{
-					Label:   environment.Name,
-					Default: secretValue,
-				}
-
-				result, err := p.Run()
-
-				// Handle user cancelation
-				// or prompt error
-				if err != nil {
-					if err.Error() != "^C" {
-						ui.PrintError(err.Error())
-						os.Exit(1)
-					}
-					os.Exit(0)
-				}
-
-				environmentValueMap[environment.Name] = strings.Trim(result, " ")
+				environmentValueMap[environment.Name] = prompts.StringInput(
+					environment.Name,
+					secretValue,
+				)
 			}
 		}
 
@@ -243,18 +229,13 @@ func checkSecretAlreadyInCache(secretName string) bool {
 			ui.Print(`%s: %s`, env, value)
 		}
 
-		result := "n"
+		override := false
 
 		if !skipPrompts {
-			p := promptui.Prompt{
-				Label:     "Do you want to override the values ?",
-				IsConfirm: true,
-			}
-
-			result, _ = p.Run()
+			override = prompts.Confirm("Do you want to override the values")
 		}
 
-		if result == "n" {
+		if override {
 			return true
 		}
 	}

@@ -5,17 +5,16 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/google/go-github/v32/github"
 	"github.com/jamesruan/sodium"
-	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 	"golang.org/x/oauth2"
 )
 
@@ -231,22 +230,10 @@ func (g *gitHubCiService) askForKeys() CiService {
 	servicesKeys := g.getKeys()
 
 	for key, value := range servicesKeys {
-		p := promptui.Prompt{
-			Label:   serviceName + " " + key,
-			Default: value,
-		}
-		result, err := p.Run()
-
-		// Handle user cancelation
-		// or prompt error
-		if err != nil {
-			if err.Error() != "^C" {
-				ui.PrintError(err.Error())
-				os.Exit(1)
-			}
-			os.Exit(0)
-		}
-		servicesKeys[key] = result
+		servicesKeys[key] = prompts.StringInput(
+			serviceName+" "+key,
+			value,
+		)
 	}
 
 	g.setKeys(servicesKeys)
@@ -256,26 +243,12 @@ func (g *gitHubCiService) askForKeys() CiService {
 
 func (g *gitHubCiService) askForApiKey() CiService {
 	serviceName := g.Name()
+	apiKey := g.getApiKey()
 
 	fmt.Println("Personal access token can be generated here: https://github.com/settings/tokens/new\nIt should have access to \"repo\" scope.")
-	p := promptui.Prompt{
-		Label:   serviceName + "'s Access token",
-		Default: string(g.getApiKey()),
-	}
+	apiKey = prompts.StringInupt(serviceName+" Access Token", apiKey)
 
-	result, err := p.Run()
-
-	// Handle user cancelation
-	// or prompt error
-	if err != nil {
-		if err.Error() != "^C" {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
-
-	g.setApiKey(ApiKey(result))
+	g.setApiKey(ApiKey(apiKey))
 
 	return g
 }

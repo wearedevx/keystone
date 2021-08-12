@@ -18,32 +18,45 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 // rmCmd represents the rm command
 var rmCmd = &cobra.Command{
-	Use:   "rm",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "rm [service name]",
+	Short: "Removes a CI service configuration",
+	Long: `Removes a CI service configuration.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
+` + "`" + `ks ci send` + "`" + ` will no longer send secrets and files to the service.
+However, secrets and files sent before calling ` + "`" + `ks ci send` + "`" + ` will
+not be cleaned from the service.`,
+	Example: `ks ci rm
+
+# To avoid the prompt
+ks ci rm my-github-ci-service
+`,
+	Args: cobra.MaximumNArgs(1),
+	Run: func(_ *cobra.Command, args []string) {
 		ctx := core.New(core.CTX_RESOLVE)
 
-		s, ok := ci.FindCiServiceWithName(ctx, args[0])
+		var serviceName string
+
+		if len(args[0]) == 1 {
+			serviceName = args[0]
+		} else {
+			serviceName = prompts.StringInput("Enter the service name to remove")
+		}
+
+		s, ok := ci.FindCiServiceWithName(ctx, serviceName)
 		if !ok {
-			kserrors.UnkownError(fmt.Errorf("No such CI service: %s", args[0]))
+			// TODO: Create a proper error
+			kserrors.UnkownError(fmt.Errorf("No such CI service: %s", serviceName))
 			os.Exit(1)
 		}
 
@@ -53,27 +66,14 @@ to quickly create a Cobra application.`,
 This cannot be undone.`,
 			s))
 
-		p := promptui.Prompt{
-			Label:     "Continue",
-			IsConfirm: true,
-		}
-
-		answer, err := p.Run()
-		fmt.Printf("answer: %+v\n", answer)
-		if err != nil {
-			if err.Error() != "^C" {
-				ui.PrintError(err.Error())
-				os.Exit(1)
-			}
-			os.Exit(0)
-		}
-
-		if strings.ToLower(answer) == "y" {
+		if prompts.Confirm("Continue") {
 			if err := ci.RemoveCiService(ctx, s.Name); err != nil {
 				ui.PrintError(err.Error())
 				os.Exit(1)
 			}
 		}
+
+		ui.PrintSuccess("CI service '%s' successfully removed", s.Name)
 	},
 }
 

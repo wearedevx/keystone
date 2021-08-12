@@ -1,10 +1,12 @@
 package prompts
 
 import (
+	"os"
 	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 func PromptRole(memberId string, roles []models.Role) (models.Role, error) {
@@ -39,4 +41,43 @@ func PromptRole(memberId string, roles []models.Role) (models.Role, error) {
 	index, _, err := prompt.Run()
 
 	return roles[index], err
+}
+
+func Confirm(message string) bool {
+	p := promptui.Prompt{
+		Label:     message,
+		IsConfirm: true,
+	}
+
+	answer, err := p.Run()
+
+	if err != nil {
+		if err.Error() != "^C" {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+	} else if strings.ToLower(answer) == "y" {
+		return true
+	}
+
+	return false
+}
+
+func StringInput(message string, defaultValue string) string {
+	p := promptui.Prompt{
+		Label:   message,
+		Default: defaultValue,
+	}
+
+	answer, err := p.Run()
+
+	if err != nil {
+		if err.Error() != "^C" {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
+	return strings.Trim(answer, " ")
 }

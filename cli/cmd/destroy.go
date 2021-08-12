@@ -20,13 +20,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 // destroyCmd represents the destroy command
@@ -70,25 +70,16 @@ This is permanent, and cannot be undone.
 				"Project": projectName,
 			}))
 
-		p := promptui.Prompt{
-			Label: "Type the project name to confirm its destruction",
-		}
-
-		result, err := p.Run()
-		if err != nil {
-			kserrors.UnkownError(err).Print()
-			os.Exit(1)
-			return
-		}
+		result := prompts.StringInput("Type the project name to confirm its destruction", "")
 
 		// expect result to be the project name
 		if projectName != result {
 			kserrors.UnkownError(errors.New("Invalid Project Name")).Print()
 			os.Exit(1)
-			return
+			rturn
 		}
 
-		err = projectService.Destroy()
+		err := projectService.Destroy()
 
 		if err != nil {
 			kserrors.UnkownError(err).Print()

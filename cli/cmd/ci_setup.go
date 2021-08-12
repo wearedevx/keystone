@@ -18,8 +18,11 @@ var setupCmd = &cobra.Command{
 
 Use this command to modify CI service specific settings
 like API key and project name.`,
-	Example: "ks ci setup",
-	Args:    cobra.MaximumNArgs(1),
+	Example: `ks ci setup
+
+# To avoid the prompt
+ks ci setup my-gitub-ci-service`,
+	Args: cobra.MaximumNArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		ctx := core.New(core.CTX_RESOLVE)
 
@@ -47,7 +50,7 @@ like API key and project name.`,
 			ui.PrintError(ciService.Error().Error())
 			os.Exit(1)
 		}
-		ui.PrintSuccess("Ci service setup successfully")
+		ui.PrintSuccess("CI service setup successfully")
 	},
 }
 

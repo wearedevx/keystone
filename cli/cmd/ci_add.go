@@ -19,41 +19,31 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
-	Use:   "add",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Use:     "add",
+	Short:   "Configures a new CI service",
+	Long:    `Configures a new CI service.`,
+	Example: `ks ci add`,
+	Run: func(_ *cobra.Command, _ []string) {
 		ctx := core.New(core.CTX_RESOLVE)
 
-		p := promptui.Prompt{
-			Label: "Enter a name for your integration",
-		}
-
-		serviceName, err := p.Run()
-
-		if err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		serviceName := prompts.StringInput("Enter a name for your integration")
 
 		if _, nameExists := ci.FindCiServiceWithName(ctx, serviceName); nameExists {
 			// TODO: add a Ci service named {{.Name}} already exists
-			ui.PrintError(fmt.Sprintf("A CI service named %s already exists", serviceName))
+			ui.PrintError(fmt.Sprintf(
+				"A CI service named %s already exists",
+				serviceName,
+			))
 		}
 
 		ciService, err := ci.PickCiService(serviceName, ctx, client.ApiURL)
@@ -73,7 +63,7 @@ to quickly create a Cobra application.`,
 			os.Exit(1)
 		}
 
-		ui.PrintSuccess("Ci service setup successfully")
+		ui.PrintSuccess("CI service added successfully")
 	},
 }
 

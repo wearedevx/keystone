@@ -21,8 +21,7 @@ ks ci clean
 # You can specify the target environment with the --env flag:
 ks ci clean --env prod
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-
+	Run: func(_ *cobra.Command, _ []string) {
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		ciService, err := SelectCiService(ctx)
