@@ -247,7 +247,7 @@ func checkSecretAlreadyInCache(secretName string) bool {
 
 		if !skipPrompts {
 			p := promptui.Prompt{
-				Label:     "Do you want to override the values ?",
+				Label:     "Do you want to override the values ",
 				IsConfirm: true,
 			}
 
