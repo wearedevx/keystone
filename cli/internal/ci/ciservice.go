@@ -67,7 +67,7 @@ func GetCiService(serviceName string, ctx *core.Context, apiUrl string) (CiServi
 		c = GitHubCi(ctx, serviceName, apiUrl)
 
 	default:
-		err = fmt.Errorf("Unknown service name %s", serviceName)
+		err = fmt.Errorf("Unknown service type %s", service.Type)
 	}
 
 	return c, err

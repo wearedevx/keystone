@@ -78,7 +78,7 @@ func (g *gitHubCiService) Setup() CiService {
 
 func (g *gitHubCiService) CheckSetup() {
 	if len(g.servicesKeys["Owner"]) == 0 || len(g.servicesKeys["Project"]) == 0 || len(g.getApiKey()) == 0 {
-		g.err = errors.New("There is missing information in CI service settings.\nUse $ ks ci setup")
+		g.err = fmt.Errorf("There is missing information in CI service settings.\nUse $ ks ci setup %s", g.name)
 	}
 }
 
@@ -227,12 +227,12 @@ func (g *gitHubCiService) setApiKey(apiKey ApiKey) {
 }
 
 func (g *gitHubCiService) askForKeys() CiService {
-	serviceName := g.Name()
+	serviceName := availableServices[GithubCI]
 	servicesKeys := g.getKeys()
 
 	for key, value := range servicesKeys {
 		p := promptui.Prompt{
-			Label:   serviceName + "'s " + key,
+			Label:   serviceName + " " + key,
 			Default: value,
 		}
 		result, err := p.Run()
