@@ -60,7 +60,7 @@ ks --env staging file set ./config.php
 
 		if !ctx.HasFile(filePath) {
 			kserrors.
-				CannotSetFile(filePath, errors.New("file not added to project"))
+				CannotSetFile(filePath, errors.New("file not added to project")).Print()
 
 			os.Exit(1)
 		}
