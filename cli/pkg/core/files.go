@@ -6,6 +6,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
@@ -35,6 +37,53 @@ func (ctx *Context) ListFiles() []FileKey {
 	}
 
 	return ksfile.Files
+}
+
+func (ctx *Context) ListFilesFromCache() []FileKey {
+	if ctx.Err() != nil {
+		return make([]FileKey, 0)
+	}
+
+	filesFromCache := make([]string, 0)
+
+	for _, envname := range ctx.ListEnvironments() {
+		cachePath := ctx.CachedEnvironmentFilesPath(envname)
+
+		err := filepath.Walk(cachePath,
+			func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				fileRelativePath := strings.ReplaceAll(path, cachePath, "")
+				regexp, err := regexp.Compile(`^\/`)
+
+				fileRelativePath = regexp.ReplaceAllString(fileRelativePath, "")
+
+				if len(fileRelativePath) > 0 {
+					filesFromCache = append(filesFromCache, fileRelativePath)
+				}
+				return nil
+			})
+
+		if err != nil {
+			ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+			return make([]FileKey, 0)
+		}
+	}
+
+	filesFromCache = Uniq(filesFromCache)
+
+	fileKey := make([]FileKey, 0)
+	for _, f := range filesFromCache {
+		newFileKey := FileKey{
+			Path:      f,
+			Strict:    false,
+			FromCache: true,
+		}
+		fileKey = append(fileKey, newFileKey)
+	}
+
+	return fileKey
 }
 
 func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Context {

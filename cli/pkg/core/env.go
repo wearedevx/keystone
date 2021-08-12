@@ -384,7 +384,7 @@ func (ctx *Context) ListSecretsFromCache() []Secret {
 		}
 	}
 
-	allSecrets = uniq(allSecrets)
+	allSecrets = Uniq(allSecrets)
 
 	for _, envKey := range allSecrets {
 		name := envKey
