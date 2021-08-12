@@ -246,9 +246,9 @@ func (g *gitHubCiService) askForApiKey() CiService {
 	apiKey := g.getApiKey()
 
 	fmt.Println("Personal access token can be generated here: https://github.com/settings/tokens/new\nIt should have access to \"repo\" scope.")
-	apiKey = prompts.StringInupt(serviceName+" Access Token", apiKey)
+	apiKey = ApiKey(prompts.StringInput(serviceName+" Access Token", string(apiKey)))
 
-	g.setApiKey(ApiKey(apiKey))
+	g.setApiKey(apiKey)
 
 	return g
 }

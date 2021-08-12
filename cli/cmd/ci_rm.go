@@ -50,7 +50,10 @@ ks ci rm my-github-ci-service
 		if len(args[0]) == 1 {
 			serviceName = args[0]
 		} else {
-			serviceName = prompts.StringInput("Enter the service name to remove")
+			serviceName = prompts.StringInput(
+				"Enter the service name to remove",
+				"",
+			)
 		}
 
 		s, ok := ci.FindCiServiceWithName(ctx, serviceName)

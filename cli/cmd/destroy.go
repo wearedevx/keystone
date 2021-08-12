@@ -76,7 +76,7 @@ This is permanent, and cannot be undone.
 		if projectName != result {
 			kserrors.UnkownError(errors.New("Invalid Project Name")).Print()
 			os.Exit(1)
-			rturn
+			return
 		}
 
 		err := projectService.Destroy()

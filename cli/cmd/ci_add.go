@@ -36,7 +36,10 @@ var addCmd = &cobra.Command{
 	Run: func(_ *cobra.Command, _ []string) {
 		ctx := core.New(core.CTX_RESOLVE)
 
-		serviceName := prompts.StringInput("Enter a name for your integration")
+		serviceName := prompts.StringInput(
+			"Enter a name for your integration",
+			"",
+		)
 
 		if _, nameExists := ci.FindCiServiceWithName(ctx, serviceName); nameExists {
 			// TODO: add a Ci service named {{.Name}} already exists
