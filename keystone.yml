@@ -23,6 +23,13 @@ files: []
 options:
   strict: false
 ci_services:
-- name: Keytone CI
+- name: homebrew-keystone
   type: github-ci
-  options: {}
+  options:
+    Owner: wearedevx
+    Project: homebrew-keystone
+- name: keystone-main
+  type: github-ci
+  options:
+    Owner: wearedevx
+    Project: keystone
