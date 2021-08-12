@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/core"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 type CiServiceType string
@@ -79,42 +79,22 @@ func PickCiService(name string, ctx *core.Context, apiUrl string) (CiService, er
 		return nil, err
 	}
 
-	services := []struct {
-		Name string
-		Type CiServiceType
-	}{}
+	services := make([]prompts.SelectCIServiceItem, len(availableServices))
 
 	for typ, name := range availableServices {
-		services = append(services, struct {
-			Name string
-			Type CiServiceType
-		}{
+		services = append(services, prompts.SelectCIServiceItem{
 			Name: name,
-			Type: typ,
+			Type: string(typ),
 		})
 	}
 
-	prompt := promptui.Select{
-		Label: "Select a CI service",
-		Items: services,
-		Templates: &promptui.SelectTemplates{
-			Active:   "  {{ .Name }}",
-			Inactive: "  {{ .Name | faint }}",
-			Selected: "  {{ .Name  }}",
-		},
-	}
+	s := prompts.SelectCIService(services)
 
-	index, _, err := prompt.Run()
-	if err != nil {
-		return nil, err
-	}
-
-	s := services[index]
 	if name == "" {
 		name = s.Name
 	}
 
-	switch s.Type {
+	switch CiServiceType(s.Type) {
 	case GithubCI:
 		return GitHubCi(ctx, name, apiUrl), nil
 	default:

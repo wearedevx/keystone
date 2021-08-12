@@ -4,7 +4,6 @@ import (
 	"errors"
 	"os"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/ci"
@@ -12,6 +11,7 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 // ciSendCmd represents the pushCi command
@@ -99,16 +99,10 @@ func SelectCiService(ctx *core.Context) (ci.CiService, error) {
 	}
 
 	if serviceName == "" {
-		prompt := promptui.Select{
-			Label: "Select a ci service",
-			Items: items,
-		}
-
-		_, serviceName, err = prompt.Run()
-
-		if err != nil {
-			return nil, err
-		}
+		_, serviceName = prompts.Select(
+			"Select a CI service",
+			items,
+		)
 	}
 
 	return ci.GetCiService(serviceName, ctx, client.ApiURL)
