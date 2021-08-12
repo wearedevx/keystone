@@ -17,7 +17,7 @@ func Contains(arr []string, str string) bool {
 	return false
 }
 
-func uniq(arr []string) []string {
+func Uniq(arr []string) []string {
 	occured := map[string]bool{}
 	result := []string{}
 

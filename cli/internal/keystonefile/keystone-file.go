@@ -17,8 +17,9 @@ type EnvKey struct {
 }
 
 type FileKey struct {
-	Path   string
-	Strict bool
+	Path      string
+	Strict    bool
+	FromCache bool
 }
 
 type keystoneFileOptions struct {
