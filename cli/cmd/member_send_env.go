@@ -68,7 +68,7 @@ it can be done again with this command.
 
 		}
 
-		for i, env := range ctx.AccessibleEnvironments {
+		for i, env := range environments {
 			localEnvironment := ctx.LoadEnvironmentsFile().GetByName(env.Name)
 
 			environments[i] = models.Environment{
