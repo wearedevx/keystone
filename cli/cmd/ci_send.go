@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"os"
 
 	"github.com/manifoldco/promptui"
@@ -49,7 +50,7 @@ ks ci send --env prod
 			os.Exit(1)
 		}
 
-		ciService, err := SelectCiService(*ctx)
+		ciService, err := SelectCiService(ctx)
 
 		if err != nil {
 			ui.PrintError(err.Error())
@@ -79,15 +80,28 @@ func init() {
 	ciSendCmd.Flags().StringVar(&serviceName, "with", "", "Ci service name.")
 }
 
-func SelectCiService(ctx core.Context) (ci.CiService, error) {
+func SelectCiService(ctx *core.Context) (ci.CiService, error) {
 	var err error
+
+	services, err := ci.ListCiServices(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(services) == 0 {
+		return nil, errors.New("You haven’t set up any CI service yet")
+	}
+
+	items := make([]string, len(services), len(services))
+
+	for idx, service := range services {
+		items[idx] = service.Name
+	}
 
 	if serviceName == "" {
 		prompt := promptui.Select{
 			Label: "Select a ci service",
-			Items: []string{
-				"github",
-			},
+			Items: items,
 		}
 
 		_, serviceName, err = prompt.Run()

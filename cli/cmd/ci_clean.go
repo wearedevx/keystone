@@ -25,7 +25,7 @@ ks ci clean --env prod
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		ciService, err := SelectCiService(*ctx)
+		ciService, err := SelectCiService(ctx)
 
 		if err != nil {
 			ui.PrintError(err.Error())

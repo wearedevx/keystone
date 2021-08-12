@@ -18,7 +18,7 @@ like API key and project name.`,
 	Example: "ks ci setup",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		ciService, err := SelectCiService(*ctx)
+		ciService, err := SelectCiService(ctx)
 
 		if err != nil {
 			ui.PrintError(err.Error())
