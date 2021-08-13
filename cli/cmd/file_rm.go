@@ -55,15 +55,6 @@ This is permanent, and cannot be undone.
 			return
 		}
 
-		var printer = &ui.UiPrinter{}
-		ms := messages.NewMessageService(ctx, printer)
-		ms.GetMessages()
-
-		if err := ms.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
-
 		if promptYesNo(filePath) {
 			var printer = &ui.UiPrinter{}
 			ms := messages.NewMessageService(ctx, printer)
@@ -85,6 +76,10 @@ This is permanent, and cannot be undone.
 					err.Print()
 					os.Exit(1)
 				}
+			} else {
+				ui.Print("The file is kept in your keystone project for all the environments, in case you need it again.")
+				ui.Print("If you want to remove it from your device, use --purge")
+
 			}
 
 			ui.PrintSuccess("%s has been removed from the secret files.", filePath)
@@ -115,6 +110,9 @@ func init() {
 
 func promptYesNo(filePath string) bool {
 	if skipPrompts {
+		return true
+	}
+	if !purgeFile {
 		return true
 	}
 

@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -219,10 +220,18 @@ func (ctx *Context) RemoveFile(filePath string, force bool, purge bool, accessib
 	}
 
 	filteredFiles := make([]FileKey, 0)
+	found := false
 	for _, file := range ksfile.Files {
 		if file.Path != filePath {
 			filteredFiles = append(filteredFiles, file)
+		} else {
+			found = true
 		}
+	}
+	if !found {
+		err := errors.New("The file is not added to keystone.")
+		return ctx.setError(kserrors.CannotRemoveFile(filePath, err))
+
 	}
 
 	ksfile.Files = filteredFiles
@@ -240,10 +249,7 @@ func (ctx *Context) RemoveFile(filePath string, force bool, purge bool, accessib
 	if force {
 		fmt.Println("Force remove file on filesystem.")
 		os.Remove(dest)
-	} else {
-		fmt.Println("Keep file on filesystem.")
 	}
-
 	CopyFile(currentCached, dest)
 
 	if purge {
