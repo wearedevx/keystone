@@ -8,6 +8,12 @@ errors:
       {{ ERROR }} {{ .Name | red }}
       This happened because: {{ .Cause }}
 
+  - type: ServiceNotAvailable
+    name: "Service not available"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+
   - type: InvalidConnectionToken
     name: "Invalid Connection Token"
     params: []

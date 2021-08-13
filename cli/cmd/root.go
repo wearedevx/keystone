@@ -104,10 +104,6 @@ func Initialize() {
 		}
 	}
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
 	if ctx.Err() != nil && checkProject {
 		ctx.Err().Print()
 		os.Exit(1)
@@ -134,7 +130,7 @@ func Initialize() {
 
 		ctx.AccessibleEnvironments = es.GetAccessibleEnvironments()
 
-		if err := es.Err(); err != nil {
+		if err := ctx.Err(); err != nil {
 			err.Print()
 			os.Exit(1)
 		}
