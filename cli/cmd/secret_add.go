@@ -55,7 +55,7 @@ ks secret add PORT 3000
 
 # Add a secret ` + "`" + `PORT` + "`" + `without setting a default:
 ks secret add PORT`,
-	Args: cobra.ExactArgs(1),
+	Args: cobra.RangeArgs(1, 2),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
 		secretName := args[0]
