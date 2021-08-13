@@ -241,16 +241,23 @@ func (ctx *Context) RemoveFile(filePath string, force bool, purge bool, accessib
 		return ctx.setError(kserrors.FailedToUpdateKeystoneFile(err))
 	}
 
-	currentEnvironment := ctx.CurrentEnvironment()
-
-	currentCached := path.Join(ctx.CachedEnvironmentFilesPath(currentEnvironment), filePath)
 	dest := path.Join(ctx.Wd, filePath)
 
 	if force {
 		fmt.Println("Force remove file on filesystem.")
 		os.Remove(dest)
+	} else {
+
+		currentEnvironment := ctx.CurrentEnvironment()
+		currentCached := path.Join(ctx.CachedEnvironmentFilesPath(currentEnvironment), filePath)
+
+		// Remove destination, because is case of a symlink, os.Create will set empty content to the src of the symlink too!
+		os.Remove(dest)
+
+		if err := CopyFile(currentCached, dest); err != nil {
+			return ctx.setError(kserrors.CopyFailed(currentCached, dest, err))
+		}
 	}
-	CopyFile(currentCached, dest)
 
 	if purge {
 		for _, environment := range accessibleEnvironments {

@@ -1,6 +1,8 @@
 # Init with name
 ks init test-env
 
+ks file add --skip test.txt
+
 ks file rm --skip --force  test.txt
 
 

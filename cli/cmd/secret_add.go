@@ -16,7 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"reflect"
 	"regexp"
@@ -222,7 +221,6 @@ func checkSecretAlreadyInCache(secretName string) bool {
 			found = secret
 		}
 	}
-	fmt.Println(found)
 	if !reflect.ValueOf(found).IsZero() {
 		ui.Print(`The secret already exist. Values are:`)
 		for env, value := range found.Values {
