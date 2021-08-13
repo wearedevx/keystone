@@ -42,10 +42,8 @@ Used without arguments, lists CI services this project has been setup with.
 
 		if len(services) != 0 {
 			ui.Print(ui.RenderTemplate("ci list", `
-CI Services:
-{{ range $service := .Services }} 
- - {{ $service.Name }} ({{ $service.Type }})
-{{end}}`, struct {
+CI Services:{{ range $service := .Services }} 
+ - {{ $service.Name }} ({{ $service.Type }}){{end}}`, struct {
 				Services []keystonefile.CiService
 			}{
 				Services: services,

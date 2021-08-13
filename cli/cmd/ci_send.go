@@ -43,6 +43,11 @@ ks ci send --env prod
 		mustNotHaveMissingSecrets(environment)
 		mustNotHaveMissingFiles(environment)
 
+		ui.Print("You are about to send the '%s' environment to your CI services.")
+		if !prompts.Confirm("Continue") {
+			os.Exit(0)
+		}
+
 		message, err := ctx.PrepareMessagePayload(environment)
 
 		if err != nil {
@@ -50,27 +55,35 @@ ks ci send --env prod
 			os.Exit(1)
 		}
 
-		ciService, err := SelectCiService(ctx)
-
+		ciServices, err := ci.ListCiServices(ctx)
 		if err != nil {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
 
-		// ciService = askForKeys(ciService)
-		ciService.CheckSetup()
-		if ciService.Error() != nil {
-			ui.PrintError(ciService.Error().Error())
-			os.Exit(1)
-		}
+		for _, serviceDef := range ciServices {
+			ciService, err := ci.GetCiService(serviceDef.Name, ctx, client.ApiURL)
 
-		ciService.PushSecret(message, currentEnvironment)
+			if err != nil {
+				ui.PrintError(err.Error())
+				os.Exit(1)
+			}
 
-		if ciService.Error() != nil {
-			ui.PrintError(ciService.Error().Error())
-			os.Exit(1)
+			ciService.CheckSetup()
+			if ciService.Error() != nil {
+				ui.PrintError(ciService.Error().Error())
+				os.Exit(1)
+			}
+
+			ciService.PushSecret(message, currentEnvironment)
+
+			if ciService.Error() != nil {
+				ui.PrintError(ciService.Error().Error())
+				os.Exit(1)
+			}
+
+			ciService.PrintSuccess(currentEnvironment)
 		}
-		ciService.PrintSuccess(currentEnvironment)
 	},
 }
 
