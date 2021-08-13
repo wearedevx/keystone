@@ -39,8 +39,8 @@ var filesRmCmd = &cobra.Command{
 The file will no longer be gitignored and its content
 will no longer be updated when changing environment.
 
-The content of the file for other environments *will be lost*.
-This is permanent, and cannot be undone.
+The content of the file for all environments will be kept in the keystone project.
+Files can be used again using "file add" command.
 `,
 	Example: `ks file rm config/old-test-config.php`,
 	Args:    cobra.ExactArgs(1),
