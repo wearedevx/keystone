@@ -17,12 +17,12 @@ env:
   strict: true
 - key: AUTH_PROXY
   strict: true
+- key: MANDRILL_API_KEY
+  strict: true
 files: []
 options:
   strict: false
 ci_services:
 - name: Keytone CI
   type: github-ci
-  keys:
-    Owner: wearedevx
-    Project: keystone
+  options: {}
