@@ -379,7 +379,7 @@ func (ctx *Context) ListSecretsFromCache() []Secret {
 		dotEnv := new(EnvFile).Load(dotEnvPath, nil)
 
 		environmentValuesMap[environment] = dotEnv.GetData()
-		for label, _ := range dotEnv.GetData() {
+		for label := range dotEnv.GetData() {
 			allSecrets = append(allSecrets, label)
 		}
 	}
