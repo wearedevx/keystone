@@ -75,10 +75,17 @@ func CopyFile(src, dst string) error {
 	}
 	defer source.Close()
 
+	// Remove destination, because is case of a symlink, os.Create will set empty content to the src of the symlink too!
+	err = os.Remove(dst)
+	if err != nil {
+		return err
+	}
+
 	destination, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
+
 	defer destination.Close()
 
 	_, err = io.Copy(destination, source)
