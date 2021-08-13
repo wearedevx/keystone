@@ -79,7 +79,7 @@ func StringInput(message string, defaultValue string) string {
 	answer, err := p.Run()
 
 	if err != nil {
-		if err.Error() != "^C" {
+		if err.Error() != "^C" && err.Error() != "" {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
