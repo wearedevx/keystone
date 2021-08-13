@@ -198,7 +198,7 @@ func init() {
 	}
 	noProjectCommands = noEnvironmentCommands
 
-	noLoginCommands = []string{"login", "documentation", "version"}
+	noLoginCommands = []string{"login", "source", "documentation", "version"}
 }
 
 func WriteConfig() error {
