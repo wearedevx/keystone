@@ -41,9 +41,9 @@ jobs:
            mkdir snap
            sh deploy/gen_snapcraft.sh
 
-           go mod -dropreplace github.com/wearedevx/keystone/api
+           go mod edit -dropreplace github.com/wearedevx/keystone/api
            go get github.com/wearedevx/keystone/api@${{ env.TAG }}
-           go mod -replace github.com/wearedevx/keystone/api ../api
+           go mod edit -replace github.com/wearedevx/keystone/api ../api
         env:
           BRANCH: ${{ env.TAG }}
           #
