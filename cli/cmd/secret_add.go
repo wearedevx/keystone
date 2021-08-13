@@ -55,10 +55,15 @@ ks secret add PORT 3000
 
 # Add a secret ` + "`" + `PORT` + "`" + `without setting a default:
 ks secret add PORT`,
-	Args: cobra.ExactArgs(2),
+	Args: cobra.RangeArgs(1, 2),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
-		secretName, secretValue := args[0], args[1]
+		secretName := args[0]
+		secretValue := ""
+
+		if len(args) == 2 {
+			secretValue = args[1]
+		}
 
 		checkSecretErr := utils.CheckSecretContent(secretName)
 
@@ -69,10 +74,14 @@ ks secret add PORT`,
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		useValuesInCache := checkSecretAlreadyInCache(secretName)
+		inCache := checkSecretAlreadyInCache(secretName)
+		useCache := inCache
 
-		if !useValuesInCache {
+		if inCache {
+			useCache = !askToOverride()
+		}
 
+		if !useCache {
 			es := environments.NewEnvironmentService(ctx)
 
 			if err = es.Err(); err != nil {
@@ -116,8 +125,6 @@ ks secret add PORT`,
 				return
 			}
 		} else {
-			// If use values in cache, just add secret to keystone.yml
-
 			var ksfile keystonefile.KeystoneFile
 			// Add new env key to keystone.yml
 			if err := ksfile.
@@ -209,33 +216,35 @@ Enter a values for {{ . }}:`, secretName))
 
 	}
 
-	environmentValueMap[currentEnvironment] = secretValue
 	return environmentValueMap
 }
 
-func checkSecretAlreadyInCache(secretName string) bool {
+func checkSecretAlreadyInCache(secretName string) (inCache bool) {
 	secrets := ctx.ListSecretsFromCache()
 	var found core.Secret
+
 	for _, secret := range secrets {
 		if secret.Name == secretName {
 			found = secret
 		}
 	}
-	if !reflect.ValueOf(found).IsZero() {
+
+	inCache = !reflect.ValueOf(found).IsZero()
+
+	if inCache {
 		ui.Print(`The secret already exist. Values are:`)
 		for env, value := range found.Values {
 			ui.Print(`%s: %s`, env, value)
 		}
-
-		override := false
-
-		if !skipPrompts {
-			override = prompts.Confirm("Do you want to override the values")
-		}
-
-		if override {
-			return true
-		}
 	}
+
+	return inCache
+}
+
+func askToOverride() (doOverride bool) {
+	if !skipPrompts {
+		return prompts.Confirm("Do you want to override the values")
+	}
+
 	return false
 }
