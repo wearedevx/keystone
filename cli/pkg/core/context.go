@@ -198,3 +198,7 @@ func (c *Context) getCurrentEnvironmentId() string {
 
 	return ""
 }
+
+func (c *Context) DotKeystonePath() string {
+	return path.Join(c.Wd, ".keystone")
+}
