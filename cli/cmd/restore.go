@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/archive"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
@@ -24,6 +25,10 @@ This will override all the data you have stored locally.`,
 			ui.PrintError(fmt.Sprintf("invalid number of arguments. Expected 1, got %d", argc))
 			os.Exit(1)
 		}
+		if len(ctx.AccessibleEnvironments) < 3 {
+			ui.PrintError(fmt.Sprintf("You don't have the permissions to restore a backup."))
+			os.Exit(1)
+		}
 
 		backupfile := args[0]
 		if !utils.FileExists(backupfile) {
@@ -31,7 +36,11 @@ This will override all the data you have stored locally.`,
 			os.Exit(1)
 		}
 
-		if !prompts.Confirm("Sure you want to remove the content of .keystone/ with your backup") {
+		ui.Print(ui.RenderTemplate("confirm files rm",
+			`{{ CAREFUL }} You are about to remove the content of .keystone/ which contain all your local secrets and files.
+This will override the changes you and other members made since the backup.
+It will update other members secrets and files.`, map[string]string{}))
+		if !prompts.Confirm("Continue") {
 			os.Exit(0)
 		}
 
@@ -50,7 +59,15 @@ This will override all the data you have stored locally.`,
 			os.Exit(1)
 		}
 
-		ui.PrintSuccess("Backup restored : all your local files and secrets have been replaced by the backup.")
+		var printer = &ui.UiPrinter{}
+		ms := messages.NewMessageService(ctx, printer)
+		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+			return
+		}
+
+		ui.PrintSuccess("Backup restored : all your files and secrets have been replaced by the backup. They also have been sent to all members.")
 	},
 }
 
