@@ -86,7 +86,9 @@ other_value
 				os.Exit(1)
 			}
 
-			ui.Print(`export %s="%s"`, secretInfo.Name, value)
+			escapedValue := utils.DoubleQuoteEscape(string(value))
+
+			ui.Print(`export %s="%s"`, secretInfo.Name, escapedValue)
 
 		}
 	},

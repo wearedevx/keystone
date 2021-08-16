@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 // func GetEnv(varname string, fallback string) string {
@@ -123,4 +124,20 @@ func CheckSecretContent(name string) error {
 		return errors.New("Secret " + name + " not allowed. Secret name must be capital snakecase.")
 	}
 	return nil
+}
+
+const doubleQuoteSpecialChars = "\\\n\r\"!$`"
+
+func DoubleQuoteEscape(line string) string {
+	for _, c := range doubleQuoteSpecialChars {
+		toReplace := "\\" + string(c)
+		if c == '\n' {
+			toReplace = `\n`
+		}
+		if c == '\r' {
+			toReplace = `\r`
+		}
+		line = strings.Replace(line, string(c), toReplace, -1)
+	}
+	return line
 }
