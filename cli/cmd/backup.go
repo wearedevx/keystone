@@ -18,6 +18,10 @@ var backupCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		BACKUP_NAME := fmt.Sprintf(`./keystone-backup-%d.tar.gz`, time.Now().Unix())
 
+		if len(ctx.AccessibleEnvironments) < 3 {
+			ui.PrintError(fmt.Sprintf("You don't have the permissions to create a backup."))
+			os.Exit(1)
+		}
 		if err := archive.Tar(ctx.DotKeystonePath(), "./"); err != nil {
 			ui.PrintError(err.Error())
 			os.Exit(1)
