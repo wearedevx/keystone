@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 
+	"github.com/cossacklabs/themis/gothemis/cell"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/archive"
 	"github.com/wearedevx/keystone/cli/internal/messages"
@@ -36,6 +39,8 @@ This will override all the data you have stored locally.`,
 			os.Exit(1)
 		}
 
+		password := prompts.StringInput("Password to encrypt backup", "")
+
 		ui.Print(ui.RenderTemplate("confirm files rm",
 			`{{ CAREFUL }} You are about to remove the content of .keystone/ which contain all your local secrets and files.
 This will override the changes you and other members made since the backup.
@@ -49,12 +54,34 @@ It will update other members secrets and files.`, map[string]string{}))
 			os.Exit(1)
 		}
 
-		if err := archive.UnGzip(backupfile, ctx.Wd); err != nil {
+		contents, err := ioutil.ReadFile(backupfile)
+
+		if err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+		decrypted := decryptBackup(contents, password)
+
+		decryptedPath := fmt.Sprintf("decrypted.tar.gz")
+
+		ioutil.WriteFile(decryptedPath, decrypted, 0644)
+
+		if err := archive.UnGzip(decryptedPath, ctx.Wd); err != nil {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
 
 		if err := archive.Untar(path.Join(ctx.Wd, ".keystone.tar"), "."); err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+
+		// Remove temp files
+		if err := os.Remove(decryptedPath); err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+		if err := os.Remove(path.Join(ctx.Wd, ".keystone.tar")); err != nil {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
@@ -73,4 +100,21 @@ It will update other members secrets and files.`, map[string]string{}))
 
 func init() {
 	RootCmd.AddCommand(restoreCmd)
+}
+
+func decryptBackup(backup []byte, password string) []byte {
+
+	scell, err := cell.SealWithPassphrase(password)
+	if err != nil {
+		ui.PrintError(err.Error())
+		os.Exit(1)
+	}
+	decrypted, err := scell.Decrypt([]byte(backup), nil)
+	if err != nil {
+		ui.PrintError("Cannot decrypt backup with this password.")
+		os.Exit(1)
+	}
+
+	data, err := base64.StdEncoding.DecodeString(string(decrypted))
+	return data
 }
