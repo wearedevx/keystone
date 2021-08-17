@@ -380,8 +380,8 @@ errors:
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
-  - type: CannotLinkFile
-    name: "Cannot Link File"
+  - type: CannotCopyFile
+    name: "Cannot Copy File"
     params:
       - name: Path
         type: string
@@ -389,7 +389,7 @@ errors:
         type: string
     template: |
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
-      The symlink to {{ .CachePath }} could not be created at {{ .Path }}.
+      A copy to {{ .CachePath }} could not be created at {{ .Path }}.
 
       This happened because: {{ .Cause }}
 

@@ -236,9 +236,9 @@ This happened because: {{ .Cause }}
 This happened because: {{ .Cause }}
 
 `,
-	"CannotLinkFile": `
+	"CannotCopyFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
-The symlink to {{ .CachePath }} could not be created at {{ .Path }}.
+A copy to {{ .CachePath }} could not be created at {{ .Path }}.
 
 This happened because: {{ .Cause }}
 
@@ -587,12 +587,12 @@ func CannotRemoveFile(path string, cause error) *Error {
 	return NewError("Cannot Remove File", helpTexts["CannotRemoveFile"], meta, cause)
 }
 
-func CannotLinkFile(path string, cachepath string, cause error) *Error {
+func CannotCopyFile(path string, cachepath string, cause error) *Error {
 	meta := map[string]interface{}{
 		"Path":      string(path),
 		"CachePath": string(cachepath),
 	}
-	return NewError("Cannot Link File", helpTexts["CannotLinkFile"], meta, cause)
+	return NewError("Cannot Copy File", helpTexts["CannotCopyFile"], meta, cause)
 }
 
 func FileNotInEnvironment(path string, environment string, cause error) *Error {
