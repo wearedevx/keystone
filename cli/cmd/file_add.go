@@ -25,7 +25,6 @@ import (
 	"reflect"
 
 	"github.com/eiannone/keyboard"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
@@ -34,6 +33,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 // filesAddCmd represents the push command
@@ -228,20 +228,13 @@ func checkFileAlreadyInCache(fileName string) bool {
 			ui.Print(string(content))
 		}
 
-		result := "n"
+		override := false
 
 		if !skipPrompts {
-			p := promptui.Prompt{
-				Label:     "Do you want to override the values ",
-				IsConfirm: true,
-			}
-
-			result, _ = p.Run()
+			override = prompts.Confirm("Do you want to override the contents")
 		}
 
-		if result == "n" {
-			return true
-		}
+		return !override
 	}
 	return false
 }

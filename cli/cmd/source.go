@@ -60,10 +60,14 @@ other_value
 		if config.IsLoggedIn() {
 			ms := messages.NewMessageService(ctx, printer)
 			ms.GetMessages()
+			if err := ms.Err(); err != nil {
+				ui.PrintError(err.Error())
+				os.Exit(1)
+			}
 		}
 
 		env := ctx.ListSecrets()
-		ctx.FilesUseEnvironment(currentEnvironment)
+		ctx.FilesUseEnvironment(currentEnvironment, currentEnvironment)
 
 		mustNotHaveAnyRequiredThingMissing(ctx)
 
