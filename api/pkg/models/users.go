@@ -15,10 +15,6 @@ type KeyRing struct {
 	Sign   string `json:"sign" gorm:"column:keys_sign"`
 }
 
-type PublicKey struct {
-	Key []byte `json:"key"`
-}
-
 type InvitePayload struct {
 	Email       string
 	ProjectName string
