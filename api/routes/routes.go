@@ -39,7 +39,7 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.POST("/complete", PostUserToken)
 
 	router.POST("/users/exist", AuthedHandler(DoUsersExist))
-	router.GET("/users/:userID/key", AuthedHandler(GetUserKey))
+	router.GET("/users/:userID/key", AuthedHandler(GetUserKeys))
 	router.POST("/users/invite", AuthedHandler(PostInvite))
 
 	router.GET("/projects/:projectID/messages", AuthedHandler(GetMessagesFromProjectByUser))

@@ -12,7 +12,8 @@ import (
 type PublicKey struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`
 	UserID    uint      `json:"user_id" gorm:"uniqueIndex:idx_public_keys_user_id"`
-	PublicKey []byte    `json:"public_key"`
+	Key       []byte    `json:"key"`
+	Device    string    `json:"device"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

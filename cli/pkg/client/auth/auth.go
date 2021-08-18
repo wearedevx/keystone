@@ -145,12 +145,13 @@ func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
 
 }
 
-func completeLogin(apiUrl string, accountType models.AccountType, tok *oauth2.Token, pk []byte) (models.User, string, error) {
+func completeLogin(apiUrl string, accountType models.AccountType, tok *oauth2.Token, pk []byte, device string) (models.User, string, error) {
 	var user models.User
 	payload := models.LoginPayload{
 		AccountType: accountType,
 		Token:       tok,
 		PublicKey:   pk,
+		Device:      device,
 	}
 
 	requestPayload := make([]byte, 0)

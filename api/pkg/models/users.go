@@ -42,9 +42,9 @@ type User struct {
 	Username    string      `json:"username" faker:"username"`
 	Fullname    string      `json:"fullname" gorm:"not null" faker:"name"`
 	Email       string      `json:"email" gorm:"not null" faker:"email"`
-	PublicKey   []byte      `json:"public_key"`
 	CreatedAt   time.Time   `json:"created_at"`
 	UpdatedAt   time.Time   `json:"updated_at"`
+	PublicKeys  []PublicKey `json:"public_keys"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
@@ -73,16 +73,17 @@ type LoginPayload struct {
 	AccountType AccountType
 	Token       *oauth2.Token
 	PublicKey   []byte
+	Device      string
 }
 
-type UserPublicKey struct {
-	UserID    string `json:"user_id"`
-	UserUID   string `json:"user_uid"` // UserID as string (e.g: toto@github)
-	PublicKey []byte `json:"publick_key"`
+type UserPublicKeys struct {
+	UserID     uint        `json:"user_id"`
+	UserUID    string      `json:"user_uid"` // UserID as string (e.g: toto@github)
+	PublicKeys []PublicKey `json:"publick_keys"`
 }
 
 type PublicKeys struct {
-	Keys []UserPublicKey `json:"keys"`
+	Keys []UserPublicKeys `json:"keys"`
 }
 
 func (p *PublicKeys) Deserialize(in io.Reader) error {
@@ -118,11 +119,11 @@ func (u *User) Serialize(out *string) (err error) {
 	return err
 }
 
-func (upk *UserPublicKey) Deserialize(in io.Reader) error {
+func (upk *UserPublicKeys) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(upk)
 }
 
-func (upk UserPublicKey) Serialize(out *string) (err error) {
+func (upk UserPublicKeys) Serialize(out *string) (err error) {
 	var sb strings.Builder
 
 	err = json.NewEncoder(&sb).Encode(upk)

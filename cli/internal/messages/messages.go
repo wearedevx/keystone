@@ -151,12 +151,22 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 	for environmentName, environment := range byEnvironment.Environments {
 		msg := environment.Message
 		if msg.Sender.UserID != "" {
-			upk, e := s.client.Users().GetUserPublicKey(msg.Sender.UserID)
+
+			deviceName := config.GetDeviceName()
+			upks, e := s.client.Users().GetUserPublicKey(msg.Sender.UserID)
 			if e != nil {
 				return kserrors.CouldNotDecryptMessages(fmt.Sprintf("Failed to get the public key for user %s", msg.Sender.UserID), e)
 			}
 
-			d, e := crypto.DecryptMessage(privateKey, upk.PublicKey, msg.Payload)
+			var upk models.PublicKey
+			for _, publicKey := range upks.PublicKeys {
+				if publicKey.Device == deviceName {
+
+					upk = publicKey
+				}
+			}
+
+			d, e := crypto.DecryptMessage(privateKey, upk.Key, msg.Payload)
 			if e != nil {
 				return kserrors.CouldNotDecryptMessages("Decryption failed", e)
 			}
@@ -307,12 +317,13 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 			return s
 		}
 
-		var recipientPublicKey models.UserPublicKey
+		var recipientPublicKeys models.UserPublicKeys
 		var found bool = false
 
+		fmt.Println(userPublicKeys)
 		for _, upk := range userPublicKeys.Keys {
 			if upk.UserUID == member {
-				recipientPublicKey = upk
+				recipientPublicKeys.PublicKeys = upk.PublicKeys
 				found = true
 			}
 		}
@@ -329,14 +340,17 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 			return s
 		}
 
-		message, err := s.prepareMessage(senderPrivateKey, environment, recipientPublicKey, PayloadContent)
-		if err != nil {
-			s.err = kserrors.UnkownError(err)
-			return s
-		}
-		message.UpdateEnvironmentVersion = false
+		for _, recipientPublicKey := range recipientPublicKeys.PublicKeys {
+			message, err := s.prepareMessage(senderPrivateKey, environment, recipientPublicKey, string(recipientPublicKeys.UserID), PayloadContent)
+			if err != nil {
+				s.err = kserrors.UnkownError(err)
+				return s
+			}
+			message.UpdateEnvironmentVersion = false
 
-		messagesToWrite.Messages = append(messagesToWrite.Messages, message)
+			messagesToWrite.Messages = append(messagesToWrite.Messages, message)
+
+		}
 	}
 
 	sp := spinner.Spinner(" Syncing...")
@@ -408,15 +422,18 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 	}
 
 	// Create one message per user
-	for _, userPublicKey := range userPublicKeys.Keys {
+	for _, userPublicKeys := range userPublicKeys.Keys {
 		// Dont't send message to current user
-		if userPublicKey.UserUID != currentUser.UserID {
-			message, err := s.prepareMessage(senderPrivateKey, environment, userPublicKey, PayloadContent)
-			if err != nil {
-				return messages, kserrors.CouldNotEncryptMessages(err)
-			}
+		if userPublicKeys.UserUID != currentUser.UserID {
+			for _, userPublicKey := range userPublicKeys.PublicKeys {
+				message, err := s.prepareMessage(senderPrivateKey, environment, userPublicKey, string(userPublicKeys.UserID), PayloadContent)
+				if err != nil {
+					return messages, kserrors.CouldNotEncryptMessages(err)
+				}
 
-			messages = append(messages, message)
+				messages = append(messages, message)
+
+			}
 		}
 	}
 
@@ -426,22 +443,22 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 // prepareMessages creates and encryps one message
 // for one environment and one project member.
 // Read rights should have been checked beforehand
-func (s *messageService) prepareMessage(senderPrivateKey []byte, environment models.Environment, userPublicKey models.UserPublicKey, payloadContent models.MessagePayload) (models.MessageToWritePayload, error) {
+func (s *messageService) prepareMessage(senderPrivateKey []byte, environment models.Environment, userPublicKey models.PublicKey, recipientID string, payloadContent models.MessagePayload) (models.MessageToWritePayload, error) {
 	message := models.MessageToWritePayload{}
 	var payload string
 	payloadContent.Serialize(&payload)
 
-	encryptedPayload, err := crypto.EncryptMessage(senderPrivateKey, userPublicKey.PublicKey, string(payload))
+	encryptedPayload, err := crypto.EncryptMessage(senderPrivateKey, userPublicKey.Key, string(payload))
 	if err != nil {
 		return message, err
 	}
 
-	RecipientID, _ := strconv.ParseUint(userPublicKey.UserID, 10, 64)
+	RecipientID, _ := strconv.ParseUint(recipientID, 10, 64)
 	RecipientIDUint := uint(RecipientID)
 
 	return models.MessageToWritePayload{
 		Payload:                  encryptedPayload,
-		UserID:                   userPublicKey.UserID,
+		UserID:                   recipientID,
 		RecipientID:              RecipientIDUint,
 		EnvironmentID:            environment.EnvironmentID,
 		UpdateEnvironmentVersion: true,

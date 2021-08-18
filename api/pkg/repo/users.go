@@ -14,7 +14,7 @@ func (r *Repo) GetUser(user *User) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().Where("user_id = ?", user.UserID).First(user).Error
+	r.err = r.GetDb().Preload("PublicKeys").Where("user_id = ?", user.UserID).First(user).Error
 
 	return r
 }
@@ -32,12 +32,24 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		UserID:      fmt.Sprintf("%s@%s", user.Username, user.AccountType),
 	}
 
-	r.err = db.Where(foundUser).First(&foundUser).Error
+	r.err = db.Where(foundUser).Preload("PublicKeys").First(&foundUser).Error
 
 	if r.err == nil {
-		if !bytes.Equal(foundUser.PublicKey, user.PublicKey) {
-			foundUser.PublicKey = user.PublicKey
-			db.Save(&foundUser)
+		for _, upk := range user.PublicKeys {
+			found := false
+			for _, fupk := range foundUser.PublicKeys {
+				if fupk.Device == upk.Device {
+					found = true
+					if !bytes.Equal(upk.Key, fupk.Key) {
+						fupk.Key = upk.Key
+						db.Save(&fupk)
+					}
+				}
+			}
+			if !found {
+				upk.UserID = foundUser.ID
+				db.Create(&upk)
+			}
 		}
 
 		*user = foundUser

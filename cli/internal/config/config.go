@@ -90,11 +90,13 @@ func GetCurrentAccount() (user models.User, index int) {
 }
 
 func userFromAccount(account map[string]string) (user models.User) {
+	publicKeys := make([]models.PublicKey, 0)
+	publicKeys = append(publicKeys, models.PublicKey{Key: []byte(account["public_keys"])})
 	user.AccountType = models.AccountType(account["account_type"])
 	user.Email = account["email"]
 	user.ExtID = account["ext_id"]
 	user.Fullname = account["fullname"]
-	user.PublicKey = []byte(account["public_key"])
+	user.PublicKeys = publicKeys
 	user.UserID = account["user_id"]
 	user.Username = account["username"]
 
@@ -118,6 +120,23 @@ func GetCurrentUserPrivateKey() (privateKey []byte, err error) {
 	return privateKey, err
 }
 
+func GetCurrentUserPublicKey() (publicKey []byte, err error) {
+	index := -1
+	accounts := GetAllAccounts()
+
+	if viper.IsSet("current") {
+		index = viper.Get("current").(int)
+
+		if index >= 0 && index < len(accounts) {
+			account := accounts[index]
+
+			publicKey = []byte(account["public_key"])
+		}
+	}
+
+	return publicKey, err
+}
+
 // Sets the current account as the index at `index`
 // Means the user is logged in as the user of that account
 func SetCurrentAccount(index int) {
@@ -133,6 +152,9 @@ func GetAuthToken() string {
 	return viper.Get("auth_token").(string)
 }
 
+func GetDeviceName() string {
+	return viper.Get("device").(string)
+}
 func GetServiceApiKey(serviceName string) string {
 	token := viper.Get(serviceName + "_auth_token")
 	if token != nil {
@@ -212,6 +234,10 @@ func InitConfig(cfgFile string) {
 
 	viper.SetDefault("current", -1)
 	viper.SetDefault("accounts", defaultAccounts)
+
+	if hostname, err := os.Hostname(); err == nil {
+		viper.SetDefault("device", hostname)
+	}
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {

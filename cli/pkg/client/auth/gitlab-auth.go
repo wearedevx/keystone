@@ -81,8 +81,8 @@ func (g *gitlabAuthService) WaitForExternalLogin() error {
 	return nil
 }
 
-func (g gitlabAuthService) Finish(pk []byte) (models.User, string, error) {
-	return completeLogin(g.apiUrl, models.GitlabAccountType, g.token, pk)
+func (g gitlabAuthService) Finish(pk []byte, device string) (models.User, string, error) {
+	return completeLogin(g.apiUrl, models.GitlabAccountType, g.token, pk, device)
 }
 
 func (g gitlabAuthService) CheckAccount(account map[string]string) (bool, error) {
