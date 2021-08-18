@@ -61,7 +61,7 @@ $ ks env staging
 		if len(locallyModified) != 0 {
 			ui.Print(ui.RenderTemplate("local changes", `
 {{ ERROR }} {{ "You have locally modified files:" | red }}
-{{ $file := range .Files }}  - {{ $file.Path }}
+{{ range $file := .Files }}  - {{ $file.Path }}
 {{ end }}
 
 If you want to make those changes permanent for the '{{ .Environment }}'

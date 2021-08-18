@@ -92,7 +92,7 @@ ks --env staging file set ./config.php
 		if err = ctx.
 			CompareNewFileWhithChanges(filePath, changes).
 			SetFile(filePath, content).
-			FilesUseEnvironment(currentEnvironment).
+			FilesUseEnvironment(currentEnvironment, currentEnvironment).
 			Err(); err != nil {
 			err.Print()
 			os.Exit(1)

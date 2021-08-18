@@ -130,7 +130,7 @@ ks file add ./certs/my-website.cert`,
 				return
 			}
 
-			ctx.FilesUseEnvironment(currentEnvironment)
+			ctx.FilesUseEnvironment(currentEnvironment, currentEnvironment)
 
 			if err = ctx.Err(); err != nil {
 				err.Print()
