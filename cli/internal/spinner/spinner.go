@@ -16,6 +16,14 @@ type SpinnerInterface interface {
 	Stop()
 }
 
+var noSpin bool
+
+func init() {
+	v := os.Getenv("NOSPIN")
+
+	noSpin = v == "true"
+}
+
 // Provides a pointer to a struct implementing SpinnerInterface
 func Spinner(message string) SpinnerInterface {
 	s := spinner.New(
@@ -34,10 +42,18 @@ func Spinner(message string) SpinnerInterface {
 
 // Starts the spinner
 func (s *spin) Start() {
+	if noSpin {
+		return
+	}
+
 	s.inner.Start()
 }
 
 // Stops the spinner
 func (s *spin) Stop() {
+	if noSpin {
+		return
+	}
+
 	s.inner.Stop()
 }

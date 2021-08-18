@@ -3,7 +3,7 @@ ks init test-env
 
 ks file rm --skip nofile.txt
 
-cmp stdout file_not_added_str_expected.txt 
+cmp stderr file_not_added_str_expected.txt 
 
 -- file_not_added_str_expected.txt --
 

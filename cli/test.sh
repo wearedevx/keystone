@@ -8,6 +8,7 @@ fi
 export $(cat .env-dev | xargs)
 
 LDFLAGS="-X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=$KSAPI_URL"
+NOSPIN=true
 
 DBFILE="${TMPDIR}keystone_gorm.db"
 
