@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -50,13 +51,15 @@ func (f fileLine) availableModifiedRune() (r rune) {
 	return r
 }
 
-func (f fileLine) String() string {
+func (f fileLine) String(long bool) string {
 	sb := strings.Builder{}
 
-	sb.WriteRune(f.requiredRune())
-	sb.WriteRune(f.availableModifiedRune())
+	if long {
+		sb.WriteRune(f.requiredRune())
+		sb.WriteRune(f.availableModifiedRune())
+		sb.WriteRune(' ')
+	}
 
-	sb.WriteRune(' ')
 	sb.WriteString(f.path)
 
 	return sb.String()
@@ -68,12 +71,37 @@ var filesCmd = &cobra.Command{
 	Short: "Manages secret files",
 	Long: `Manages secret files.
 
-List tracked secret files:
+Without arguments, lists secret files:
 ` + "```" + `
 $ ks file
   Files tracked as secret files:
-    config/wp-config.php
-    config/front.config.js
+
+    *  config/wp-config.php
+     M config/front.config.js
+
+  * Required; A Available; M Modified
+` + "```" + `
+
+Required files will stop ` + "`" + `ks source` + "`" + ` and ` + "`" + `ks ci send` + "`" + `
+Available files exist in the cache, but not in the keystone.yml file.
+Modified files have different content from the cache.
+
+For a machine parsable output, use the ` + "`" + `-q` + "`" + ` flag:
+` + "```" + `
+$ ks file -q
+  *  config/wp-config.php
+   M config/front.config.js
+` + "```" + `
+
+You can also filter output:
+` + "```" + `
+# Show only locally modified files
+$ ks file -qf modified
+   M config/front.config.js
+
+# Show only available files
+$ ks file -qf available
+  A other-available.file
 ` + "```" + `
 `,
 	Args: cobra.NoArgs,
@@ -93,6 +121,8 @@ $ ks file
 		lines = append(lines, linesFromCache...)
 		setModifiedFlags(ctx, &lines, currentEnvironment)
 
+		lines = filterLines(lines, fileDisplayFilter)
+
 		if err = ctx.Err(); err != nil {
 			err.Print()
 			os.Exit(1)
@@ -111,16 +141,16 @@ To add files to secret files:
 
 		if quietOutput {
 			for _, line := range lines {
-				ui.Print(line.String())
+				ui.Print(line.String(fileDisplayFilter == FileFilterAll))
 			}
 			return
 		}
 
 		ui.Print(ui.RenderTemplate("files list", `Files tracked as secret files:
 
-{{ range . }}{{- .String | indent 4 }}
+{{ range . }}{{- (.String true) | indent 4 }}
 {{ end }}
-* Required files; A Available files; M Modified files
+* Required; A Available; M Modified
 `, lines))
 	},
 }
@@ -178,4 +208,37 @@ func setModifiedFlags(ctx *core.Context, lines *[]fileLine, envname string) {
 	for index, f := range *lines {
 		(*lines)[index].modified = ctx.IsFileModified(f.path, envname)
 	}
+}
+
+func filterLines(lines []fileLine, filter string) (filtered []fileLine) {
+	filtered = make([]fileLine, 0, len(lines))
+
+	if filter != FileFilterModifiedOnly && filter != FileFilterAvailableOnly {
+		filter = FileFilterAll
+	}
+
+	if filter == FileFilterAll {
+		return lines
+	}
+
+	switch filter {
+	case FileFilterAvailableOnly:
+		for _, line := range lines {
+			if line.available {
+				filtered = append(filtered, line)
+			}
+		}
+
+	case FileFilterModifiedOnly:
+		for _, line := range lines {
+			if line.modified {
+				filtered = append(filtered, line)
+			}
+		}
+
+	default:
+		panic(fmt.Errorf("Unknown filter: %s", filter))
+	}
+
+	return filtered
 }
