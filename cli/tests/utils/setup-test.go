@@ -198,6 +198,7 @@ func SetupEnvVars(env *testscript.Env) error {
 	env.Setenv("DB_PORT", os.Getenv("DB_PORT"))
 	env.Setenv("TMPDIR", osTmpDir)
 	env.Setenv("GCLOUDFILE", GetGcloudFuncAuthPidFilePath())
+	env.Setenv("NOSPIN", "true")
 
 	// Create config folder
 	return os.MkdirAll(configDir, 0777)
