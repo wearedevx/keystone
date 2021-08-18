@@ -63,7 +63,7 @@ func (repo *Repo) SetNewVersionID(environment *Environment) error {
 }
 
 func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *PublicKeys) IRepo {
-	rows, err := repo.GetDb().Raw(`select pk.device as Device, pk.key as PublicKey, u.user_id as UserUID, u.id as UserID
+	rows, err := repo.GetDb().Raw(`select pk.id as PublicKeyId ,pk.device as Device, pk.key as PublicKey, u.user_id as UserUID, u.id as UserID
 	from environments as e
 	inner join environment_types as et on et.id = e.environment_type_id
 	inner join roles_environment_types as ret on ret.environment_type_id = et.id
@@ -81,14 +81,15 @@ func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *Pub
 	var UserID uint
 	var UserUID string
 	var Device string
+	var PublicKeyId uint
 
 	for rows.Next() {
-		rows.Scan(&PublicKey, &UserUID, &UserID, &Device)
+		rows.Scan(&PublicKeyId, &Device, &PublicKey, &UserUID, &UserID)
 		found := false
 
 		for _, pk := range publicKeys.Keys {
 			if pk.UserID == UserID {
-				pk.PublicKeys = append(pk.PublicKeys, models.PublicKey{Key: PublicKey, Device: Device, UserID: UserID})
+				pk.PublicKeys = append(pk.PublicKeys, models.PublicKey{Key: PublicKey, Device: Device, UserID: UserID, ID: PublicKeyId})
 				found = true
 			}
 		}
@@ -96,12 +97,11 @@ func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *Pub
 		if found == false {
 			publicKeys.Keys = append(publicKeys.Keys, models.UserPublicKeys{
 				UserID:     UserID,
-				PublicKeys: []models.PublicKey{},
+				PublicKeys: []models.PublicKey{{Key: PublicKey, Device: Device, UserID: UserID, ID: PublicKeyId}},
 				UserUID:    fmt.Sprint(UserUID),
 			})
 		}
 	}
-
 	return repo
 }
 

@@ -65,8 +65,8 @@ type MessagePayload struct {
 	Secrets []SecretVal `json:"secrets"`
 }
 type MessageToWritePayload struct {
-	Payload []byte `json:"payload"`
-	// SenderID // Set by server
+	Payload                  []byte `json:"payload"`
+	PublicKeyID              uint   `json:"public_key_id"`
 	UserID                   string `json:"userid"`
 	RecipientID              uint   `json:"recipient_id"`
 	EnvironmentID            string `json:"environment_id"`

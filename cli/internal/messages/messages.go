@@ -425,8 +425,11 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 	for _, userPublicKeys := range userPublicKeys.Keys {
 		// Dont't send message to current user
 		if userPublicKeys.UserUID != currentUser.UserID {
+
 			for _, userPublicKey := range userPublicKeys.PublicKeys {
-				message, err := s.prepareMessage(senderPrivateKey, environment, userPublicKey, string(userPublicKeys.UserID), PayloadContent)
+				userID := strconv.FormatUint(uint64(userPublicKeys.UserID), 10)
+
+				message, err := s.prepareMessage(senderPrivateKey, environment, userPublicKey, userID, PayloadContent)
 				if err != nil {
 					return messages, kserrors.CouldNotEncryptMessages(err)
 				}
@@ -453,7 +456,9 @@ func (s *messageService) prepareMessage(senderPrivateKey []byte, environment mod
 		return message, err
 	}
 
-	RecipientID, _ := strconv.ParseUint(recipientID, 10, 64)
+	fmt.Println(recipientID)
+	RecipientID, err := strconv.ParseUint(recipientID, 10, 64)
+	fmt.Println(err)
 	RecipientIDUint := uint(RecipientID)
 
 	return models.MessageToWritePayload{
@@ -461,6 +466,7 @@ func (s *messageService) prepareMessage(senderPrivateKey []byte, environment mod
 		UserID:                   recipientID,
 		RecipientID:              RecipientIDUint,
 		EnvironmentID:            environment.EnvironmentID,
+		PublicKeyID:              userPublicKey.ID,
 		UpdateEnvironmentVersion: true,
 	}, nil
 }

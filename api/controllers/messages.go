@@ -149,6 +149,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			Payload:       message.Payload,
 			EnvironmentID: message.EnvironmentID,
 			SenderID:      user.ID,
+			PublicKeyID:   message.PublicKeyID,
 		}
 
 		if err = Repo.WriteMessage(user, *messageToWrite).Err(); err != nil {
