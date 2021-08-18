@@ -57,6 +57,11 @@ func (ctx *Context) ListFilesFromCache() []FileKey {
 				if err != nil {
 					return err
 				}
+				// skip directories
+				if info.IsDir() {
+					return nil
+				}
+
 				fileRelativePath := strings.ReplaceAll(path, cachePath, "")
 				regexp, err := regexp.Compile(`^\/`)
 
@@ -202,7 +207,7 @@ func (ctx *Context) IsFileModified(filePath, environment string) (isModified boo
 
 	localReader, err = os.Open(localPath)
 	if err != nil {
-		ctx.setError(kserrors.CannotCopyFile(localPath, cachedPath, err))
+		// ctx.setError(kserrors.CannotCopyFile(localPath, cachedPath, err))
 		return false
 
 	}
@@ -249,10 +254,10 @@ func (ctx *Context) FilesUseEnvironment(envname string, targetEnvironment string
 			if file.Strict {
 				return ctx.setError(kserrors.FileNotInEnvironment(file.Path, envname, nil))
 			}
-			fmt.Fprintln(os.Stderr, "File \"%s\" not in environment", file.Path)
+			fmt.Fprintf(os.Stderr, "File \"%s\" not in environment\n", file.Path)
 		}
 
-		if ctx.IsFileModified(localPath, envname) {
+		if ctx.IsFileModified(file.Path, envname) {
 			fmt.Fprintln(os.Stderr, ui.RenderTemplate("modified file",
 				`{{ "Warning!" | yellow }} File '{{ .Path }}' has been locally modified. To discard local changes, run 'ks file reset {{ .Path }}'`,
 				file,

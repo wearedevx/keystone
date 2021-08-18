@@ -1,11 +1,66 @@
 package cmd
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
+
+const (
+	FileFilterAll                  = "all"
+	FileFilterAvailableOnly string = "available"
+	FileFilterModifiedOnly  string = "modified"
+)
+
+var fileDisplayFilter string
+
+type fileLine struct {
+	required  bool
+	available bool
+	modified  bool
+	path      string
+}
+
+func (f fileLine) requiredRune() (r rune) {
+	r = ' '
+
+	if f.required {
+		r = '*'
+	}
+
+	return r
+}
+
+func (f fileLine) availableModifiedRune() (r rune) {
+	r = ' '
+
+	if f.available {
+		r = 'A'
+	}
+	if f.modified {
+		r = 'M'
+	}
+
+	return r
+}
+
+func (f fileLine) String() string {
+	sb := strings.Builder{}
+
+	sb.WriteRune(f.requiredRune())
+	sb.WriteRune(f.availableModifiedRune())
+
+	sb.WriteRune(' ')
+	sb.WriteString(f.path)
+
+	return sb.String()
+}
 
 // filesCmd represents the files command
 var filesCmd = &cobra.Command{
@@ -29,13 +84,18 @@ $ ks file
 
 		files := ctx.ListFiles()
 		filesFromCache := ctx.ListFilesFromCache()
-		filesFromCache = filterFilesFromCache(filesFromCache, files)
+		linesFromCache := fromCacheToLines(ctx, filesFromCache, files)
 
-		files = append(files, filesFromCache...)
+		lines := make([]fileLine, len(files))
+		for i, file := range files {
+			lines[i] = fileToLine(file)
+		}
+		lines = append(lines, linesFromCache...)
+		setModifiedFlags(ctx, &lines, currentEnvironment)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
-			return
+			os.Exit(1)
 		}
 
 		if len(files) == 0 {
@@ -46,31 +106,22 @@ To add files to secret files:
   $ ks file add <path-to-secret-file>
 `)
 			}
-			return
+			os.Exit(0)
 		}
 
 		if quietOutput {
-			for _, file := range files {
-				ui.Print(file.Path)
+			for _, line := range lines {
+				ui.Print(line.String())
 			}
 			return
-		}
-
-		filePaths := make([]string, len(files))
-		for idx, file := range files {
-			filePaths[idx] = file.Path
-			if file.Strict {
-				filePaths[idx] = filePaths[idx] + " *"
-			}
 		}
 
 		ui.Print(ui.RenderTemplate("files list", `Files tracked as secret files:
 
-{{ range . }}
-{{- . | indent 4 }}
+{{ range . }}{{- .String | indent 4 }}
 {{ end }}
-* Required files; ° Unused files
-`, filePaths))
+* Required files; A Available files; M Modified files
+`, lines))
 	},
 }
 
@@ -86,23 +137,45 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// filesCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	filesCmd.Flags().StringVarP(&fileDisplayFilter, "filter", "f", FileFilterAll, "Files to display")
 }
 
-func filterFilesFromCache(filesFromCache []keystonefile.FileKey, files []keystonefile.FileKey) []keystonefile.FileKey {
-	filesFromCacheToDisplay := make([]keystonefile.FileKey, 0)
+func fileToLine(file keystonefile.FileKey) (line fileLine) {
+	line.path = file.Path
+	line.required = file.Strict
+
+	return line
+}
+
+func fromCacheToLines(ctx *core.Context, filesFromCache []keystonefile.FileKey, files []keystonefile.FileKey) []fileLine {
+	filesFromCacheToDisplay := make([]fileLine, 0)
 
 	for _, fileFromCache := range filesFromCache {
-		found := false
+		used := false
+
 		for _, file := range files {
-			if file.Path == fileFromCache.Path {
-				found = true
+			fileAbs := filepath.Clean(filepath.Join(ctx.Wd, file.Path))
+			cacheFileAbs := filepath.Clean(filepath.Join(ctx.Wd, fileFromCache.Path))
+
+			if fileAbs == cacheFileAbs {
+				used = true
+				break
 			}
 		}
-		if !found {
-			fileFromCache.Path = fileFromCache.Path + " °"
-			filesFromCacheToDisplay = append(filesFromCacheToDisplay, fileFromCache)
+		if !used {
+			line := fileToLine(fileFromCache)
+			line.available = true
+
+			filesFromCacheToDisplay = append(filesFromCacheToDisplay, line)
 		}
 
 	}
 	return filesFromCacheToDisplay
+}
+
+func setModifiedFlags(ctx *core.Context, lines *[]fileLine, envname string) {
+	for index, f := range *lines {
+		(*lines)[index].modified = ctx.IsFileModified(f.path, envname)
+	}
 }

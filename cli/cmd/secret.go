@@ -74,7 +74,7 @@ Used without arguments, displays a table of secrets.`,
 				name = name + " *"
 			}
 			if secret.FromCache {
-				name = name + " °"
+				name = name + " A"
 			}
 
 			row := table.Row{name}
@@ -94,7 +94,7 @@ Used without arguments, displays a table of secrets.`,
 		}
 
 		t.Render()
-		fmt.Println(" * Required secrets; ° Unused secrets")
+		fmt.Println(" * Required secrets; A Available secrets")
 
 	},
 }

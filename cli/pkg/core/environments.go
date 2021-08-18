@@ -133,7 +133,7 @@ func (ctx *Context) SetCurrent(name string) *Context {
 			return ctx.setError(kserrors.FailedToSetCurrentEnvironment(name, ctx.environmentFilePath(), err))
 		}
 
-		ctx.FilesUseEnvironment(name)
+		ctx.FilesUseEnvironment(ctx.CurrentEnvironment(), name)
 
 	} else {
 		return ctx.setError(kserrors.EnvironmentDoesntExist(name, strings.Join(ctx.ListEnvironments(), ", "), nil))
