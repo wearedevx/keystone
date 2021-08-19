@@ -29,7 +29,8 @@ type IRepo interface {
 	GetEnvironmentsByProjectUUID(projectUUID string, foundEnvironments *[]models.Environment) IRepo
 	GetInvitableRoles(models.Role, *[]models.Role) IRepo
 	GetLoginRequest(string) (models.LoginRequest, bool)
-	GetMessagesForUserOnEnvironment(user models.User, environment models.Environment, message *models.Message) IRepo
+	GetMessagesForUserOnEnvironment(publicKey models.PublicKey, environment models.Environment, message *models.Message) IRepo
+	GetPublicKey(publicKey *models.PublicKey) IRepo
 	GetOrCreateEnvironment(*models.Environment) IRepo
 	GetOrCreateEnvironmentType(*models.EnvironmentType) IRepo
 	GetOrCreateProject(*models.Project) IRepo

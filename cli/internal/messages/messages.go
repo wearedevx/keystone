@@ -320,7 +320,6 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 		var recipientPublicKeys models.UserPublicKeys
 		var found bool = false
 
-		fmt.Println(userPublicKeys)
 		for _, upk := range userPublicKeys.Keys {
 			if upk.UserUID == member {
 				recipientPublicKeys.PublicKeys = upk.PublicKeys
@@ -353,7 +352,7 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 		}
 	}
 
-	sp := spinner.Spinner(" Syncing...")
+	sp := spinner.Spinner(" Sending secrets...")
 	sp.Start()
 
 	result, err := s.client.Messages().SendMessages(messagesToWrite)
@@ -423,10 +422,11 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 
 	// Create one message per user
 	for _, userPublicKeys := range userPublicKeys.Keys {
-		// Dont't send message to current user
-		if userPublicKeys.UserUID != currentUser.UserID {
 
-			for _, userPublicKey := range userPublicKeys.PublicKeys {
+		for _, userPublicKey := range userPublicKeys.PublicKeys {
+
+			// Don't send to current device
+			if userPublicKey.Device != config.GetDeviceName() {
 				userID := strconv.FormatUint(uint64(userPublicKeys.UserID), 10)
 
 				message, err := s.prepareMessage(senderPrivateKey, environment, userPublicKey, userID, PayloadContent)
@@ -435,7 +435,6 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 				}
 
 				messages = append(messages, message)
-
 			}
 		}
 	}
@@ -456,9 +455,7 @@ func (s *messageService) prepareMessage(senderPrivateKey []byte, environment mod
 		return message, err
 	}
 
-	fmt.Println(recipientID)
 	RecipientID, err := strconv.ParseUint(recipientID, 10, 64)
-	fmt.Println(err)
 	RecipientIDUint := uint(RecipientID)
 
 	return models.MessageToWritePayload{

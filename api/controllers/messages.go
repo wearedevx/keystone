@@ -40,6 +40,7 @@ func (gr *GenericResponse) Serialize(out *string) (err error) {
 func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	var projectID = params.Get("projectID").(string)
+	var device = params.Get("device").(string)
 	response := GenericResponse{
 		Success: false,
 	}
@@ -53,9 +54,23 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 			return &response, http.StatusNotFound, err
 		}
 
-		return &response, http.StatusInsufficientStorage, err
+		return &response, http.StatusInternalServerError, err
 	}
 
+	// Get publicKey by device name to send message to current user device
+	publicKey := models.PublicKey{
+		Device: device,
+		UserID: user.ID,
+	}
+
+	if err = Repo.GetPublicKey(&publicKey).Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			response.Error = err
+			return &response, http.StatusNotFound, err
+		}
+
+		return &response, http.StatusInternalServerError, err
+	}
 	var result = models.GetMessageByEnvironmentResponse{
 		Environments: map[string]models.GetMessageResponse{},
 	}
@@ -76,7 +91,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 
 		if can {
 			curr := models.GetMessageResponse{}
-			if err = Repo.GetMessagesForUserOnEnvironment(user, environment, &curr.Message).Err(); err != nil {
+			if err = Repo.GetMessagesForUserOnEnvironment(publicKey, environment, &curr.Message).Err(); err != nil {
 				response.Error = Repo.Err()
 				response.Success = false
 				return &response, http.StatusBadRequest, nil
@@ -92,8 +107,6 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 }
 
 // WriteMessages writes messages to users
-// TODO: on the client side, each message should be associated with the target EnvironmentID,
-// and therefore, there is no need to pass envID in the url, query or body in the HTTP query
 func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	response := &models.GetEnvironmentsResponse{}
@@ -139,7 +152,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		}
 
 		// If ok, remove potential old messages for recipient.
-		if err = Repo.RemoveOldMessageForRecipient(message.RecipientID, message.EnvironmentID).Err(); err != nil {
+		if err = Repo.RemoveOldMessageForRecipient(message.PublicKeyID, message.EnvironmentID).Err(); err != nil {
 			fmt.Printf("err: %+v\n", err)
 			break
 		}

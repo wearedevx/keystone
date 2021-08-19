@@ -42,7 +42,7 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.GET("/users/:userID/key", AuthedHandler(GetUserKeys))
 	router.POST("/users/invite", AuthedHandler(PostInvite))
 
-	router.GET("/projects/:projectID/messages", AuthedHandler(GetMessagesFromProjectByUser))
+	router.GET("/projects/:projectID/messages/:device", AuthedHandler(GetMessagesFromProjectByUser))
 
 	router.DELETE("/messages/:messageID", AuthedHandler(DeleteMessage))
 

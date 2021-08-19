@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/config"
 )
 
 type Messages struct {
@@ -20,8 +21,8 @@ func (client *Messages) GetMessages(projectID string) (models.GetMessageByEnviro
 	var result = models.GetMessageByEnvironmentResponse{
 		Environments: map[string]models.GetMessageResponse{},
 	}
-
-	err = client.r.get("/projects/"+projectID+"/messages/", &result, nil)
+	device := config.GetDeviceName()
+	err = client.r.get("/projects/"+projectID+"/messages/"+device, &result, nil)
 
 	return result, err
 }

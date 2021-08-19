@@ -134,7 +134,7 @@ func (f *FakeRepo) GetLoginRequest(_ string) (LoginRequest, bool) {
 	panic("not implemented")
 }
 
-func (f *FakeRepo) GetMessagesForUserOnEnvironment(_ User, _ Environment, _ *Message) IRepo {
+func (f *FakeRepo) GetMessagesForUserOnEnvironment(_ PublicKey, _ Environment, _ *Message) IRepo {
 	panic("not implemented")
 }
 
