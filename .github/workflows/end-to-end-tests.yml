@@ -62,7 +62,7 @@ jobs:
       - name: Install GoKart
         env:
           GO111MODULE: on
-        run : go install github.com/praetorian-inc/gokart@latest
+        run : go install github.com/praetorian-inc/gokart
 
       - name: Run End-to-end Tests
         run: |-
