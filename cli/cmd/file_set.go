@@ -27,6 +27,7 @@ import (
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -43,7 +44,7 @@ Changes the content of a file without altering other environments.
 # Change the content of ./config.php for the 'staging' environment:
 ks --env staging file set ./config.php
 `,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
 
 		ctx.MustHaveEnvironment(currentEnvironment)
@@ -92,7 +93,7 @@ ks --env staging file set ./config.php
 		if err = ctx.
 			CompareNewFileWhithChanges(filePath, changes).
 			SetFile(filePath, content).
-			FilesUseEnvironment(currentEnvironment, currentEnvironment).
+			FilesUseEnvironment(currentEnvironment, currentEnvironment, core.CTX_OVERWRITE_LOCAL_FILES).
 			Err(); err != nil {
 			err.Print()
 			os.Exit(1)

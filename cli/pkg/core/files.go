@@ -233,7 +233,11 @@ func (ctx *Context) IsFileModified(filePath, environment string) (isModified boo
 
 // FilesUseEnvironment creates copies of files found in the project’s
 // keystone.yml file, from the environment `targeEnvironment` in cache.
-func (ctx *Context) FilesUseEnvironment(envname string, targetEnvironment string) *Context {
+func (ctx *Context) FilesUseEnvironment(
+	envname string,
+	targetEnvironment string,
+	forceCopy bool,
+) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
@@ -257,7 +261,8 @@ func (ctx *Context) FilesUseEnvironment(envname string, targetEnvironment string
 			fmt.Fprintf(os.Stderr, "File \"%s\" not in environment\n", file.Path)
 		}
 
-		if ctx.IsFileModified(file.Path, envname) {
+		if ctx.IsFileModified(file.Path, envname) &&
+			forceCopy == CTX_KEEP_LOCAL_FILES {
 			fmt.Fprintln(os.Stderr, ui.RenderTemplate("modified file",
 				`{{ "Warning!" | yellow }} File '{{ .Path }}' has been locally modified. To discard local changes, run 'ks file reset {{ .Path }}'`,
 				file,

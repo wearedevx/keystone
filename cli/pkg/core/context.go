@@ -25,6 +25,9 @@ type Context struct {
 const CTX_INIT = "init"
 const CTX_RESOLVE = "resolve"
 
+const CTX_OVERWRITE_LOCAL_FILES = true
+const CTX_KEEP_LOCAL_FILES = !CTX_OVERWRITE_LOCAL_FILES
+
 // Creates a new execution context
 //
 // When flag equals CTX_INIT, the current working directory is used
