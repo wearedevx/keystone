@@ -67,7 +67,7 @@ other_value
 		}
 
 		env := ctx.ListSecrets()
-		ctx.FilesUseEnvironment(currentEnvironment, currentEnvironment)
+		ctx.FilesUseEnvironment(currentEnvironment, currentEnvironment, core.CTX_KEEP_LOCAL_FILES)
 
 		mustNotHaveAnyRequiredThingMissing(ctx)
 

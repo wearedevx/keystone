@@ -32,6 +32,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
@@ -130,7 +131,7 @@ ks file add ./certs/my-website.cert`,
 				return
 			}
 
-			ctx.FilesUseEnvironment(currentEnvironment, currentEnvironment)
+			ctx.FilesUseEnvironment(currentEnvironment, currentEnvironment, core.CTX_KEEP_LOCAL_FILES)
 
 			if err = ctx.Err(); err != nil {
 				err.Print()
