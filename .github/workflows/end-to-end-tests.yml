@@ -54,14 +54,28 @@ jobs:
           sudo sh -c 'echo "deb https://pkgs-ce.cossacklabs.com/stable/ubuntu focal main" >  /etc/apt/sources.list.d/themis.list'
           sudo apt update
           sudo apt install libthemis-dev
+
       - name: Install libsodium
         run: |-
           sudo apt install libsodium-dev
+
+      - name: Install GoKart
+        run : go install github.com/praetorian-inc/gokart@latest
 
       - name: Run End-to-end Tests
         run: |-
           cd cli
           ./test.sh ./tests/...
+
+      - name: Run CLI Security Scan
+        run: |-
+          cd cli
+          gokart scan -v
+
+      - name: Run API Security Scan
+        run: |-
+          cd api
+          gokart scan -v
 
       - name: Tag and Release
         id: tag_and_release
