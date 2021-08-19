@@ -128,7 +128,7 @@ $ ks file -qf available
 			os.Exit(1)
 		}
 
-		if len(files) == 0 {
+		if len(lines) == 0 {
 			if !quietOutput {
 				ui.Print(`No files are currently tracked as secret files.
 
