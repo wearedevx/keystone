@@ -62,7 +62,10 @@ jobs:
       - name: Install GoKart
         env:
           GO111MODULE: on
-        run : go install github.com/praetorian-inc/gokart
+        run : |-
+          wget https://github.com/praetorian-inc/gokart/releases/download/v0.1.0/gokart_0.1.0_linux_x86_64.tar.gz
+          tar -xf gokart_0.1.0_linux_x86_64.tar.gz
+          mv .gokart /usr/local/bin
 
       - name: Run End-to-end Tests
         run: |-
