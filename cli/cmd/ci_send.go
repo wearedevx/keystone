@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"os"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/ci"
@@ -11,6 +11,7 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 // ciSendCmd represents the pushCi command
@@ -42,6 +43,11 @@ ks ci send --env prod
 		mustNotHaveMissingSecrets(environment)
 		mustNotHaveMissingFiles(environment)
 
+		ui.Print("You are about to send the '%s' environment to your CI services.")
+		if !prompts.Confirm("Continue") {
+			os.Exit(0)
+		}
+
 		message, err := ctx.PrepareMessagePayload(environment)
 
 		if err != nil {
@@ -49,27 +55,35 @@ ks ci send --env prod
 			os.Exit(1)
 		}
 
-		ciService, err := SelectCiService(*ctx)
-
+		ciServices, err := ci.ListCiServices(ctx)
 		if err != nil {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
 
-		// ciService = askForKeys(ciService)
-		ciService.CheckSetup()
-		if ciService.Error() != nil {
-			ui.PrintError(ciService.Error().Error())
-			os.Exit(1)
-		}
+		for _, serviceDef := range ciServices {
+			ciService, err := ci.GetCiService(serviceDef.Name, ctx, client.ApiURL)
 
-		ciService.PushSecret(message, currentEnvironment)
+			if err != nil {
+				ui.PrintError(err.Error())
+				os.Exit(1)
+			}
 
-		if ciService.Error() != nil {
-			ui.PrintError(ciService.Error().Error())
-			os.Exit(1)
+			ciService.CheckSetup()
+			if ciService.Error() != nil {
+				ui.PrintError(ciService.Error().Error())
+				os.Exit(1)
+			}
+
+			ciService.PushSecret(message, currentEnvironment)
+
+			if ciService.Error() != nil {
+				ui.PrintError(ciService.Error().Error())
+				os.Exit(1)
+			}
+
+			ciService.PrintSuccess(currentEnvironment)
 		}
-		ciService.PrintSuccess(currentEnvironment)
 	},
 }
 
@@ -79,22 +93,29 @@ func init() {
 	ciSendCmd.Flags().StringVar(&serviceName, "with", "", "Ci service name.")
 }
 
-func SelectCiService(ctx core.Context) (ci.CiService, error) {
+func SelectCiService(ctx *core.Context) (ci.CiService, error) {
 	var err error
 
+	services, err := ci.ListCiServices(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(services) == 0 {
+		return nil, errors.New("You haven’t set up any CI service yet")
+	}
+
+	items := make([]string, len(services), len(services))
+
+	for idx, service := range services {
+		items[idx] = service.Name
+	}
+
 	if serviceName == "" {
-		prompt := promptui.Select{
-			Label: "Select a ci service",
-			Items: []string{
-				"github",
-			},
-		}
-
-		_, serviceName, err = prompt.Run()
-
-		if err != nil {
-			return nil, err
-		}
+		_, serviceName = prompts.Select(
+			"Select a CI service",
+			items,
+		)
 	}
 
 	return ci.GetCiService(serviceName, ctx, client.ApiURL)

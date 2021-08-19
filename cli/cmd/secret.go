@@ -39,6 +39,9 @@ Used without arguments, displays a table of secrets.`,
 		environments := ctx.ListEnvironments()
 
 		secrets := ctx.ListSecrets()
+		secretsFromCache := ctx.ListSecretsFromCache()
+		secretsFromCache = filterSecretsFromCache(secretsFromCache, secrets)
+		secrets = append(secrets, secretsFromCache...)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
@@ -70,6 +73,9 @@ Used without arguments, displays a table of secrets.`,
 			if secret.Required {
 				name = name + " *"
 			}
+			if secret.FromCache {
+				name = name + " A"
+			}
 
 			row := table.Row{name}
 
@@ -88,7 +94,7 @@ Used without arguments, displays a table of secrets.`,
 		}
 
 		t.Render()
-		fmt.Println(" * Required secrets")
+		fmt.Println(" * Required secrets; A Available secrets")
 
 	},
 }
@@ -105,4 +111,23 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// secretsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func filterSecretsFromCache(secretsFromCache []core.Secret, secrets []core.Secret) []core.Secret {
+	secretsFromCacheToDisplay := make([]core.Secret, 0)
+
+	for _, secretFromCache := range secretsFromCache {
+		found := false
+		for _, secret := range secrets {
+			if secret.Name == secretFromCache.Name {
+				found = true
+			}
+		}
+		if !found {
+			secretFromCache.FromCache = true
+			secretsFromCacheToDisplay = append(secretsFromCacheToDisplay, secretFromCache)
+		}
+
+	}
+	return secretsFromCacheToDisplay
 }

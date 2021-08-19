@@ -60,6 +60,8 @@ func (s *environmentService) GetAccessibleEnvironments() []models.Environment {
 	if err != nil {
 		if errors.Is(err, auth.ErrorUnauthorized) {
 			s.ctx.SetError(kserrors.InvalidConnectionToken(err))
+		} else if errors.Is(err, auth.ServiceNotAvailable) {
+			s.ctx.SetError(kserrors.ServiceNotAvailable(err))
 		} else {
 			s.ctx.SetError(kserrors.UnkownError(err))
 		}

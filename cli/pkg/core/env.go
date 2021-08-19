@@ -13,9 +13,10 @@ type EnvironmentName string
 type SecretValue string
 
 type Secret struct {
-	Name     string
-	Required bool
-	Values   map[EnvironmentName]SecretValue
+	Name      string
+	Required  bool
+	Values    map[EnvironmentName]SecretValue
+	FromCache bool
 }
 
 type SecretStrictFlag int
@@ -378,12 +379,12 @@ func (ctx *Context) ListSecretsFromCache() []Secret {
 		dotEnv := new(EnvFile).Load(dotEnvPath, nil)
 
 		environmentValuesMap[environment] = dotEnv.GetData()
-		for label, _ := range dotEnv.GetData() {
+		for label := range dotEnv.GetData() {
 			allSecrets = append(allSecrets, label)
 		}
 	}
 
-	allSecrets = uniq(allSecrets)
+	allSecrets = Uniq(allSecrets)
 
 	for _, envKey := range allSecrets {
 		name := envKey

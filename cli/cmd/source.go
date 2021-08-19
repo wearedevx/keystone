@@ -20,6 +20,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 
@@ -56,11 +57,17 @@ other_value
 
 		var printer = &ui.EchoPrinter{}
 
-		ms := messages.NewMessageService(ctx, printer)
-		ms.GetMessages()
+		if config.IsLoggedIn() {
+			ms := messages.NewMessageService(ctx, printer)
+			ms.GetMessages()
+			if err := ms.Err(); err != nil {
+				ui.PrintError(err.Error())
+				os.Exit(1)
+			}
+		}
 
 		env := ctx.ListSecrets()
-		ctx.FilesUseEnvironment(currentEnvironment)
+		ctx.FilesUseEnvironment(currentEnvironment, currentEnvironment)
 
 		mustNotHaveAnyRequiredThingMissing(ctx)
 
@@ -83,7 +90,9 @@ other_value
 				os.Exit(1)
 			}
 
-			ui.Print(`export %s="%s"`, secretInfo.Name, value)
+			escapedValue := utils.DoubleQuoteEscape(string(value))
+
+			ui.Print(`export %s="%s"`, secretInfo.Name, escapedValue)
 
 		}
 	},

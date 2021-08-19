@@ -22,6 +22,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 
 	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
@@ -32,6 +33,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 // filesAddCmd represents the push command
@@ -62,78 +64,94 @@ ks file add ./certs/my-website.cert`,
 
 		environmentFileMap := map[string][]byte{}
 
-		if !utils.FileExists(path.Join(ctx.Wd, filePath)) {
-			err = kserrors.CannotAddFile(filePath, errors.New("file not found"))
-			err.Print()
+		useOldFile := checkFileAlreadyInCache(filePath)
+		if !useOldFile {
 
-			return
-		}
+			if !utils.FileExists(path.Join(ctx.Wd, filePath)) {
+				err = kserrors.CannotAddFile(filePath, errors.New("file not found"))
+				err.Print()
 
-		currentContent, erro := ioutil.ReadFile(filePath)
-		if erro != nil {
-			err = kserrors.CannotAddFile(filePath, erro)
-			err.Print()
-
-			return
-		}
-
-		environmentFileMap[currentEnvironment] = currentContent
-
-		if !skipPrompts {
-			askContentOfFile(
-				environments,
-				filePath,
-				environmentFileMap,
-				currentContent,
-			)
-		} else {
-			for _, environment := range environments {
-				environmentFileMap[environment.Name] = currentContent
+				return
 			}
-		}
 
-		var printer = &ui.UiPrinter{}
-		ms := messages.NewMessageService(ctx, printer)
-		changes := ms.GetMessages()
+			currentContent, erro := ioutil.ReadFile(filePath)
 
-		if err := ms.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+			if erro != nil {
+				err = kserrors.CannotAddFile(filePath, erro)
+				err.Print()
 
-		if err = ctx.CompareNewFileWhithChanges(filePath, changes).Err(); err != nil {
-			err.Print()
-			return
-		}
+				return
+			}
 
-		file := keystonefile.FileKey{
-			Path:   filePath,
-			Strict: addOptional,
-		}
+			environmentFileMap[currentEnvironment] = currentContent
 
-		ctx.AddFile(file, environmentFileMap)
+			if !skipPrompts {
+				askContentOfFile(
+					environments,
+					filePath,
+					environmentFileMap,
+					currentContent,
+				)
+			} else {
+				for _, environment := range environments {
+					environmentFileMap[environment.Name] = currentContent
+				}
+			}
 
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			return
-		}
+			var printer = &ui.UiPrinter{}
+			ms := messages.NewMessageService(ctx, printer)
+			changes := ms.GetMessages()
 
-		err_ := gitignorehelper.GitIgnore(ctx.Wd, filePath)
-		if err_ != nil {
-			ui.PrintError(err_.Error())
-			return
-		}
+			if err := ms.Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+			}
 
-		ctx.FilesUseEnvironment(currentEnvironment)
+			if err = ctx.CompareNewFileWhithChanges(filePath, changes).Err(); err != nil {
+				err.Print()
+				return
+			}
 
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			return
-		}
+			file := keystonefile.FileKey{
+				Path:   filePath,
+				Strict: addOptional,
+			}
 
-		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
-			err.Print()
-			os.Exit(1)
+			ctx.AddFile(file, environmentFileMap)
+
+			if err = ctx.Err(); err != nil {
+				err.Print()
+				return
+			}
+
+			err_ := gitignorehelper.GitIgnore(ctx.Wd, filePath)
+			if err_ != nil {
+				ui.PrintError(err_.Error())
+				return
+			}
+
+			ctx.FilesUseEnvironment(currentEnvironment, currentEnvironment)
+
+			if err = ctx.Err(); err != nil {
+				err.Print()
+				return
+			}
+
+			if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+			}
+		} else {
+			// just add file to keystone.yml and keep old content
+
+			file := keystonefile.FileKey{
+				Path:   filePath,
+				Strict: addOptional,
+			}
+			if err := new(keystonefile.KeystoneFile).Load(ctx.Wd).AddFile(file).Save().Err(); err != nil {
+				kserrors.FailedToUpdateKeystoneFile(err).Print()
+				os.Exit(1)
+			}
 		}
 
 		ui.Print(ui.RenderTemplate("file add success", `
@@ -185,4 +203,38 @@ func askContentOfFile(
 			environmentFileMap[environment.Name] = content
 		}
 	}
+}
+
+func checkFileAlreadyInCache(fileName string) bool {
+	files := ctx.ListFilesFromCache()
+	var found keystonefile.FileKey
+	for _, file := range files {
+		if file.Path == fileName {
+			found = file
+		}
+	}
+	if !reflect.ValueOf(found).IsZero() {
+		ui.Print(`The file already exist but is not used.`)
+		for _, env := range ctx.AccessibleEnvironments {
+			content, err := ctx.GetFileContents(fileName, env.Name)
+
+			ui.Print("\n")
+			ui.Print("------------------" + env.Name + "------------------")
+			ui.Print("\n")
+			if err != nil {
+				ui.Print("File not found for this environment")
+			}
+
+			ui.Print(string(content))
+		}
+
+		override := false
+
+		if !skipPrompts {
+			override = prompts.Confirm("Do you want to override the contents")
+		}
+
+		return !override
+	}
+	return false
 }

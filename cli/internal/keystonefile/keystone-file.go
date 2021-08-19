@@ -17,8 +17,9 @@ type EnvKey struct {
 }
 
 type FileKey struct {
-	Path   string
-	Strict bool
+	Path      string
+	Strict    bool
+	FromCache bool
 }
 
 type keystoneFileOptions struct {
@@ -38,8 +39,9 @@ type KeystoneFile struct {
 }
 
 type CiService struct {
-	Name string            `yaml:"name"`
-	Keys map[string]string `yaml:"keys"`
+	Name    string            `yaml:"name"`
+	Type    string            `yaml:"type"`
+	Options map[string]string `yaml:"options"`
 }
 
 // Keystone file path for the given context
@@ -235,7 +237,18 @@ func (file *KeystoneFile) SetFileRequired(filepath string, required bool) *Keyst
 	return file
 }
 
-func (file *KeystoneFile) SetCiService(ciService CiService) *KeystoneFile {
+func (file *KeystoneFile) AddCiService(ciService CiService) *KeystoneFile {
+	if file.Err() != nil {
+		return file
+	}
+
+	file.RemoveCiService(ciService.Name)
+	file.CiServices = append(file.CiServices, ciService)
+
+	return file
+}
+
+func (file *KeystoneFile) RemoveCiService(serviceName string) *KeystoneFile {
 	if file.Err() != nil {
 		return file
 	}
@@ -243,15 +256,14 @@ func (file *KeystoneFile) SetCiService(ciService CiService) *KeystoneFile {
 	services := make([]CiService, 0)
 
 	for _, service := range file.CiServices {
-		if service.Name != ciService.Name {
+		if service.Name != serviceName {
 			services = append(services, service)
 		}
 	}
-	services = append(services, ciService)
 
 	file.CiServices = services
 
-	return file.Save()
+	return file
 }
 
 func (file *KeystoneFile) GetCiService(serviceName string) CiService {

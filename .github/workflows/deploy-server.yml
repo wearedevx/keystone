@@ -28,6 +28,16 @@ jobs:
         with:
           ref: ${{ env.REF }}
 
+      - name: Load Secrts
+        uses: wearedevx/kesytone-action@main
+        with:
+          keystone_slot_1: ${{ secrets.KEYSTONE_PROD_SLOT_1 }}
+          keystone_slot_2: ${{ secrets.KEYSTONE_PROD_SLOT_2 }}
+          keystone_slot_3: ${{ secrets.KEYSTONE_PROD_SLOT_3 }}
+          keystone_slot_4: ${{ secrets.KEYSTONE_PROD_SLOT_4 }}
+          keystone_slot_5: ${{ secrets.KEYSTONE_PROD_SLOT_5 }}
+
+
       - name: Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v0.2.0
         with:
@@ -79,7 +89,7 @@ jobs:
           region: ${{ env.REGION }}
           no_traffic: ${{ env.TAG == 'develop' }}
           tag: ${{ steps.cloud_run_tag.outputs.tag }}
-          env_vars: JWT_SALT=${{ secrets.JWT_SALT }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME}},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ secrets.CLOUDSQL_CREDENTIALS }},X_KS_TTL=${{ secrets.X_KS_TTL }}
+          env_vars: JWT_SALT=${{ secrets.JWT_SALT }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME}},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ secrets.CLOUDSQL_CREDENTIALS }},X_KS_TTL=${{ secrets.X_KS_TTL }},MANDRILL_API_KEY=${{ env.MANDRILL_API_KEY }}
           flags: --allow-unauthenticated --add-cloudsql-instances ${{ secrets.CLOUDSQL_INSTANCE }} --service-account=${{ secrets.KS_SERVER_SERVICE_ACCOUNT }}
 
       - name: Setup Traffic

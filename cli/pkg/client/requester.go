@@ -71,6 +71,10 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 
 	resp, err := c.Do(req)
 
+	if resp == nil {
+		return auth.ServiceNotAvailable
+	}
+
 	if err != nil {
 		return err
 	}

@@ -21,7 +21,6 @@ import (
 	"os"
 
 	"github.com/cossacklabs/themis/gothemis/keys"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
@@ -29,6 +28,7 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 var serviceName string
@@ -113,22 +113,14 @@ To invite collaborators:
 }
 
 func SelectAuthService(ctx context.Context) (auth.AuthService, error) {
-	var err error
-
 	if serviceName == "" {
-		prompt := promptui.Select{
-			Label: "Select an identity provider",
-			Items: []string{
+		_, serviceName = prompts.Select(
+			"Select an identity provider",
+			[]string{
 				"github",
 				"gitlab",
 			},
-		}
-
-		_, serviceName, err = prompt.Run()
-
-		if err != nil {
-			return nil, err
-		}
+		)
 	}
 
 	return auth.GetAuthService(serviceName, ctx, client.ApiURL)

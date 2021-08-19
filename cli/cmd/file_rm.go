@@ -19,12 +19,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 var forcePrompts bool
@@ -39,8 +39,8 @@ var filesRmCmd = &cobra.Command{
 The file will no longer be gitignored and its content
 will no longer be updated when changing environment.
 
-The content of the file for other environments *will be lost*.
-This is permanent, and cannot be undone.
+The content of the file for all environments will be kept in the keystone project.
+Files can be used again using "file add" command.
 `,
 	Example: `ks file rm config/old-test-config.php`,
 	Args:    cobra.ExactArgs(1),
@@ -55,18 +55,7 @@ This is permanent, and cannot be undone.
 			return
 		}
 
-		var printer = &ui.UiPrinter{}
-		ms := messages.NewMessageService(ctx, printer)
-		ms.GetMessages()
-
-		if err := ms.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
-		result := promptYesNo(filePath)
-
-		if result == "y" {
-
+		if promptYesNo(filePath) {
 			var printer = &ui.UiPrinter{}
 			ms := messages.NewMessageService(ctx, printer)
 			ms.GetMessages()
@@ -87,6 +76,10 @@ This is permanent, and cannot be undone.
 					err.Print()
 					os.Exit(1)
 				}
+			} else {
+				ui.Print("The file is kept in your keystone project for all the environments, in case you need it again.")
+				ui.Print("If you want to remove it from your device, use --purge")
+
 			}
 
 			ui.PrintSuccess("%s has been removed from the secret files.", filePath)
@@ -115,7 +108,13 @@ func init() {
 	)
 }
 
-func promptYesNo(filePath string) string {
+func promptYesNo(filePath string) bool {
+	if skipPrompts {
+		return true
+	}
+	if !purgeFile {
+		return true
+	}
 
 	ui.Print(ui.RenderTemplate("confirm files rm",
 		`{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
@@ -126,15 +125,5 @@ This is permanent, and cannot be undone.`, map[string]string{
 			"Environment": ctx.CurrentEnvironment(),
 		}))
 
-	result := "y"
-
-	if !skipPrompts {
-		p := promptui.Prompt{
-			Label:     "Continue",
-			IsConfirm: true,
-		}
-
-		result, _ = p.Run()
-	}
-	return result
+	return prompts.Confirm("Continue")
 }

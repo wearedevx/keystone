@@ -250,7 +250,7 @@ func (s *messageService) SendEnvironments(environments []models.Environment) Mes
 		messagesToWrite.Messages = append(messagesToWrite.Messages, messages...)
 	}
 
-	sp := spinner.Spinner(" Syncing...")
+	sp := spinner.Spinner(" Sending secrets...")
 	sp.Start()
 
 	result, err := s.client.Messages().SendMessages(messagesToWrite)

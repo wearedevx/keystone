@@ -6,6 +6,10 @@ var helpTexts map[string]string = map[string]string{
 This happened because: {{ .Cause }}
 
 `,
+	"ServiceNotAvailable": `
+{{ ERROR }} {{ .Name | red }}
+
+`,
 	"InvalidConnectionToken": `
 {{ ERROR }} {{ .Name | red }}
 Your current connection token has probably expired.
@@ -232,9 +236,9 @@ This happened because: {{ .Cause }}
 This happened because: {{ .Cause }}
 
 `,
-	"CannotLinkFile": `
+	"CannotCopyFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
-The symlink to {{ .CachePath }} could not be created at {{ .Path }}.
+A copy to {{ .CachePath }} could not be created at {{ .Path }}.
 
 This happened because: {{ .Cause }}
 
@@ -362,6 +366,12 @@ func InitFailed(cause error) *Error {
 	meta := map[string]interface{}{}
 
 	return NewError("Init Failed", helpTexts["InitFailed"], meta, cause)
+}
+
+func ServiceNotAvailable(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Service not available", helpTexts["ServiceNotAvailable"], meta, cause)
 }
 
 func InvalidConnectionToken(cause error) *Error {
@@ -577,12 +587,12 @@ func CannotRemoveFile(path string, cause error) *Error {
 	return NewError("Cannot Remove File", helpTexts["CannotRemoveFile"], meta, cause)
 }
 
-func CannotLinkFile(path string, cachepath string, cause error) *Error {
+func CannotCopyFile(path string, cachepath string, cause error) *Error {
 	meta := map[string]interface{}{
 		"Path":      string(path),
 		"CachePath": string(cachepath),
 	}
-	return NewError("Cannot Link File", helpTexts["CannotLinkFile"], meta, cause)
+	return NewError("Cannot Copy File", helpTexts["CannotCopyFile"], meta, cause)
 }
 
 func FileNotInEnvironment(path string, environment string, cause error) *Error {

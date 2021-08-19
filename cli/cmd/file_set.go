@@ -60,7 +60,7 @@ ks --env staging file set ./config.php
 
 		if !ctx.HasFile(filePath) {
 			kserrors.
-				CannotSetFile(filePath, errors.New("file not added to project"))
+				CannotSetFile(filePath, errors.New("file not added to project")).Print()
 
 			os.Exit(1)
 		}
@@ -92,7 +92,7 @@ ks --env staging file set ./config.php
 		if err = ctx.
 			CompareNewFileWhithChanges(filePath, changes).
 			SetFile(filePath, content).
-			FilesUseEnvironment(currentEnvironment).
+			FilesUseEnvironment(currentEnvironment, currentEnvironment).
 			Err(); err != nil {
 			err.Print()
 			os.Exit(1)
