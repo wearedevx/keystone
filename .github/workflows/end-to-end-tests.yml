@@ -60,6 +60,8 @@ jobs:
           sudo apt install libsodium-dev
 
       - name: Install GoKart
+        env:
+          GO111MODULE: on
         run : go install github.com/praetorian-inc/gokart@latest
 
       - name: Run End-to-end Tests
@@ -68,11 +70,15 @@ jobs:
           ./test.sh ./tests/...
 
       - name: Run CLI Security Scan
+        env:
+          GO111MODULE: on
         run: |-
           cd cli
           gokart scan -v
 
       - name: Run API Security Scan
+        env:
+          GO111MODULE: on
         run: |-
           cd api
           gokart scan -v
