@@ -7,7 +7,7 @@ Creates Keystone config files and directories
 Creates Keystone config files and directories.
 
 Created files and directories:
- - keystone.yml: the project’s config,
+ - keystone.yaml: the project’s config,
  - .keystone:    cache and various files for internal use. 
                  automatically added to .gitignore
 

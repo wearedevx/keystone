@@ -143,7 +143,7 @@ ks file add ./certs/my-website.cert`,
 				os.Exit(1)
 			}
 		} else {
-			// just add file to keystone.yml and keep old content
+			// just add file to keystone.yaml and keep old content
 
 			file := keystonefile.FileKey{
 				Path:   filePath,

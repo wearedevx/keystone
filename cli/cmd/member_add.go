@@ -83,7 +83,7 @@ ks member add john.doe@gitlab danny54@github helena@gitlab
 ks member add -r developer -u john.doe@gitlab -u danny54@gitlab
 
 # Add members with their roles from a file:
-ks member add --from-file team.yml
+ks member add --from-file team.yaml
 `,
 	Run: func(_ *cobra.Command, _ []string) {
 		// Auth check

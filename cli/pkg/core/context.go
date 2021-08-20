@@ -96,11 +96,11 @@ func (c *Context) dotKeystonePath() string {
 }
 
 func (c *Context) environmentFilePath() string {
-	return path.Join(c.dotKeystonePath(), "environments.yml")
+	return path.Join(c.dotKeystonePath(), "environments.yaml")
 }
 
 func (c *Context) rolesFilePath() string {
-	return path.Join(c.dotKeystonePath(), "roles.yml")
+	return path.Join(c.dotKeystonePath(), "roles.yaml")
 }
 
 func (c *Context) cacheDirPath() string {
@@ -151,7 +151,7 @@ func (ctx *Context) setError(err *kserrors.Error) *Context {
 // Determines if path matches a keystone managed project root
 // path must:
 // - be a directory
-// - contain a keystone.yml file
+// - contain a keystone.yaml file
 func isKeystoneRootDir(path string) bool {
 	if !DirExists(path) {
 		return false

@@ -61,7 +61,7 @@ errors:
     template: |
       {{ ERROR }} {{ .Name | red }}
       You are trying to create a Keystone project but there already is keystone files in your current directory.
-      Please remove the .keystone directory and keystone.yml file beforehand.
+      Please remove the .keystone directory and keystone.yaml file beforehand.
 
   # KEYSTONE_YAML_ERRORS
   # ––––––––––––––––––––
@@ -70,7 +70,7 @@ errors:
     params: []
     template: |
       {{ ERROR }} {{ .Name | red }}
-      The keystone.yml file exists, but it might not be readable or writable.
+      The keystone.yaml file exists, but it might not be readable or writable.
       Its content may also be corrupted and may not be parsable.
 
       This happened because: {{ .Cause }}
@@ -80,7 +80,7 @@ errors:
     params: []
     template: |
       {{ ERROR }} {{ .Name | red }}
-      The keystone.yml file exists, but it might not be readable or writable.
+      The keystone.yaml file exists, but it might not be readable or writable.
       Its content may also be corrupted and may not be parsable.
 
       This happened because: {{ .Cause }}
@@ -128,7 +128,7 @@ errors:
       Available roles are: {{ .Available }}
 
       You can manage roles for the current project by editing the roles file:
-        .keystone/roles.yml
+        .keystone/roles.yaml
 
   # PROJECT_ERRORS
   # –––––––––––––––––
@@ -141,7 +141,7 @@ errors:
         type: string
     template: |
       {{ ERROR }} {{- ": '" | red }} {{- .Name | red }} {{- "'" | red }}
-      Project in your keystone.yml does not exist or your are not part of it.
+      Project in your keystone.yaml does not exist or your are not part of it.
 
       If you have this configuration from a project member, ask them to add you in the keystone project.
 
@@ -472,7 +472,7 @@ errors:
     params: []
     template: |
       {{ ERROR }} {{ .Name | red }}
-      Keystone.yml must be malformated
+      Keystone.yaml must be malformated
 
   - type: UnkownError
     name: "Unkown Error"
