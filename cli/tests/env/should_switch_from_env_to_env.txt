@@ -13,5 +13,5 @@ ks env prod
 stdout 'Using the .*prod.* environment'
 
 # Check prod is the current environment in settings
-exec cat .keystone/environments.yml
+exec cat .keystone/environments.yaml
 stdout 'prod'

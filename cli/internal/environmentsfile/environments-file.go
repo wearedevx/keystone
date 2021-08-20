@@ -30,7 +30,7 @@ type EnvironmentsFile struct {
 
 // Keystone file path for the given context
 func environmentsFilePath(dotKeystonePath string) string {
-	return path.Join(dotKeystonePath, "environments.yml")
+	return path.Join(dotKeystonePath, "environments.yaml")
 }
 
 func NewEnvironmentsFile(dotKeystonePath string, updatedEnvironments []Environment) *EnvironmentsFile {
@@ -48,7 +48,7 @@ func NewEnvironmentsFile(dotKeystonePath string, updatedEnvironments []Environme
 
 }
 
-// Checks if current execution context contains a keystone.yml
+// Checks if current execution context contains a keystone.yaml
 func ExistsEnvironmentsFile(dotKeystonePath string) bool {
 	return FileExists(environmentsFilePath(dotKeystonePath))
 }
@@ -105,7 +105,7 @@ func (file *EnvironmentsFile) Save() *EnvironmentsFile {
 		yamlBytes := file.toYaml()
 
 		if err := ioutil.WriteFile(file.path, yamlBytes, 0600); err != nil {
-			file.err = fmt.Errorf("Could not write `environments.yml` (%w)", err)
+			file.err = fmt.Errorf("Could not write `environments.yaml` (%w)", err)
 		}
 	}
 
@@ -120,7 +120,7 @@ func (file *EnvironmentsFile) Remove() {
 	}
 
 	if err := os.Remove(file.path); err != nil {
-		file.err = fmt.Errorf("Could not remove `environments.yml` (%w)", err)
+		file.err = fmt.Errorf("Could not remove `environments.yaml` (%w)", err)
 	}
 
 	return

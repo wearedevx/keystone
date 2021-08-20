@@ -26,7 +26,7 @@ type keystoneFileOptions struct {
 	Strict bool
 }
 
-// Represents the contents of the keystone.yml file
+// Represents the contents of the keystone.yaml file
 type KeystoneFile struct {
 	path        string `yaml:"-"`
 	err         error  `yaml:"-"`
@@ -46,7 +46,7 @@ type CiService struct {
 
 // Keystone file path for the given context
 func keystoneFilePath(wd string) string {
-	return path.Join(wd, "keystone.yml")
+	return path.Join(wd, "keystone.yaml")
 }
 
 func NewKeystoneFile(wd string, project Project) *KeystoneFile {
@@ -64,7 +64,7 @@ func NewKeystoneFile(wd string, project Project) *KeystoneFile {
 	}
 }
 
-// Checks if current execution context contains a keystone.yml
+// Checks if current execution context contains a keystone.yaml
 func ExistsKeystoneFile(wd string) bool {
 	return FileExists(keystoneFilePath(wd))
 }
@@ -121,7 +121,7 @@ func (file *KeystoneFile) Save() *KeystoneFile {
 		yamlBytes := file.toYaml()
 
 		if err := ioutil.WriteFile(file.path, yamlBytes, 0600); err != nil {
-			file.err = fmt.Errorf("Could not write `keystone.yml` (%w)", err)
+			file.err = fmt.Errorf("Could not write `keystone.yaml` (%w)", err)
 		}
 	}
 
@@ -136,7 +136,7 @@ func (file *KeystoneFile) Remove() *KeystoneFile {
 	}
 
 	if err := os.Remove(file.path); err != nil {
-		file.err = fmt.Errorf("Could not remove `keystone.yml` (%w)", err)
+		file.err = fmt.Errorf("Could not remove `keystone.yaml` (%w)", err)
 	}
 
 	return file
