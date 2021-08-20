@@ -48,11 +48,14 @@ across environments, such as configuration files, credentials,
 certificates and so on.
 
 When adding a file, you will be asked for a version of its content
-for all known environments – the current contend will be used as default.
+for all known environments – the current content will be used as default.
 `,
 	Example: `ks file add ./config/config.exs
 ks file add ./wp-config.php
-ks file add ./certs/my-website.cert`,
+ks file add ./certs/my-website.cert
+
+# Skip the prompts
+ks file add -s ./credentials.json`,
 	Args: cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error

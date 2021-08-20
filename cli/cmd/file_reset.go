@@ -34,7 +34,7 @@ var resetCmd = &cobra.Command{
 	Short: "Resets locally modified files with their cached contents",
 	Long: `Resets locally modified files with their cached contents.
 
-You can a file managed by Keystone without using ` + "`" + `ks file set` + "`." + `
+You can modify a file managed by Keystone without using ` + "`" + `ks file set` + "`." + `
 However, you will no longer receive updates on that file, and won’t be able
 to change environment.  
 To discard the changes you made, use ` + "`" + `ks file reset [file path]...` + "`" + `.`,
