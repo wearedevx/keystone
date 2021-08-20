@@ -260,6 +260,10 @@ func (s *messageService) SendEnvironments(environments []models.Environment) Mes
 		messagesToWrite.Messages = append(messagesToWrite.Messages, messages...)
 	}
 
+	return s.sendMessageAndUpdateEnvironment(messagesToWrite)
+}
+
+func (s *messageService) sendMessageAndUpdateEnvironment(messagesToWrite models.MessagesToWritePayload) *messageService {
 	sp := spinner.Spinner(" Sending secrets...")
 	sp.Start()
 
@@ -287,7 +291,6 @@ func (s *messageService) SendEnvironments(environments []models.Environment) Mes
 			}
 		}
 	}
-
 	return s
 }
 
@@ -304,6 +307,7 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 
 	_, senderPrivateKey := s.getCurrentUserInformation()
 
+	sentEnvironmentCount := 3
 	for _, environment := range environments {
 		environmentId := environment.EnvironmentID
 
@@ -323,6 +327,7 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 		for _, upk := range userPublicKeys.Keys {
 			if upk.UserUID == member {
 				recipientPublicKeys.PublicKeys = upk.PublicKeys
+				recipientPublicKeys.UserID = upk.UserID
 				found = true
 			}
 		}
@@ -330,6 +335,7 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 		// If receiver has no access to environment, print error and continue to other environments
 		if !found {
 			kserrors.MemberHasNoAccessToEnv(fmt.Errorf("%s has no public key associated with the environment %s", member, environment.Name)).Print()
+			sentEnvironmentCount -= 1
 			continue
 		}
 
@@ -340,7 +346,7 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 		}
 
 		for _, recipientPublicKey := range recipientPublicKeys.PublicKeys {
-			message, err := s.prepareMessage(senderPrivateKey, environment, recipientPublicKey, string(recipientPublicKeys.UserID), PayloadContent)
+			message, err := s.prepareMessage(senderPrivateKey, environment, recipientPublicKey, recipientPublicKeys.UserID, PayloadContent)
 			if err != nil {
 				s.err = kserrors.UnkownError(err)
 				return s
@@ -348,38 +354,11 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 			message.UpdateEnvironmentVersion = false
 
 			messagesToWrite.Messages = append(messagesToWrite.Messages, message)
-
 		}
 	}
 
-	sp := spinner.Spinner(" Sending secrets...")
-	sp.Start()
-
-	result, err := s.client.Messages().SendMessages(messagesToWrite)
-	sp.Stop()
-
-	if err != nil {
-		if errors.Is(err, auth.ErrorUnauthorized) {
-			s.err = kserrors.InvalidConnectionToken(err)
-		} else {
-			s.err = kserrors.UnkownError(err)
-		}
-		return s
-
-	}
-
-	for _, environment := range result.Environments {
-		if err := s.ctx.UpdateEnvironment(environment).Err(); err != nil {
-			if errors.Is(err, auth.ErrorUnauthorized) {
-				s.err = kserrors.InvalidConnectionToken(err)
-			} else {
-				s.err = kserrors.UnkownError(err)
-			}
-			return s
-		}
-
-		ui.PrintSuccess("Environment '" + environment.Name + "' sent to user.")
-	}
+	s = s.sendMessageAndUpdateEnvironment(messagesToWrite)
+	ui.PrintSuccess("Secrets and fies sent to user for %d environments.", len(environments))
 
 	return s
 }
@@ -427,9 +406,7 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 
 			// Don't send to current device
 			if userPublicKey.Device != config.GetDeviceName() {
-				userID := strconv.FormatUint(uint64(userPublicKeys.UserID), 10)
-
-				message, err := s.prepareMessage(senderPrivateKey, environment, userPublicKey, userID, PayloadContent)
+				message, err := s.prepareMessage(senderPrivateKey, environment, userPublicKey, userPublicKey.UserID, PayloadContent)
 				if err != nil {
 					return messages, kserrors.CouldNotEncryptMessages(err)
 				}
@@ -445,7 +422,7 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 // prepareMessages creates and encryps one message
 // for one environment and one project member.
 // Read rights should have been checked beforehand
-func (s *messageService) prepareMessage(senderPrivateKey []byte, environment models.Environment, userPublicKey models.PublicKey, recipientID string, payloadContent models.MessagePayload) (models.MessageToWritePayload, error) {
+func (s *messageService) prepareMessage(senderPrivateKey []byte, environment models.Environment, userPublicKey models.PublicKey, recipientID uint, payloadContent models.MessagePayload) (models.MessageToWritePayload, error) {
 	message := models.MessageToWritePayload{}
 	var payload string
 	payloadContent.Serialize(&payload)
@@ -455,13 +432,16 @@ func (s *messageService) prepareMessage(senderPrivateKey []byte, environment mod
 		return message, err
 	}
 
-	RecipientID, err := strconv.ParseUint(recipientID, 10, 64)
-	RecipientIDUint := uint(RecipientID)
+	RecipientID := strconv.FormatUint(uint64(recipientID), 10)
+
+	if err != nil {
+		return message, err
+	}
 
 	return models.MessageToWritePayload{
 		Payload:                  encryptedPayload,
-		UserID:                   recipientID,
-		RecipientID:              RecipientIDUint,
+		UserID:                   RecipientID,
+		RecipientID:              recipientID,
 		EnvironmentID:            environment.EnvironmentID,
 		PublicKeyID:              userPublicKey.ID,
 		UpdateEnvironmentVersion: true,
