@@ -7,8 +7,16 @@ import (
 	"strings"
 	"text/template"
 
-	. "github.com/logrusorgru/aurora/v3"
+	aurora "github.com/logrusorgru/aurora/v3"
 )
+
+var au aurora.Aurora
+
+func init() {
+	var colors = os.Getenv("KSCOLORS") != "off"
+
+	au = aurora.NewAurora(colors)
+}
 
 func RenderTemplate(name string, tpl string, viewData interface{}) string {
 	var buf bytes.Buffer
@@ -27,13 +35,13 @@ func RenderTemplate(name string, tpl string, viewData interface{}) string {
 
 var functions template.FuncMap = template.FuncMap{
 	"ERROR": func() string {
-		return Black(" ERROR ").BgRed().String()
+		return au.Black(" ERROR ").BgRed().String()
 	},
 	"CAREFUL": func() string {
-		return Black(" CAREFUL ").BgYellow().String()
+		return au.Black(" CAREFUL ").BgYellow().String()
 	},
 	"OK": func() string {
-		return Black(" OK ").BgGreen().String()
+		return au.Black(" OK ").BgGreen().String()
 	},
 	"box": func(p string) string {
 		return Box(p)
@@ -55,99 +63,99 @@ var functions template.FuncMap = template.FuncMap{
 		return strings.Join(indented, "\n")
 	},
 	"black": func(p string) string {
-		return Black(p).String()
+		return au.Black(p).String()
 	},
 	"red": func(p string) string {
-		return Red(p).String()
+		return au.Red(p).String()
 	},
 	"green": func(p string) string {
-		return Green(p).String()
+		return au.Green(p).String()
 	},
 	"yellow": func(p string) string {
-		return Yellow(p).String()
+		return au.Yellow(p).String()
 	},
 	"blue": func(p string) string {
-		return Blue(p).String()
+		return au.Blue(p).String()
 	},
 	"magenta": func(p string) string {
-		return Magenta(p).String()
+		return au.Magenta(p).String()
 	},
 	"cyan": func(p string) string {
-		return Cyan(p).String()
+		return au.Cyan(p).String()
 	},
 	"white": func(p string) string {
-		return White(p).String()
+		return au.White(p).String()
 	},
 	"bright_black": func(p string) string {
-		return BrightBlack(p).String()
+		return au.BrightBlack(p).String()
 	},
 	"bright_red": func(p string) string {
-		return BrightRed(p).String()
+		return au.BrightRed(p).String()
 	},
 	"bright_green": func(p string) string {
-		return BrightGreen(p).String()
+		return au.BrightGreen(p).String()
 	},
 	"bright_yellow": func(p string) string {
-		return BrightYellow(p).String()
+		return au.BrightYellow(p).String()
 	},
 	"bright_blue": func(p string) string {
-		return BrightBlue(p).String()
+		return au.BrightBlue(p).String()
 	},
 	"bright_magenta": func(p string) string {
-		return BrightMagenta(p).String()
+		return au.BrightMagenta(p).String()
 	},
 	"bright_cyan": func(p string) string {
-		return BrightCyan(p).String()
+		return au.BrightCyan(p).String()
 	},
 	"bright_white": func(p string) string {
-		return BrightWhite(p).String()
+		return au.BrightWhite(p).String()
 	},
 	"bg_black": func(p string) string {
-		return BgBlack(p).String()
+		return au.BgBlack(p).String()
 	},
 	"bg_red": func(p string) string {
-		return BgRed(p).String()
+		return au.BgRed(p).String()
 	},
 	"bg_green": func(p string) string {
-		return BgGreen(p).String()
+		return au.BgGreen(p).String()
 	},
 	"bg_yellow": func(p string) string {
-		return BgYellow(p).String()
+		return au.BgYellow(p).String()
 	},
 	"bg_blue": func(p string) string {
-		return BgBlue(p).String()
+		return au.BgBlue(p).String()
 	},
 	"bg_magenta": func(p string) string {
-		return BgMagenta(p).String()
+		return au.BgMagenta(p).String()
 	},
 	"bg_cyan": func(p string) string {
-		return BgCyan(p).String()
+		return au.BgCyan(p).String()
 	},
 	"bg_white": func(p string) string {
-		return BgWhite(p).String()
+		return au.BgWhite(p).String()
 	},
 	"bg_bright_black": func(p string) string {
-		return BgBrightBlack(p).String()
+		return au.BgBrightBlack(p).String()
 	},
 	"bg_bright_red": func(p string) string {
-		return BgBrightRed(p).String()
+		return au.BgBrightRed(p).String()
 	},
 	"bg_bright_green": func(p string) string {
-		return BgBrightGreen(p).String()
+		return au.BgBrightGreen(p).String()
 	},
 	"bg_bright_yellow": func(p string) string {
-		return BgBrightYellow(p).String()
+		return au.BgBrightYellow(p).String()
 	},
 	"bg_bright_blue": func(p string) string {
-		return BgBrightBlue(p).String()
+		return au.BgBrightBlue(p).String()
 	},
 	"bg_bright_magenta": func(p string) string {
-		return BgBrightMagenta(p).String()
+		return au.BgBrightMagenta(p).String()
 	},
 	"bg_bright_cyan": func(p string) string {
-		return BgBrightCyan(p).String()
+		return au.BgBrightCyan(p).String()
 	},
 	"bg_bright_white": func(p string) string {
-		return BgBrightWhite(p).String()
+		return au.BgBrightWhite(p).String()
 	},
 }
