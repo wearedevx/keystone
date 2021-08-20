@@ -74,7 +74,7 @@ func (ctx *Context) CreateEnvironment(name string) *Context {
 
 	if !ctx.HasEnvironment(name) {
 		newEnvDir := ctx.CachedEnvironmentPath(name)
-		err := os.MkdirAll(newEnvDir, 0o755)
+		err := os.MkdirAll(newEnvDir, 0o700)
 
 		if err != nil {
 			ctx.setError(kserrors.CannotCreateDirectory(newEnvDir, err))
