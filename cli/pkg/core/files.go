@@ -232,7 +232,7 @@ func (ctx *Context) IsFileModified(filePath, environment string) (isModified boo
 }
 
 // FilesUseEnvironment creates copies of files found in the project’s
-// keystone.yml file, from the environment `targeEnvironment` in cache.
+// keystone.yaml file, from the environment `targeEnvironment` in cache.
 func (ctx *Context) FilesUseEnvironment(
 	envname string,
 	targetEnvironment string,

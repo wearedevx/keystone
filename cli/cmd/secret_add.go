@@ -126,7 +126,7 @@ ks secret add PORT`,
 			}
 		} else {
 			var ksfile keystonefile.KeystoneFile
-			// Add new env key to keystone.yml
+			// Add new env key to keystone.yaml
 			if err := ksfile.
 				Load(ctx.Wd).
 				SetEnv(secretName, true).

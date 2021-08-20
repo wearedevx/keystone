@@ -84,7 +84,7 @@ $ ks file
 ` + "```" + `
 
 Required files will stop ` + "`" + `ks source` + "`" + ` and ` + "`" + `ks ci send` + "`" + `
-Available files exist in the cache, but not in the keystone.yml file.
+Available files exist in the cache, but not in the keystone.yaml file.
 Modified files have different content from the cache.
 
 For a machine parsable output, use the ` + "`" + `-q` + "`" + ` flag:

@@ -42,7 +42,7 @@ func (ctx *Context) AddSecret(
 	var err error
 	var e *kserrors.Error
 	var ksfile KeystoneFile
-	// Add new env key to keystone.yml
+	// Add new env key to keystone.yaml
 	if err = ksfile.
 		Load(ctx.Wd).
 		SetEnv(secretName, flag == S_REQUIRED).
@@ -113,7 +113,7 @@ func (ctx *Context) RemoveSecret(secretName string, purge bool) *Context {
 
 	var err error
 	var ksfile KeystoneFile
-	// Add new env key to keystone.yml
+	// Add new env key to keystone.yaml
 
 	if err = ksfile.
 		Load(ctx.Wd).
@@ -181,7 +181,7 @@ func (ctx *Context) purgeSecret(secretName string) *Context {
 }
 
 // PurgeSecets Removes from the cache of all environments all secrets that
-// are not found in the project’s keystone.yml
+// are not found in the project’s keystone.yaml
 // This implies that sending the environment to other users will remove
 // those values for them too
 func (ctx *Context) PurgeSecrets() *Context {
@@ -192,7 +192,7 @@ func (ctx *Context) PurgeSecrets() *Context {
 	var err error
 	var e *kserrors.Error
 	var ksfile KeystoneFile
-	// Add new env key to keystone.yml
+	// Add new env key to keystone.yaml
 
 	if err = ksfile.Load(ctx.Wd).Err(); err != nil {
 		return ctx.setError(kserrors.FailedToReadKeystoneFile(err))
@@ -403,7 +403,7 @@ func (ctx *Context) ListSecretsFromCache() []Secret {
 	return secrets
 }
 
-// Returns secrets from keystone.yml, and their value in each environment.
+// Returns secrets from keystone.yaml, and their value in each environment.
 func (ctx *Context) ListSecrets() []Secret {
 	secrets := make([]Secret, 0)
 
