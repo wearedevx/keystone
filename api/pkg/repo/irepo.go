@@ -30,7 +30,6 @@ type IRepo interface {
 	GetInvitableRoles(models.Role, *[]models.Role) IRepo
 	GetLoginRequest(string) (models.LoginRequest, bool)
 	GetMessagesForUserOnEnvironment(publicKey models.PublicKey, environment models.Environment, message *models.Message) IRepo
-	GetPublicKey(publicKey *models.PublicKey) IRepo
 	GetOrCreateEnvironment(*models.Environment) IRepo
 	GetOrCreateEnvironmentType(*models.EnvironmentType) IRepo
 	GetOrCreateProject(*models.Project) IRepo
@@ -58,4 +57,6 @@ type IRepo interface {
 	SetLoginRequestCode(string, string) models.LoginRequest
 	SetNewVersionID(environment *models.Environment) error
 	WriteMessage(user models.User, message models.Message) IRepo
+	GetPublicKeys(uint, *[]models.PublicKey) IRepo
+	GetPublicKey(publicKey *models.PublicKey) IRepo
 }

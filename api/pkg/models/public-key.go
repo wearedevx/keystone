@@ -44,3 +44,21 @@ func (pm *PublicKey) Serialize(out *string) (err error) {
 
 	return err
 }
+
+type GetDevicesResponse struct {
+	PublicKeys []PublicKey
+}
+
+func (e *GetDevicesResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(e)
+}
+
+func (u *GetDevicesResponse) Serialize(out *string) (err error) {
+	var sb strings.Builder
+
+	err = json.NewEncoder(&sb).Encode(u)
+
+	*out = sb.String()
+
+	return err
+}

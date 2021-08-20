@@ -7,4 +7,5 @@ type KeystoneClient interface {
 	Roles() *Roles
 	Users() *Users
 	Messages() *Messages
+	Devices() *Devices
 }

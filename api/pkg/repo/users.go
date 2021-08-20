@@ -107,16 +107,3 @@ func (r *Repo) GetUserByEmail(email string, users *[]User) IRepo {
 
 	return r
 }
-
-func (r *Repo) GetPublicKey(publicKey *PublicKey) IRepo {
-	if r.Err() != nil {
-		return r
-	}
-
-	r.err = r.GetDb().
-		Where(&publicKey).
-		First(publicKey).
-		Error
-
-	return r
-}
