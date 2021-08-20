@@ -62,3 +62,22 @@ func (u *GetDevicesResponse) Serialize(out *string) (err error) {
 
 	return err
 }
+
+type RemoveDeviceResponse struct {
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
+}
+
+func (pm *RemoveDeviceResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(pm)
+}
+
+func (pm *RemoveDeviceResponse) Serialize(out *string) (err error) {
+	var sb strings.Builder
+
+	err = json.NewEncoder(&sb).Encode(pm)
+
+	*out = sb.String()
+
+	return err
+}

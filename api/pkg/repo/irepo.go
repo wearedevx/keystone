@@ -59,4 +59,5 @@ type IRepo interface {
 	WriteMessage(user models.User, message models.Message) IRepo
 	GetPublicKeys(uint, *[]models.PublicKey) IRepo
 	GetPublicKey(publicKey *models.PublicKey) IRepo
+	RevokeDevice(userID uint, deviceName string) IRepo
 }

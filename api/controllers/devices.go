@@ -29,3 +29,18 @@ func GetDevices(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user mod
 
 	return &result, status, err
 }
+
+func DeleteDevice(params router.Params, _ io.ReadCloser, Repo repo.IRepo, u models.User) (_ router.Serde, status int, err error) {
+	status = http.StatusNoContent
+	var result = &models.RemoveDeviceResponse{Success: true}
+
+	var deviceName = params.Get("name").(string)
+
+	if err = Repo.RevokeDevice(u.ID, deviceName).Err(); err != nil {
+		result.Error = err.Error()
+		result.Success = false
+		return result, http.StatusConflict, nil
+	}
+
+	return nil, status, err
+}

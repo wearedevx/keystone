@@ -34,6 +34,7 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.GET("/roles", AuthedHandler(GetRoles))
 
 	router.GET("/devices", AuthedHandler(GetDevices))
+	router.DELETE("/devices/:name", AuthedHandler(DeleteDevice))
 
 	router.POST("/login-request", PostLoginRequest)
 	router.GET("/login-request", GetLoginRequest)
