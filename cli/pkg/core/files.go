@@ -274,7 +274,7 @@ func (ctx *Context) FilesUseEnvironment(
 
 			parentDir := filepath.Dir(localPath)
 
-			if err := os.MkdirAll(parentDir, 0755); err != nil {
+			if err := os.MkdirAll(parentDir, 0700); err != nil {
 				return ctx.setError(kserrors.CannotCopyFile(file.Path, cachedFilePath, err))
 			}
 

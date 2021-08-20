@@ -74,7 +74,7 @@ func New(flag string) *Context {
 
 	configDir := path.Join(currentUser.HomeDir, ".config", "keystone")
 
-	if err = os.MkdirAll(configDir, 0755); err != nil {
+	if err = os.MkdirAll(configDir, 0700); err != nil {
 		errMsg := fmt.Sprintf("Failed to create keystone config (%s)", err.Error())
 		println(errMsg)
 		os.Exit(1)

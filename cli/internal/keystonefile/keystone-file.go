@@ -120,7 +120,7 @@ func (file *KeystoneFile) Save() *KeystoneFile {
 	if file.Err() == nil {
 		yamlBytes := file.toYaml()
 
-		if err := ioutil.WriteFile(file.path, yamlBytes, 0644); err != nil {
+		if err := ioutil.WriteFile(file.path, yamlBytes, 0600); err != nil {
 			file.err = fmt.Errorf("Could not write `keystone.yml` (%w)", err)
 		}
 	}
