@@ -22,7 +22,9 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/pkg/core"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // secretsCmd represents the secrets command
@@ -37,6 +39,18 @@ Used without arguments, displays a table of secrets.`,
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 		environments := ctx.ListEnvironments()
+
+		printer := &ui.UiPrinter{}
+
+		ms := messages.NewMessageService(ctx, printer)
+		ms.GetMessages()
+		if err := ms.Err(); err != nil {
+			if err := ms.Err(); err != nil {
+				ui.PrintError(err.Error())
+				os.Exit(1)
+			}
+
+		}
 
 		secrets := ctx.ListSecrets()
 		secretsFromCache := ctx.ListSecretsFromCache()
