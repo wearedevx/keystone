@@ -1,13 +1,13 @@
 package models
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"io"
-	"math/rand"
+	"math/big"
 	"strings"
 	"time"
-	"unsafe"
 
 	"gorm.io/gorm"
 )
@@ -41,30 +41,30 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
-func randomString(n int) string {
-	src := rand.New(rand.NewSource(time.Now().UnixNano()))
-	b := make([]byte, n)
-	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
-	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
-		if remain == 0 {
-			cache, remain = src.Int63(), letterIdxMax
+func randomString(n int) (string, error) {
+	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
+	ret := make([]byte, n)
+	for i := 0; i < n; i++ {
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+		if err != nil {
+			return "", err
 		}
-		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
-			b[i] = letterBytes[idx]
-			i--
-		}
-		cache >>= letterIdxBits
-		remain--
+		ret[i] = letters[num.Int64()]
 	}
 
-	return *(*string)(unsafe.Pointer(&b))
+	return string(ret), nil
 }
 
-func NewLoginRequest() LoginRequest {
-	return LoginRequest{
-		TemporaryCode: randomString(16),
-		Answered:      false,
+func NewLoginRequest() (LoginRequest, error) {
+	temporaryCode, err := randomString(16)
+	if err != nil {
+		return LoginRequest{}, err
 	}
+
+	return LoginRequest{
+		TemporaryCode: temporaryCode,
+		Answered:      false,
+	}, nil
 }
 
 func (lr *LoginRequest) Deserialize(in io.Reader) error {

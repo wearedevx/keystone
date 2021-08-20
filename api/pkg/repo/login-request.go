@@ -9,7 +9,10 @@ import (
 )
 
 func (repo *Repo) CreateLoginRequest() LoginRequest {
-	lr := NewLoginRequest()
+	lr, err := NewLoginRequest()
+	if err != nil {
+		repo.err = err
+	}
 
 	if repo.Err() == nil {
 		repo.err = repo.GetDb().Create(&lr).Error
@@ -33,7 +36,11 @@ func (repo *Repo) GetLoginRequest(code string) (LoginRequest, bool) {
 }
 
 func (repo *Repo) SetLoginRequestCode(code string, authCode string) LoginRequest {
-	lr := NewLoginRequest()
+	lr, err := NewLoginRequest()
+	if err != nil {
+		repo.err = err
+	}
+
 	if repo.Err() != nil {
 		return lr
 	}
@@ -60,7 +67,11 @@ func (repo *Repo) DeleteLoginRequest(code string) bool {
 		return false
 	}
 
-	lr := NewLoginRequest()
+	lr, err := NewLoginRequest()
+	if err != nil {
+		repo.err = err
+		return false
+	}
 
 	repo.err = repo.GetDb().Where(
 		"temporary_code = ?",
@@ -73,5 +84,5 @@ func (repo *Repo) DeleteLoginRequest(code string) bool {
 
 	repo.err = repo.GetDb().Delete(&lr).Error
 
-    return repo.Err() == nil
+	return repo.Err() == nil
 }
