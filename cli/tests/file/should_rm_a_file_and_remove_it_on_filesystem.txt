@@ -7,15 +7,15 @@ ks file rm --skip --force  test.txt
 
 
 stdout 'Environment dev up to date ✔'
-stdout 'Environment prod up to date ✔'
 stdout 'Environment staging up to date ✔'
+stdout 'Environment prod up to date ✔'
 stdout 'Force remove file on filesystem\.'
-stdout '\[30;42m OK \[0m \[92mtest\.txt has been removed from the secret files\.\[0m'
+stdout ' OK  test\.txt has been removed from the secret files\.'
 
 ! exists test.txt
 
 -- test.txt --
 youpi
 
-[30;42m OK [0m [92mtest.txt has been removed from the secret files.[0m
+ OK  test.txt has been removed from the secret files.
 

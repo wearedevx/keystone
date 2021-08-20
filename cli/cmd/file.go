@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -109,6 +110,18 @@ $ ks file -qf available
 		var err *errors.Error
 
 		ctx.MustHaveEnvironment(currentEnvironment)
+
+		printer := &ui.UiPrinter{}
+
+		ms := messages.NewMessageService(ctx, printer)
+		ms.GetMessages()
+		if err := ms.Err(); err != nil {
+			if err := ms.Err(); err != nil {
+				ui.PrintError(err.Error())
+				os.Exit(1)
+			}
+
+		}
 
 		files := ctx.ListFiles()
 		filesFromCache := ctx.ListFilesFromCache()

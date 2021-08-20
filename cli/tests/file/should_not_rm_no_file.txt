@@ -7,7 +7,7 @@ cmp stderr file_not_added_str_expected.txt
 
 -- file_not_added_str_expected.txt --
 
-[30;41m ERROR [0m [31mCannot Remove File[0m[31m: '[0m[31mnofile.txt[0m[31m'[0m
+ ERROR  Cannot Remove File: 'nofile.txt'
 This happened because: file not found
 
 
