@@ -1,9 +1,0 @@
-project_id: 1785b6d6-8b0e-41c4-b8aa-ab09c70da123
-name: testthis
-env:
-- key: TEST
-  strict: true
-files: []
-options:
-  strict: false
-ci_services: []
