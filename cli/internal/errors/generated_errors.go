@@ -1,17 +1,16 @@
-
 package errors
 
-var helpTexts map[string]string = map[string]string {
-   "InitFailed": `
+var helpTexts map[string]string = map[string]string{
+	"InitFailed": `
 {{ ERROR }} {{ .Name | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "ServiceNotAvailable": `
+	"ServiceNotAvailable": `
 {{ ERROR }} {{ .Name | red }}
 
 `,
-  "InvalidConnectionToken": `
+	"InvalidConnectionToken": `
 {{ ERROR }} {{ .Name | red }}
 Your current connection token has probably expired.
 
@@ -19,7 +18,7 @@ Try to login again:
   $ ks login
 
 `,
-  "NotAKeystoneProject": `
+	"NotAKeystoneProject": `
 {{ ERROR }} {{ .Name | red }}
 It seems you are not in a keystone project.
 
@@ -29,24 +28,24 @@ If this is a new project, start with:
   $ ks init <your-project-name>
 
 `,
-  "NoWorkingDirectory": `
+	"NoWorkingDirectory": `
 {{ ERROR }} {{ .Name | red }}
 A current working directory could not be determined.
 
 This happened because: {{ .Cause }}
 
 `,
-  "UnsupportedFlag": `
+	"UnsupportedFlag": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Flag | red }} {{- "'" | red }}
 
 `,
-  "AlreadyKeystoneProject": `
+	"AlreadyKeystoneProject": `
 {{ ERROR }} {{ .Name | red }}
 You are trying to create a Keystone project but there already is keystone files in your current directory.
 Please remove the .keystone directory and keystone.yaml file beforehand.
 
 `,
-  "FailedToReadKeystoneFile": `
+	"FailedToReadKeystoneFile": `
 {{ ERROR }} {{ .Name | red }}
 The keystone.yaml file exists, but it might not be readable or writable.
 Its content may also be corrupted and may not be parsable.
@@ -54,7 +53,7 @@ Its content may also be corrupted and may not be parsable.
 This happened because: {{ .Cause }}
 
 `,
-  "FailedToUpdateKeystoneFile": `
+	"FailedToUpdateKeystoneFile": `
 {{ ERROR }} {{ .Name | red }}
 The keystone.yaml file exists, but it might not be readable or writable.
 Its content may also be corrupted and may not be parsable.
@@ -62,22 +61,22 @@ Its content may also be corrupted and may not be parsable.
 This happened because: {{ .Cause }}
 
 `,
-  "FailedToUpdateDotEnv": `
+	"FailedToUpdateDotEnv": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "FailedToReadDotEnv": `
+	"FailedToReadDotEnv": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "FailedToReadRolesFile": `
+	"FailedToReadRolesFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "RoleDoesNotExist": `
+	"RoleDoesNotExist": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
 Available roles are: {{ .Available }}
 
@@ -85,14 +84,14 @@ You can manage roles for the current project by editing the roles file:
   .keystone/roles.yaml
 
 `,
-  "ProjectDoesntExist": `
+	"ProjectDoesntExist": `
 {{ ERROR }} {{- ": '" | red }} {{- .Name | red }} {{- "'" | red }}
 Project in your keystone.yaml does not exist or your are not part of it.
 
 If you have this configuration from a project member, ask them to add you in the keystone project.
 
 `,
-  "EnvironmentDoesntExist": `
+	"EnvironmentDoesntExist": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
 Available environments are: {{ .Available }}
 
@@ -100,7 +99,7 @@ To create a new environment:
   $ ks env new {{ .Environment }}
 
 `,
-  "EnvironmentAlreadyExists": `
+	"EnvironmentAlreadyExists": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
 You tried to create an environment with the name '{{ .Environment }}',
 but your project already have one with that name.
@@ -109,24 +108,24 @@ To use the '{{ .Environment }}':
   $ ks env {{ .Environment }}
 
 `,
-  "FailedToSetCurrentEnvironment": `
+	"FailedToSetCurrentEnvironment": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
 The file at '{{ .Path }}' could not be written.
 
 This happened because: {{ .Cause }}
 
 `,
-  "CannotReadEnvironment": `
+	"CannotReadEnvironment": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "PermissionDenied": `
+	"PermissionDenied": `
 {{ ERROR }} {{ .Name | red }} 
 You do not have the rights to change the '{{ .Environment }}' environment.
 
 `,
-  "CannotRemoveCurrentEnvironment": `
+	"CannotRemoveCurrentEnvironment": `
 {{ ERROR }} {{ .Name | red }}
 You are trying to remove the '{{ .Environment }}' environment,
 but it is currently in use.
@@ -135,14 +134,14 @@ Change to another environment:
   $ ks env default
 
 `,
-  "CannotGetEnvironmentKeys": `
+	"CannotGetEnvironmentKeys": `
 {{ ERROR }} {{ .Name | red }}
 Public keys for the '{{ .Environment }}' could not be retrieved.
 
 This happened because: {{ .Cause }}
 
 `,
-  "SecretDoesNotExist": `
+	"SecretDoesNotExist": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
 
 To list secrets:
@@ -152,13 +151,13 @@ To add a {{ .Secret }} secret to all environments:
   $ ks secret add {{ .Secret }} <secret-value>
 
 `,
-  "SecretRequired": `
+	"SecretRequired": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
 You are trying to either unset '{{ .Secret }}', or to set it to a blank value,
 but is required.
 
 `,
-  "SecretHasChanged": `
+	"SecretHasChanged": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
 You are trying to set a value for '{{ .Secret }}', but a new value has been set by another member.
 If you want to override their value, try again.
@@ -166,7 +165,7 @@ If you want to override their value, try again.
 {{ .Values }}
 
 `,
-  "RequiredSecretsAreMissing": `
+	"RequiredSecretsAreMissing": `
 {{ ERROR }} {{ .Name | red }} 
 You are trying to send the environment '{{ .EnvironmentName }}' to a CI/CD service, but some required secrets are missing their value:
 {{ range $secretName := .MissingSecrets }}
@@ -180,7 +179,7 @@ Or make them optional using:
   $ ks secret optional <SECRET_NAME>
 
 `,
-  "FileDoesNotExist": `
+	"FileDoesNotExist": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .FileName | red }} {{- "'" | red }}
 
 To list files:
@@ -190,7 +189,7 @@ To add {{ .FileName }} to all environments:
   $ ks file add {{ .FileName }}
 
 `,
-  "RequiredFilesAreMissing": `
+	"RequiredFilesAreMissing": `
 {{ ERROR }} {{ .Name | red }}
 You are trying to send the environment '{{ .EnvironmentName }}' to a CI/CD service, but some required files are missing or empty:
 {{ range $filePath := .MissingFiles }}
@@ -204,22 +203,22 @@ Or make them optional using:
   $ ks file optional <FILE_PATH>
 
 `,
-  "FileNotInWorkingDirectory": `
+	"FileNotInWorkingDirectory": `
 {{ ERROR }} {{ .Name | red }}
-The file you are trying to add (`{{ .FilePath }}`) does not belong
+The file you are trying to add ({{ .FilePath }}) does not belong
 to the project's current working directory :
     {{ .Wd }}
 
 Only files belonging to {{ .Wd }} or its subdirectories can be added.
 
 `,
-  "EnvironmentsHaveChanged": `
+	"EnvironmentsHaveChanged": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- "'" | red }}
 We couldn't find data for the following environments: '{{ .EnvironmentsName }}', but a new value has been set by another member.
 Ask someone to push their environments to make new data available to you.
 
 `,
-  "FileHasChanged": `
+	"FileHasChanged": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{ .FilePath | red }}
 You are trying to update the file '{{ .FilePath }}', but another member has changed its content.
 If you want to override their changes, try again.
@@ -227,12 +226,12 @@ If you want to override their changes, try again.
 Affected environments: {{ .AffectedEnvironments }}
 
 `,
-  "CannotAddFile": `
+	"CannotAddFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "CannotSetFile": `
+	"CannotSetFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 You tried to set the content of '{{ .Path }}', but it could not be read or found.
 Make sure the file exists, and has been added to the project using:
@@ -241,19 +240,19 @@ Make sure the file exists, and has been added to the project using:
 This happened because: {{ .Cause }}
 
 `,
-  "CannotRemoveFile": `
+	"CannotRemoveFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "CannotCopyFile": `
+	"CannotCopyFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 A copy to {{ .CachePath }} could not be created at {{ .Path }}.
 
 This happened because: {{ .Cause }}
 
 `,
-  "FileNotInEnvironment": `
+	"FileNotInEnvironment": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 No version of '{{ .Path }}' was found for the '{{ .Environment }}' environment.
 
@@ -261,34 +260,34 @@ To get the latest variables and files for '{{ .Environment }}':
   $ ks --env {{ .Environment }} pull
 
 `,
-  "CannotCreateDirectory": `
+	"CannotCreateDirectory": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "CannotRemoveDirectoryContents": `
+	"CannotRemoveDirectoryContents": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "CannotSaveFiles": `
+	"CannotSaveFiles": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .FileList | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "CannotRemoveDirectory": `
+	"CannotRemoveDirectory": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "CopyFailed": `
+	"CopyFailed": `
 {{ ERROR }} {{ .Name | red }}
 Trying to copy '{{ .Source }}' to '{{ .Destination }}'
 
 This happened because: {{ .Cause }}
 
 `,
-  "MustBeLoggedIn": `
+	"MustBeLoggedIn": `
 {{ ERROR }} {{ .Name | red }}
 You must be logged to execute this command.
 
@@ -296,12 +295,12 @@ Please run:
   $ ks login
 
 `,
-  "CannotFindProjectID": `
+	"CannotFindProjectID": `
 {{ ERROR }} {{ .Name | red }}
 Keystone.yaml must be malformated
 
 `,
-  "UnkownError": `
+	"UnkownError": `
 {{ ERROR }} {{ .Name | red }}
 Ouch! We didn't think this could happen.
 
@@ -311,7 +310,7 @@ Sorry for the inconvenience
 This happened because: {{ .Cause }}
 
 `,
-  "UsersDontExist": `
+	"UsersDontExist": `
 {{ ERROR }} {{ .Name | red }}
 {{ .Message }}
 
@@ -319,423 +318,422 @@ You can invite those users to Keystone using
   $ ks invite <email>
 
 `,
-  "CannotAddMembers": `
+	"CannotAddMembers": `
 {{ ERROR }} {{ .Name | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "CannotRemoveMembers": `
+	"CannotRemoveMembers": `
 {{ ERROR }} {{ .Name | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "MemberHasNoAccessToEnv": `
+	"MemberHasNoAccessToEnv": `
 {{ ERROR }} {{ .Name | red }}
 {{ .Cause }}
 
 `,
-  "CouldNotDecryptMessages": `
+	"CouldNotDecryptMessages": `
 {{ ERROR }} {{ .Name | red }}
 {{ .Message }}
 
 This happened because: {{ .Cause }}
 
 `,
-  "CouldNotEncryptMessages": `
+	"CouldNotEncryptMessages": `
 {{ ERROR }} {{ .Name | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "CouldNotParseMessage": `
+	"CouldNotParseMessage": `
 {{ ERROR }} {{ .Name | red }}
 This happened because: {{ .Cause }}
 
 `,
-  "PayloadErrors": `
+	"PayloadErrors": `
 {{ ERROR }} {{ .Name | red }}
 This happend because: {{ .Cause }}
 
 `,
-  "InvalidFileContent": `
+	"InvalidFileContent": `
 {{ ERROR }} {{ .Name | red }}
 The file '{{ .Path }}' content could not be decoded from a base64 string
 
 This happend because: {{ .Cause }}
 
 `,
-  "FailedCheckingChanges": `
+	"FailedCheckingChanges": `
 {{ ERROR }} {{ .Name | red }}
 Error were encountered for file: '{{ .Path }}'
 
 This happened because: {{ .Cause }}
 
 `,
- }
+}
 
-func InitFailed (cause error) *Error {
-  meta := map[string]interface{}{}
+func InitFailed(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Init Failed", helpTexts["InitFailed"], meta, cause)
+	return NewError("Init Failed", helpTexts["InitFailed"], meta, cause)
 }
 
-func ServiceNotAvailable (cause error) *Error {
-  meta := map[string]interface{}{}
+func ServiceNotAvailable(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Service not available", helpTexts["ServiceNotAvailable"], meta, cause)
+	return NewError("Service not available", helpTexts["ServiceNotAvailable"], meta, cause)
 }
 
-func InvalidConnectionToken (cause error) *Error {
-  meta := map[string]interface{}{}
+func InvalidConnectionToken(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Invalid Connection Token", helpTexts["InvalidConnectionToken"], meta, cause)
+	return NewError("Invalid Connection Token", helpTexts["InvalidConnectionToken"], meta, cause)
 }
 
-func NotAKeystoneProject (path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path),
-}
-  return NewError("Not A Keystone Project", helpTexts["NotAKeystoneProject"], meta, cause)
+func NotAKeystoneProject(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Not A Keystone Project", helpTexts["NotAKeystoneProject"], meta, cause)
 }
 
-func NoWorkingDirectory (cause error) *Error {
-  meta := map[string]interface{}{}
+func NoWorkingDirectory(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("No Working Directory", helpTexts["NoWorkingDirectory"], meta, cause)
+	return NewError("No Working Directory", helpTexts["NoWorkingDirectory"], meta, cause)
 }
 
-func UnsupportedFlag (flag string, cause error) *Error {
-meta := map[string]interface{}{
-    "Flag": string(flag),
+func UnsupportedFlag(flag string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Flag": string(flag),
+	}
+	return NewError("Unsupported Flag", helpTexts["UnsupportedFlag"], meta, cause)
 }
-  return NewError("Unsupported Flag", helpTexts["UnsupportedFlag"], meta, cause)
-}
 
-func AlreadyKeystoneProject (cause error) *Error {
-  meta := map[string]interface{}{}
+func AlreadyKeystoneProject(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Already a Keystone project", helpTexts["AlreadyKeystoneProject"], meta, cause)
+	return NewError("Already a Keystone project", helpTexts["AlreadyKeystoneProject"], meta, cause)
 }
 
-func FailedToReadKeystoneFile (cause error) *Error {
-  meta := map[string]interface{}{}
+func FailedToReadKeystoneFile(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Failed To Read Keystone File", helpTexts["FailedToReadKeystoneFile"], meta, cause)
+	return NewError("Failed To Read Keystone File", helpTexts["FailedToReadKeystoneFile"], meta, cause)
 }
 
-func FailedToUpdateKeystoneFile (cause error) *Error {
-  meta := map[string]interface{}{}
+func FailedToUpdateKeystoneFile(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Failed To Update Keystone File", helpTexts["FailedToUpdateKeystoneFile"], meta, cause)
+	return NewError("Failed To Update Keystone File", helpTexts["FailedToUpdateKeystoneFile"], meta, cause)
 }
 
-func FailedToUpdateDotEnv (path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path),
-}
-  return NewError("Failed To Update .env", helpTexts["FailedToUpdateDotEnv"], meta, cause)
+func FailedToUpdateDotEnv(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Failed To Update .env", helpTexts["FailedToUpdateDotEnv"], meta, cause)
 }
 
-func FailedToReadDotEnv (path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path),
+func FailedToReadDotEnv(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Failed To Read .env", helpTexts["FailedToReadDotEnv"], meta, cause)
 }
-  return NewError("Failed To Read .env", helpTexts["FailedToReadDotEnv"], meta, cause)
-}
 
-func FailedToReadRolesFile (path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path),
-}
-  return NewError("Failed To Read Roles File", helpTexts["FailedToReadRolesFile"], meta, cause)
+func FailedToReadRolesFile(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Failed To Read Roles File", helpTexts["FailedToReadRolesFile"], meta, cause)
 }
 
-func RoleDoesNotExist (rolename string, available string, cause error) *Error {
-meta := map[string]interface{}{
-    "RoleName": string(rolename), 
-  "Available": string(available),
+func RoleDoesNotExist(rolename string, available string, cause error) *Error {
+	meta := map[string]interface{}{
+		"RoleName":  string(rolename),
+		"Available": string(available),
+	}
+	return NewError("Role Does Not Exist", helpTexts["RoleDoesNotExist"], meta, cause)
 }
-  return NewError("Role Does Not Exist", helpTexts["RoleDoesNotExist"], meta, cause)
-}
 
-func ProjectDoesntExist (name string, projectid string, cause error) *Error {
-meta := map[string]interface{}{
-    "Name": string(name), 
-  "ProjectId": string(projectid),
+func ProjectDoesntExist(name string, projectid string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Name":      string(name),
+		"ProjectId": string(projectid),
+	}
+	return NewError("Project Doesn't Exist", helpTexts["ProjectDoesntExist"], meta, cause)
 }
-  return NewError("Project Doesn't Exist", helpTexts["ProjectDoesntExist"], meta, cause)
-}
 
-func EnvironmentDoesntExist (environment string, available string, cause error) *Error {
-meta := map[string]interface{}{
-    "Environment": string(environment), 
-  "Available": string(available),
-}
-  return NewError("Environment Doesn't Exist", helpTexts["EnvironmentDoesntExist"], meta, cause)
+func EnvironmentDoesntExist(environment string, available string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Environment": string(environment),
+		"Available":   string(available),
+	}
+	return NewError("Environment Doesn't Exist", helpTexts["EnvironmentDoesntExist"], meta, cause)
 }
 
-func EnvironmentAlreadyExists (environment string, cause error) *Error {
-meta := map[string]interface{}{
-    "Environment": string(environment),
+func EnvironmentAlreadyExists(environment string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Environment": string(environment),
+	}
+	return NewError("Environment Already Exists", helpTexts["EnvironmentAlreadyExists"], meta, cause)
 }
-  return NewError("Environment Already Exists", helpTexts["EnvironmentAlreadyExists"], meta, cause)
-}
 
-func FailedToSetCurrentEnvironment (environment string, path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Environment": string(environment), 
-  "Path": string(path),
-}
-  return NewError("Failed To Set Current Environment", helpTexts["FailedToSetCurrentEnvironment"], meta, cause)
+func FailedToSetCurrentEnvironment(environment string, path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Environment": string(environment),
+		"Path":        string(path),
+	}
+	return NewError("Failed To Set Current Environment", helpTexts["FailedToSetCurrentEnvironment"], meta, cause)
 }
 
-func CannotReadEnvironment (path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path),
+func CannotReadEnvironment(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Cannot Read Environment", helpTexts["CannotReadEnvironment"], meta, cause)
 }
-  return NewError("Cannot Read Environment", helpTexts["CannotReadEnvironment"], meta, cause)
-}
 
-func PermissionDenied (environment string, cause error) *Error {
-meta := map[string]interface{}{
-    "Environment": string(environment),
+func PermissionDenied(environment string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Environment": string(environment),
+	}
+	return NewError("Permission Denied", helpTexts["PermissionDenied"], meta, cause)
 }
-  return NewError("Permission Denied", helpTexts["PermissionDenied"], meta, cause)
-}
 
-func CannotRemoveCurrentEnvironment (environment string, cause error) *Error {
-meta := map[string]interface{}{
-    "Environment": string(environment),
-}
-  return NewError("Cannot Remove Current Environment", helpTexts["CannotRemoveCurrentEnvironment"], meta, cause)
+func CannotRemoveCurrentEnvironment(environment string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Environment": string(environment),
+	}
+	return NewError("Cannot Remove Current Environment", helpTexts["CannotRemoveCurrentEnvironment"], meta, cause)
 }
 
-func CannotGetEnvironmentKeys (environment string, cause error) *Error {
-meta := map[string]interface{}{
-    "Environment": string(environment),
+func CannotGetEnvironmentKeys(environment string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Environment": string(environment),
+	}
+	return NewError("Cannot Get Environment Puplic Keys", helpTexts["CannotGetEnvironmentKeys"], meta, cause)
 }
-  return NewError("Cannot Get Environment Puplic Keys", helpTexts["CannotGetEnvironmentKeys"], meta, cause)
-}
 
-func SecretDoesNotExist (secret string, cause error) *Error {
-meta := map[string]interface{}{
-    "Secret": string(secret),
-}
-  return NewError("Secret Doesn't Exist", helpTexts["SecretDoesNotExist"], meta, cause)
+func SecretDoesNotExist(secret string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Secret": string(secret),
+	}
+	return NewError("Secret Doesn't Exist", helpTexts["SecretDoesNotExist"], meta, cause)
 }
 
-func SecretRequired (secret string, cause error) *Error {
-meta := map[string]interface{}{
-    "Secret": string(secret),
+func SecretRequired(secret string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Secret": string(secret),
+	}
+	return NewError("Secret Required", helpTexts["SecretRequired"], meta, cause)
 }
-  return NewError("Secret Required", helpTexts["SecretRequired"], meta, cause)
-}
 
-func SecretHasChanged (secret string, values string, cause error) *Error {
-meta := map[string]interface{}{
-    "Secret": string(secret), 
-  "Values": string(values),
+func SecretHasChanged(secret string, values string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Secret": string(secret),
+		"Values": string(values),
+	}
+	return NewError("Secret has changed", helpTexts["SecretHasChanged"], meta, cause)
 }
-  return NewError("Secret has changed", helpTexts["SecretHasChanged"], meta, cause)
-}
 
-func RequiredSecretsAreMissing (missingsecrets []string, environmentname string, cause error) *Error {
-meta := map[string]interface{}{
-    "MissingSecrets": []string(missingsecrets), 
-  "EnvironmentName": string(environmentname),
-}
-  return NewError("Required Secrets Are Missing", helpTexts["RequiredSecretsAreMissing"], meta, cause)
+func RequiredSecretsAreMissing(missingsecrets []string, environmentname string, cause error) *Error {
+	meta := map[string]interface{}{
+		"MissingSecrets":  []string(missingsecrets),
+		"EnvironmentName": string(environmentname),
+	}
+	return NewError("Required Secrets Are Missing", helpTexts["RequiredSecretsAreMissing"], meta, cause)
 }
 
-func FileDoesNotExist (filename string, cause error) *Error {
-meta := map[string]interface{}{
-    "FileName": string(filename),
+func FileDoesNotExist(filename string, cause error) *Error {
+	meta := map[string]interface{}{
+		"FileName": string(filename),
+	}
+	return NewError("File Doesn't Exist", helpTexts["FileDoesNotExist"], meta, cause)
 }
-  return NewError("File Doesn't Exist", helpTexts["FileDoesNotExist"], meta, cause)
-}
 
-func RequiredFilesAreMissing (missingfiles []string, environmentname string, cause error) *Error {
-meta := map[string]interface{}{
-    "MissingFiles": []string(missingfiles), 
-  "EnvironmentName": string(environmentname),
-}
-  return NewError("Required Files Are Missing", helpTexts["RequiredFilesAreMissing"], meta, cause)
+func RequiredFilesAreMissing(missingfiles []string, environmentname string, cause error) *Error {
+	meta := map[string]interface{}{
+		"MissingFiles":    []string(missingfiles),
+		"EnvironmentName": string(environmentname),
+	}
+	return NewError("Required Files Are Missing", helpTexts["RequiredFilesAreMissing"], meta, cause)
 }
 
-func FileNotInWorkingDirectory (filepath string, wd string, cause error) *Error {
-meta := map[string]interface{}{
-    "FilePath": string(filepath), 
-  "Wd": string(wd),
+func FileNotInWorkingDirectory(filepath string, wd string, cause error) *Error {
+	meta := map[string]interface{}{
+		"FilePath": string(filepath),
+		"Wd":       string(wd),
+	}
+	return NewError("File Not In Working Directory", helpTexts["FileNotInWorkingDirectory"], meta, cause)
 }
-  return NewError("File Not In Working Directory", helpTexts["FileNotInWorkingDirectory"], meta, cause)
-}
 
-func EnvironmentsHaveChanged (environmentsname string, cause error) *Error {
-meta := map[string]interface{}{
-    "EnvironmentsName": string(environmentsname),
+func EnvironmentsHaveChanged(environmentsname string, cause error) *Error {
+	meta := map[string]interface{}{
+		"EnvironmentsName": string(environmentsname),
+	}
+	return NewError("Environments have changed", helpTexts["EnvironmentsHaveChanged"], meta, cause)
 }
-  return NewError("Environments have changed", helpTexts["EnvironmentsHaveChanged"], meta, cause)
-}
 
-func FileHasChanged (filepath string, affectedenvironments string, cause error) *Error {
-meta := map[string]interface{}{
-    "FilePath": string(filepath), 
-  "AffectedEnvironments": string(affectedenvironments),
-}
-  return NewError("File has changed", helpTexts["FileHasChanged"], meta, cause)
+func FileHasChanged(filepath string, affectedenvironments string, cause error) *Error {
+	meta := map[string]interface{}{
+		"FilePath":             string(filepath),
+		"AffectedEnvironments": string(affectedenvironments),
+	}
+	return NewError("File has changed", helpTexts["FileHasChanged"], meta, cause)
 }
 
-func CannotAddFile (path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path),
+func CannotAddFile(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Cannot Add File", helpTexts["CannotAddFile"], meta, cause)
 }
-  return NewError("Cannot Add File", helpTexts["CannotAddFile"], meta, cause)
-}
 
-func CannotSetFile (path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path),
-}
-  return NewError("Cannot Set File", helpTexts["CannotSetFile"], meta, cause)
+func CannotSetFile(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Cannot Set File", helpTexts["CannotSetFile"], meta, cause)
 }
 
-func CannotRemoveFile (path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path),
+func CannotRemoveFile(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Cannot Remove File", helpTexts["CannotRemoveFile"], meta, cause)
 }
-  return NewError("Cannot Remove File", helpTexts["CannotRemoveFile"], meta, cause)
-}
 
-func CannotCopyFile (path string, cachepath string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path), 
-  "CachePath": string(cachepath),
+func CannotCopyFile(path string, cachepath string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path":      string(path),
+		"CachePath": string(cachepath),
+	}
+	return NewError("Cannot Copy File", helpTexts["CannotCopyFile"], meta, cause)
 }
-  return NewError("Cannot Copy File", helpTexts["CannotCopyFile"], meta, cause)
-}
 
-func FileNotInEnvironment (path string, environment string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path), 
-  "Environment": string(environment),
-}
-  return NewError("File Not Found For Environment", helpTexts["FileNotInEnvironment"], meta, cause)
+func FileNotInEnvironment(path string, environment string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path":        string(path),
+		"Environment": string(environment),
+	}
+	return NewError("File Not Found For Environment", helpTexts["FileNotInEnvironment"], meta, cause)
 }
 
-func CannotCreateDirectory (path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path),
+func CannotCreateDirectory(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Cannot Create Directory", helpTexts["CannotCreateDirectory"], meta, cause)
 }
-  return NewError("Cannot Create Directory", helpTexts["CannotCreateDirectory"], meta, cause)
-}
 
-func CannotRemoveDirectoryContents (path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path),
-}
-  return NewError("Cannot Remove Directory Contents", helpTexts["CannotRemoveDirectoryContents"], meta, cause)
+func CannotRemoveDirectoryContents(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Cannot Remove Directory Contents", helpTexts["CannotRemoveDirectoryContents"], meta, cause)
 }
 
-func CannotSaveFiles (filelist string, cause error) *Error {
-meta := map[string]interface{}{
-    "FileList": string(filelist),
+func CannotSaveFiles(filelist string, cause error) *Error {
+	meta := map[string]interface{}{
+		"FileList": string(filelist),
+	}
+	return NewError("Cannot Save Files", helpTexts["CannotSaveFiles"], meta, cause)
 }
-  return NewError("Cannot Save Files", helpTexts["CannotSaveFiles"], meta, cause)
-}
 
-func CannotRemoveDirectory (path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path),
+func CannotRemoveDirectory(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Cannot Remove Directory", helpTexts["CannotRemoveDirectory"], meta, cause)
 }
-  return NewError("Cannot Remove Directory", helpTexts["CannotRemoveDirectory"], meta, cause)
-}
 
-func CopyFailed (source string, destination string, cause error) *Error {
-meta := map[string]interface{}{
-    "Source": string(source), 
-  "Destination": string(destination),
-}
-  return NewError("Copy failed", helpTexts["CopyFailed"], meta, cause)
+func CopyFailed(source string, destination string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Source":      string(source),
+		"Destination": string(destination),
+	}
+	return NewError("Copy failed", helpTexts["CopyFailed"], meta, cause)
 }
 
-func MustBeLoggedIn (cause error) *Error {
-  meta := map[string]interface{}{}
+func MustBeLoggedIn(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("You must be logged in", helpTexts["MustBeLoggedIn"], meta, cause)
+	return NewError("You must be logged in", helpTexts["MustBeLoggedIn"], meta, cause)
 }
 
-func CannotFindProjectID (cause error) *Error {
-  meta := map[string]interface{}{}
+func CannotFindProjectID(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Cannot find project ID in config file", helpTexts["CannotFindProjectID"], meta, cause)
+	return NewError("Cannot find project ID in config file", helpTexts["CannotFindProjectID"], meta, cause)
 }
 
-func UnkownError (cause error) *Error {
-  meta := map[string]interface{}{}
+func UnkownError(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Unkown Error", helpTexts["UnkownError"], meta, cause)
+	return NewError("Unkown Error", helpTexts["UnkownError"], meta, cause)
 }
 
-func UsersDontExist (message string, cause error) *Error {
-meta := map[string]interface{}{
-    "Message": string(message),
+func UsersDontExist(message string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Message": string(message),
+	}
+	return NewError("Users Don't Exist", helpTexts["UsersDontExist"], meta, cause)
 }
-  return NewError("Users Don't Exist", helpTexts["UsersDontExist"], meta, cause)
-}
 
-func CannotAddMembers (cause error) *Error {
-  meta := map[string]interface{}{}
+func CannotAddMembers(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Cannot Add Members", helpTexts["CannotAddMembers"], meta, cause)
+	return NewError("Cannot Add Members", helpTexts["CannotAddMembers"], meta, cause)
 }
 
-func CannotRemoveMembers (cause error) *Error {
-  meta := map[string]interface{}{}
+func CannotRemoveMembers(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Cannot Remove Members", helpTexts["CannotRemoveMembers"], meta, cause)
+	return NewError("Cannot Remove Members", helpTexts["CannotRemoveMembers"], meta, cause)
 }
 
-func MemberHasNoAccessToEnv (cause error) *Error {
-  meta := map[string]interface{}{}
+func MemberHasNoAccessToEnv(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Member has no access to environment", helpTexts["MemberHasNoAccessToEnv"], meta, cause)
+	return NewError("Member has no access to environment", helpTexts["MemberHasNoAccessToEnv"], meta, cause)
 }
 
-func CouldNotDecryptMessages (message string, cause error) *Error {
-meta := map[string]interface{}{
-    "Message": string(message),
-}
-  return NewError("Could not decrypt messages", helpTexts["CouldNotDecryptMessages"], meta, cause)
+func CouldNotDecryptMessages(message string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Message": string(message),
+	}
+	return NewError("Could not decrypt messages", helpTexts["CouldNotDecryptMessages"], meta, cause)
 }
 
-func CouldNotEncryptMessages (cause error) *Error {
-  meta := map[string]interface{}{}
+func CouldNotEncryptMessages(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Could not encrypt messages", helpTexts["CouldNotEncryptMessages"], meta, cause)
+	return NewError("Could not encrypt messages", helpTexts["CouldNotEncryptMessages"], meta, cause)
 }
 
-func CouldNotParseMessage (cause error) *Error {
-  meta := map[string]interface{}{}
+func CouldNotParseMessage(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Could not parse message", helpTexts["CouldNotParseMessage"], meta, cause)
+	return NewError("Could not parse message", helpTexts["CouldNotParseMessage"], meta, cause)
 }
 
-func PayloadErrors (cause error) *Error {
-  meta := map[string]interface{}{}
+func PayloadErrors(cause error) *Error {
+	meta := map[string]interface{}{}
 
-  return NewError("Errors occured while preparing the payload", helpTexts["PayloadErrors"], meta, cause)
+	return NewError("Errors occured while preparing the payload", helpTexts["PayloadErrors"], meta, cause)
 }
 
-func InvalidFileContent (path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path),
+func InvalidFileContent(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Invalid file content", helpTexts["InvalidFileContent"], meta, cause)
 }
-  return NewError("Invalid file content", helpTexts["InvalidFileContent"], meta, cause)
-}
 
-func FailedCheckingChanges (path string, cause error) *Error {
-meta := map[string]interface{}{
-    "Path": string(path),
+func FailedCheckingChanges(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
+	return NewError("Failed While Checking for Changes", helpTexts["FailedCheckingChanges"], meta, cause)
 }
-  return NewError("Failed While Checking for Changes", helpTexts["FailedCheckingChanges"], meta, cause)
-}
-

@@ -185,7 +185,7 @@ func (ctx *Context) SetFile(filePath string, content []byte) *Context {
 	dest := path.Join(ctx.CachedEnvironmentFilesPath(currentEnvironment), filePath)
 
 	if !ctx.fileBelongsToContext(dest) {
-		ctx.err = kserrors.FileNotInWorkingDirectory(dest, ctx.Wd)
+		ctx.err = kserrors.FileNotInWorkingDirectory(dest, ctx.Wd, nil)
 		return ctx
 	}
 
@@ -240,12 +240,12 @@ func (ctx *Context) IsFileModified(filePath, environment string) (isModified boo
 	cachedPath = path.Join(ctx.CachedEnvironmentFilesPath(environment), filePath)
 
 	if !ctx.fileBelongsToContext(localPath) {
-		kserrors.FileNotInWorkingDirectory(localPath, ctx.Wd).Print()
+		kserrors.FileNotInWorkingDirectory(localPath, ctx.Wd, nil).Print()
 		os.Exit(1)
 	}
 
 	if !ctx.fileBelongsToContext(cachedPath) {
-		kserrors.FileNotInWorkingDirectory(cachedPath, ctx.Wd).Print()
+		kserrors.FileNotInWorkingDirectory(cachedPath, ctx.Wd, nil).Print()
 		os.Exit(1)
 	}
 

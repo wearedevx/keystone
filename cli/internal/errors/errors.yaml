@@ -332,7 +332,7 @@ errors:
         type: "string"
     template: |
       {{ ERROR }} {{ .Name | red }}
-      The file you are trying to add (`{{ .FilePath }}`) does not belong
+      The file you are trying to add ({{ .FilePath }}) does not belong
       to the project's current working directory :
           {{ .Wd }}
 

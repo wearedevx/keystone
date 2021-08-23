@@ -25,7 +25,9 @@ func (ctx *Context) CurrentEnvironment() string {
 		ctx.setError(kserrors.CannotReadEnvironment(ctx.environmentFilePath(), err))
 	}
 
-	ctx.mustEnvironmentNameBeValid(environmentsfile.Current)
+	if environmentsfile.Current != "" {
+		ctx.mustEnvironmentNameBeValid(environmentsfile.Current)
+	}
 
 	return environmentsfile.Current
 }
