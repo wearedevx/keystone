@@ -13,6 +13,7 @@ require (
 	github.com/google/go-github/v32 v32.1.0
 	github.com/jamesruan/sodium v0.0.0-20181216154042-9620b83ffeae
 	github.com/jedib0t/go-pretty/v6 v6.2.1
+	github.com/kisielk/errcheck v1.6.0 // indirect
 	github.com/lib/pq v1.10.2 // indirect
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/manifoldco/promptui v0.8.0
@@ -24,8 +25,10 @@ require (
 	github.com/wearedevx/keystone/api v0.0.0-20210812092632-041a0cf4cfa1
 	github.com/xanzy/go-gitlab v0.49.0
 	go.uber.org/zap v1.18.1 // indirect
+	golang.org/x/mod v0.5.0 // indirect
 	golang.org/x/net v0.0.0-20210726213435-c6fcb2dbf985 // indirect
 	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
+	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	google.golang.org/api v0.52.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0

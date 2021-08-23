@@ -18,11 +18,12 @@ func GitIgnore(wd string, thatPath string) error {
 	}
 
 	gitignorePath := path.Join(wd, ".gitignore")
+	/* #nosec */
 	gitignore, err := os.OpenFile(gitignorePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
 	}
-	defer gitignore.Close()
+	defer utils.Close(gitignore)
 
 	content := fmt.Sprintf("\n%s", thatPath)
 	if _, err = gitignore.WriteString(content); err != nil {
@@ -39,6 +40,7 @@ func GitUnignore(wd string, thatPath string) error {
 
 	gitignorePath := path.Join(wd, ".gitignore")
 	if utils.FileExists(gitignorePath) {
+		/* #nosec */
 		gitignore, err := os.OpenFile(gitignorePath, os.O_RDONLY, 0644)
 
 		if err != nil {
@@ -59,7 +61,7 @@ func GitUnignore(wd string, thatPath string) error {
 				lines = append(lines, line)
 			}
 		}
-		gitignore.Close()
+		utils.Close(gitignore)
 
 		contents := []byte(strings.Join(lines, "\n"))
 
@@ -73,11 +75,12 @@ func IsIgnored(wd string, thatPath string) bool {
 	gitignorePath := path.Join(wd, ".gitignore")
 
 	if FileExists(gitignorePath) {
+		/* #nosec */
 		f, err := os.OpenFile(gitignorePath, os.O_RDONLY, 0o644)
 		if err != nil {
 			return false
 		}
-		defer f.Close()
+		defer utils.Close(f)
 
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {

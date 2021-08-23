@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"time"
 
 	"github.com/cossacklabs/themis/gothemis/cell"
@@ -20,7 +21,10 @@ var backupCmd = &cobra.Command{
 	Short: "Create a backup of your local secrets and files.",
 	Long:  `Create a backup of your local secrets and files.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		BACKUP_NAME := fmt.Sprintf(`./keystone-backup-%d.tar.gz`, time.Now().Unix())
+		BACKUP_NAME := path.Join(
+			ctx.Wd,
+			fmt.Sprintf(`keystone-backup-%d.tar.gz`, time.Now().Unix()),
+		)
 
 		if len(ctx.AccessibleEnvironments) < 3 {
 			ui.PrintError(fmt.Sprintf("You don't have the permissions to create a backup."))
@@ -28,18 +32,24 @@ var backupCmd = &cobra.Command{
 		}
 		password := prompts.StringInput("Password to encrypt backup", "")
 
-		if err := archive.Tar(ctx.DotKeystonePath(), "./"); err != nil {
+		if err := archive.Tar(ctx.DotKeystonePath(), ctx.Wd); err != nil {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
 
-		if err := archive.Gzip("./.keystone.tar", "./"); err != nil {
+		if err := archive.Gzip(path.Join(ctx.Wd, ".keystone.tar"), ctx.Wd); err != nil {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
 
-		os.Rename("./.keystone.tar.gz", BACKUP_NAME)
+		if err := os.Rename(path.Join(ctx.Wd, ".keystone.tar.gz"), BACKUP_NAME); err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
 
+		/* #nosec
+		 * It is unlikely that BACKUP_NAME is uncontrolled
+		 */
 		contents, err := ioutil.ReadFile(BACKUP_NAME)
 
 		if err != nil {
@@ -48,7 +58,13 @@ var backupCmd = &cobra.Command{
 		}
 		encrypted := encryptBackup(contents, password)
 
-		ioutil.WriteFile(BACKUP_NAME, encrypted, 0600)
+		/* #nosec
+		 * It is unlikely that BACKUP_NAME is uncontrolled
+		 */
+		if err := ioutil.WriteFile(BACKUP_NAME, encrypted, 0600); err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
 
 		ui.PrintSuccess("Backup created : %s", BACKUP_NAME)
 	},

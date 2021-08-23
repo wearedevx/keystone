@@ -87,7 +87,7 @@ ks member set-role sandra@github`,
 		r, err := c.Users().CheckUsersExist([]string{memberId})
 		switch {
 		case errors.Is(err, auth.ErrorUnauthorized):
-			kserrors.InvalidConnectionToken(err)
+			kserrors.InvalidConnectionToken(err).Print()
 			os.Exit(1)
 
 		case err != nil || r.Error != "":

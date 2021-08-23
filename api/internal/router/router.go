@@ -113,7 +113,8 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			if out.Len() > 0 {
 				dw.Header().Add("Content-Type", "application/json; charset=utf-8")
 				dw.Header().Add("Content-Length", strconv.Itoa(out.Len()))
-				dw.Write(out.Bytes())
+				_, err := dw.Write(out.Bytes())
+				fmt.Printf("err: %+v\n", err)
 			}
 
 			if status != 200 && !wroteStatus {

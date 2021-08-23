@@ -48,7 +48,7 @@ func OpenFileInEditor(filename string, resolveEditor PreferredEditorResolver) er
 		return err
 	}
 
-	cmd := exec.Command(executable, resolveEditorArguments(executable, filename)...)
+	cmd := exec.Command(executable, resolveEditorArguments(executable, filename)...) // #nosec
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -83,6 +83,10 @@ func CaptureInputFromEditor(resolveEditor PreferredEditorResolver, extension str
 		return []byte{}, err
 	}
 
+	/* #nosec
+	 * The file has just beet created by our selves,
+	 * unlikely to execute malicious code
+	 */
 	bytes, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return []byte{}, err

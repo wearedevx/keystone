@@ -59,7 +59,9 @@ ks ci rm my-github-ci-service
 		s, ok := ci.FindCiServiceWithName(ctx, serviceName)
 		if !ok {
 			// TODO: Create a proper error
-			kserrors.UnkownError(fmt.Errorf("No such CI service: %s", serviceName))
+			kserrors.
+				UnkownError(fmt.Errorf("No such CI service: %s", serviceName)).
+				Print()
 			os.Exit(1)
 		}
 
