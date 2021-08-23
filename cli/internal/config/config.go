@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"reflect"
 
+	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
@@ -90,13 +91,13 @@ func GetCurrentAccount() (user models.User, index int) {
 }
 
 func userFromAccount(account map[string]string) (user models.User) {
-	publicKeys := make([]models.PublicKey, 0)
-	publicKeys = append(publicKeys, models.PublicKey{Key: []byte(account["public_keys"])})
+	devices := make([]models.Device, 0)
+	devices = append(devices, models.Device{PublicKey: []byte(account["public_keys"])})
 	user.AccountType = models.AccountType(account["account_type"])
 	user.Email = account["email"]
 	user.ExtID = account["ext_id"]
 	user.Fullname = account["fullname"]
-	user.PublicKeys = publicKeys
+	user.Devices = devices
 	user.UserID = account["user_id"]
 	user.Username = account["username"]
 
@@ -154,6 +155,9 @@ func GetAuthToken() string {
 
 func GetDeviceName() string {
 	return viper.Get("device").(string)
+}
+func GetDeviceUID() string {
+	return viper.Get("device_uid").(string)
 }
 func GetServiceApiKey(serviceName string) string {
 	token := viper.Get(serviceName + "_auth_token")
@@ -238,6 +242,8 @@ func InitConfig(cfgFile string) {
 	if hostname, err := os.Hostname(); err == nil {
 		viper.SetDefault("device", hostname)
 	}
+
+	viper.SetDefault("device_uid", uuid.NewV4().String())
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {

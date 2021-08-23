@@ -43,7 +43,7 @@ var deviceCmd = &cobra.Command{
 
 		fmt.Println()
 		for _, device := range devices {
-			fmt.Printf("  - %s\n", device.Device)
+			fmt.Printf("  - %s\n", device.Name)
 		}
 		fmt.Println()
 		fmt.Println("To revoke access to one of these devices, use :\n  $ ks device revoke <device>")

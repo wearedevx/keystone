@@ -2,6 +2,7 @@ package environments
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
@@ -62,6 +63,8 @@ func (s *environmentService) GetAccessibleEnvironments() []models.Environment {
 			s.ctx.SetError(kserrors.InvalidConnectionToken(err))
 		} else if errors.Is(err, auth.ServiceNotAvailable) {
 			s.ctx.SetError(kserrors.ServiceNotAvailable(err))
+		} else if strings.Contains(err.Error(), auth.DeviceNotRegistered.Error()) {
+			s.ctx.SetError(kserrors.DeviceNotRegistered(err))
 		} else {
 			s.ctx.SetError(kserrors.UnkownError(err))
 		}

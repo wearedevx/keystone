@@ -91,8 +91,8 @@ func (g *gitHubAuthService) WaitForExternalLogin() error {
 	return nil
 }
 
-func (g gitHubAuthService) Finish(pk []byte, device string) (models.User, string, error) {
-	return completeLogin(g.apiUrl, models.GitHubAccountType, g.token, pk, device)
+func (g gitHubAuthService) Finish(pk []byte, device string, deviceUID string) (models.User, string, error) {
+	return completeLogin(g.apiUrl, models.GitHubAccountType, g.token, pk, device, deviceUID)
 }
 
 func (g gitHubAuthService) CheckAccount(account map[string]string) (bool, error) {

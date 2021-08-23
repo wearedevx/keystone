@@ -38,7 +38,7 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		for _, device := range user.Devices {
 			found := false
 			for _, fdevice := range foundUser.Devices {
-				if fdevice.Name == device.Name {
+				if fdevice.UID == device.UID {
 					found = true
 					if !bytes.Equal(device.PublicKey, fdevice.PublicKey) {
 						fdevice.PublicKey = device.PublicKey

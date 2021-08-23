@@ -10,13 +10,13 @@ type Devices struct {
 	r requester
 }
 
-func (c *Devices) GetAll() ([]models.PublicKey, error) {
+func (c *Devices) GetAll() ([]models.Device, error) {
 	var err error
 	var result models.GetDevicesResponse
 
 	err = c.r.get("/devices", &result, nil)
 
-	return result.PublicKeys, err
+	return result.Devices, err
 }
 
 func (c *Devices) Revoke(name string) error {

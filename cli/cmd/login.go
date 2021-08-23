@@ -48,7 +48,7 @@ func LogIntoExisitingAccount(accountIndex int, currentAccount models.User, c aut
 
 	publicKey, _ := config.GetCurrentUserPublicKey()
 	// publicKey := []byte(currentAccount["public_key"])
-	_, jwtToken, err := c.Finish(publicKey, config.GetDeviceName())
+	_, jwtToken, err := c.Finish(publicKey, config.GetDeviceName(), config.GetDeviceUID())
 
 	if err != nil {
 		ui.PrintError(err.Error())
@@ -74,7 +74,7 @@ func CreateAccountAndLogin(c auth.AuthService) {
 
 	// Transfer credentials to the server
 	// Create (or get) the user info
-	user, jwtToken, err := c.Finish(keyPair.Public.Value, config.GetDeviceName())
+	user, jwtToken, err := c.Finish(keyPair.Public.Value, config.GetDeviceName(), config.GetDeviceUID())
 
 	if err != nil {
 		ui.PrintError(err.Error())

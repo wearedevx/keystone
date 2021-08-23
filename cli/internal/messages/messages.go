@@ -152,21 +152,20 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 		msg := environment.Message
 		if msg.Sender.UserID != "" {
 
-			deviceName := config.GetDeviceName()
+			deviceUID := config.GetDeviceUID()
 			upks, e := s.client.Users().GetUserPublicKey(msg.Sender.UserID)
 			if e != nil {
 				return kserrors.CouldNotDecryptMessages(fmt.Sprintf("Failed to get the public key for user %s", msg.Sender.UserID), e)
 			}
 
-			var upk models.PublicKey
-			for _, publicKey := range upks.PublicKeys {
-				if publicKey.Device == deviceName {
-
-					upk = publicKey
+			var udevice models.Device
+			for _, device := range upks.PublicKeys {
+				if device.UID == deviceUID {
+					device = device
 				}
 			}
 
-			d, e := crypto.DecryptMessage(privateKey, upk.Key, msg.Payload)
+			d, e := crypto.DecryptMessage(privateKey, udevice.PublicKey, msg.Payload)
 			if e != nil {
 				return kserrors.CouldNotDecryptMessages("Decryption failed", e)
 			}
@@ -402,11 +401,11 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 	// Create one message per user
 	for _, userPublicKeys := range userPublicKeys.Keys {
 
-		for _, userPublicKey := range userPublicKeys.PublicKeys {
+		for _, userDevice := range userPublicKeys.PublicKeys {
 
 			// Don't send to current device
-			if userPublicKey.Device != config.GetDeviceName() {
-				message, err := s.prepareMessage(senderPrivateKey, environment, userPublicKey, userPublicKey.UserID, PayloadContent)
+			if userDevice.Name != config.GetDeviceName() {
+				message, err := s.prepareMessage(senderPrivateKey, environment, userDevice, userDevice.UserID, PayloadContent)
 				if err != nil {
 					return messages, kserrors.CouldNotEncryptMessages(err)
 				}
@@ -422,12 +421,12 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 // prepareMessages creates and encryps one message
 // for one environment and one project member.
 // Read rights should have been checked beforehand
-func (s *messageService) prepareMessage(senderPrivateKey []byte, environment models.Environment, userPublicKey models.PublicKey, recipientID uint, payloadContent models.MessagePayload) (models.MessageToWritePayload, error) {
+func (s *messageService) prepareMessage(senderPrivateKey []byte, environment models.Environment, userDevice models.Device, recipientID uint, payloadContent models.MessagePayload) (models.MessageToWritePayload, error) {
 	message := models.MessageToWritePayload{}
 	var payload string
 	payloadContent.Serialize(&payload)
 
-	encryptedPayload, err := crypto.EncryptMessage(senderPrivateKey, userPublicKey.Key, string(payload))
+	encryptedPayload, err := crypto.EncryptMessage(senderPrivateKey, userDevice.PublicKey, string(payload))
 	if err != nil {
 		return message, err
 	}
@@ -443,7 +442,7 @@ func (s *messageService) prepareMessage(senderPrivateKey []byte, environment mod
 		UserID:                   RecipientID,
 		RecipientID:              recipientID,
 		EnvironmentID:            environment.EnvironmentID,
-		PublicKeyID:              userPublicKey.ID,
+		PublicKeyID:              userDevice.ID,
 		UpdateEnvironmentVersion: true,
 	}, nil
 }
