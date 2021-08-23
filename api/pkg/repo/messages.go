@@ -28,7 +28,7 @@ func (gr *MessagesPayload) Serialize(out *string) error {
 	return err
 }
 
-func (repo *Repo) GetMessagesForUserOnEnvironment(publicKey models.PublicKey, environment models.Environment, message *models.Message) IRepo {
+func (repo *Repo) GetMessagesForUserOnEnvironment(publicKey models.Device, environment models.Environment, message *models.Message) IRepo {
 	if repo.err != nil {
 		return repo
 	}

@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	uuid "github.com/satori/go.uuid"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/pkg/constants"
 	"golang.org/x/oauth2"
@@ -147,11 +148,13 @@ func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
 
 func completeLogin(apiUrl string, accountType models.AccountType, tok *oauth2.Token, pk []byte, device string) (models.User, string, error) {
 	var user models.User
+	DeviceUID := uuid.NewV4().String()
 	payload := models.LoginPayload{
 		AccountType: accountType,
 		Token:       tok,
 		PublicKey:   pk,
 		Device:      device,
+		DeviceUID:   DeviceUID,
 	}
 
 	requestPayload := make([]byte, 0)

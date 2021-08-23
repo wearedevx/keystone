@@ -41,6 +41,7 @@ var deviceRevokeCmd = &cobra.Command{
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
+		ui.PrintSuccess("Device has been revoked and will no longer be updated with new secrets.")
 
 	},
 }

@@ -89,7 +89,7 @@ func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *Pub
 
 		for i, pk := range publicKeys.Keys {
 			if pk.UserID == UserID {
-				publicKeys.Keys[i].PublicKeys = append(pk.PublicKeys, models.PublicKey{Key: PublicKey, Device: Device, UserID: UserID, ID: PublicKeyId})
+				publicKeys.Keys[i].PublicKeys = append(pk.PublicKeys, models.Device{PublicKey: PublicKey, Name: Device, UserID: UserID, ID: PublicKeyId})
 				found = true
 			}
 		}
@@ -97,7 +97,7 @@ func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *Pub
 		if !found {
 			publicKeys.Keys = append(publicKeys.Keys, models.UserPublicKeys{
 				UserID:     UserID,
-				PublicKeys: []models.PublicKey{{Key: PublicKey, Device: Device, UserID: UserID, ID: PublicKeyId}},
+				PublicKeys: []models.Device{{PublicKey: PublicKey, Name: Device, UserID: UserID, ID: PublicKeyId}},
 				UserUID:    fmt.Sprint(UserUID),
 			})
 		}

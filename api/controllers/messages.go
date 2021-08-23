@@ -58,8 +58,8 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	}
 
 	// Get publicKey by device name to send message to current user device
-	publicKey := models.PublicKey{
-		Device: device,
+	publicKey := models.Device{
+		Name:   device,
 		UserID: user.ID,
 	}
 

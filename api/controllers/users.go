@@ -97,7 +97,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		return
 	}
 
-	user.PublicKeys = append(user.PublicKeys, models.PublicKey{Key: payload.PublicKey, Device: payload.Device})
+	user.Devices = append(user.Devices, models.Device{PublicKey: payload.PublicKey, Name: payload.Device})
 	if len(payload.PublicKey) == 0 {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
@@ -255,7 +255,7 @@ func GetUserKeys(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ model
 
 	userPublicKeys := models.UserPublicKeys{
 		UserID:     0,
-		PublicKeys: make([]models.PublicKey, 0),
+		PublicKeys: make([]models.Device, 0),
 	}
 
 	userID := params.Get("userID").(string)
@@ -274,7 +274,7 @@ func GetUserKeys(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ model
 		}
 	} else {
 		userPublicKeys.UserID = targetUser.ID
-		userPublicKeys.PublicKeys = targetUser.PublicKeys
+		userPublicKeys.PublicKeys = targetUser.Devices
 	}
 
 	return &userPublicKeys, status, err

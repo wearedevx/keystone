@@ -6,7 +6,7 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (r *Repo) GetPublicKey(publicKey *models.PublicKey) IRepo {
+func (r *Repo) GetPublicKey(publicKey *models.Device) IRepo {
 	if r.Err() != nil {
 		return r
 	}
@@ -19,7 +19,7 @@ func (r *Repo) GetPublicKey(publicKey *models.PublicKey) IRepo {
 	return r
 }
 
-func (r *Repo) GetPublicKeys(userID uint, publicKeys *[]models.PublicKey) IRepo {
+func (r *Repo) GetPublicKeys(userID uint, publicKeys *[]models.Device) IRepo {
 	if r.Err() != nil {
 		return r
 	}
@@ -37,9 +37,9 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 		return r
 	}
 
-	publicKey := models.PublicKey{}
+	publicKey := models.Device{}
 	r.err = r.GetDb().
-		Where("user_id = ? and device = ?", userID, deviceName).
+		Where("user_id = ? and name = ?", userID, deviceName).
 		Find(&publicKey).
 		Error
 	if r.err != nil {
@@ -62,9 +62,9 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 	}
 
 	r.err = r.GetDb().
-		Model(&models.PublicKey{}).
+		Model(&models.Device{}).
 		Where("id = ?", publicKey.ID).
-		Delete(models.PublicKey{}).Error
+		Delete(models.Device{}).Error
 
 	if r.err != nil {
 		return r

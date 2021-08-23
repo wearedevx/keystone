@@ -25,7 +25,7 @@ func (c *Devices) Revoke(name string) error {
 	var result models.RemoveDeviceResponse
 	err = c.r.del("/devices/"+name, nil, &result, nil)
 
-	if result.Success == false {
+	if len(result.Error) > 0 {
 		return errors.New(result.Error)
 	}
 	return err

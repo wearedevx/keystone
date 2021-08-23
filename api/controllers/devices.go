@@ -14,10 +14,10 @@ import (
 func GetDevices(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	var result = models.GetDevicesResponse{
-		PublicKeys: []models.PublicKey{},
+		Devices: []models.Device{},
 	}
 
-	if err = Repo.GetPublicKeys(user.ID, &result.PublicKeys).Err(); err != nil {
+	if err = Repo.GetPublicKeys(user.ID, &result.Devices).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
 		} else {

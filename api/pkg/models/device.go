@@ -9,33 +9,33 @@ import (
 	"gorm.io/gorm"
 )
 
-type PublicKey struct {
+type Device struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`
 	UserID    uint      `json:"user_id" gorm:"uniqueIndex:idx_public_keys_user_id"`
-	Key       []byte    `json:"key"`
-	Device    string    `json:"device"`
+	PublicKey []byte    `json:"public_key"`
+	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (pm *PublicKey) BeforeCreate(tx *gorm.DB) (err error) {
+func (pm *Device) BeforeCreate(tx *gorm.DB) (err error) {
 	pm.CreatedAt = time.Now()
 	pm.UpdatedAt = time.Now()
 
 	return nil
 }
 
-func (pm *PublicKey) BeforeUpdate(tx *gorm.DB) (err error) {
+func (pm *Device) BeforeUpdate(tx *gorm.DB) (err error) {
 	pm.UpdatedAt = time.Now()
 
 	return nil
 }
 
-func (pm *PublicKey) Deserialize(in io.Reader) error {
+func (pm *Device) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(pm)
 }
 
-func (pm *PublicKey) Serialize(out *string) (err error) {
+func (pm *Device) Serialize(out *string) (err error) {
 	var sb strings.Builder
 
 	err = json.NewEncoder(&sb).Encode(pm)
@@ -46,7 +46,7 @@ func (pm *PublicKey) Serialize(out *string) (err error) {
 }
 
 type GetDevicesResponse struct {
-	PublicKeys []PublicKey
+	Devices []Device
 }
 
 func (e *GetDevicesResponse) Deserialize(in io.Reader) error {
