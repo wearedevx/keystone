@@ -55,8 +55,10 @@ func ExistsEnvironmentsFile(dotKeystonePath string) bool {
 
 // Loads a Keystone from disk
 func (file *EnvironmentsFile) Load(dotKeystonePath string) *EnvironmentsFile {
+	/* #nosec
+	 * We generate the file path and its content is about to be parsed
+	 */
 	bytes, err := ioutil.ReadFile(environmentsFilePath(dotKeystonePath))
-	// file := newKeystoneFile(context)
 
 	if err != nil {
 		file.err = err

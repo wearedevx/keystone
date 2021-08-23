@@ -25,7 +25,32 @@ func (ctx *Context) CurrentEnvironment() string {
 		ctx.setError(kserrors.CannotReadEnvironment(ctx.environmentFilePath(), err))
 	}
 
+	ctx.mustEnvironmentNameBeValid(environmentsfile.Current)
+
 	return environmentsfile.Current
+}
+
+func (ctx *Context) mustEnvironmentNameBeValid(name string) {
+	valid := false
+
+	switch name {
+	case "dev":
+		valid = true
+	case "staging":
+		valid = true
+	case "prod":
+		valid = true
+	}
+
+	if !valid {
+		kserrors.EnvironmentDoesntExist(
+			name,
+			"dev, staging, prod",
+			nil,
+		).Print()
+
+		os.Exit(1)
+	}
 }
 
 // ListEnvironments lists all environmnts
@@ -60,7 +85,8 @@ func (ctx *Context) ListEnvironments() []string {
 		}
 
 		if !contained {
-			envs = append(envs, file.Name())
+			ctx.mustEnvironmentNameBeValid(envname)
+			envs = append(envs, envname)
 		}
 	}
 

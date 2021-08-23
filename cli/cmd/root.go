@@ -26,6 +26,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/ui"
 
 	"github.com/wearedevx/keystone/cli/pkg/core"
 
@@ -50,7 +51,9 @@ var RootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Usage()
+		if err := cmd.Usage(); err != nil {
+			ui.PrintError(err.Error())
+		}
 	},
 }
 
@@ -206,7 +209,9 @@ func WriteConfig() error {
 	}
 
 	// Ensure the .config exists
-	os.MkdirAll(path.Join(home, ".config"), 0o755)
+	if err := os.MkdirAll(path.Join(home, ".config"), 0o700); err != nil {
+		return err
+	}
 
 	configPath := path.Join(home, ".config", "keystone.yaml")
 	if err = viper.WriteConfigAs(configPath); err != nil {

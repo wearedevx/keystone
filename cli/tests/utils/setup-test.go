@@ -114,7 +114,7 @@ accounts:
   private_key: !!binary `+priv+`
 auth_token: `+token+`
 current: 0
-`), 0o777)
+`), 0o600)
 
 	if err != nil {
 		fmt.Println("error wrinting user account", err)
@@ -167,7 +167,7 @@ accounts:
   private_key: !!binary `+priv+`
 auth_token: `+token+`
 current: 0
-`), 0o777)
+`), 0o600)
 
 	if err != nil {
 		fmt.Println("error writing accounts", err)
@@ -202,5 +202,5 @@ func SetupEnvVars(env *testscript.Env) error {
 	env.Setenv("KSCOLORS", "off")
 
 	// Create config folder
-	return os.MkdirAll(configDir, 0777)
+	return os.MkdirAll(configDir, 0o600)
 }

@@ -31,6 +31,7 @@ type Roles struct {
 }
 
 func (r *Roles) Load(path string) error {
+	/* #nosec */
 	contents, err := ioutil.ReadFile(path)
 
 	if err != nil {

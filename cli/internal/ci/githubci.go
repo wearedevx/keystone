@@ -92,7 +92,11 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment 
 
 	var payload string
 
-	message.Serialize(&payload)
+	g.err = message.Serialize(&payload)
+	if g.err != nil {
+		return g
+	}
+
 	publicKey, resp, err := g.client.Actions.GetRepoPublicKey(
 		context.Background(),
 		g.servicesKeys["Owner"],

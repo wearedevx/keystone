@@ -179,7 +179,7 @@ func createFileIfNotExist(filePath string) {
 			fmt.Printf("Unable to write file: %v", err)
 		}
 
-		err := ioutil.WriteFile(filePath, []byte(""), 0700)
+		err := ioutil.WriteFile(filePath, []byte(""), 0600)
 
 		if err != nil {
 			fmt.Printf("Unable to write file: %v", err)
@@ -216,6 +216,9 @@ func InitConfig(cfgFile string) {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		// fmt.Println("Using config file:", viper.ConfigFileUsed())
-		viper.WriteConfig()
+		err = viper.WriteConfig()
+		if err != nil {
+			panic(err)
+		}
 	}
 }

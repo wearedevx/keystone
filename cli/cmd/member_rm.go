@@ -74,9 +74,9 @@ of the secrets and files.
 
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
-				kserrors.InvalidConnectionToken(err)
+				kserrors.InvalidConnectionToken(err).Print()
 			} else {
-				kserrors.UnkownError(err)
+				kserrors.UnkownError(err).Print()
 			}
 			os.Exit(1)
 		}
