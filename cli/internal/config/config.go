@@ -154,11 +154,19 @@ func GetAuthToken() string {
 }
 
 func GetDeviceName() string {
-	return viper.Get("device").(string)
+	if viper.Get("device") != nil {
+		return viper.Get("device").(string)
+	}
+	return ""
 }
+
 func GetDeviceUID() string {
-	return viper.Get("device_uid").(string)
+	if viper.Get("device_uid") != nil {
+		return viper.Get("device_uid").(string)
+	}
+	return ""
 }
+
 func GetServiceApiKey(serviceName string) string {
 	token := viper.Get(serviceName + "_auth_token")
 	if token != nil {
@@ -238,10 +246,6 @@ func InitConfig(cfgFile string) {
 
 	viper.SetDefault("current", -1)
 	viper.SetDefault("accounts", defaultAccounts)
-
-	if hostname, err := os.Hostname(); err == nil {
-		viper.SetDefault("device", hostname)
-	}
 
 	viper.SetDefault("device_uid", uuid.NewV4().String())
 

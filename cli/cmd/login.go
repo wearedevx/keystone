@@ -22,6 +22,7 @@ import (
 
 	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
@@ -113,6 +114,24 @@ To invite collaborators:
 `, "Thank you for using Keystone!"))
 }
 
+func selectDeviceName() string {
+	existingName := config.GetDeviceName()
+
+	if existingName == "" {
+		defaultName := ""
+		if hostname, err := os.Hostname(); err == nil {
+			defaultName = hostname
+		}
+		deviceName := prompts.StringInput(
+			"Enter the name you want this device to have",
+			defaultName,
+		)
+		return deviceName
+	}
+
+	return existingName
+}
+
 func SelectAuthService(ctx context.Context) (auth.AuthService, error) {
 	if serviceName == "" {
 		_, serviceName = prompts.Select(
@@ -189,6 +208,9 @@ Waiting for you to login with your {{ .Service }} Account...`, struct {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
+
+		deviceName := selectDeviceName()
+		viper.Set("device", deviceName)
 
 		currentAccount, accountIndex = config.FindAccount(c)
 
