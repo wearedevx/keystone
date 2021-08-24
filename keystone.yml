@@ -17,6 +17,8 @@ env:
   strict: true
 - key: AUTH_PROXY
   strict: true
+- key: MANDRILL_API_KEY
+  strict: true
 files: []
 options:
   strict: false

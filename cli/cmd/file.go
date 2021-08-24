@@ -1,23 +1,9 @@
-/*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -42,6 +28,10 @@ $ ks file
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		files := ctx.ListFiles()
+		filesFromCache := ctx.ListFilesFromCache()
+		filesFromCache = filterFilesFromCache(filesFromCache, files)
+
+		files = append(files, filesFromCache...)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
@@ -69,13 +59,17 @@ To add files to secret files:
 		filePaths := make([]string, len(files))
 		for idx, file := range files {
 			filePaths[idx] = file.Path
+			if file.Strict {
+				filePaths[idx] = filePaths[idx] + " *"
+			}
 		}
 
 		ui.Print(ui.RenderTemplate("files list", `Files tracked as secret files:
 
 {{ range . }}
-{{- . | indent 8 }}
+{{- . | indent 4 }}
 {{ end }}
+* Required files; ° Unused files
 `, filePaths))
 	},
 }
@@ -92,4 +86,23 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// filesCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func filterFilesFromCache(filesFromCache []keystonefile.FileKey, files []keystonefile.FileKey) []keystonefile.FileKey {
+	filesFromCacheToDisplay := make([]keystonefile.FileKey, 0)
+
+	for _, fileFromCache := range filesFromCache {
+		found := false
+		for _, file := range files {
+			if file.Path == fileFromCache.Path {
+				found = true
+			}
+		}
+		if !found {
+			fileFromCache.Path = fileFromCache.Path + " °"
+			filesFromCacheToDisplay = append(filesFromCacheToDisplay, fileFromCache)
+		}
+
+	}
+	return filesFromCacheToDisplay
 }

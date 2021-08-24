@@ -2,6 +2,7 @@ package emailer
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/keighl/mandrill"
 )
@@ -9,6 +10,8 @@ import (
 var mandrillKey string
 
 func init() {
+	mandrillKey = os.Getenv("MANDRILL_API_KEY")
+
 	if mandrillKey == "" {
 		mandrillKey = "SANDBOX_SUCCESS"
 	}

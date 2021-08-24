@@ -6,6 +6,10 @@ var helpTexts map[string]string = map[string]string{
 This happened because: {{ .Cause }}
 
 `,
+	"ServiceNotAvailable": `
+{{ ERROR }} {{ .Name | red }}
+
+`,
 	"InvalidConnectionToken": `
 {{ ERROR }} {{ .Name | red }}
 Your current connection token has probably expired.
@@ -362,6 +366,12 @@ func InitFailed(cause error) *Error {
 	meta := map[string]interface{}{}
 
 	return NewError("Init Failed", helpTexts["InitFailed"], meta, cause)
+}
+
+func ServiceNotAvailable(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Service not available", helpTexts["ServiceNotAvailable"], meta, cause)
 }
 
 func InvalidConnectionToken(cause error) *Error {

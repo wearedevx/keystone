@@ -1,11 +1,14 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
@@ -35,6 +38,53 @@ func (ctx *Context) ListFiles() []FileKey {
 	}
 
 	return ksfile.Files
+}
+
+func (ctx *Context) ListFilesFromCache() []FileKey {
+	if ctx.Err() != nil {
+		return make([]FileKey, 0)
+	}
+
+	filesFromCache := make([]string, 0)
+
+	for _, envname := range ctx.ListEnvironments() {
+		cachePath := ctx.CachedEnvironmentFilesPath(envname)
+
+		err := filepath.Walk(cachePath,
+			func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				fileRelativePath := strings.ReplaceAll(path, cachePath, "")
+				regexp, err := regexp.Compile(`^\/`)
+
+				fileRelativePath = regexp.ReplaceAllString(fileRelativePath, "")
+
+				if len(fileRelativePath) > 0 {
+					filesFromCache = append(filesFromCache, fileRelativePath)
+				}
+				return nil
+			})
+
+		if err != nil {
+			ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+			return make([]FileKey, 0)
+		}
+	}
+
+	filesFromCache = Uniq(filesFromCache)
+
+	fileKey := make([]FileKey, 0)
+	for _, f := range filesFromCache {
+		newFileKey := FileKey{
+			Path:      f,
+			Strict:    false,
+			FromCache: true,
+		}
+		fileKey = append(fileKey, newFileKey)
+	}
+
+	return fileKey
 }
 
 func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Context {
@@ -170,10 +220,18 @@ func (ctx *Context) RemoveFile(filePath string, force bool, purge bool, accessib
 	}
 
 	filteredFiles := make([]FileKey, 0)
+	found := false
 	for _, file := range ksfile.Files {
 		if file.Path != filePath {
 			filteredFiles = append(filteredFiles, file)
+		} else {
+			found = true
 		}
+	}
+	if !found {
+		err := errors.New("The file is not added to keystone.")
+		return ctx.setError(kserrors.CannotRemoveFile(filePath, err))
+
 	}
 
 	ksfile.Files = filteredFiles
@@ -183,19 +241,23 @@ func (ctx *Context) RemoveFile(filePath string, force bool, purge bool, accessib
 		return ctx.setError(kserrors.FailedToUpdateKeystoneFile(err))
 	}
 
-	currentEnvironment := ctx.CurrentEnvironment()
-
-	currentCached := path.Join(ctx.CachedEnvironmentFilesPath(currentEnvironment), filePath)
 	dest := path.Join(ctx.Wd, filePath)
 
 	if force {
 		fmt.Println("Force remove file on filesystem.")
 		os.Remove(dest)
 	} else {
-		fmt.Println("Keep file on filesystem.")
-	}
 
-	CopyFile(currentCached, dest)
+		currentEnvironment := ctx.CurrentEnvironment()
+		currentCached := path.Join(ctx.CachedEnvironmentFilesPath(currentEnvironment), filePath)
+
+		// Remove destination, because is case of a symlink, os.Create will set empty content to the src of the symlink too!
+		os.Remove(dest)
+
+		if err := CopyFile(currentCached, dest); err != nil {
+			return ctx.setError(kserrors.CopyFailed(currentCached, dest, err))
+		}
+	}
 
 	if purge {
 		for _, environment := range accessibleEnvironments {

@@ -21,13 +21,13 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 var forceYes bool
@@ -90,17 +90,13 @@ of the secrets and files.
 		membersToRevoke := make([]string, 0)
 
 		for _, memberId := range args {
-			result := "y"
+			revoke := true
 
 			if !forceYes {
-				prompt := promptui.Prompt{
-					Label: "Revoke access to " + memberId + "? [y/n]",
-				}
-
-				result, _ = prompt.Run()
+				revoke = prompts.Confirm("Revoke acces to " + memberId)
 			}
 
-			if result == "y" {
+			if revoke {
 				membersToRevoke = append(membersToRevoke, memberId)
 			}
 		}

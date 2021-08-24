@@ -17,17 +17,19 @@ package cmd
 
 import (
 	"os"
+	"reflect"
 	"regexp"
 	"strings"
 
-	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 
 	"github.com/spf13/cobra"
 )
@@ -53,10 +55,15 @@ ks secret add PORT 3000
 
 # Add a secret ` + "`" + `PORT` + "`" + `without setting a default:
 ks secret add PORT`,
-	Args: cobra.ExactArgs(2),
+	Args: cobra.RangeArgs(1, 2),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
-		secretName, secretValue := args[0], args[1]
+		secretName := args[0]
+		secretValue := ""
+
+		if len(args) == 2 {
+			secretValue = args[1]
+		}
 
 		checkSecretErr := utils.CheckSecretContent(secretName)
 
@@ -67,47 +74,68 @@ ks secret add PORT`,
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		es := environments.NewEnvironmentService(ctx)
+		inCache := checkSecretAlreadyInCache(secretName)
+		useCache := inCache
 
-		if err = es.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
+		if inCache {
+			useCache = !askToOverride()
 		}
 
-		environmentValueMap := setValuesForEnvironments(secretName, secretValue, ctx.AccessibleEnvironments)
+		if !useCache {
+			es := environments.NewEnvironmentService(ctx)
 
-		var printer = &ui.UiPrinter{}
-		ms := messages.NewMessageService(ctx, printer)
-		changes := ms.GetMessages()
+			if err = es.Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+			}
 
-		if err = ms.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+			environmentValueMap := setValuesForEnvironments(secretName, secretValue, ctx.AccessibleEnvironments)
 
-		flag := core.S_REQUIRED
+			var printer = &ui.UiPrinter{}
+			ms := messages.NewMessageService(ctx, printer)
+			changes := ms.GetMessages()
 
-		if addOptional {
-			flag = core.S_OPTIONAL
-		}
+			if err = ms.Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+			}
 
-		if err = ctx.
-			CompareNewSecretWithChanges(
-				secretName,
-				environmentValueMap,
-				changes,
-			).
-			AddSecret(secretName, environmentValueMap, flag).
-			Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-			return
-		}
+			flag := core.S_REQUIRED
 
-		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-			return
+			if addOptional {
+				flag = core.S_OPTIONAL
+			}
+
+			if err = ctx.
+				CompareNewSecretWithChanges(
+					secretName,
+					environmentValueMap,
+					changes,
+				).
+				AddSecret(secretName, environmentValueMap, flag).
+				Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+				return
+			}
+
+			if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
+				err.Print()
+				os.Exit(1)
+				return
+			}
+		} else {
+			var ksfile keystonefile.KeystoneFile
+			// Add new env key to keystone.yml
+			if err := ksfile.
+				Load(ctx.Wd).
+				SetEnv(secretName, true).
+				Save().
+				Err(); err != nil {
+				kserrors.FailedToUpdateKeystoneFile(err).Print()
+				os.Exit(1)
+			}
+			os.Exit(0)
 		}
 
 		ui.PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(ctx.AccessibleEnvironments))
@@ -174,24 +202,10 @@ Enter a values for {{ . }}:`, secretName))
 				environmentValueMap[environment.Name] = strings.Trim(string(stringResult), " ")
 
 			} else {
-				p := promptui.Prompt{
-					Label:   environment.Name,
-					Default: secretValue,
-				}
-
-				result, err := p.Run()
-
-				// Handle user cancelation
-				// or prompt error
-				if err != nil {
-					if err.Error() != "^C" {
-						ui.PrintError(err.Error())
-						os.Exit(1)
-					}
-					os.Exit(0)
-				}
-
-				environmentValueMap[environment.Name] = strings.Trim(result, " ")
+				environmentValueMap[environment.Name] = prompts.StringInput(
+					environment.Name,
+					secretValue,
+				)
 			}
 		}
 
@@ -202,6 +216,35 @@ Enter a values for {{ . }}:`, secretName))
 
 	}
 
-	environmentValueMap[currentEnvironment] = secretValue
 	return environmentValueMap
+}
+
+func checkSecretAlreadyInCache(secretName string) (inCache bool) {
+	secrets := ctx.ListSecretsFromCache()
+	var found core.Secret
+
+	for _, secret := range secrets {
+		if secret.Name == secretName {
+			found = secret
+		}
+	}
+
+	inCache = !reflect.ValueOf(found).IsZero()
+
+	if inCache {
+		ui.Print(`The secret already exist. Values are:`)
+		for env, value := range found.Values {
+			ui.Print(`%s: %s`, env, value)
+		}
+	}
+
+	return inCache
+}
+
+func askToOverride() (doOverride bool) {
+	if !skipPrompts {
+		return prompts.Confirm("Do you want to override the values")
+	}
+
+	return false
 }

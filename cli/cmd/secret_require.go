@@ -16,11 +16,11 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 // requireCmd represents the require command
@@ -57,12 +57,7 @@ Additionally, ` + "`" + `ks ci send` + "`" + ` will fail if a required secrets a
 			for len(value) == 0 {
 				ui.Print("Enter the value of '%s' for the '%s' environment", secretName, environment)
 
-				p := promptui.Prompt{
-					Label: secretName,
-				}
-
-				result, _ := p.Run()
-				value = result
+				value = prompts.StringInput(secretName, value)
 			}
 
 			ctx.SetSecret(environment, secretName, value)
