@@ -49,7 +49,7 @@ func open(p string) DefFile {
 
 func main() {
 	wd, err := os.Getwd()
-	filepath := path.Join(wd, "internal", "errors", "errors.yml")
+	filepath := path.Join(wd, "internal", "errors", "errors.yaml")
 
 	if err != nil {
 		panic(err)

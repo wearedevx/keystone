@@ -18,7 +18,7 @@ func GitIgnore(wd string, thatPath string) error {
 	}
 
 	gitignorePath := path.Join(wd, ".gitignore")
-	gitignore, err := os.OpenFile(gitignorePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	gitignore, err := os.OpenFile(gitignorePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func GitUnignore(wd string, thatPath string) error {
 
 		contents := []byte(strings.Join(lines, "\n"))
 
-		ioutil.WriteFile(gitignorePath, contents, 0644)
+		ioutil.WriteFile(gitignorePath, contents, 0600)
 	}
 
 	return nil

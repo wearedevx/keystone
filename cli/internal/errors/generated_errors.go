@@ -42,12 +42,12 @@ This happened because: {{ .Cause }}
 	"AlreadyKeystoneProject": `
 {{ ERROR }} {{ .Name | red }}
 You are trying to create a Keystone project but there already is keystone files in your current directory.
-Please remove the .keystone directory and keystone.yml file beforehand.
+Please remove the .keystone directory and keystone.yaml file beforehand.
 
 `,
 	"FailedToReadKeystoneFile": `
 {{ ERROR }} {{ .Name | red }}
-The keystone.yml file exists, but it might not be readable or writable.
+The keystone.yaml file exists, but it might not be readable or writable.
 Its content may also be corrupted and may not be parsable.
 
 This happened because: {{ .Cause }}
@@ -55,7 +55,7 @@ This happened because: {{ .Cause }}
 `,
 	"FailedToUpdateKeystoneFile": `
 {{ ERROR }} {{ .Name | red }}
-The keystone.yml file exists, but it might not be readable or writable.
+The keystone.yaml file exists, but it might not be readable or writable.
 Its content may also be corrupted and may not be parsable.
 
 This happened because: {{ .Cause }}
@@ -81,12 +81,12 @@ This happened because: {{ .Cause }}
 Available roles are: {{ .Available }}
 
 You can manage roles for the current project by editing the roles file:
-  .keystone/roles.yml
+  .keystone/roles.yaml
 
 `,
 	"ProjectDoesntExist": `
 {{ ERROR }} {{- ": '" | red }} {{- .Name | red }} {{- "'" | red }}
-Project in your keystone.yml does not exist or your are not part of it.
+Project in your keystone.yaml does not exist or your are not part of it.
 
 If you have this configuration from a project member, ask them to add you in the keystone project.
 
@@ -236,9 +236,9 @@ This happened because: {{ .Cause }}
 This happened because: {{ .Cause }}
 
 `,
-	"CannotLinkFile": `
+	"CannotCopyFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
-The symlink to {{ .CachePath }} could not be created at {{ .Path }}.
+A copy to {{ .CachePath }} could not be created at {{ .Path }}.
 
 This happened because: {{ .Cause }}
 
@@ -288,7 +288,7 @@ Please run:
 `,
 	"CannotFindProjectID": `
 {{ ERROR }} {{ .Name | red }}
-Keystone.yml must be malformated
+Keystone.yaml must be malformated
 
 `,
 	"UnkownError": `
@@ -587,12 +587,12 @@ func CannotRemoveFile(path string, cause error) *Error {
 	return NewError("Cannot Remove File", helpTexts["CannotRemoveFile"], meta, cause)
 }
 
-func CannotLinkFile(path string, cachepath string, cause error) *Error {
+func CannotCopyFile(path string, cachepath string, cause error) *Error {
 	meta := map[string]interface{}{
 		"Path":      string(path),
 		"CachePath": string(cachepath),
 	}
-	return NewError("Cannot Link File", helpTexts["CannotLinkFile"], meta, cause)
+	return NewError("Cannot Copy File", helpTexts["CannotCopyFile"], meta, cause)
 }
 
 func FileNotInEnvironment(path string, environment string, cause error) *Error {

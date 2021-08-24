@@ -6,4 +6,4 @@ ks logout
 
 ! ks whoami
 
-stdout 'You must be logged in'
+stderr 'You must be logged in'

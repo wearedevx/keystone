@@ -74,7 +74,7 @@ func (ctx *Context) CreateEnvironment(name string) *Context {
 
 	if !ctx.HasEnvironment(name) {
 		newEnvDir := ctx.CachedEnvironmentPath(name)
-		err := os.MkdirAll(newEnvDir, 0o755)
+		err := os.MkdirAll(newEnvDir, 0o700)
 
 		if err != nil {
 			ctx.setError(kserrors.CannotCreateDirectory(newEnvDir, err))
@@ -133,7 +133,7 @@ func (ctx *Context) SetCurrent(name string) *Context {
 			return ctx.setError(kserrors.FailedToSetCurrentEnvironment(name, ctx.environmentFilePath(), err))
 		}
 
-		ctx.FilesUseEnvironment(name)
+		ctx.FilesUseEnvironment(ctx.CurrentEnvironment(), name, CTX_KEEP_LOCAL_FILES)
 
 	} else {
 		return ctx.setError(kserrors.EnvironmentDoesntExist(name, strings.Join(ctx.ListEnvironments(), ", "), nil))

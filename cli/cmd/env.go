@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
@@ -56,13 +57,34 @@ $ ks env staging
 			return
 		}
 
+		locallyModified := ctx.LocallyModifiedFiles(currentEnvironment)
+		if len(locallyModified) != 0 {
+			ui.Print(ui.RenderTemplate("local changes", `
+{{ ERROR }} {{ "You have locally modified files:" | red }}
+{{ range $file := .Files }}  - {{ $file.Path }}
+{{ end }}
+
+If you want to make those changes permanent for the '{{ .Environment }}'
+and send them all members:
+  $ ks file set <filepath>
+
+If you want to discard those changes:
+  $ ks file reset [filepath]...
+`, map[string]interface{}{
+				"Environment": currentEnvironment,
+				"Files":       locallyModified,
+			}))
+
+			os.Exit(1)
+		}
+
 		// Set the current environment
 		envName := args[0]
 		ctx.SetCurrent(envName)
 
 		if err = ctx.Err(); err != nil {
 			err.Print()
-			return
+			os.Exit(1)
 		}
 
 		ui.Print(ui.RenderTemplate("using env", `

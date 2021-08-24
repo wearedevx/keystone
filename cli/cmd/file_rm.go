@@ -118,7 +118,7 @@ func promptYesNo(filePath string) bool {
 
 	ui.Print(ui.RenderTemplate("confirm files rm",
 		`{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
-Content for the current environment ({{ .Environment }}) will be kept.
+Its current content will be kept locally.
 Its content for other environments will be lost, it will no longer be gitignored.
 This is permanent, and cannot be undone.`, map[string]string{
 			"Path":        filePath,

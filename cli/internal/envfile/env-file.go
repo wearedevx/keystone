@@ -48,7 +48,7 @@ func (f *EnvFile) Load(path string, opts *LoadOptions) *EnvFile {
 		return f
 	}
 
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0644)
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0600)
 
 	if err != nil {
 		return f.SetError("Failed to open `%s` (%w)", path, err)

@@ -14,7 +14,7 @@ import (
 //
 // In the execution context's working directory,
 // it creates:
-// - keystone.yml
+// - keystone.yaml
 // - .keystone/
 // - .keystone/environment
 // - .keystone/cache/

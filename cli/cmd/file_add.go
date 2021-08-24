@@ -25,7 +25,6 @@ import (
 	"reflect"
 
 	"github.com/eiannone/keyboard"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
@@ -33,7 +32,9 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 // filesAddCmd represents the push command
@@ -47,11 +48,14 @@ across environments, such as configuration files, credentials,
 certificates and so on.
 
 When adding a file, you will be asked for a version of its content
-for all known environments – the current contend will be used as default.
+for all known environments – the current content will be used as default.
 `,
 	Example: `ks file add ./config/config.exs
 ks file add ./wp-config.php
-ks file add ./certs/my-website.cert`,
+ks file add ./certs/my-website.cert
+
+# Skip the prompts
+ks file add -s ./credentials.json`,
 	Args: cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
@@ -130,7 +134,7 @@ ks file add ./certs/my-website.cert`,
 				return
 			}
 
-			ctx.FilesUseEnvironment(currentEnvironment)
+			ctx.FilesUseEnvironment(currentEnvironment, currentEnvironment, core.CTX_KEEP_LOCAL_FILES)
 
 			if err = ctx.Err(); err != nil {
 				err.Print()
@@ -142,7 +146,7 @@ ks file add ./certs/my-website.cert`,
 				os.Exit(1)
 			}
 		} else {
-			// just add file to keystone.yml and keep old content
+			// just add file to keystone.yaml and keep old content
 
 			file := keystonefile.FileKey{
 				Path:   filePath,
@@ -228,20 +232,13 @@ func checkFileAlreadyInCache(fileName string) bool {
 			ui.Print(string(content))
 		}
 
-		result := "n"
+		override := false
 
 		if !skipPrompts {
-			p := promptui.Prompt{
-				Label:     "Do you want to override the values ",
-				IsConfirm: true,
-			}
-
-			result, _ = p.Run()
+			override = prompts.Confirm("Do you want to override the contents")
 		}
 
-		if result == "n" {
-			return true
-		}
+		return !override
 	}
 	return false
 }

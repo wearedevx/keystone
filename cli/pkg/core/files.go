@@ -10,10 +10,12 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/udhos/equalfile"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	. "github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -55,6 +57,11 @@ func (ctx *Context) ListFilesFromCache() []FileKey {
 				if err != nil {
 					return err
 				}
+				// skip directories
+				if info.IsDir() {
+					return nil
+				}
+
 				fileRelativePath := strings.ReplaceAll(path, cachePath, "")
 				regexp, err := regexp.Compile(`^\/`)
 
@@ -164,9 +171,73 @@ func (ctx *Context) SetFile(filePath string, content []byte) *Context {
 	return ctx
 }
 
-// FilesUseEnvironment creates symlinks for files found in the project’s
-// keystone.yml file, pointing them to the environment `envname` in cache.
-func (ctx *Context) FilesUseEnvironment(envname string) *Context {
+// LocallyModifiedFiles returns the list of file whose local content are
+// different than the version in cache for the given environment
+// (e.g. modified by the user)
+func (ctx *Context) LocallyModifiedFiles(envname string) []FileKey {
+	if ctx.Err() != nil {
+		return []FileKey{}
+	}
+
+	files := ctx.ListFiles()
+	modified := make([]FileKey, len(files))
+
+	for index, fileKey := range files {
+		if ctx.IsFileModified(fileKey.Path, envname) {
+			modified[index] = fileKey
+		}
+		if ctx.Err() != nil {
+			return []FileKey{}
+		}
+	}
+
+	return modified
+}
+
+func (ctx *Context) IsFileModified(filePath, environment string) (isModified bool) {
+	if ctx.Err() != nil {
+		return false
+	}
+	var localPath, cachedPath string
+	var localReader, cachedReader *os.File
+	var err error
+
+	localPath = path.Join(ctx.Wd, filePath)
+	cachedPath = path.Join(ctx.CachedEnvironmentFilesPath(environment), filePath)
+
+	localReader, err = os.Open(localPath)
+	if err != nil {
+		// ctx.setError(kserrors.CannotCopyFile(localPath, cachedPath, err))
+		return false
+
+	}
+	cachedReader, err = os.Open(cachedPath)
+	if err != nil {
+		ctx.setError(kserrors.CannotCopyFile(localPath, cachedPath, err))
+		return false
+	}
+
+	comparator := equalfile.New(nil, equalfile.Options{})
+	sameContent, err := comparator.CompareReader(localReader, cachedReader)
+
+	if err != nil {
+		ctx.setError(kserrors.CannotCopyFile(localPath, cachedPath, err))
+		return false
+	}
+
+	localReader.Close()
+	cachedReader.Close()
+
+	return !sameContent
+}
+
+// FilesUseEnvironment creates copies of files found in the project’s
+// keystone.yaml file, from the environment `targeEnvironment` in cache.
+func (ctx *Context) FilesUseEnvironment(
+	envname string,
+	targetEnvironment string,
+	forceCopy bool,
+) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
@@ -181,27 +252,35 @@ func (ctx *Context) FilesUseEnvironment(envname string) *Context {
 
 	for _, file := range files {
 		cachedFilePath := path.Join(cachePath, file.Path)
-		linkPath := path.Join(ctx.Wd, file.Path)
-
-		if FileExists(linkPath) {
-			os.Remove(linkPath)
-		}
+		localPath := path.Join(ctx.Wd, file.Path)
 
 		if !FileExists(cachedFilePath) {
 			if file.Strict {
 				return ctx.setError(kserrors.FileNotInEnvironment(file.Path, envname, nil))
 			}
-			ui.Print("File \"%s\" not in envrironment", file.Path)
+			fmt.Fprintf(os.Stderr, "File \"%s\" not in environment\n", file.Path)
 		}
 
-		parentDir := filepath.Dir(linkPath)
+		if ctx.IsFileModified(file.Path, envname) &&
+			forceCopy == CTX_KEEP_LOCAL_FILES {
+			fmt.Fprintln(os.Stderr, ui.RenderTemplate("modified file",
+				`{{ "Warning!" | yellow }} File '{{ .Path }}' has been locally modified. To discard local changes, run 'ks file reset {{ .Path }}'`,
+				file,
+			))
+		} else {
+			if FileExists(localPath) {
+				os.Remove(localPath)
+			}
 
-		if err := os.MkdirAll(parentDir, 0755); err != nil {
-			return ctx.setError(kserrors.CannotLinkFile(file.Path, cachedFilePath, err))
-		}
+			parentDir := filepath.Dir(localPath)
 
-		if err := os.Symlink(cachedFilePath, linkPath); err != nil {
-			return ctx.setError(kserrors.CannotLinkFile(file.Path, cachedFilePath, err))
+			if err := os.MkdirAll(parentDir, 0700); err != nil {
+				return ctx.setError(kserrors.CannotCopyFile(file.Path, cachedFilePath, err))
+			}
+
+			if err := utils.CopyFile(cachedFilePath, localPath); err != nil {
+				return ctx.setError(kserrors.CannotCopyFile(file.Path, cachedFilePath, err))
+			}
 		}
 	}
 
