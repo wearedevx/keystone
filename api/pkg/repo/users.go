@@ -48,7 +48,7 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 			}
 			if !found {
 				device.UserID = foundUser.ID
-				db.Create(&device)
+				r.AddNewDevice(device, foundUser.UserID, foundUser.Email)
 			}
 		}
 
