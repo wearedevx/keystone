@@ -4,10 +4,10 @@ ks init my_project
 #stdout 'All done!'
 
 # Check project's file exist and correct
-exists keystone.yml
+exists keystone.yaml
 
-grep 'name: my_project' keystone.yml
-grep 'project_id: [0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}' keystone.yml
+grep 'name: my_project' keystone.yaml
+grep 'project_id: [0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}' keystone.yaml
 
 # Check cache folders exists
 exists .keystone
@@ -17,7 +17,7 @@ exists .keystone/cache/prod/.env
 exists .keystone/cache/staging/.env
 exists .keystone/cache/.env
 
-exists .keystone/environments.yml
+exists .keystone/environments.yaml
 
 # Check dev is the current environment
-grep 'dev' .keystone/environments.yml
+grep 'dev' .keystone/environments.yaml

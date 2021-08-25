@@ -44,7 +44,7 @@ func (ctx *Context) MustHaveProject() {
 	}
 }
 
-// Removes the keystone.yml, and the .keystone file
+// Removes the keystone.yaml, and the .keystone file
 func (ctx *Context) Destroy() {
 	var err error
 

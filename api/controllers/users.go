@@ -173,7 +173,10 @@ func GetAuthRedirect(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	})
 
 	if err == nil {
-		response = "OK"
+		response = `You have been successfully authenticated.
+You may now return to your terminal and start using Keystone.
+
+Thank you!`
 		w.Header().Add("Content-Type", "text/plain")
 		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
 		fmt.Fprint(w, response)

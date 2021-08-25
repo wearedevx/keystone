@@ -40,7 +40,13 @@ func DirExists(filename string) bool {
 // Creates a file with defaultContent at filePath if it doesn't exist
 func CreateFileIfNotExists(filePath string, defaultContent string) error {
 	if !FileExists(filePath) {
-		if err := ioutil.WriteFile(filePath, []byte(defaultContent), 0644); err != nil {
+		dir := filepath.Dir(filePath)
+
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			return fmt.Errorf("Could not creat directory `%s` (%w)", dir, err)
+		}
+
+		if err := ioutil.WriteFile(filePath, []byte(defaultContent), 0600); err != nil {
 			return fmt.Errorf("Could not create `%s` (%w)", filePath, err)
 		}
 	}
@@ -52,7 +58,7 @@ func CreateFileIfNotExists(filePath string, defaultContent string) error {
 func CreateDirIfNotExist(dirPath string) error {
 
 	if !DirExists(dirPath) {
-		if err := os.MkdirAll(dirPath, 0755); err != nil {
+		if err := os.MkdirAll(dirPath, 0700); err != nil {
 			return fmt.Errorf("Could not create `%s/` (%w)", dirPath, err)
 		}
 	}

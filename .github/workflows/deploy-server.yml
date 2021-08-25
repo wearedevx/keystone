@@ -29,7 +29,7 @@ jobs:
           ref: ${{ env.REF }}
 
       - name: Load Secrts
-        uses: wearedevx/kesytone-action@main
+        uses: wearedevx/keystone-action@main
         with:
           keystone_slot_1: ${{ secrets.KEYSTONE_PROD_SLOT_1 }}
           keystone_slot_2: ${{ secrets.KEYSTONE_PROD_SLOT_2 }}

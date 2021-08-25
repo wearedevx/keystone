@@ -4,6 +4,7 @@ package errors
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -48,7 +49,7 @@ func (e *Error) Cause() error {
 }
 
 func (e *Error) Print() {
-	fmt.Println(e.Error())
+	fmt.Fprintln(os.Stderr, e.Error())
 	// os.Stderr.WriteString(e.Error())
 }
 

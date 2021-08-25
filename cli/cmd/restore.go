@@ -64,7 +64,7 @@ It will update other members secrets and files.`, map[string]string{}))
 
 		decryptedPath := fmt.Sprintf("decrypted.tar.gz")
 
-		ioutil.WriteFile(decryptedPath, decrypted, 0644)
+		ioutil.WriteFile(decryptedPath, decrypted, 0600)
 
 		if err := archive.UnGzip(decryptedPath, ctx.Wd); err != nil {
 			ui.PrintError(err.Error())

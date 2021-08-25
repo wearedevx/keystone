@@ -286,7 +286,15 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 
 	changedEnvironments := make([]string, 0)
 
-	for environmentName, environment := range messagesByEnvironments.Environments {
+	// FIXME: Should not this be an application-wide constant ?
+	var envList []string = []string{"dev", "staging", "prod"}
+
+	for _, environmentName := range envList {
+		environment, ok := messagesByEnvironments.Environments[environmentName]
+		if !ok {
+			continue
+		}
+
 		messageID := environment.Message.ID
 
 		if messageID != 0 {

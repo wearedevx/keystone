@@ -209,11 +209,11 @@ func createFileIfNotExist(filePath string) {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		// path/to/whatever does not exist
 
-		if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(filePath), 0700); err != nil {
 			fmt.Printf("Unable to write file: %v", err)
 		}
 
-		err := ioutil.WriteFile(filePath, []byte(""), 0755)
+		err := ioutil.WriteFile(filePath, []byte(""), 0700)
 
 		if err != nil {
 			fmt.Printf("Unable to write file: %v", err)

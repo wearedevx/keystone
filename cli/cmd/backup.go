@@ -48,7 +48,7 @@ var backupCmd = &cobra.Command{
 		}
 		encrypted := encryptBackup(contents, password)
 
-		ioutil.WriteFile(BACKUP_NAME, encrypted, 0644)
+		ioutil.WriteFile(BACKUP_NAME, encrypted, 0600)
 
 		ui.PrintSuccess("Backup created : %s", BACKUP_NAME)
 	},

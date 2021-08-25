@@ -25,6 +25,9 @@ type Context struct {
 const CTX_INIT = "init"
 const CTX_RESOLVE = "resolve"
 
+const CTX_OVERWRITE_LOCAL_FILES = true
+const CTX_KEEP_LOCAL_FILES = !CTX_OVERWRITE_LOCAL_FILES
+
 // Creates a new execution context
 //
 // When flag equals CTX_INIT, the current working directory is used
@@ -71,7 +74,7 @@ func New(flag string) *Context {
 
 	configDir := path.Join(currentUser.HomeDir, ".config", "keystone")
 
-	if err = os.MkdirAll(configDir, 0755); err != nil {
+	if err = os.MkdirAll(configDir, 0700); err != nil {
 		errMsg := fmt.Sprintf("Failed to create keystone config (%s)", err.Error())
 		println(errMsg)
 		os.Exit(1)
@@ -93,11 +96,11 @@ func (c *Context) dotKeystonePath() string {
 }
 
 func (c *Context) environmentFilePath() string {
-	return path.Join(c.dotKeystonePath(), "environments.yml")
+	return path.Join(c.dotKeystonePath(), "environments.yaml")
 }
 
 func (c *Context) rolesFilePath() string {
-	return path.Join(c.dotKeystonePath(), "roles.yml")
+	return path.Join(c.dotKeystonePath(), "roles.yaml")
 }
 
 func (c *Context) cacheDirPath() string {
@@ -148,7 +151,7 @@ func (ctx *Context) setError(err *kserrors.Error) *Context {
 // Determines if path matches a keystone managed project root
 // path must:
 // - be a directory
-// - contain a keystone.yml file
+// - contain a keystone.yaml file
 func isKeystoneRootDir(path string) bool {
 	if !DirExists(path) {
 		return false
