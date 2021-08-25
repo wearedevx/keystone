@@ -323,6 +323,21 @@ errors:
       Or make them optional using:
         $ ks file optional <FILE_PATH>
 
+  - type: FileNotInWorkingDirectory
+    name: "File Not In Working Directory"
+    params:
+      - name: FilePath
+        type: "string"
+      - name: Wd
+        type: "string"
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      The file you are trying to add ({{ .FilePath }}) does not belong
+      to the project's current working directory :
+          {{ .Wd }}
+
+      Only files belonging to {{ .Wd }} or its subdirectories can be added.
+
   - type: EnvironmentsHaveChanged
     name: "Environments have changed"
     params:

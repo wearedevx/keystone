@@ -81,7 +81,10 @@ func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *Pub
 	var UserUID string
 
 	for rows.Next() {
-		rows.Scan(&PublicKey, &UserUID, &UserID)
+		if err := rows.Scan(&PublicKey, &UserUID, &UserID); err != nil {
+			repo.err = err
+			return repo
+		}
 
 		publicKeys.Keys = append(publicKeys.Keys, models.UserPublicKey{
 			UserID:    fmt.Sprint(UserID),

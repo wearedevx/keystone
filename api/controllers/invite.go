@@ -13,7 +13,9 @@ import (
 
 func PostInvite(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	payload := models.InvitePayload{}
-	payload.Deserialize(body)
+	if err = payload.Deserialize(body); err != nil {
+		return nil, http.StatusBadRequest, err
+	}
 
 	senderEmail := user.Email
 	targetEmail := payload.Email

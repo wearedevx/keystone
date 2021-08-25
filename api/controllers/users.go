@@ -56,7 +56,12 @@ func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		if responseBody.Len() > 0 {
 			w.Header().Add("Content-Type", "application/octet-stream")
 			w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
-			w.Write(responseBody.Bytes())
+			_, err := w.Write(responseBody.Bytes())
+			if err != nil {
+				fmt.Printf("err: %+v\n", err)
+				w.WriteHeader(500)
+				return
+			}
 		}
 
 		w.WriteHeader(status)
@@ -130,7 +135,9 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		w.Header().Add("Authorization", fmt.Sprintf("Bearer %s", jwtToken))
 		w.Header().Add("Content-Type", "application/octet-stream")
 		w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
-		w.Write(responseBody.Bytes())
+		if _, err := w.Write(responseBody.Bytes()); err != nil {
+			fmt.Printf("err: %+v\n", err)
+		}
 	}
 }
 
@@ -179,7 +186,9 @@ You may now return to your terminal and start using Keystone.
 Thank you!`
 		w.Header().Add("Content-Type", "text/plain")
 		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
-		fmt.Fprint(w, response)
+		if _, err := fmt.Fprint(w, response); err != nil {
+			fmt.Printf("err: %+v\n", err)
+		}
 	}
 }
 
@@ -206,7 +215,9 @@ func PostLoginRequest(w http.ResponseWriter, _ *http.Request, _ httprouter.Param
 	if err == nil {
 		w.Header().Add("Content-Type", "application/json; charset=utf-8")
 		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
-		fmt.Fprint(w, response)
+		if _, err := fmt.Fprint(w, response); err != nil {
+			fmt.Printf("err: %+v\n", err)
+		}
 	}
 }
 
@@ -249,7 +260,9 @@ func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	if err == nil {
 		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
 
-		fmt.Fprint(w, response)
+		if _, err := fmt.Fprint(w, response); err != nil {
+			fmt.Printf("err: %+v\n", err)
+		}
 	}
 }
 

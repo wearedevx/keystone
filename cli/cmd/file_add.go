@@ -78,6 +78,9 @@ ks file add -s ./credentials.json`,
 				return
 			}
 
+			/* #nosec
+			 * Contents are read and copied, not ever run
+			 */
 			currentContent, erro := ioutil.ReadFile(filePath)
 
 			if erro != nil {

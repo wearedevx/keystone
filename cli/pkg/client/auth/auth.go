@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -54,7 +55,7 @@ func getLoginRequest(apiUrl string) (loginRequest models.LoginRequest, err error
 		return loginRequest, err
 	}
 
-	defer resp.Body.Close()
+	defer closeReader(resp.Body)
 
 	if resp.StatusCode == http.StatusOK {
 		err = json.NewDecoder(resp.Body).Decode(&loginRequest)
@@ -65,6 +66,12 @@ func getLoginRequest(apiUrl string) (loginRequest models.LoginRequest, err error
 		fmt.Println(message)
 
 		return loginRequest, errors.New(message)
+	}
+}
+
+func closeReader(reader io.ReadCloser) {
+	if err := reader.Close(); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to close reader: %s", err.Error())
 	}
 }
 
@@ -108,12 +115,16 @@ func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
 			return
 		}
 
-		defer resp.Body.Close()
+		defer closeReader(resp.Body)
 
 		var loginRequest models.LoginRequest
 
 		if resp.StatusCode == http.StatusOK {
 			err = json.NewDecoder(resp.Body).Decode(&loginRequest)
+			if err != nil {
+				errmsg := fmt.Sprintf("Failed decoding login request (%s)", err.Error())
+				println(errmsg)
+			}
 
 			if loginRequest.AuthCode != "" {
 				r := pollResult{
@@ -155,7 +166,10 @@ func completeLogin(apiUrl string, accountType models.AccountType, tok *oauth2.To
 
 	requestPayload := make([]byte, 0)
 	buf := bytes.NewBuffer(requestPayload)
-	json.NewEncoder(buf).Encode(&payload)
+	err := json.NewEncoder(buf).Encode(&payload)
+	if err != nil {
+		return user, "", err
+	}
 
 	req, err := http.NewRequest("POST", apiUrl+"/complete", buf)
 	req.Header.Add("Accept", "application/octet-stream")

@@ -436,7 +436,11 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 func (s *messageService) prepareMessage(senderPrivateKey []byte, environment models.Environment, userPublicKey models.UserPublicKey, payloadContent models.MessagePayload) (models.MessageToWritePayload, error) {
 	message := models.MessageToWritePayload{}
 	var payload string
-	payloadContent.Serialize(&payload)
+
+	err := payloadContent.Serialize(&payload)
+	if err != nil {
+		return message, err
+	}
 
 	encryptedPayload, err := crypto.EncryptMessage(senderPrivateKey, userPublicKey.PublicKey, string(payload))
 	if err != nil {
