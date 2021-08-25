@@ -57,7 +57,7 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 	// Remove message aimed for the device
 	r.err = r.GetDb().
 		Model(&models.Message{}).
-		Where("public_key_id = ?", publicKey.ID).
+		Where("recipient_device_id = ?", publicKey.ID).
 		Delete(models.Message{}).Error
 
 	if r.err != nil {

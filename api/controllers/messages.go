@@ -40,7 +40,7 @@ func (gr *GenericResponse) Serialize(out *string) (err error) {
 func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	var projectID = params.Get("projectID").(string)
-	var device = params.Get("device").(string)
+	var deviceUID = params.Get("device").(string)
 	response := GenericResponse{
 		Success: false,
 	}
@@ -59,7 +59,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 
 	// Get publicKey by device name to send message to current user device
 	publicKey := models.Device{
-		Name:   device,
+		UID:    deviceUID,
 		UserID: user.ID,
 	}
 
@@ -152,17 +152,26 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		}
 
 		// If ok, remove potential old messages for recipient.
-		if err = Repo.RemoveOldMessageForRecipient(message.PublicKeyID, message.EnvironmentID).Err(); err != nil {
+		if err = Repo.RemoveOldMessageForRecipient(message.RecipientDeviceID, message.EnvironmentID).Err(); err != nil {
 			fmt.Printf("err: %+v\n", err)
 			break
 		}
 
+		senderDevice := models.Device{
+			UID: message.SenderDeviceUID,
+		}
+
+		if err = Repo.GetPublicKey(&senderDevice).Err(); err != nil {
+			return response, http.StatusInternalServerError, err
+		}
+
 		messageToWrite := &models.Message{
-			RecipientID:   message.RecipientID,
-			Payload:       message.Payload,
-			EnvironmentID: message.EnvironmentID,
-			SenderID:      user.ID,
-			PublicKeyID:   message.PublicKeyID,
+			RecipientID:       message.RecipientID,
+			Payload:           message.Payload,
+			EnvironmentID:     message.EnvironmentID,
+			SenderID:          user.ID,
+			RecipientDeviceID: message.RecipientDeviceID,
+			SenderDeviceID:    senderDevice.ID,
 		}
 
 		if err = Repo.WriteMessage(user, *messageToWrite).Err(); err != nil {

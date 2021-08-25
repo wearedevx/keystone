@@ -36,7 +36,7 @@ func (repo *Repo) GetMessagesForUserOnEnvironment(publicKey models.Device, envir
 	err := repo.GetDb().
 		Model(&models.Message{}).
 		Preload("Sender").
-		Where("public_key_id = ? AND environment_id = ?", publicKey.ID, environment.EnvironmentID).
+		Where("recipient_device_id = ? AND environment_id = ?", publicKey.ID, environment.EnvironmentID).
 		First(&message).
 		Error
 
@@ -101,7 +101,7 @@ func (repo *Repo) RemoveOldMessageForRecipient(publicKeyID uint, environmentID s
 
 	repo.err = repo.GetDb().
 		Model(&models.Message{}).
-		Where("public_key_id = ?", publicKeyID).
+		Where("recipient_device_id = ?", publicKeyID).
 		Where("environment_id = ?", environmentID).
 		Delete(models.Message{}).Error
 

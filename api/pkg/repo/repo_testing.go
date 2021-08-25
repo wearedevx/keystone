@@ -22,7 +22,7 @@ type Repo struct {
 var db *gorm.DB
 
 func autoMigrate() error {
-	db.AutoMigrate(&LoginRequest{}, &Environment{}, &EnvironmentUserSecret{}, &Message{}, &Project{}, &ProjectMember{}, &Secret{}, &RolesEnvironmentType{})
+	db.AutoMigrate(&LoginRequest{}, &Environment{}, &EnvironmentUserSecret{}, &Message{}, &Project{}, &ProjectMember{}, &Secret{}, &RolesEnvironmentType{}, &Device{})
 	return nil
 }
 

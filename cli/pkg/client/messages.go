@@ -21,7 +21,7 @@ func (client *Messages) GetMessages(projectID string) (models.GetMessageByEnviro
 	var result = models.GetMessageByEnvironmentResponse{
 		Environments: map[string]models.GetMessageResponse{},
 	}
-	device := config.GetDeviceName()
+	device := config.GetDeviceUID()
 	err = client.r.get("/projects/"+projectID+"/messages/"+device, &result, nil)
 
 	return result, err

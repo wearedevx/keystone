@@ -151,8 +151,6 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 	for environmentName, environment := range byEnvironment.Environments {
 		msg := environment.Message
 		if msg.Sender.UserID != "" {
-
-			deviceUID := config.GetDeviceUID()
 			upks, e := s.client.Users().GetUserPublicKey(msg.Sender.UserID)
 			if e != nil {
 				return kserrors.CouldNotDecryptMessages(fmt.Sprintf("Failed to get the public key for user %s", msg.Sender.UserID), e)
@@ -160,8 +158,8 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 
 			var udevice models.Device
 			for _, device := range upks.PublicKeys {
-				if device.UID == deviceUID {
-					device = device
+				if device.ID == msg.SenderDeviceID {
+					udevice = device
 				}
 			}
 
@@ -404,7 +402,7 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 		for _, userDevice := range userPublicKeys.PublicKeys {
 
 			// Don't send to current device
-			if userDevice.Name != config.GetDeviceName() {
+			if userDevice.UID != config.GetDeviceUID() {
 				message, err := s.prepareMessage(senderPrivateKey, environment, userDevice, userDevice.UserID, PayloadContent)
 				if err != nil {
 					return messages, kserrors.CouldNotEncryptMessages(err)
@@ -431,18 +429,17 @@ func (s *messageService) prepareMessage(senderPrivateKey []byte, environment mod
 		return message, err
 	}
 
-	RecipientID := strconv.FormatUint(uint64(recipientID), 10)
-
 	if err != nil {
 		return message, err
 	}
 
 	return models.MessageToWritePayload{
+		// UserID:                   RecipientID,
 		Payload:                  encryptedPayload,
-		UserID:                   RecipientID,
 		RecipientID:              recipientID,
 		EnvironmentID:            environment.EnvironmentID,
-		PublicKeyID:              userDevice.ID,
+		RecipientDeviceID:        userDevice.ID,
+		SenderDeviceUID:          config.GetDeviceUID(),
 		UpdateEnvironmentVersion: true,
 	}, nil
 }
