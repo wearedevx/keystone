@@ -45,11 +45,7 @@ Used without arguments, displays a table of secrets.`,
 		ms := messages.NewMessageService(ctx, printer)
 		ms.GetMessages()
 		if err := ms.Err(); err != nil {
-			if err := ms.Err(); err != nil {
-				ui.PrintError(err.Error())
-				os.Exit(1)
-			}
-
+			fmt.Fprintf(os.Stderr, "WARNING: Could not get messages (%s)", err.Error())
 		}
 
 		secrets := ctx.ListSecrets()
