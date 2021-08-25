@@ -21,6 +21,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
@@ -62,45 +63,74 @@ Created files and directories:
 		ctx := core.New(core.CTX_INIT)
 
 		if osError != nil {
-			err = kserrors.NewError("OS Error", "Error when retrieving working directory", map[string]interface{}{}, osError)
+			err = kserrors.NewError(
+				"OS Error",
+				"Error when retrieving working directory",
+				map[string]interface{}{},
+				osError,
+			)
+			err.Print()
+			os.Exit(1)
+		}
+
+		var ksfile *keystonefile.KeystoneFile
+
+		if keystonefile.ExistsKeystoneFile(currentfolder) {
+			ksfile = new(keystonefile.KeystoneFile).Load(currentfolder)
+
+			// If there is already a keystone file around here,
+			// inform the user they are in a keystone project
+			if ksfile.ProjectId != "" && ksfile.ProjectName != projectName {
+				// check if .keystone directory too
+				if DirExists(path.Join(ctx.Wd, ".keystone")) {
+					kserrors.AlreadyKeystoneProject(errors.New("")).Print()
+					os.Exit(0)
+				}
+			}
+		} else {
+			ksfile = keystonefile.NewKeystoneFile(
+				currentfolder,
+				models.Project{},
+			)
+		}
+
+		var project models.Project
+		var initErr error
+		c, err := client.NewKeystoneClient()
+		if err != nil {
 			err.Print()
 			os.Exit(1)
 		}
 
 		// Ask for project name if keystone file doesn't exist.
-		if !keystonefile.ExistsKeystoneFile(currentfolder) {
-			c, err := client.NewKeystoneClient()
-			if err != nil {
-				err.Print()
-				os.Exit(1)
+		if ksfile.ProjectId == "" {
+			initErr = createProject(c, &project, ksfile)
+		} else {
+			initErr = getProject(c, &project, ksfile)
+		}
+
+		if initErr != nil {
+			if errors.Is(initErr, auth.ErrorUnauthorized) {
+				kserrors.InvalidConnectionToken(initErr).Print()
+			} else {
+				ui.PrintError(initErr.Error())
 			}
 
-			sp := spinner.Spinner("Creating project...")
-			sp.Start()
-			project, initErr := c.Project("").Init(projectName)
-			sp.Stop()
+			os.Exit(1)
+		}
 
-			if initErr != nil {
-				if errors.Is(initErr, auth.ErrorUnauthorized) {
-					kserrors.InvalidConnectionToken(initErr).Print()
-				} else {
-					ui.PrintError(initErr.Error())
-				}
+		// Setup the local files
+		if err = ctx.Init(project).Err(); err != nil {
+			err.Print()
+			os.Exit(1)
+		}
 
-				os.Exit(1)
-			}
-
-			if err = ctx.Init(project).Err(); err != nil {
-				err.Print()
-				os.Exit(1)
-			}
-
-			ui.Print(ui.RenderTemplate("Init Success", `
+		ui.Print(ui.RenderTemplate("Init Success", `
 {{ .Message | box | bright_green | indent 2 }}
 
 {{ .Text | bright_black | indent 2 }}`, map[string]string{
-				"Message": "All done!",
-				"Text": `You can start adding environment variable with:
+			"Message": "All done!",
+			"Text": `You can start adding environment variable with:
   $ ks secret add VARIABLE value
 
 Load them with:
@@ -110,16 +140,65 @@ If you need help with anything:
   $ ks help [command]
 
 `,
-			}))
-		} else {
-			if ctx.GetProjectName() != projectName {
-				// check if .keystone directory too
-				if DirExists(path.Join(ctx.Wd, ".keystone")) {
-					kserrors.AlreadyKeystoneProject(errors.New("")).Print()
-				}
-			}
-		}
+		}))
 	},
+}
+
+func createProject(
+	c client.KeystoneClient,
+	project *models.Project,
+	ksfile *keystonefile.KeystoneFile,
+) (err error) {
+	// Remote Project Creation
+	sp := spinner.Spinner("Creating project...")
+	sp.Start()
+	*project, err = c.Project("").Init(projectName)
+	sp.Stop()
+
+	// Handle invalid token
+	if err != nil {
+		return err
+	}
+
+	// Update the ksfile
+	// So that it keeps secrets and files
+	// if the file exited without a project-id
+	ksfile.ProjectId = project.UUID
+	ksfile.ProjectName = project.Name
+
+	if err := ksfile.Save().Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getProject(
+	c client.KeystoneClient,
+	project *models.Project,
+	ksfile *keystonefile.KeystoneFile,
+) (err error) {
+	// We have a keystone.yaml with a project-id, but no .keystone dir
+	// So the project needs to be re-created.
+
+	// Reconstruct the project
+	// id and name are in the keystone file
+	project.UUID = ksfile.ProjectId
+	project.Name = ksfile.ProjectName
+
+	// But environment data is still on the server
+	sp := spinner.Spinner("Fetching project informations...")
+	sp.Start()
+	environments, err := c.Project(project.UUID).GetAccessibleEnvironments()
+	sp.Stop()
+
+	if err != nil {
+		return err
+	}
+
+	project.Environments = environments
+
+	return nil
 }
 
 func init() {
