@@ -81,7 +81,10 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType,
 	Repo := new(repo.Repo)
 	user := models.User{}
 
-	faker.FakeData(&user)
+	if err = faker.FakeData(&user); err != nil {
+		return err
+	}
+
 	keyPair, err := keys.New(keys.TypeEC)
 
 	user.Username = username
@@ -100,6 +103,7 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType,
 	pub := base64.StdEncoding.EncodeToString(keyPair.Public.Value)
 	priv := base64.StdEncoding.EncodeToString(keyPair.Private.Value)
 
+	/* #nosec */
 	err = ioutil.WriteFile(pathToKeystoneFile, []byte(`
 accounts:
 - fullname: `+user.Fullname+`
@@ -130,7 +134,10 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	Repo := new(repo.Repo)
 	user := models.User{}
 
-	faker.FakeData(&user)
+	if err = faker.FakeData(&user); err != nil {
+		return err
+	}
+
 	keyPair, err := keys.New(keys.TypeEC)
 
 	user.ID = 0
@@ -153,6 +160,7 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	pub := base64.StdEncoding.EncodeToString(keyPair.Public.Value)
 	priv := base64.StdEncoding.EncodeToString(keyPair.Private.Value)
 
+	/* #nosec */
 	err = ioutil.WriteFile(pathToKeystoneFile, []byte(`
 accounts:
 - fullname: `+user.Fullname+`
@@ -202,5 +210,5 @@ func SetupEnvVars(env *testscript.Env) error {
 	env.Setenv("KSCOLORS", "off")
 
 	// Create config folder
-	return os.MkdirAll(configDir, 0o770)
+	return os.MkdirAll(configDir, 0o770) // #nosec
 }
