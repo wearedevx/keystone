@@ -122,6 +122,9 @@ func selectDeviceName() string {
 		if hostname, err := os.Hostname(); err == nil {
 			defaultName = hostname
 		}
+		if skipPrompts {
+			return defaultName
+		}
 		deviceName := prompts.StringInput(
 			"Enter the name you want this device to have",
 			defaultName,

@@ -55,6 +55,7 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		*user = foundUser
 	} else if errors.Is(r.err, gorm.ErrRecordNotFound) {
 		user.UserID = user.Username + "@" + string(user.AccountType)
+
 		r.err = db.Create(&user).Error
 	}
 

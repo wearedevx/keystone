@@ -97,7 +97,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		return
 	}
 
-	user.Devices = append(user.Devices, models.Device{PublicKey: payload.PublicKey, Name: payload.Device, UID: payload.DeviceUID})
+	user.Devices = []models.Device{{PublicKey: payload.PublicKey, Name: payload.Device, UID: payload.DeviceUID}}
 	if len(payload.PublicKey) == 0 {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
