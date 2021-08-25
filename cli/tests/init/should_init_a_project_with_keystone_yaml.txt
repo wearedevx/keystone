@@ -1,0 +1,60 @@
+# Init with name
+exec whoami
+ks init my_project
+
+# stdout 'All done!'
+
+# Check project's file exist and correct
+exists keystone.yaml
+
+grep 'name: my_project' keystone.yaml
+grep 'project_id: [0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}' keystone.yaml
+
+grep '- key: JWT_SALT' keystone.yaml
+grep '- key: JWT_SALT' keystone.yaml
+grep '- key: GITHUB_CLIENT_ID' keystone.yaml
+grep '- key: GITHUB_CLIENT_SECRET' keystone.yaml
+grep '- key: GITLAB_CLIENT_ID' keystone.yaml
+grep '- key: GITLAB_CLIENT_SECRET' keystone.yaml
+grep '- key: DEPLOY_GITHUB_TOKEN' keystone.yaml
+grep '- key: SNAP_STORE_LOGIN' keystone.yaml
+grep '- key: AUTH_PROXY' keystone.yaml
+grep '- key: MANDRILL_API_KEY' keystone.yaml
+
+# Check cache folders exists
+exists .keystone
+exists .keystone/cache
+exists .keystone/cache/dev/.env
+exists .keystone/cache/prod/.env
+exists .keystone/cache/staging/.env
+exists .keystone/cache/.env
+
+exists .keystone/environments.yaml
+
+# Check dev is the current environment
+grep 'dev' .keystone/environments.yaml
+
+-- keystone.yaml --
+env:
+- key: JWT_SALT
+  strict: true
+- key: GITHUB_CLIENT_ID
+  strict: true
+- key: GITHUB_CLIENT_SECRET
+  strict: true
+- key: GITLAB_CLIENT_ID
+  strict: true
+- key: GITLAB_CLIENT_SECRET
+  strict: true
+- key: DEPLOY_GITHUB_TOKEN
+  strict: true
+- key: SNAP_STORE_LOGIN
+  strict: true
+- key: AUTH_PROXY
+  strict: true
+- key: MANDRILL_API_KEY
+  strict: true
+files: []
+options:
+  strict: false
+ci_services: []
