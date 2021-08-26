@@ -10,7 +10,7 @@ import (
 )
 
 // DefaultEditor is vim because we're adults ;)
-const DefaultEditor = "vim"
+const DefaultEditor = "nano"
 
 // PreferredEditorResolver is a function that returns an editor that the user
 // prefers to use, such as the configured `$EDITOR` environment variable.
@@ -21,7 +21,10 @@ type PreferredEditorResolver func() string
 func GetPreferredEditorFromEnvironment() string {
 	editor := os.Getenv("EDITOR")
 
-	if editor == "" {
+	// Get the full executable path for the editor.
+	_, err := exec.LookPath(editor)
+
+	if err != nil {
 		return DefaultEditor
 	}
 

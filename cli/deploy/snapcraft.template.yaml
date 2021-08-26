@@ -36,7 +36,7 @@ parts:
       make build
       chmod +x ks
     build-packages: [make, git, libssl-dev, libsodium-dev, pkg-config]
-    stage-packages: [libsodium-dev]
+    stage-packages: [libsodium-dev, nano]
     organize:
       /usr/local/lib: /lib/
       ../build/ks: /bin/ks
