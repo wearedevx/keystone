@@ -89,7 +89,6 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 				for _, secret := range PayloadContent.Secrets {
 					if key == secret.Label {
 						found = true
-						envFile.Set(key, secret.Value)
 						break
 					}
 				}
@@ -97,6 +96,10 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 				if !found {
 					envFile.Unset(key)
 				}
+			}
+
+			for _, secret := range PayloadContent.Secrets {
+				envFile.Set(secret.Label, secret.Value)
 			}
 
 			if err := envFile.Dump().Err(); err != nil {
