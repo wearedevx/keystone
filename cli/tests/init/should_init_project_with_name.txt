@@ -2,7 +2,7 @@
 exec whoami
 ks init my_project
 
-#stdout 'All done!'
+# stdout 'All done!'
 
 # Check project's file exist and correct
 exists keystone.yaml
