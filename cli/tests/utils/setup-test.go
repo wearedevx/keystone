@@ -82,7 +82,10 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType,
 	Repo := new(repo.Repo)
 	user := models.User{}
 
-	faker.FakeData(&user)
+	if err = faker.FakeData(&user); err != nil {
+		return err
+	}
+
 	keyPair, err := keys.New(keys.TypeEC)
 
 	device := "device-test"
@@ -93,7 +96,6 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType,
 	user.Devices = []models.Device{{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value}}
 
 	if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
-		fmt.Println("err:", err)
 		return err
 	}
 
@@ -104,6 +106,7 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType,
 	pub := base64.StdEncoding.EncodeToString(keyPair.Public.Value)
 	priv := base64.StdEncoding.EncodeToString(keyPair.Private.Value)
 
+	/* #nosec */
 	err = ioutil.WriteFile(pathToKeystoneFile, []byte(`
 accounts:
 - fullname: `+user.Fullname+`
@@ -119,7 +122,7 @@ auth_token: `+token+`
 device: `+device+`
 device_uid: `+deviceUID+`
 current: 0
-`), 0o777)
+`), 0o666)
 
 	if err != nil {
 		fmt.Println("error wrinting user account", err)
@@ -136,7 +139,10 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	Repo := new(repo.Repo)
 	user := models.User{}
 
-	faker.FakeData(&user)
+	if err = faker.FakeData(&user); err != nil {
+		return err
+	}
+
 	keyPair, err := keys.New(keys.TypeEC)
 
 	device := "device-test"
@@ -161,6 +167,7 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	pub := base64.StdEncoding.EncodeToString(keyPair.Public.Value)
 	priv := base64.StdEncoding.EncodeToString(keyPair.Private.Value)
 
+	/* #nosec */
 	err = ioutil.WriteFile(pathToKeystoneFile, []byte(`
 accounts:
 - fullname: `+user.Fullname+`
@@ -176,10 +183,11 @@ auth_token: `+token+`
 device: `+device+`
 device_uid: `+deviceUID+`
 current: 0
-`), 0o777)
+`), 0o660)
 
 	if err != nil {
 		fmt.Println("error writing accounts", err)
+		return err
 	}
 
 	fmt.Println("Written", pathToKeystoneFile)
@@ -211,5 +219,5 @@ func SetupEnvVars(env *testscript.Env) error {
 	env.Setenv("KSCOLORS", "off")
 
 	// Create config folder
-	return os.MkdirAll(configDir, 0777)
+	return os.MkdirAll(configDir, 0o770) // #nosec
 }

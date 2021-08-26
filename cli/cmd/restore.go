@@ -54,6 +54,7 @@ It will update other members secrets and files.`, map[string]string{}))
 			os.Exit(1)
 		}
 
+		/* #nosec */
 		contents, err := ioutil.ReadFile(backupfile)
 
 		if err != nil {
@@ -64,7 +65,10 @@ It will update other members secrets and files.`, map[string]string{}))
 
 		decryptedPath := fmt.Sprintf("decrypted.tar.gz")
 
-		ioutil.WriteFile(decryptedPath, decrypted, 0600)
+		if err := ioutil.WriteFile(decryptedPath, decrypted, 0600); err != nil {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
 
 		if err := archive.UnGzip(decryptedPath, ctx.Wd); err != nil {
 			ui.PrintError(err.Error())
@@ -94,7 +98,7 @@ It will update other members secrets and files.`, map[string]string{}))
 			return
 		}
 
-		ui.PrintSuccess("Backup restored : all your files and secrets have been replaced by the backup. They also have been sent to all members.")
+		ui.PrintSuccess("Backup restored: all your files and secrets have been replaced by the backup. They also have been sent to all members.")
 	},
 }
 

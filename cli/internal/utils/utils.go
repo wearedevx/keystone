@@ -66,6 +66,16 @@ func CreateDirIfNotExist(dirPath string) error {
 	return nil
 }
 
+type Closer interface {
+	Close() error
+}
+
+func Close(r Closer) {
+	if err := r.Close(); err != nil {
+		panic(err)
+	}
+}
+
 func CopyFile(src, dst string) error {
 	sourceFileStat, err := os.Stat(src)
 	if err != nil {
@@ -76,29 +86,35 @@ func CopyFile(src, dst string) error {
 		return fmt.Errorf("%s is not a regular file", src)
 	}
 
+	/* #nosec */
 	source, err := os.Open(src)
 	if err != nil {
 		return err
 	}
-	defer source.Close()
+	defer Close(source)
 
 	destination, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
 
-	defer destination.Close()
+	defer Close(destination)
 
 	_, err = io.Copy(destination, source)
 	return err
 }
 
 func RemoveContents(dir string) error {
+	/* #nosec
+	 * as long as contents of dir are only removed
+	 */
 	d, err := os.Open(dir)
 	if err != nil {
 		return err
 	}
-	defer d.Close()
+
+	defer Close(d)
+
 	names, err := d.Readdirnames(-1)
 	if err != nil {
 		return err

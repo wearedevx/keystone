@@ -110,7 +110,9 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 	// Use current content for current environment.
 	dest := path.Join(ctx.CachedEnvironmentFilesPath(current), file.Path)
 	dir := filepath.Dir(dest)
-	os.MkdirAll(dir, 0o755)
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return ctx.setError(kserrors.CopyFailed(file.Path, dest, err))
+	}
 
 	if err := CopyFile(file.Path, dest); err != nil {
 		return ctx.setError(kserrors.CopyFailed(file.Path, dest, err))
@@ -121,14 +123,18 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 		dest := path.Join(ctx.CachedEnvironmentFilesPath(environment), file.Path)
 		parentDir := filepath.Dir(dest) + string(os.PathSeparator)
 
-		if err := os.MkdirAll(parentDir, 0o755); err != nil {
+		if err := os.MkdirAll(parentDir, 0o700); err != nil {
 			ctx.setError(kserrors.CannotCreateDirectory(parentDir, err))
 			return ctx
 		}
 
+		/* #nosec
+		 * As long as the `current` values is checked to be
+		 * a valid environment name
+		 */
 		destFile, err := os.OpenFile(dest, os.O_WRONLY|os.O_CREATE, 0o644)
 		if err == nil {
-			defer destFile.Close()
+			defer closeFile(destFile)
 
 			_, err = destFile.Write(envContentMap[environment])
 		}
@@ -140,6 +146,28 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 	}
 
 	return ctx
+}
+
+func closeFile(file *os.File) {
+	err := file.Close()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (ctx *Context) fileBelongsToContext(filePath string) (belong bool) {
+	fp := filepath.Clean(filePath)
+	fp, err := filepath.Abs(fp)
+	if err != nil {
+		panic(err)
+	}
+
+	absWd, err := filepath.Abs(ctx.Wd)
+	if err != nil {
+		panic(err)
+	}
+
+	return strings.HasPrefix(fp, absWd)
 }
 
 func (ctx *Context) SetFile(filePath string, content []byte) *Context {
@@ -156,9 +184,15 @@ func (ctx *Context) SetFile(filePath string, content []byte) *Context {
 	currentEnvironment := ctx.CurrentEnvironment()
 	dest := path.Join(ctx.CachedEnvironmentFilesPath(currentEnvironment), filePath)
 
+	if !ctx.fileBelongsToContext(dest) {
+		ctx.err = kserrors.FileNotInWorkingDirectory(dest, ctx.Wd, nil)
+		return ctx
+	}
+
+	/* #nosec */
 	destFile, err := os.OpenFile(dest, os.O_WRONLY|os.O_TRUNC, 0o644)
 	if err == nil {
-		defer destFile.Close()
+		defer closeFile(destFile)
 
 		_, err = destFile.Write(content)
 	}
@@ -205,12 +239,23 @@ func (ctx *Context) IsFileModified(filePath, environment string) (isModified boo
 	localPath = path.Join(ctx.Wd, filePath)
 	cachedPath = path.Join(ctx.CachedEnvironmentFilesPath(environment), filePath)
 
+	if !ctx.fileBelongsToContext(localPath) {
+		kserrors.FileNotInWorkingDirectory(localPath, ctx.Wd, nil).Print()
+		os.Exit(1)
+	}
+
+	if !ctx.fileBelongsToContext(cachedPath) {
+		kserrors.FileNotInWorkingDirectory(cachedPath, ctx.Wd, nil).Print()
+		os.Exit(1)
+	}
+
+	/* #nosec */
 	localReader, err = os.Open(localPath)
 	if err != nil {
-		// ctx.setError(kserrors.CannotCopyFile(localPath, cachedPath, err))
 		return false
 
 	}
+	/* #nosec */
 	cachedReader, err = os.Open(cachedPath)
 	if err != nil {
 		ctx.setError(kserrors.CannotCopyFile(localPath, cachedPath, err))
@@ -225,8 +270,8 @@ func (ctx *Context) IsFileModified(filePath, environment string) (isModified boo
 		return false
 	}
 
-	localReader.Close()
-	cachedReader.Close()
+	utils.Close(localReader)
+	utils.Close(cachedReader)
 
 	return !sameContent
 }
@@ -269,7 +314,13 @@ func (ctx *Context) FilesUseEnvironment(
 			))
 		} else {
 			if FileExists(localPath) {
-				os.Remove(localPath)
+				if err := os.Remove(localPath); err != nil {
+					return ctx.
+						setError(
+							kserrors.
+								CannotCopyFile(file.Path, cachedFilePath, err),
+						)
+				}
 			}
 
 			parentDir := filepath.Dir(localPath)
@@ -324,14 +375,17 @@ func (ctx *Context) RemoveFile(filePath string, force bool, purge bool, accessib
 
 	if force {
 		fmt.Println("Force remove file on filesystem.")
-		os.Remove(dest)
+		if err := os.Remove(dest); err != nil {
+			return ctx.setError(kserrors.UnkownError(err))
+		}
 	} else {
-
 		currentEnvironment := ctx.CurrentEnvironment()
 		currentCached := path.Join(ctx.CachedEnvironmentFilesPath(currentEnvironment), filePath)
 
 		// Remove destination, because is case of a symlink, os.Create will set empty content to the src of the symlink too!
-		os.Remove(dest)
+		if err := os.Remove(dest); err != nil {
+			return ctx.setError(kserrors.UnkownError(err))
+		}
 
 		if err := CopyFile(currentCached, dest); err != nil {
 			return ctx.setError(kserrors.CopyFailed(currentCached, dest, err))
@@ -343,12 +397,16 @@ func (ctx *Context) RemoveFile(filePath string, force bool, purge bool, accessib
 			cachedFilePath := path.Join(ctx.CachedEnvironmentFilesPath(environment.Name), filePath)
 
 			if FileExists(cachedFilePath) {
-				os.Remove(cachedFilePath)
+				if err := os.Remove(cachedFilePath); err != nil {
+					return ctx.setError(kserrors.UnkownError(err))
+				}
 			}
 		}
 	}
 
-	GitUnignore(ctx.Wd, filePath)
+	if err := GitUnignore(ctx.Wd, filePath); err != nil {
+		ctx.setError(kserrors.UnkownError(err))
+	}
 
 	return ctx
 }
@@ -411,6 +469,7 @@ func (ctx *Context) GetFileContents(
 	cachePath := ctx.CachedEnvironmentFilesPath(environmentName)
 	filePath := path.Join(cachePath, fileName)
 
+	/* #nosec */
 	contents, err = ioutil.ReadFile(filePath)
 	if err != nil {
 		return nil, err

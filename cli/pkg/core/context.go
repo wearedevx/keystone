@@ -112,6 +112,16 @@ func (c *Context) CachedDotEnvPath() string {
 }
 
 func (c *Context) CachedEnvironmentPath(environmentName string) string {
+	p := path.Join(c.cacheDirPath(), environmentName)
+
+	c.mustEnvironmentNameBeValid(environmentName)
+	if !c.fileBelongsToContext(p) {
+		kserrors.
+			EnvironmentDoesntExist(environmentName, "dev, staging, prod", nil).
+			Print()
+		os.Exit(1)
+	}
+
 	return path.Join(c.cacheDirPath(), environmentName)
 }
 
@@ -129,7 +139,10 @@ func (c *Context) CachedEnvironmentFilesPath(environmentName string) string {
 
 // Remove temporary files
 func (context *Context) CleanUp() {
-	os.RemoveAll(context.TmpDir)
+	err := os.RemoveAll(context.TmpDir)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // Accessor for error

@@ -209,6 +209,15 @@ Or make them optional using:
   $ ks file optional <FILE_PATH>
 
 `,
+	"FileNotInWorkingDirectory": `
+{{ ERROR }} {{ .Name | red }}
+The file you are trying to add ({{ .FilePath }}) does not belong
+to the project's current working directory :
+    {{ .Wd }}
+
+Only files belonging to {{ .Wd }} or its subdirectories can be added.
+
+`,
 	"EnvironmentsHaveChanged": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- "'" | red }}
 We couldn't find data for the following environments: '{{ .EnvironmentsName }}', but a new value has been set by another member.
@@ -561,6 +570,14 @@ func RequiredFilesAreMissing(missingfiles []string, environmentname string, caus
 		"EnvironmentName": string(environmentname),
 	}
 	return NewError("Required Files Are Missing", helpTexts["RequiredFilesAreMissing"], meta, cause)
+}
+
+func FileNotInWorkingDirectory(filepath string, wd string, cause error) *Error {
+	meta := map[string]interface{}{
+		"FilePath": string(filepath),
+		"Wd":       string(wd),
+	}
+	return NewError("File Not In Working Directory", helpTexts["FileNotInWorkingDirectory"], meta, cause)
 }
 
 func EnvironmentsHaveChanged(environmentsname string, cause error) *Error {

@@ -115,7 +115,7 @@ ks member add --from-file team.yaml
 
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
-				kserrors.InvalidConnectionToken(err)
+				kserrors.InvalidConnectionToken(err).Print()
 			} else {
 				kserrors.CannotAddMembers(err).Print()
 			}
@@ -136,6 +136,9 @@ To send secrets and files to new member, use "member add" command.
 func getMemberRolesFromFile(c client.KeystoneClient, filepath string) map[string]models.Role {
 	memberRoleNames := make(map[string]string)
 
+	/* #nosec
+	 * the file is going to be parsed, not executed in anyway
+	 */
 	dat, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		ui.PrintError(err.Error())

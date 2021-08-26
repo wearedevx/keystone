@@ -77,6 +77,9 @@ func (g *gitlabAuthService) WaitForExternalLogin() error {
 
 	g.token = token
 	g.client, err = gitlab.NewOAuthClient(token.AccessToken)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

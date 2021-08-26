@@ -48,12 +48,15 @@ func (f *EnvFile) Load(path string, opts *LoadOptions) *EnvFile {
 		return f
 	}
 
+	/* #nosec
+	 * Caller must ensure that path is within ctx.Wd
+	 */
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0600)
 
 	if err != nil {
 		return f.SetError("Failed to open `%s` (%w)", path, err)
 	}
-	defer file.Close()
+	defer utils.Close(file)
 
 	envFile, err := readFile(path, f.opts)
 
@@ -120,7 +123,7 @@ func (f *EnvFile) Dump() *EnvFile {
 
 	contents := sb.String()
 
-	if err := ioutil.WriteFile(f.path, []byte(contents), 0o644); err != nil {
+	if err := ioutil.WriteFile(f.path, []byte(contents), 0o600); err != nil {
 		f.err = fmt.Errorf("Failed to write `%s` (%w)", f.path, err)
 	}
 
@@ -212,11 +215,15 @@ func UnmarshalBytes(src []byte, opts LoadOptions) (map[string]string, error) {
 }
 
 func readFile(filename string, opts LoadOptions) (envMap map[string]string, err error) {
+	/* #nosec
+	 * File is parsed and not exicuted, de facto ensurign that
+	 * no arbitrary code is run after reading
+	 */
 	file, err := os.Open(filename)
 	if err != nil {
 		return
 	}
-	defer file.Close()
+	defer utils.Close(file)
 
 	return Parse(file, opts)
 }

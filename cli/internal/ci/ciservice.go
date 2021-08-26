@@ -46,18 +46,20 @@ func init() {
 func GetCiService(serviceName string, ctx *core.Context, apiUrl string) (CiService, error) {
 	var c CiService
 	var err error
-	var service *keystonefile.CiService
+	var service keystonefile.CiService
+	var found bool = false
 
 	services, _ := ListCiServices(ctx)
 
 	for _, s := range services {
 		if s.Name == serviceName {
-			service = &s
+			service = s
+			found = true
 			break
 		}
 	}
 
-	if service == nil {
+	if !found {
 		err := errors.New("No CI service with that name")
 		return nil, err
 	}

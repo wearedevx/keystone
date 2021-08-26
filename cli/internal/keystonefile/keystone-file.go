@@ -71,6 +71,9 @@ func ExistsKeystoneFile(wd string) bool {
 
 // Loads a Keystone from disk
 func (file *KeystoneFile) Load(wd string) *KeystoneFile {
+	/* #nosec
+	 * We generate the file path, and its content is about to be parsed
+	 */
 	bytes, err := ioutil.ReadFile(keystoneFilePath(wd))
 	// file := newKeystoneFile(context)
 

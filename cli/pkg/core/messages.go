@@ -157,6 +157,10 @@ func GetSecretsChanges(localSecrets []models.SecretVal, newSecrets []models.Secr
 // from `candidateContent`, meaning the file contents have changed.
 func fileHasChanges(pathToExistingFile string, candidateContent []byte) (sameContent bool, err error) {
 	candidateReader := bytes.NewReader(candidateContent)
+	/* #nosec
+	 * pathToExistingFile must be checked befor call
+	 * to ensure that it belongs de ctx.Wd
+	 */
 	currentFileReader, err := os.Open(pathToExistingFile)
 
 	if err != nil {
@@ -190,9 +194,14 @@ func (ctx *Context) getFilesChanges(files []models.File, environmentName string)
 
 		filePath := path.Join(ctx.CachedEnvironmentFilesPath(environmentName), file.Path)
 
+		if !ctx.fileBelongsToContext(filePath) {
+			ctx.err = kserrors.FileNotInWorkingDirectory(filePath, ctx.Wd, nil)
+			return []Change{}
+		}
+
 		fileHasChanges, err := fileHasChanges(filePath, fileContent)
 		if err != nil {
-			kserrors.FailedCheckingChanges(filePath, err)
+			kserrors.FailedCheckingChanges(filePath, err).Print()
 			continue
 		}
 
@@ -220,7 +229,7 @@ func (ctx *Context) saveFilesChanges(changes []Change, environmentName string) (
 			continue
 		}
 
-		if err = ioutil.WriteFile(cachedFilePath, []byte(change.To), 0o644); err != nil {
+		if err = ioutil.WriteFile(cachedFilePath, []byte(change.To), 0o600); err != nil {
 			errorList = append(errorList, err.Error())
 			continue
 		}
@@ -257,6 +266,7 @@ func (ctx *Context) PrepareMessagePayload(environment models.Environment) (model
 
 	for _, file := range ctx.ListFiles() {
 		filePath := path.Join(envCachePath, file.Path)
+		/* #nosec */
 		fileContent, err := ioutil.ReadFile(filePath)
 
 		if err != nil {

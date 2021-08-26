@@ -37,13 +37,17 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	buf := bytes.NewBuffer(requestPayload)
 
 	if data != nil {
-		json.NewEncoder(buf).Encode(&data)
+		if err := json.NewEncoder(buf).Encode(&data); err != nil {
+			return err
+		}
 	}
 
 	queryParams := url.Values{}
 	for key, value := range params {
 		queryParams.Set(key, value)
-		json.NewEncoder(buf).Encode(&data)
+		if err := json.NewEncoder(buf).Encode(&data); err != nil {
+			return err
+		}
 	}
 
 	// fmt.Println(ApiURL + path)

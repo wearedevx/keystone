@@ -112,7 +112,9 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 	response := &models.GetEnvironmentsResponse{}
 
 	payload := &models.MessagesToWritePayload{}
-	payload.Deserialize(body)
+	if err := payload.Deserialize(body); err != nil {
+		return nil, http.StatusBadRequest, err
+	}
 
 	for _, message := range payload.Messages {
 		// - gather information for the checks

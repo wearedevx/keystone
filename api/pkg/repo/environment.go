@@ -87,7 +87,10 @@ func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *Pub
 	var PublicKeyId uint
 
 	for rows.Next() {
-		rows.Scan(&PublicKeyId, &Device, &PublicKey, &UserUID, &UserID)
+		if err := rows.Scan(&PublicKeyId, &Device, &PublicKey, &UserUID, &UserID); err != nil {
+			repo.err = err 
+			return repo
+		}
 		found := false
 
 		for i, pk := range publicKeys.Keys {
