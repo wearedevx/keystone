@@ -62,7 +62,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		// Get user and prepare the repo
 		token := r.Header.Get("authorization")
 
-		userID, err := VerifyToken(token)
+		userID, deviceUID, err := VerifyToken(token)
 
 		if err != nil {
 			// JWT verificatin failed
@@ -87,6 +87,16 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 				http.Error(dw, message, status)
 				return err
 			}
+			foundDevice := false
+			for _, device := range user.Devices {
+				if device.UID == deviceUID {
+					foundDevice = true
+				}
+			}
+			if !foundDevice {
+				http.Error(dw, "Device not registered", http.StatusNotFound)
+				return err
+			}
 
 			p := newParams(r, params)
 			// Actual call to the handler (i.e. Controller function)
@@ -94,6 +104,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 
 			if err != nil {
 				http.Error(dw, err.Error(), status)
+				return err
 			}
 
 			// serialize the response for the user

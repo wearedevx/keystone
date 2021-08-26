@@ -22,6 +22,7 @@ import (
 
 	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
@@ -46,8 +47,9 @@ func ShowAlreadyLoggedInAndExit(account models.User) {
 func LogIntoExisitingAccount(accountIndex int, currentAccount models.User, c auth.AuthService) {
 	config.SetCurrentAccount(accountIndex)
 
-	publicKey := []byte(currentAccount.PublicKey)
-	_, jwtToken, err := c.Finish(publicKey)
+	publicKey, _ := config.GetCurrentUserPublicKey()
+	// publicKey := []byte(currentAccount["public_key"])
+	_, jwtToken, err := c.Finish(publicKey, config.GetDeviceName(), config.GetDeviceUID())
 
 	if err != nil {
 		ui.PrintError(err.Error())
@@ -73,7 +75,7 @@ func CreateAccountAndLogin(c auth.AuthService) {
 
 	// Transfer credentials to the server
 	// Create (or get) the user info
-	user, jwtToken, err := c.Finish(keyPair.Public.Value)
+	user, jwtToken, err := c.Finish(keyPair.Public.Value, config.GetDeviceName(), config.GetDeviceUID())
 
 	if err != nil {
 		ui.PrintError(err.Error())
@@ -110,6 +112,27 @@ To start managing secrets for a project:
 To invite collaborators:
   $ ks invite collaborator@email
 `, "Thank you for using Keystone!"))
+}
+
+func selectDeviceName() string {
+	existingName := config.GetDeviceName()
+
+	if existingName == "" {
+		defaultName := ""
+		if hostname, err := os.Hostname(); err == nil {
+			defaultName = hostname
+		}
+		if skipPrompts {
+			return defaultName
+		}
+		deviceName := prompts.StringInput(
+			"Enter the name you want this device to have",
+			defaultName,
+		)
+		return deviceName
+	}
+
+	return existingName
 }
 
 func SelectAuthService(ctx context.Context) (auth.AuthService, error) {
@@ -188,6 +211,9 @@ Waiting for you to login with your {{ .Service }} Account...`, struct {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
+
+		deviceName := selectDeviceName()
+		viper.Set("device", deviceName)
 
 		currentAccount, accountIndex = config.FindAccount(c)
 

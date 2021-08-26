@@ -102,8 +102,8 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		return
 	}
 
-	user.PublicKey = payload.PublicKey
-	if len(user.PublicKey) == 0 {
+	user.Devices = []models.Device{{PublicKey: payload.PublicKey, Name: payload.Device, UID: payload.DeviceUID}}
+	if len(payload.PublicKey) == 0 {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
@@ -114,7 +114,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			return err
 		}
 
-		jwtToken, err = jwt.MakeToken(user)
+		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID)
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return err
@@ -266,18 +266,18 @@ func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	}
 }
 
-func GetUserKey(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
+func GetUserKeys(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
-	userPublicKey := models.UserPublicKey{
-		UserID:    "",
-		PublicKey: []byte{},
+	userPublicKeys := models.UserPublicKeys{
+		UserID:     0,
+		PublicKeys: make([]models.Device, 0),
 	}
 
 	userID := params.Get("userID").(string)
 
 	if userID == "" {
-		return &userPublicKey, http.StatusBadRequest, errors.New("bad request")
+		return &userPublicKeys, http.StatusBadRequest, errors.New("bad request")
 	}
 
 	targetUser := models.User{UserID: userID}
@@ -289,9 +289,9 @@ func GetUserKey(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models
 			status = http.StatusInternalServerError
 		}
 	} else {
-		userPublicKey.UserID = userID
-		userPublicKey.PublicKey = targetUser.PublicKey
+		userPublicKeys.UserID = targetUser.ID
+		userPublicKeys.PublicKeys = targetUser.Devices
 	}
 
-	return &userPublicKey, status, err
+	return &userPublicKeys, status, err
 }

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"reflect"
 
+	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
@@ -90,11 +91,13 @@ func GetCurrentAccount() (user models.User, index int) {
 }
 
 func userFromAccount(account map[string]string) (user models.User) {
+	devices := make([]models.Device, 0)
+	devices = append(devices, models.Device{PublicKey: []byte(account["public_keys"])})
 	user.AccountType = models.AccountType(account["account_type"])
 	user.Email = account["email"]
 	user.ExtID = account["ext_id"]
 	user.Fullname = account["fullname"]
-	user.PublicKey = []byte(account["public_key"])
+	user.Devices = devices
 	user.UserID = account["user_id"]
 	user.Username = account["username"]
 
@@ -118,6 +121,23 @@ func GetCurrentUserPrivateKey() (privateKey []byte, err error) {
 	return privateKey, err
 }
 
+func GetCurrentUserPublicKey() (publicKey []byte, err error) {
+	index := -1
+	accounts := GetAllAccounts()
+
+	if viper.IsSet("current") {
+		index = viper.Get("current").(int)
+
+		if index >= 0 && index < len(accounts) {
+			account := accounts[index]
+
+			publicKey = []byte(account["public_key"])
+		}
+	}
+
+	return publicKey, err
+}
+
 // Sets the current account as the index at `index`
 // Means the user is logged in as the user of that account
 func SetCurrentAccount(index int) {
@@ -131,6 +151,20 @@ func SetAuthToken(token string) {
 
 func GetAuthToken() string {
 	return viper.Get("auth_token").(string)
+}
+
+func GetDeviceName() string {
+	if viper.Get("device") != nil {
+		return viper.Get("device").(string)
+	}
+	return ""
+}
+
+func GetDeviceUID() string {
+	if viper.Get("device_uid") != nil {
+		return viper.Get("device_uid").(string)
+	}
+	return ""
 }
 
 func GetServiceApiKey(serviceName string) string {
@@ -212,6 +246,8 @@ func InitConfig(cfgFile string) {
 
 	viper.SetDefault("current", -1)
 	viper.SetDefault("accounts", defaultAccounts)
+
+	viper.SetDefault("device_uid", uuid.NewV4().String())
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {

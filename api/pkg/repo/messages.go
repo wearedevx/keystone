@@ -28,7 +28,7 @@ func (gr *MessagesPayload) Serialize(out *string) error {
 	return err
 }
 
-func (repo *Repo) GetMessagesForUserOnEnvironment(user models.User, environment models.Environment, message *models.Message) IRepo {
+func (repo *Repo) GetMessagesForUserOnEnvironment(publicKey models.Device, environment models.Environment, message *models.Message) IRepo {
 	if repo.err != nil {
 		return repo
 	}
@@ -36,7 +36,7 @@ func (repo *Repo) GetMessagesForUserOnEnvironment(user models.User, environment 
 	err := repo.GetDb().
 		Model(&models.Message{}).
 		Preload("Sender").
-		Where("recipient_id = ? AND environment_id = ?", user.ID, environment.EnvironmentID).
+		Where("recipient_device_id = ? AND environment_id = ?", publicKey.ID, environment.EnvironmentID).
 		First(&message).
 		Error
 
@@ -94,14 +94,14 @@ func (repo *Repo) DeleteExpiredMessages() IRepo {
 	return repo
 }
 
-func (repo *Repo) RemoveOldMessageForRecipient(userID uint, environmentID string) IRepo {
+func (repo *Repo) RemoveOldMessageForRecipient(publicKeyID uint, environmentID string) IRepo {
 	if repo.err != nil {
 		return repo
 	}
 
 	repo.err = repo.GetDb().
 		Model(&models.Message{}).
-		Where("recipient_id = ?", userID).
+		Where("recipient_device_id = ?", publicKeyID).
 		Where("environment_id = ?", environmentID).
 		Delete(models.Message{}).Error
 

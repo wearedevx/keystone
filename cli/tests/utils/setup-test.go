@@ -12,6 +12,7 @@ import (
 	"github.com/bxcodec/faker/v3"
 	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/rogpeppe/go-internal/testscript"
+	uuid "github.com/satori/go.uuid"
 	"github.com/wearedevx/keystone/api/pkg/jwt"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -87,16 +88,18 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType,
 
 	keyPair, err := keys.New(keys.TypeEC)
 
+	device := "device-test"
+	deviceUID := uuid.NewV4().String()
 	user.Username = username
 	user.AccountType = accountType
 	user.UserID = fmt.Sprintf("%s@%s", user.Username, user.AccountType)
-	user.PublicKey = keyPair.Public.Value
+	user.Devices = []models.Device{{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value}}
 
 	if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
 		return err
 	}
 
-	token, err := jwt.MakeToken(user)
+	token, err := jwt.MakeToken(user, deviceUID)
 	configDir := getConfigDir(env)
 	pathToKeystoneFile := path.Join(configDir, "keystone2.yaml")
 
@@ -116,6 +119,8 @@ accounts:
   public_key: !!binary `+pub+`
   private_key: !!binary `+priv+`
 auth_token: `+token+`
+device: `+device+`
+device_uid: `+deviceUID+`
 current: 0
 `), 0o666)
 
@@ -140,9 +145,11 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 
 	keyPair, err := keys.New(keys.TypeEC)
 
+	device := "device-test"
+	deviceUID := uuid.NewV4().String()
 	user.ID = 0
 	user.Email = "email@example.com"
-	user.PublicKey = keyPair.Public.Value
+	user.Devices = []models.Device{{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value}}
 
 	Repo.GetOrCreateUser(&user)
 
@@ -153,7 +160,7 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 
 	env.Setenv("USER_ID", user.UserID)
 
-	token, err := jwt.MakeToken(user)
+	token, err := jwt.MakeToken(user, deviceUID)
 	configDir := getConfigDir(env)
 	pathToKeystoneFile := path.Join(configDir, "keystone.yaml")
 
@@ -173,6 +180,8 @@ accounts:
   public_key: !!binary `+pub+`
   private_key: !!binary `+priv+`
 auth_token: `+token+`
+device: `+device+`
+device_uid: `+deviceUID+`
 current: 0
 `), 0o660)
 

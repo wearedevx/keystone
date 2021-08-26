@@ -13,7 +13,7 @@ type AuthService interface {
 	Start() (string, error)
 	WaitForExternalLogin() error
 	CheckAccount(account map[string]string) (bool, error)
-	Finish(pkey []byte) (models.User, string, error)
+	Finish(pkey []byte, device string, deviceUID string) (models.User, string, error)
 }
 
 func GetAuthService(serviceName string, ctx context.Context, apiUrl string) (AuthService, error) {

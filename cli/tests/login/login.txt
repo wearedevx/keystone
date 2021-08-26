@@ -2,7 +2,7 @@
 githubLoginSuccess &
 
 # Log new user
-ks login --with=github
+ks login -s --with=github
 
 # Check keystone config file was created
 exists $WORK/home/.config/keystone.yaml
@@ -13,11 +13,9 @@ grep 'current: 0' $WORK/home/.config/keystone.yaml
 # Log again
 ks login
 stdout 'You are already logged in as'
-# exec cat $WORK/home/.config/keystone.yaml
 
 # logout
 ks logout
-# exec cat $WORK/home/.config/keystone.yaml
 
 grep 'auth_token: ""' $WORK/home/.config/keystone.yaml
 grep 'current: -1' $WORK/home/.config/keystone.yaml

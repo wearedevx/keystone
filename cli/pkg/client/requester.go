@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -91,12 +92,11 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 
 	bodyBytes := []byte(sbuf.String())
 
-	// fmt.Println(string(bodyBytes))
 	// minimum length for json response 2 bytes: {} or []
 	if result != nil && len(bodyBytes) >= 2 {
 		err := json.Unmarshal(bodyBytes, result)
 		if err != nil {
-			return fmt.Errorf("Error parsing data : %v", string(bodyBytes))
+			return errors.New(string(bodyBytes))
 		}
 	}
 

@@ -14,7 +14,7 @@ func (r *Repo) GetUser(user *User) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().Where("user_id = ?", user.UserID).First(user).Error
+	r.err = r.GetDb().Preload("Devices").Where("user_id = ?", user.UserID).First(user).Error
 
 	return r
 }
@@ -32,17 +32,30 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		UserID:      fmt.Sprintf("%s@%s", user.Username, user.AccountType),
 	}
 
-	r.err = db.Where(foundUser).First(&foundUser).Error
+	r.err = db.Where(foundUser).Preload("Devices").First(&foundUser).Error
 
 	if r.err == nil {
-		if !bytes.Equal(foundUser.PublicKey, user.PublicKey) {
-			foundUser.PublicKey = user.PublicKey
-			db.Save(&foundUser)
+		for _, device := range user.Devices {
+			found := false
+			for _, fdevice := range foundUser.Devices {
+				if fdevice.UID == device.UID {
+					found = true
+					if !bytes.Equal(device.PublicKey, fdevice.PublicKey) {
+						fdevice.PublicKey = device.PublicKey
+						db.Save(&fdevice)
+					}
+				}
+			}
+			if !found {
+				device.UserID = foundUser.ID
+				r.AddNewDevice(device, foundUser.UserID, foundUser.Email)
+			}
 		}
 
 		*user = foundUser
 	} else if errors.Is(r.err, gorm.ErrRecordNotFound) {
 		user.UserID = user.Username + "@" + string(user.AccountType)
+
 		r.err = db.Create(&user).Error
 	}
 

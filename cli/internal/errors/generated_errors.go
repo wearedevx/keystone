@@ -45,6 +45,12 @@ You are trying to create a Keystone project but there already is keystone files 
 Please remove the .keystone directory and keystone.yaml file beforehand.
 
 `,
+	"DeviceNotRegistered": `
+{{ ERROR }} {{ .Name | red }}
+This device is not registered to your account or its access has been revoked.
+To register it, please logout, then login again.
+
+`,
 	"FailedToReadKeystoneFile": `
 {{ ERROR }} {{ .Name | red }}
 The keystone.yaml file exists, but it might not be readable or writable.
@@ -413,6 +419,12 @@ func AlreadyKeystoneProject(cause error) *Error {
 	meta := map[string]interface{}{}
 
 	return NewError("Already a Keystone project", helpTexts["AlreadyKeystoneProject"], meta, cause)
+}
+
+func DeviceNotRegistered(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Device not registered", helpTexts["DeviceNotRegistered"], meta, cause)
 }
 
 func FailedToReadKeystoneFile(cause error) *Error {

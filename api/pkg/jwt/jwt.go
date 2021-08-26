@@ -12,18 +12,27 @@ import (
 	"golang.org/x/xerrors"
 )
 
-func MakeToken(user models.User) (string, error) {
+type customClaims struct {
+	DeviceUID string `json:"device_uid"`
+	jwt.StandardClaims
+}
+
+func MakeToken(user models.User, deviceUID string) (string, error) {
 	salt := []byte(utils.GetEnv("JWT_SALT", "aaP|**P1n}1tqWK"))
 
-	claims := jwt.StandardClaims{
-		ExpiresAt: &jwt.Time{
-			time.Now().Add(30 * 24 * time.Hour),
+	claims := customClaims{
+		DeviceUID: deviceUID,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: &jwt.Time{
+				time.Now().Add(30 * 24 * time.Hour),
+			},
+			IssuedAt: &jwt.Time{
+				time.Now(),
+			},
+			Issuer:  "keystone",
+			Subject: user.UserID,
+			// ID:      deviceUID,
 		},
-		IssuedAt: &jwt.Time{
-			time.Now(),
-		},
-		Issuer:  "keystone",
-		Subject: user.UserID,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -41,7 +50,7 @@ func cleanUpToken(token string) string {
 	return strings.Trim(token, " ")
 }
 
-func VerifyToken(token string) (string, error) {
+func VerifyToken(token string) (string, string, error) {
 	trimedToken := cleanUpToken(token)
 
 	t, err := jwt.Parse(trimedToken, func(token *jwt.Token) (interface{}, error) {
@@ -50,7 +59,7 @@ func VerifyToken(token string) (string, error) {
 	})
 
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	expiredError := &jwt.TokenExpiredError{}
@@ -60,10 +69,16 @@ func VerifyToken(token string) (string, error) {
 
 		userID := claims["sub"].(string)
 
-		return userID, nil
+		if claims["device_uid"] == nil {
+			return "", "", fmt.Errorf("Token expired")
+		}
+
+		deviceUID := claims["device_uid"].(string)
+
+		return userID, deviceUID, nil
 	} else if xerrors.As(err, expiredError) {
-		return "", fmt.Errorf("Token expired")
+		return "", "", fmt.Errorf("Token expired")
 	}
 
-	return "", fmt.Errorf("Invalid token")
+	return "", "", fmt.Errorf("Invalid token")
 }

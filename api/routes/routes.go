@@ -33,16 +33,19 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 
 	router.GET("/roles", AuthedHandler(GetRoles))
 
+	router.GET("/devices", AuthedHandler(GetDevices))
+	router.DELETE("/devices/:name", AuthedHandler(DeleteDevice))
+
 	router.POST("/login-request", PostLoginRequest)
 	router.GET("/login-request", GetLoginRequest)
 	router.GET("/auth-redirect/", GetAuthRedirect)
 	router.POST("/complete", PostUserToken)
 
 	router.POST("/users/exist", AuthedHandler(DoUsersExist))
-	router.GET("/users/:userID/key", AuthedHandler(GetUserKey))
+	router.GET("/users/:userID/key", AuthedHandler(GetUserKeys))
 	router.POST("/users/invite", AuthedHandler(PostInvite))
 
-	router.GET("/projects/:projectID/messages", AuthedHandler(GetMessagesFromProjectByUser))
+	router.GET("/projects/:projectID/messages/:device", AuthedHandler(GetMessagesFromProjectByUser))
 
 	router.DELETE("/messages/:messageID", AuthedHandler(DeleteMessage))
 

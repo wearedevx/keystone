@@ -63,36 +63,51 @@ func (repo *Repo) SetNewVersionID(environment *Environment) error {
 }
 
 func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *PublicKeys) IRepo {
-	rows, err := repo.GetDb().Raw(`select u.public_key as PublicKey, u.user_id as UserUID, u.id as UserID
+	rows, err := repo.GetDb().Raw(`select d.id, d.name, d.public_key, u.user_id, u.id as UserID
 	from environments as e
 	inner join environment_types as et on et.id = e.environment_type_id
 	inner join roles_environment_types as ret on ret.environment_type_id = et.id
 	inner join roles as r on ret.role_id = r.id
 	inner join project_members as pm on r.id = pm.role_id and pm.project_id = e.project_id
 	inner join users as u on u.id = pm.user_id
+	inner join devices as d on u.id = d.user_id
 	where e.environment_id = ?
 	and ret.read = true
 	`, environmentID).Rows()
 
-	repo.err = err
+	if err != nil {
+		repo.err = err
+		return repo
+	}
 
 	var PublicKey []byte
-	var UserID string
+	var UserID uint
 	var UserUID string
+	var Device string
+	var PublicKeyId uint
 
 	for rows.Next() {
-		if err := rows.Scan(&PublicKey, &UserUID, &UserID); err != nil {
+		if err := rows.Scan(&PublicKeyId, &Device, &PublicKey, &UserUID, &UserID); err != nil {
 			repo.err = err
 			return repo
 		}
+		found := false
 
-		publicKeys.Keys = append(publicKeys.Keys, models.UserPublicKey{
-			UserID:    fmt.Sprint(UserID),
-			PublicKey: PublicKey,
-			UserUID:   fmt.Sprint(UserUID),
-		})
+		for i, pk := range publicKeys.Keys {
+			if pk.UserID == UserID {
+				publicKeys.Keys[i].PublicKeys = append(pk.PublicKeys, models.Device{PublicKey: PublicKey, Name: Device, UserID: UserID, ID: PublicKeyId})
+				found = true
+			}
+		}
+
+		if !found {
+			publicKeys.Keys = append(publicKeys.Keys, models.UserPublicKeys{
+				UserID:     UserID,
+				PublicKeys: []models.Device{{PublicKey: PublicKey, Name: Device, UserID: UserID, ID: PublicKeyId}},
+				UserUID:    fmt.Sprint(UserUID),
+			})
+		}
 	}
-
 	return repo
 }
 

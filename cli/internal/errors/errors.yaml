@@ -63,6 +63,14 @@ errors:
       You are trying to create a Keystone project but there already is keystone files in your current directory.
       Please remove the .keystone directory and keystone.yaml file beforehand.
 
+  - type: DeviceNotRegistered
+    name: "Device not registered"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      This device is not registered to your account or its access has been revoked.
+      To register it, please logout, then login again.
+
   # KEYSTONE_YAML_ERRORS
   # ––––––––––––––––––––
   - type: FailedToReadKeystoneFile
