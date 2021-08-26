@@ -194,7 +194,7 @@ func init() {
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	noEnvironmentCommands = []string{
-		"login", "logout", "documentation", "init", "whoami", "invite", "version",
+		"login", "logout", "documentation", "init", "whoami", "invite", "version", "device",
 	}
 	noProjectCommands = noEnvironmentCommands
 
