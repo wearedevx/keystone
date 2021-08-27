@@ -26,6 +26,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/ui"
 
 	"github.com/wearedevx/keystone/cli/pkg/core"
@@ -224,4 +225,15 @@ func WriteConfig() error {
 	}
 
 	return err
+}
+
+func fetch() {
+	var printer = &ui.UiPrinter{}
+	ms := messages.NewMessageService(ctx, printer)
+	ms.GetMessages()
+
+	if err := ms.Err(); err != nil {
+		err.Print()
+		os.Exit(1)
+	}
 }
