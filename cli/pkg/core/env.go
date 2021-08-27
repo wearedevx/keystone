@@ -154,11 +154,7 @@ func (ctx *Context) purgeSecret(secretName string) *Context {
 			return ctx.setError(kserrors.FailedToReadDotEnv(dotEnvPath, err))
 		}
 
-		for secretName := range dotEnv.GetData() {
-			dotEnv.Unset(secretName)
-		}
-
-		if err = dotEnv.Dump().Err(); err != nil {
+		if err = dotEnv.Unset(secretName).Dump().Err(); err != nil {
 			return ctx.setError(kserrors.FailedToUpdateDotEnv(dotEnvPath, err))
 		}
 	}
