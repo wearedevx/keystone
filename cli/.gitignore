@@ -3,6 +3,7 @@
 .env
 keystone.yml
 
+ks
 
 config.dev
 .env1
