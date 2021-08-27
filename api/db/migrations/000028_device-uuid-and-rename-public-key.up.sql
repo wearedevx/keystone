@@ -1,11 +1,13 @@
+DELETE FROM public_keys;
+
 ALTER TABLE
   public_keys
-add
-  column uid text not null;
+ADD
+  COLUMN uid text NOT NULL;
 
 
-alter table public_keys rename to devices;
+ALTER TABLE public_keys RENAME TO devices;
 
-alter table devices rename column device to name;
+ALTER TABLE devices RENAME COLUMN device TO name;
 
-alter table devices rename column key to public_key;
+ALTER TABLE devices RENAME COLUMN key TO public_key;

@@ -174,6 +174,7 @@ func Initialize() {
 }
 
 func init() {
+	viper.SetConfigPermissions(0o600)
 	// Call directly initConfig. cobra doesn't call initConfig func.
 	config.InitConfig(cfgFile)
 	// cobra.OnInitialize(initConfig)

@@ -239,6 +239,7 @@ func InitConfig(cfgFile string) {
 		viper.AddConfigPath(path.Join(home, ".config"))
 		viper.SetConfigName("keystone")
 		viper.SetConfigType("yaml")
+		viper.SetConfigPermissions(0o600)
 
 		createFileIfNotExist(path.Join(home, ".config", "keystone.yaml"))
 	}

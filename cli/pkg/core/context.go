@@ -3,7 +3,6 @@ package core
 import (
 	"fmt"
 	"os"
-	"os/user"
 	"path"
 	"path/filepath"
 
@@ -65,14 +64,13 @@ func New(flag string) *Context {
 	context.TmpDir = tmpDir
 
 	// Get global configuration path
-	var currentUser *user.User
-	if currentUser, err = user.Current(); err != nil {
-		errMsg := fmt.Sprintf("Failed to read current user (%s)", err.Error())
-		println(errMsg)
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		println(fmt.Sprintf("Failed get the usere home directory"))
 		os.Exit(1)
 	}
 
-	configDir := path.Join(currentUser.HomeDir, ".config", "keystone")
+	configDir := path.Join(homeDir, ".config", "keystone")
 
 	if err = os.MkdirAll(configDir, 0700); err != nil {
 		errMsg := fmt.Sprintf("Failed to create keystone config (%s)", err.Error())
