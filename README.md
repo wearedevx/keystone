@@ -24,11 +24,11 @@ brew install wearedevx/keystone/keystone
 
 You can also install the development version with
 ```
-brew install wearedevx/keystone/keystone-development
+brew install wearedevx/keystone/keystone-develop
 ```
 And to update the development version
 ```
-brew reinstall wearedevx/keystone/keystone-development
+brew reinstall wearedevx/keystone/keystone-develop
 ```
 
 ### Usage

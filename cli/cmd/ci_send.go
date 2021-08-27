@@ -34,6 +34,8 @@ ks ci send --env prod
 		var environment models.Environment
 		ctx.MustHaveEnvironment(currentEnvironment)
 
+		fetch()
+
 		for _, accessibleEnvironment := range ctx.AccessibleEnvironments {
 			if accessibleEnvironment.Name == currentEnvironment {
 				environment = accessibleEnvironment
