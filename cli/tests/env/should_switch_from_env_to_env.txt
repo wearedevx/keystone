@@ -8,7 +8,7 @@ ks env
 stdout '.*\*.*dev'
 
 # Switch env
-ks env prod
+ks env switch prod
 
 stdout 'Using the .*prod.* environment'
 
