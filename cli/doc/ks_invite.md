@@ -19,7 +19,7 @@ ks invite <email address> [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.config/keystone/keystone.yaml)
+      --config string   config file (default is $HOME/.config/keystone.yaml)
       --env string      environment to use instead of the current one (default "dev")
   -q, --quiet           make the output machine readable
   -s, --skip            skip prompts and use default

@@ -9,7 +9,7 @@ ks secret set LABEL prodvalue --env prod
 grep 'LABEL="value"' .keystone/cache/.env
 
 # Switch env
-ks env prod
+ks env switch prod
 
 # Check LABEL has value "prodvalue" as we are now in prod
 grep 'LABEL="prodvalue"' .keystone/cache/.env
