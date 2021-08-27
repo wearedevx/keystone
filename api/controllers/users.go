@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	log "github.com/wearedevx/keystone/api/internal/utils/cloudlogger"
 	"github.com/wearedevx/keystone/api/pkg/jwt"
@@ -42,6 +43,7 @@ func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		}
 
 		if err = user.Serialize(&serializedUser); err != nil {
+			fmt.Println(err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return err
 		}
@@ -105,7 +107,12 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 	err = repo.Transaction(func(Repo repo.IRepo) error {
 		if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			fmt.Println(err)
+			if strings.Contains(err.Error(), "already registered") {
+				http.Error(w, err.Error(), http.StatusConflict)
+			} else {
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
 			return err
 		}
 

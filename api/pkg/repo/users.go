@@ -48,7 +48,10 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 			}
 			if !found {
 				device.UserID = foundUser.ID
-				r.AddNewDevice(device, foundUser.UserID, foundUser.Email)
+				if err := r.AddNewDevice(device, foundUser.UserID, foundUser.Email).Err(); err != nil {
+					r.err = err
+					return r
+				}
 			}
 		}
 
