@@ -160,6 +160,9 @@ func Initialize() {
 
 	if checkEnvironment && !ctx.HasEnvironment(currentEnvironment) {
 		ctx.Init(models.Project{})
+		if currentEnvironment == "" {
+			ctx.SetCurrent("dev")
+		}
 		// errors.EnvironmentDoesntExist(currentEnvironment, strings.Join(environments, ", "), nil).Print()
 		// os.Exit(1)
 	}

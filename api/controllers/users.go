@@ -112,7 +112,6 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 	err = repo.Transaction(func(Repo repo.IRepo) error {
 		if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
-			fmt.Println(err)
 			if strings.Contains(err.Error(), "already registered") {
 				http.Error(w, err.Error(), http.StatusConflict)
 			} else {
