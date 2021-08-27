@@ -39,7 +39,7 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		var PayloadContent = models.MessagePayload{}
 
 		localSecrets := make([]models.SecretVal, 0)
-		for _, localSecret := range ctx.ListSecrets() {
+		for _, localSecret := range ctx.ListSecretsFromCache() {
 			localSecrets = append(localSecrets, models.SecretVal{
 				Label: localSecret.Name,
 				Value: string(localSecret.Values[EnvironmentName(environmentName)]),

@@ -78,6 +78,20 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 
 func (r *Repo) AddNewDevice(device models.Device, userID string, userEmail string) IRepo {
 
+	var result = models.GetDevicesResponse{
+		Devices: []models.Device{},
+	}
+
+	r.GetPublicKeys(device.UserID, &result.Devices)
+
+	for _, existingDevice := range result.Devices {
+		if existingDevice.Name == device.Name {
+			r.err = errors.New("Device name already registered for this account")
+			return r
+		}
+
+	}
+
 	db.Create(&device)
 
 	// Get project on which user is present
