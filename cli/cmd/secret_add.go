@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -96,6 +97,8 @@ ks secret add PORT`,
 			changes := ms.GetMessages()
 
 			if err = ms.Err(); err != nil {
+				config.CheckExpiredTokenError(err)
+
 				err.Print()
 				os.Exit(1)
 			}

@@ -27,9 +27,7 @@ var logoutCmd = &cobra.Command{
 	Long:    `Logs you out of Keystone.`,
 	Example: "ks logout",
 	Run: func(_ *cobra.Command, _ []string) {
-		config.SetCurrentAccount(-1)
-		config.SetAuthToken("")
-		config.Write()
+		config.Logout()
 	},
 }
 

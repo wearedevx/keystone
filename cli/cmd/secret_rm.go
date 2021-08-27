@@ -19,6 +19,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -53,6 +54,8 @@ Removes the given secret from all environments.
 		changes := ms.GetMessages()
 
 		if err = ms.Err(); err != nil {
+			config.CheckExpiredTokenError(err)
+
 			err.Print()
 			os.Exit(1)
 		}

@@ -21,6 +21,7 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/pkg/core"
@@ -44,7 +45,10 @@ Used without arguments, displays a table of secrets.`,
 
 		ms := messages.NewMessageService(ctx, printer)
 		ms.GetMessages()
+
 		if err := ms.Err(); err != nil {
+			config.CheckExpiredTokenError(err)
+
 			fmt.Fprintf(os.Stderr, "WARNING: Could not get messages (%s)", err.Error())
 		}
 
