@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	. "github.com/wearedevx/keystone/cli/internal/environmentsfile"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -64,17 +65,9 @@ func New(flag string) *Context {
 	context.TmpDir = tmpDir
 
 	// Get global configuration path
-	homeDir, err := os.UserHomeDir()
+	configDir, err := config.ConfigDir()
 	if err != nil {
-		println(fmt.Sprintf("Failed get the usere home directory"))
-		os.Exit(1)
-	}
-
-	configDir := path.Join(homeDir, ".config", "keystone")
-
-	if err = os.MkdirAll(configDir, 0700); err != nil {
-		errMsg := fmt.Sprintf("Failed to create keystone config (%s)", err.Error())
-		println(errMsg)
+		println(fmt.Sprintf("Failed get the config directory"))
 		os.Exit(1)
 	}
 

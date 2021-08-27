@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	. "github.com/wearedevx/keystone/cli/ui"
 )
@@ -24,10 +25,46 @@ func castAccount(rawAccount map[interface{}]interface{}, account *map[string]str
 	}
 }
 
+func ConfigDir() (dirpath string, err error) {
+	userConfigDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+
+	if err = utils.CreateDirIfNotExist(userConfigDir); err != nil {
+		return "", err
+	}
+
+	dirpath = path.Join(userConfigDir, "keystone")
+
+	if err = utils.CreateDirIfNotExist(dirpath); err != nil {
+		return "", err
+	}
+
+	return dirpath, nil
+}
+
+func ConfigPath() (configPath string, err error) {
+	configDirPath, err := ConfigDir()
+	if err != nil {
+		return "", err
+	}
+
+	configPath = path.Join(configDirPath, "keystone.yaml")
+
+	return configPath, nil
+}
+
 // Writes the global config to the disk
 // Exits with 1 status code
 func Write() {
-	if err := viper.WriteConfig(); err != nil {
+	configPath, err := ConfigPath()
+	if err != nil {
+		PrintError(err.Error())
+		os.Exit(1)
+	}
+
+	if err := viper.WriteConfigAs(configPath); err != nil {
 		Print(RenderTemplate("config write error", `
 {{ ERROR }} {{ . | red }}
 
@@ -229,19 +266,20 @@ func InitConfig(cfgFile string) {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := os.UserHomeDir()
+		configDir, err := ConfigDir()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 		}
 
-		// Search config in home directory with name ".keystone" (without extension).
-		viper.AddConfigPath(path.Join(home, ".config"))
+		viper.AddConfigPath(configDir)
 		viper.SetConfigName("keystone")
 		viper.SetConfigType("yaml")
 		viper.SetConfigPermissions(0o600)
 
-		createFileIfNotExist(path.Join(home, ".config", "keystone.yaml"))
+		_, err = ConfigPath()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
 	}
 
 	defaultAccounts := make([]map[string]string, 0)
