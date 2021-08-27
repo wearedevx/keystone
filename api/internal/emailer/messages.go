@@ -193,6 +193,8 @@ The new device name is: {{.DeviceName}}
 If you didn't connect with this new device, you can revoke its access using keystone app.
 You should also change your access to the identity provider you chose to connect to Keystone.
 </p>
+<p>To revoke a device:</p>
+<p style=" background-color:#f6f8fa ; border-radius: 6px; font-size: 95%; line-height: 1.45; overflow: auto; padding: 16px; "> $ ks device revoke {{.DeviceName}}</p>
 <p>
 Have a nice day!
 </p>
@@ -213,6 +215,9 @@ The new device name is: {{.DeviceName}}
 
 If you didn't connect with this new device, you can revoke its access using keystone app.
 You should also change your access to the identity provider you chose to connect to Keystone.
+
+To revoke a device:
+ $ ks device revoke {{.DeviceName}}
 
 Have a nice day!
 
