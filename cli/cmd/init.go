@@ -22,10 +22,7 @@ import (
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-<<<<<<< HEAD
 	"github.com/wearedevx/keystone/cli/internal/config"
-=======
->>>>>>> 5248307 (feat(init): allow keystone files without a project id)
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
@@ -115,10 +112,7 @@ Created files and directories:
 
 		if initErr != nil {
 			if errors.Is(initErr, auth.ErrorUnauthorized) {
-<<<<<<< HEAD
 				config.Logout()
-=======
->>>>>>> 5248307 (feat(init): allow keystone files without a project id)
 				kserrors.InvalidConnectionToken(initErr).Print()
 			} else {
 				ui.PrintError(initErr.Error())
