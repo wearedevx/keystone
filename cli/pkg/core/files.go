@@ -309,7 +309,9 @@ func (ctx *Context) FilesUseEnvironment(
 		if ctx.IsFileModified(file.Path, envname) &&
 			forceCopy == CTX_KEEP_LOCAL_FILES {
 			fmt.Fprintln(os.Stderr, ui.RenderTemplate("modified file",
-				`{{ "Warning!" | yellow }} File '{{ .Path }}' has been locally modified. To discard local changes, run 'ks file reset {{ .Path }}'`,
+				`{{ "Warning!" | yellow }} File '{{ .Path }}' has been locally modified.
+{{ "Warning!" | yellow }}     To discard local changes, run 'ks file reset {{ .Path }}'.
+{{ "Warning!" | yellow }}     To validate them and share them with all members, run 'ks file set {{ .Path }}'`,
 				file,
 			))
 		} else {

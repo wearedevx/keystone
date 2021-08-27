@@ -11,6 +11,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	. "github.com/wearedevx/keystone/cli/ui"
 )
@@ -258,4 +259,17 @@ func InitConfig(cfgFile string) {
 			panic(err)
 		}
 	}
+}
+
+func CheckExpiredTokenError(err *kserrors.Error) {
+	if err.Name() == "Invalid Connection Token" {
+		Logout()
+	}
+}
+
+func Logout() {
+	fmt.Printf("Logout user")
+	SetCurrentAccount(-1)
+	SetAuthToken("")
+	Write()
 }

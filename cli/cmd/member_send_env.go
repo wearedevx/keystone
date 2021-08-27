@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	kerrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -55,6 +56,8 @@ it can be done again with this command.
 		ms.GetMessages()
 
 		if err = ms.Err(); err != nil {
+			config.CheckExpiredTokenError(err)
+
 			err.Print()
 			os.Exit(1)
 		}

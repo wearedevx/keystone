@@ -20,6 +20,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
@@ -61,6 +62,8 @@ Files can be used again using "file add" command.
 			ms.GetMessages()
 
 			if err := ms.Err(); err != nil {
+				config.CheckExpiredTokenError(err)
+
 				err.Print()
 				os.Exit(1)
 			}

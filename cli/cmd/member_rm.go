@@ -22,6 +22,7 @@ import (
 	"regexp"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
@@ -74,6 +75,7 @@ of the secrets and files.
 
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
+				config.Logout()
 				kserrors.InvalidConnectionToken(err).Print()
 			} else {
 				kserrors.UnkownError(err).Print()

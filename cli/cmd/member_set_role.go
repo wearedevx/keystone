@@ -24,6 +24,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
@@ -87,6 +88,7 @@ ks member set-role sandra@github`,
 		r, err := c.Users().CheckUsersExist([]string{memberId})
 		switch {
 		case errors.Is(err, auth.ErrorUnauthorized):
+			config.Logout()
 			kserrors.InvalidConnectionToken(err).Print()
 			os.Exit(1)
 
