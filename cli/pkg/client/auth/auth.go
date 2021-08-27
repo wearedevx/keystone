@@ -192,7 +192,16 @@ func completeLogin(apiUrl string, accountType models.AccountType, tok *oauth2.To
 	}
 
 	if resp.StatusCode != 200 {
-		return user, "", fmt.Errorf("Failed to complete login: %s", resp.Status)
+
+		sbuf := new(strings.Builder)
+		_, err = io.Copy(sbuf, resp.Body)
+		if err != nil {
+			return user, "", err
+		}
+
+		bodyBytes := []byte(sbuf.String())
+
+		return user, "", fmt.Errorf("Failed to complete login: %s", string(bodyBytes))
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&user)
