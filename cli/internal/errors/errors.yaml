@@ -166,8 +166,8 @@ errors:
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
       Available environments are: {{ .Available }}
 
-      To create a new environment:
-        $ ks env new {{ .Environment }}
+      To use another environment:
+        $ ks env {{ .Environment }}
 
   - type: EnvironmentAlreadyExists
     name: "Environment Already Exists"

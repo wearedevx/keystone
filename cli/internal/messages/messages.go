@@ -66,6 +66,7 @@ func (s *messageService) GetMessages() core.ChangesByEnvironment {
 	}
 
 	changes := s.ctx.SaveMessages(messagesByEnvironment)
+
 	if s.ctx.Err() != nil {
 		s.err = s.ctx.Err()
 		return core.ChangesByEnvironment{}

@@ -57,6 +57,8 @@ $ ks env staging
 			return
 		}
 
+		fetch()
+
 		locallyModified := ctx.LocallyModifiedFiles(currentEnvironment)
 		if len(locallyModified) != 0 {
 			ui.Print(ui.RenderTemplate("local changes", `
