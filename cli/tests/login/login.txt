@@ -5,10 +5,10 @@ githubLoginSuccess &
 ks login -s --with=github
 
 # Check keystone config file was created
-exists $WORK/home/.config/keystone.yaml
-grep 'email: email@example.com' $WORK/home/.config/keystone.yaml
-grep 'current: 0' $WORK/home/.config/keystone.yaml
-! grep 'auth_token: ""' $WORK/home/.config/keystone.yaml
+exists $WORK/home/.config/keystone/keystone.yaml
+grep 'email: email@example.com' $WORK/home/.config/keystone/keystone.yaml
+grep 'current: 0' $WORK/home/.config/keystone/keystone.yaml
+! grep 'auth_token: ""' $WORK/home/.config/keystone/keystone.yaml
 
 # Log again
 ks login
@@ -17,5 +17,5 @@ stdout 'You are already logged in as'
 # logout
 ks logout
 
-grep 'auth_token: ""' $WORK/home/.config/keystone.yaml
-grep 'current: -1' $WORK/home/.config/keystone.yaml
+grep 'auth_token: ""' $WORK/home/.config/keystone/keystone.yaml
+grep 'current: -1' $WORK/home/.config/keystone/keystone.yaml

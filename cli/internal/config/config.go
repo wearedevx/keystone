@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"reflect"
 
@@ -12,7 +11,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	. "github.com/wearedevx/keystone/cli/ui"
 )
@@ -23,36 +21,6 @@ func castAccount(rawAccount map[interface{}]interface{}, account *map[string]str
 	for k, v := range rawAccount {
 		(*account)[k.(string)] = v.(string)
 	}
-}
-
-func ConfigDir() (dirpath string, err error) {
-	userConfigDir, err := os.UserConfigDir()
-	if err != nil {
-		return "", err
-	}
-
-	if err = utils.CreateDirIfNotExist(userConfigDir); err != nil {
-		return "", err
-	}
-
-	dirpath = path.Join(userConfigDir, "keystone")
-
-	if err = utils.CreateDirIfNotExist(dirpath); err != nil {
-		return "", err
-	}
-
-	return dirpath, nil
-}
-
-func ConfigPath() (configPath string, err error) {
-	configDirPath, err := ConfigDir()
-	if err != nil {
-		return "", err
-	}
-
-	configPath = path.Join(configDirPath, "keystone.yaml")
-
-	return configPath, nil
 }
 
 // Writes the global config to the disk
