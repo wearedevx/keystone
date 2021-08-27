@@ -19,6 +19,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -53,6 +54,7 @@ ks file reset
 		ms.GetMessages()
 
 		if err := ms.Err(); err != nil {
+			config.CheckExpiredTokenError(err)
 			err.Print()
 			os.Exit(1)
 		}

@@ -48,6 +48,10 @@ func (e *Error) Cause() error {
 	return e.cause
 }
 
+func (e *Error) Name() string {
+	return e.name
+}
+
 func (e *Error) Print() {
 	fmt.Fprintln(os.Stderr, e.Error())
 	// os.Stderr.WriteString(e.Error())

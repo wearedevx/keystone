@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
@@ -111,6 +112,7 @@ Created files and directories:
 
 		if initErr != nil {
 			if errors.Is(initErr, auth.ErrorUnauthorized) {
+				config.Logout()
 				kserrors.InvalidConnectionToken(initErr).Print()
 			} else {
 				ui.PrintError(initErr.Error())

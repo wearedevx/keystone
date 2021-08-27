@@ -27,6 +27,7 @@ import (
 	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -110,13 +111,15 @@ ks file add -s ./credentials.json`,
 			changes := ms.GetMessages()
 
 			if err := ms.Err(); err != nil {
+				config.CheckExpiredTokenError(err)
+
 				err.Print()
 				os.Exit(1)
 			}
 
 			if err = ctx.CompareNewFileWhithChanges(filePath, changes).Err(); err != nil {
 				err.Print()
-				return
+				os.Exit(1)
 			}
 
 			file := keystonefile.FileKey{
@@ -128,20 +131,20 @@ ks file add -s ./credentials.json`,
 
 			if err = ctx.Err(); err != nil {
 				err.Print()
-				return
+				os.Exit(1)
 			}
 
 			err_ := gitignorehelper.GitIgnore(ctx.Wd, filePath)
 			if err_ != nil {
 				ui.PrintError(err_.Error())
-				return
+				os.Exit(1)
 			}
 
 			ctx.FilesUseEnvironment(currentEnvironment, currentEnvironment, core.CTX_KEEP_LOCAL_FILES)
 
 			if err = ctx.Err(); err != nil {
 				err.Print()
-				return
+				os.Exit(1)
 			}
 
 			if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {

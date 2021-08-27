@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/messages"
@@ -115,7 +116,10 @@ $ ks file -qf available
 
 		ms := messages.NewMessageService(ctx, printer)
 		ms.GetMessages()
+
 		if err := ms.Err(); err != nil {
+			config.CheckExpiredTokenError(err)
+
 			fmt.Fprintf(os.Stderr, "WARNING: Could not get messages (%s)", err.Error())
 		}
 

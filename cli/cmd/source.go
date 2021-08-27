@@ -60,7 +60,10 @@ other_value
 		if config.IsLoggedIn() {
 			ms := messages.NewMessageService(ctx, printer)
 			ms.GetMessages()
+
 			if err := ms.Err(); err != nil {
+				config.CheckExpiredTokenError(err)
+
 				fmt.Fprintf(os.Stderr, "WARNING: Could not get messages (%s)", err.Error())
 			}
 		}
