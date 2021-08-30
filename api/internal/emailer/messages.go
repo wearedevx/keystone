@@ -26,16 +26,16 @@ func init() {
 </p>
 
 <p>
-To join the project <pre>{{.ProjectName}}</pre>, {{.Inviter}} needs your 
+To join the project <code>{{.ProjectName}}</code>, {{.Inviter}} needs your 
 Keystone username. To get it :
 </p>
 
 <ol>
 	<li>
-		create, or login into your account: <pre>ks login</pre>;
+		create, or login into your account: <code>ks login</code>;
 	</li>
 	<li>
-		display your username: <pre>ks whoami</pre>.
+		display your username: <code>ks whoami</code>.
 	</li>
 </ol>
 
@@ -61,7 +61,7 @@ The Keystone team
 </p>
 
 <p>
-You now have access to <pre>{{.ProjectName}}</pre>.
+You now have access to <code>{{.ProjectName}}</code>.
 </p>
 
 <ol>
@@ -69,10 +69,10 @@ You now have access to <pre>{{.ProjectName}}</pre>.
 		go in your project directory
 	</li>
 	<li>
-		login into your account: <pre>ks login</pre>;
+		login into your account: <code>ks login</code>;
 	</li>
 	<li>
-		use secret: <pre>ks source<pre>
+		use secret: <code>ks source<code>
 	</li>
 </ol>
 
