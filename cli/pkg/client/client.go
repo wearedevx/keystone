@@ -8,4 +8,5 @@ type KeystoneClient interface {
 	Users() *Users
 	Messages() *Messages
 	Devices() *Devices
+	Organizations() *Organizations
 }

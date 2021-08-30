@@ -37,7 +37,7 @@ var resetCmd = &cobra.Command{
 
 You can modify a file managed by Keystone without using ` + "`" + `ks file set` + "`." + `
 However, you will no longer receive updates on that file, and won’t be able
-to change environment.  
+to change environment.
 To discard the changes you made, use ` + "`" + `ks file reset [file path]...` + "`" + `.`,
 	Example: `# To reset one specific file
 ks file reset ./config.js

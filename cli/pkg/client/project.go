@@ -11,11 +11,12 @@ type Project struct {
 	r  requester
 }
 
-func (p *Project) Init(name string) (models.Project, error) {
+func (p *Project) Init(name string, organizationID uint) (models.Project, error) {
 	var project models.Project
 
 	payload := models.Project{
-		Name: name,
+		Name:           name,
+		OrganizationID: organizationID,
 	}
 
 	err := p.r.post("/projects", payload, &project, nil)
