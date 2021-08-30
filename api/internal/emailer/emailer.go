@@ -2,12 +2,14 @@ package emailer
 
 import (
 	"fmt"
+	"html/template"
 	"os"
 
 	"github.com/keighl/mandrill"
 )
 
 var mandrillKey string
+var baseTemplate *template.Template
 
 func init() {
 	mandrillKey = os.Getenv("MANDRILL_API_KEY")
@@ -15,6 +17,8 @@ func init() {
 	if mandrillKey == "" {
 		mandrillKey = "SANDBOX_SUCCESS"
 	}
+
+	baseTemplate = template.Must(template.New("base").Parse(BASE_HTML))
 }
 
 func send(email *Email) (err error) {

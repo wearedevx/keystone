@@ -22,7 +22,6 @@ func PostInvite(
 		return nil, http.StatusBadRequest, err
 	}
 
-	senderEmail := user.Email
 	targetEmail := payload.Email
 
 	targetUsers := []models.User{}
@@ -32,7 +31,7 @@ func PostInvite(
 	if err = Repo.GetUserByEmail(targetEmail, &targetUsers).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 
-			e, err := emailer.InviteMail(senderEmail, payload.ProjectName)
+			e, err := emailer.InviteMail(user, payload.ProjectName)
 			if err != nil {
 				return result, http.StatusInternalServerError, err
 			}

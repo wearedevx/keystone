@@ -69,6 +69,19 @@ func (u *User) FromId(id string) {
 	u.AccountType = accountType
 }
 
+func (u *User) GetName() (name string) {
+	switch {
+	case u.Fullname != "":
+		name = u.Fullname
+	case u.Username != "":
+		name = u.Username
+	default:
+		name = u.Email
+	}
+
+	return name
+}
+
 type LoginPayload struct {
 	AccountType AccountType
 	Token       *oauth2.Token

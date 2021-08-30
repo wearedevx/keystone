@@ -3,11 +3,12 @@ package emailer
 import "github.com/keighl/mandrill"
 
 type Email struct {
-	From     string
-	To       []string
-	Subject  string
-	HtmlBody string
-	TextBody string
+	FromEmail string
+	FromName  string
+	To        []string
+	Subject   string
+	HtmlBody  string
+	TextBody  string
 }
 
 func (e *Email) toMandrill() *mandrill.Message {
@@ -17,7 +18,8 @@ func (e *Email) toMandrill() *mandrill.Message {
 		m.AddRecipient(recipient, "", "to")
 	}
 
-	m.FromEmail = e.From
+	m.FromEmail = e.FromEmail
+	m.FromName = e.FromName
 	m.Subject = e.Subject
 	m.HTML = e.HtmlBody
 	m.Text = e.TextBody

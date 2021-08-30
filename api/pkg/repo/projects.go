@@ -204,7 +204,7 @@ func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole, curr
 	if r.err == nil {
 		for _, memberRole := range memberRoles {
 			userEmail := users[memberRole.MemberID].Email
-			e, err := emailer.AddedMail(currentUser.Email, project.Name)
+			e, err := emailer.AddedMail(currentUser, project.Name)
 			if err != nil {
 				r.err = err
 				return r
