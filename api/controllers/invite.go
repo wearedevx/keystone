@@ -11,7 +11,12 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
-func PostInvite(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func PostInvite(
+	_ router.Params,
+	body io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
 	payload := models.InvitePayload{}
 	if err = payload.Deserialize(body); err != nil {
 		return nil, http.StatusBadRequest, err
