@@ -60,4 +60,5 @@ type IRepo interface {
 	GetPublicKeys(uint, *[]models.Device) IRepo
 	GetPublicKey(publicKey *models.Device) IRepo
 	RevokeDevice(userID uint, deviceName string) IRepo
+	CreateOrganization(orga *models.Organization) IRepo
 }
