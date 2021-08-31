@@ -343,7 +343,7 @@ const BASE_HTML string = `
         <td class="container">
           <div class="content">
 
-            !-- START CENTERED WHITE CONTAINER -->
+            <!-- START CENTERED WHITE CONTAINER -->
             <table role="presentation" class="main">
 
               <!-- START MAIN CONTENT AREA -->
