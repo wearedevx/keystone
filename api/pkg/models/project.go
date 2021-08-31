@@ -18,8 +18,8 @@ type Project struct {
 	UserID       uint            `json:"user_id"`
 	User         User            `json:"user" faker:"-"`
 	Environments []Environment   `json:"environments" faker:"-"`
-	CreatedAt    time.Time       `json:"create_at"`
-	UpdatedAt    time.Time       `json:"update_at"`
+	CreatedAt    time.Time       `json:"created_at"`
+	UpdatedAt    time.Time       `json:"updated_at"`
 }
 
 func (p *Project) BeforeCreate(tx *gorm.DB) (err error) {

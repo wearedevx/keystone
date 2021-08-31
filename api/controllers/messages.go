@@ -86,7 +86,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 		can, err := rights.CanUserReadEnvironment(Repo, user.ID, project.ID, &environment)
 		if err != nil {
 			response.Error = err
-			return &response, http.StatusInternalServerError, err
+			return &response, http.StatusNotFound, err
 		}
 
 		if can {
@@ -136,7 +136,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		can, err := rights.CanUserWriteOnEnvironment(Repo, user.ID, environment.Project.ID, environment)
 
 		if err != nil {
-			return response, http.StatusInternalServerError, err
+			return response, http.StatusNotFound, err
 		}
 
 		if !can {
@@ -146,7 +146,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		// - check recipient exists with read rights.
 		can, err = rights.CanUserReadEnvironment(Repo, projectMember.UserID, projectMember.ProjectID, environment)
 		if err != nil {
-			return response, http.StatusInternalServerError, err
+			return response, http.StatusNotFound, err
 		}
 
 		if !can {
@@ -164,6 +164,10 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		}
 
 		if err = Repo.GetPublicKey(&senderDevice).Err(); err != nil {
+			if errors.Is(err, repo.ErrorNotFound) {
+				return response, http.StatusNotFound, err
+			}
+
 			return response, http.StatusInternalServerError, err
 		}
 
@@ -177,7 +181,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		}
 
 		if err = Repo.WriteMessage(user, *messageToWrite).Err(); err != nil {
-			fmt.Printf("err: %+v\n", err)
+			fmt.Printf("WriteMessage error: %+v\n", err)
 			break
 		}
 
@@ -186,6 +190,10 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			err = Repo.SetNewVersionID(environment)
 
 			if err != nil {
+				if errors.Is(err, repo.ErrorNotFound) {
+					return response, http.StatusNotFound, err
+				}
+
 				return response, http.StatusInternalServerError, err
 			}
 		}
