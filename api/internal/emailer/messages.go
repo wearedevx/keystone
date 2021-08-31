@@ -3,8 +3,13 @@ package emailer
 import (
 	"bytes"
 	"fmt"
+	"html/template"
 	"strings"
-	"text/template"
+
+	"github.com/k3a/html2text"
+	"github.com/vanng822/go-premailer/premailer"
+
+	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
 var templates = make(map[string]*template.Template)
@@ -13,11 +18,6 @@ const KEYSTONE_MAIL = "no-reply@keystone.sh"
 
 func init() {
 	templates["invite/html"] = template.Must(template.New("invite/html").Parse(`
-<html>
-<head>
-</head>
-
-<body>
 <p>
 	Hello!
 </p>
@@ -26,16 +26,16 @@ func init() {
 </p>
 
 <p>
-To join the project <pre>{{.ProjectName}}</pre>, {{.Inviter}} needs your 
+To join the project <code>{{.ProjectName}}</code>, {{.Inviter}} needs your 
 Keystone username. To get it :
 </p>
 
 <ol>
 	<li>
-		create, or login into your account: <pre>ks login</pre>;
+		create, or login into your account: <code>ks login</code>;
 	</li>
 	<li>
-		display your username: <pre>ks whoami</pre>.
+		display your username: <code>ks whoami</code>.
 	</li>
 </ol>
 
@@ -50,33 +50,9 @@ Have a nice day!
 <p>
 The Keystone team
 </p>
-
-</body>
-`))
-
-	templates["invite/text"] = template.Must(template.New("invite/text").Parse(`
-Hello!
-
-{{.Inviter}} is inviting you to join a Keystone project!
-
-To join the project '{{.ProjectName}}', {{.Inviter}} needs your Keystone username.
-To get it:
-	1. create, or login into your account: 'ks login';
-    2. display your username: 'ks whoami'.
-
-The way you transmit your Keystone username to {{.Inviter}} is up to you.
-
-Have a nice day!
-
-The Keystone team
 `))
 
 	templates["added/html"] = template.Must(template.New("added/html").Parse(`
-<html>
-<head>
-</head>
-
-<body>
 <p>
 	Hello!
 </p>
@@ -85,7 +61,7 @@ The Keystone team
 </p>
 
 <p>
-You now have access to <pre>{{.ProjectName}}</pre>.
+You now have access to <code>{{.ProjectName}}</code>.
 </p>
 
 <ol>
@@ -93,10 +69,10 @@ You now have access to <pre>{{.ProjectName}}</pre>.
 		go in your project directory
 	</li>
 	<li>
-		login into your account: <pre>ks login</pre>;
+		login into your account: <code>ks login</code>;
 	</li>
 	<li>
-		use secret: <pre>ks source<pre>
+		use secret: <code>ks source<code>
 	</li>
 </ol>
 
@@ -107,32 +83,9 @@ Have a nice day!
 <p>
 The Keystone team
 </p>
-
-</body>
 `))
 
-	templates["added/text"] = template.Must(template.New("added/text").Parse(`
-Hello!
-
-{{.Inviter}} has added you to a Keystone project!
-
-You now have access to {{.ProjectName}}.
-
-To get it:
-  1. go in your project directory
-  2. login into your account: <pre>ks login</pre>;
-  3. use secret: <pre>eval "$(ks source)"<pre>
-
-Have a nice day!
-
-The Keystone team
-`))
 	templates["new_device_admin/html"] = template.Must(template.New("new_device_admin/html").Parse(`
-<html>
-<head>
-</head>
-
-<body>
 <p>
 	Hello!
 </p>
@@ -155,31 +108,9 @@ Have a nice day!
 <p>
 The Keystone team
 </p>
-
-</body>
 `))
 
-	templates["new_device_admin/text"] = template.Must(template.New("new_device_admin/text").Parse(`
-Hello!
-
-{{.UserID}} has added a new device to its account.
-
-You are admin in some of its project(s): {{.Projects}}
-
-The new device name is: {{.DeviceName}}
-
-If you think this new device is suspicious, feel free to contact {{.UserID}}.
-
-Have a nice day!
-
-The Keystone team
-`))
 	templates["new_device/html"] = template.Must(template.New("new_device/html").Parse(`
-<html>
-<head>
-</head>
-
-<body>
 <p>
 	Hello!
 </p>
@@ -202,26 +133,6 @@ Have a nice day!
 <p>
 The Keystone team
 </p>
-
-</body>
-`))
-
-	templates["new_device/text"] = template.Must(template.New("new_device/text").Parse(`
-Hello!
-
-A new device have been added to your Keystone account {{.UserID}}.
-
-The new device name is: {{.DeviceName}}
-
-If you didn't connect with this new device, you can revoke its access using keystone app.
-You should also change your access to the identity provider you chose to connect to Keystone.
-
-To revoke a device:
- $ ks device revoke {{.DeviceName}}
-
-Have a nice day!
-
-The Keystone team
 `))
 }
 
@@ -241,123 +152,157 @@ type newDeviceData struct {
 	UserID     string
 }
 
+func renderTemplate(
+	templateName string,
+	data interface{},
+) (html string, text string, err error) {
+	htmlBuffer := bytes.NewBufferString(html)
+
+	// Render the content template
+	if err = templates[templateName].Execute(
+		htmlBuffer,
+		data,
+	); err != nil {
+		return "", "", err
+	}
+
+	// Render Layout
+	htmlString := htmlBuffer.String()
+	finalBuffer := bytes.NewBufferString("")
+	if err = baseTemplate.Execute(finalBuffer, map[string]template.HTML{
+		"Preheader": "",
+		"Content":   template.HTML(htmlString),
+	}); err != nil {
+		return "", "", err
+	}
+
+	// Transform to text
+	finalHtml := finalBuffer.String()
+
+	inlined, err := inlineHtml(finalHtml)
+	if err != nil {
+		return "", "", err
+	}
+
+	finalText := htmlToString(inlined)
+
+	return inlined, finalText, nil
+}
+
+func htmlToString(html string) (text string) {
+	text = html2text.HTML2Text(html)
+
+	return text
+}
+
+func inlineHtml(html string) (out string, err error) {
+	prem, err := premailer.NewPremailerFromString(html, premailer.NewOptions())
+	if err != nil {
+		return "", err
+	}
+
+	out, err = prem.Transform()
+	if err != nil {
+		return "", err
+	}
+
+	return out, nil
+}
+
 func renderInviteTemplate(
 	inviter string,
 	projectName string,
 ) (html string, text string, err error) {
-	htmlBuffer := bytes.NewBufferString(html)
-	textBuffer := bytes.NewBufferString(text)
-
-	if err = templates["invite/html"].Execute(
-		htmlBuffer,
-		inviteData{Inviter: inviter, ProjectName: projectName},
-	); err != nil {
+	html, text, err = renderTemplate("invite/html", inviteData{
+		Inviter:     inviter,
+		ProjectName: projectName,
+	})
+	if err != nil {
 		return "", "", err
 	}
 
-	if err = templates["invite/text"].Execute(
-		textBuffer,
-		inviteData{Inviter: inviter, ProjectName: projectName},
-	); err != nil {
-		return "", "", err
-	}
-
-	return htmlBuffer.String(), textBuffer.String(), nil
+	return html, text, nil
 }
 
 func renderAddedTemplate(
 	inviter string,
 	projectName string,
 ) (html string, text string, err error) {
-	htmlBuffer := bytes.NewBufferString(html)
-	textBuffer := bytes.NewBufferString(text)
-
-	if err = templates["added/html"].Execute(
-		htmlBuffer,
-		inviteData{Inviter: inviter, ProjectName: projectName},
-	); err != nil {
+	html, text, err = renderTemplate("added/html", inviteData{
+		Inviter:     inviter,
+		ProjectName: projectName,
+	})
+	if err != nil {
 		return "", "", err
 	}
 
-	if err = templates["added/text"].Execute(
-		textBuffer,
-		inviteData{Inviter: inviter, ProjectName: projectName},
-	); err != nil {
-		return "", "", err
-	}
-
-	return htmlBuffer.String(), textBuffer.String(), nil
+	return html, text, nil
 }
 
-func renderNewDeviceAdmin(userID string, projects []string, deviceName string) (html string, text string, err error) {
-	htmlBuffer := bytes.NewBufferString(html)
-	textBuffer := bytes.NewBufferString(text)
-
-	if err = templates["new_device_admin/html"].Execute(
-		htmlBuffer,
-		newDeviceAdminData{DeviceName: deviceName, Projects: strings.Join(projects, ", "), UserID: userID},
-	); err != nil {
+func renderNewDeviceAdmin(
+	userID string,
+	projects []string,
+	deviceName string,
+) (html string, text string, err error) {
+	html, text, err = renderTemplate(
+		"new_device_admin/html",
+		newDeviceAdminData{
+			UserID:     userID,
+			Projects:   strings.Join(projects, ", "),
+			DeviceName: deviceName,
+		},
+	)
+	if err != nil {
 		return "", "", err
 	}
 
-	if err = templates["new_device_admin/text"].Execute(
-		textBuffer,
-		newDeviceAdminData{DeviceName: deviceName, Projects: strings.Join(projects, ", "), UserID: userID},
-	); err != nil {
-		return "", "", err
-	}
-
-	return htmlBuffer.String(), textBuffer.String(), nil
+	return html, text, nil
 }
 
 func renderNewDevice(deviceName string, userID string) (html string, text string, err error) {
-	htmlBuffer := bytes.NewBufferString(html)
-	textBuffer := bytes.NewBufferString(text)
-
-	if err = templates["new_device/html"].Execute(
-		htmlBuffer,
-		newDeviceData{DeviceName: deviceName, UserID: userID},
-	); err != nil {
+	html, text, err = renderTemplate(
+		"new_device/html",
+		newDeviceData{
+			DeviceName: deviceName,
+			UserID:     userID,
+		},
+	)
+	if err != nil {
 		return "", "", err
 	}
 
-	if err = templates["new_device/text"].Execute(
-		textBuffer,
-		newDeviceData{DeviceName: deviceName},
-	); err != nil {
-		return "", "", err
-	}
-
-	return htmlBuffer.String(), textBuffer.String(), nil
+	return html, text, nil
 }
 
-func InviteMail(inviter string, projectName string) (email *Email, err error) {
-	html, text, err := renderInviteTemplate(inviter, projectName)
+func InviteMail(inviter models.User, projectName string) (email *Email, err error) {
+	html, text, err := renderInviteTemplate(inviter.Email, projectName)
 	if err != nil {
 		return nil, err
 	}
 
 	email = &Email{
-		From:     inviter,
-		Subject:  "Your are invited to join a Keystone project",
-		HtmlBody: html,
-		TextBody: text,
+		FromEmail: KEYSTONE_MAIL,
+		FromName:  inviter.GetName(),
+		Subject:   "Your are invited to join a Keystone project",
+		HtmlBody:  html,
+		TextBody:  text,
 	}
 
 	return email, nil
 }
 
-func AddedMail(inviter string, projectName string) (email *Email, err error) {
-	html, text, err := renderInviteTemplate(inviter, projectName)
+func AddedMail(inviter models.User, projectName string) (email *Email, err error) {
+	html, text, err := renderInviteTemplate(inviter.Email, projectName)
 	if err != nil {
 		return nil, err
 	}
 
 	email = &Email{
-		From:     inviter,
-		Subject:  "Your are added to join a Keystone project",
-		HtmlBody: html,
-		TextBody: text,
+		FromEmail: inviter.Email,
+		FromName:  inviter.GetName(),
+		Subject:   "Your are added to join a Keystone project",
+		HtmlBody:  html,
+		TextBody:  text,
 	}
 
 	return email, nil
@@ -370,10 +315,11 @@ func NewDeviceAdminMail(userID string, projects []string, deviceName string) (em
 	}
 
 	email = &Email{
-		From:     KEYSTONE_MAIL,
-		Subject:  fmt.Sprintf("%s has registered a new device", userID),
-		HtmlBody: html,
-		TextBody: text,
+		FromEmail: KEYSTONE_MAIL,
+		FromName:  "Keystone",
+		Subject:   fmt.Sprintf("%s has registered a new device", userID),
+		HtmlBody:  html,
+		TextBody:  text,
 	}
 
 	return email, nil
@@ -386,10 +332,11 @@ func NewDeviceMail(deviceName string, userID string) (email *Email, err error) {
 	}
 
 	email = &Email{
-		From:     KEYSTONE_MAIL,
-		Subject:  fmt.Sprintf("A new device has been registered"),
-		HtmlBody: html,
-		TextBody: text,
+		FromEmail: KEYSTONE_MAIL,
+		FromName:  "Keystone",
+		Subject:   fmt.Sprintf("A new device has been registered"),
+		HtmlBody:  html,
+		TextBody:  text,
 	}
 
 	return email, nil

@@ -11,13 +11,17 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
-func PostInvite(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func PostInvite(
+	_ router.Params,
+	body io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
 	payload := models.InvitePayload{}
 	if err = payload.Deserialize(body); err != nil {
 		return nil, http.StatusBadRequest, err
 	}
 
-	senderEmail := user.Email
 	targetEmail := payload.Email
 
 	targetUsers := []models.User{}
@@ -27,7 +31,7 @@ func PostInvite(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user model
 	if err = Repo.GetUserByEmail(targetEmail, &targetUsers).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 
-			e, err := emailer.InviteMail(senderEmail, payload.ProjectName)
+			e, err := emailer.InviteMail(user, payload.ProjectName)
 			if err != nil {
 				return result, http.StatusInternalServerError, err
 			}

@@ -108,6 +108,9 @@ func (r *Repo) GetUserByEmail(email string, users *[]User) IRepo {
 	}
 
 	r.err = r.GetDb().Where("email = ?", email).Find(users).Error
+	if len(*users) == 0 {
+		r.err = ErrorNotFound
+	}
 
 	return r
 }
