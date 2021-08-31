@@ -201,7 +201,7 @@ func getHomeDir(env *testscript.Env) string {
 
 func getConfigDir(env *testscript.Env) string {
 	homeDir := getHomeDir(env)
-	return path.Join(homeDir, ".config")
+	return path.Join(homeDir, ".config", "keystone")
 }
 
 func SetupEnvVars(env *testscript.Env) error {

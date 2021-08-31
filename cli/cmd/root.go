@@ -16,9 +16,7 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
 	"os"
-	"path"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -30,8 +28,6 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 
 	"github.com/wearedevx/keystone/cli/pkg/core"
-
-	"github.com/spf13/viper"
 )
 
 var ksauthURL string //= "http://localhost:9000"
@@ -178,7 +174,6 @@ func Initialize() {
 }
 
 func init() {
-	viper.SetConfigPermissions(0o600)
 	// Call directly initConfig. cobra doesn't call initConfig func.
 	config.InitConfig(cfgFile)
 	// cobra.OnInitialize(initConfig)
@@ -192,7 +187,7 @@ func init() {
 	// setCmd.PersistentFlags().String("foo", "", "A help for foo")
 	RootCmd.PersistentFlags().BoolVarP(&quietOutput, "quiet", "q", false, "make the output machine readable")
 
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/keystone.yaml)")
+	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/keystone/keystone.yaml)")
 
 	RootCmd.PersistentFlags().BoolVarP(&skipPrompts, "skip", "s", false, "skip prompts and use default")
 
@@ -205,29 +200,6 @@ func init() {
 	noProjectCommands = noEnvironmentCommands
 
 	noLoginCommands = []string{"login", "source", "documentation", "version"}
-}
-
-func WriteConfig() error {
-	var err error
-
-	home, err := os.UserHomeDir()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// Ensure the .config exists
-	if err := os.MkdirAll(path.Join(home, ".config"), 0o700); err != nil {
-		return err
-	}
-
-	configPath := path.Join(home, ".config", "keystone.yaml")
-	if err = viper.WriteConfigAs(configPath); err != nil {
-		if os.IsNotExist(err) {
-			err = viper.WriteConfigAs(configPath)
-		}
-	}
-
-	return err
 }
 
 func fetch() {
