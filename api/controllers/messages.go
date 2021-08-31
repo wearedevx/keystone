@@ -13,6 +13,7 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 
+	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/internal/utils"
@@ -271,6 +272,56 @@ func DeleteExpiredMessages(w http.ResponseWriter, r *http.Request, _ httprouter.
 	})
 
 	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+
+	http.Error(w, "OK", http.StatusOK)
+}
+
+func AlertMessagesWillExpire(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	// Check caller with some sort of token
+	token, ok := getTTLToken(r)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	actual := utils.GetEnv("X_KS_TTL", "")
+	if actual == "" {
+		fmt.Println("Missing TTL authorization key")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	if token == "" || token != actual {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	errors := []error{}
+
+	// Actual work
+	err := repo.Transaction(func(Repo repo.IRepo) error {
+		groupedMessageUser := make(map[uint]emailer.GroupedMessagesUser)
+
+		Repo.GetGroupedMessagesWillExpireByUser(&groupedMessageUser)
+
+		// For each recipients, send message.
+		for _, groupedMessagesUser := range groupedMessageUser {
+			email, err := emailer.MessageWillExpireMail(5, groupedMessagesUser.Projects)
+			if err != nil {
+				errors = append(errors, err)
+			} else if err = email.Send([]string{groupedMessagesUser.Recipient.Email}); err != nil {
+				errors = append(errors, err)
+			}
+		}
+
+		return Repo.Err()
+	})
+
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	} else if len(errors) > 0 {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 

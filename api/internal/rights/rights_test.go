@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/wearedevx/keystone/api/internal/emailer"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/api/pkg/repo"
 	"gorm.io/gorm"
@@ -102,7 +103,11 @@ func (f *FakeRepo) DeleteMessage(_ uint, _ uint) IRepo {
 	panic("not implemented")
 }
 
-func (f *FakeRepo) DeleteExpiredMessages(_ uint, _ uint) IRepo {
+func (f *FakeRepo) DeleteExpiredMessages() IRepo {
+	panic("not implemented")
+}
+
+func (repo *FakeRepo) GetGroupedMessagesWillExpireByUser(groupedMessageUser *map[uint]emailer.GroupedMessagesUser) IRepo {
 	panic("not implemented")
 }
 

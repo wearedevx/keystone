@@ -134,6 +134,43 @@ Have a nice day!
 The Keystone team
 </p>
 `))
+
+	templates["message_will_expire/html"] = template.Must(template.New("mesage_will_expire/html").Parse(`
+		<p>
+			Hello!
+		</p>
+
+		<p>
+			Some messages you haven't read yet will expire in {{.NbDays}} days.
+		</p>
+
+		<p>
+			Related projects:
+		</p>
+
+		{{ range $groupedProject := .GroupedProjects}}
+			<p>
+				- Project: {{$groupedProject.Project.Name}}
+			</p>
+
+			<p>
+				Environments:
+					<ul>
+						{{range $environment := $groupedProject.Environments}}
+							<li>- {{$environment.Name}}</li>
+						{{ end }}
+					</ul>
+			</p>
+		{{ end }}
+
+		<p>
+			Retrieve them before they expire with:
+			<ol>
+				<li>$ cd <my-project></li>
+				<li>$ ks source</li>
+			</ol>
+		</p>
+`))
 }
 
 type inviteData struct {
@@ -150,6 +187,21 @@ type newDeviceAdminData struct {
 type newDeviceData struct {
 	DeviceName string
 	UserID     string
+}
+
+type GroupedMessageProject struct {
+	Project      models.Project
+	Environments map[string]models.Environment
+}
+
+type GroupedMessagesUser struct {
+	Recipient models.User
+	Projects  map[uint]GroupedMessageProject
+}
+
+type newGroupedMessageProjectData struct {
+	NbDays          int
+	GroupedProjects map[uint]GroupedMessageProject
 }
 
 func renderTemplate(
@@ -274,6 +326,21 @@ func renderNewDevice(deviceName string, userID string) (html string, text string
 	return html, text, nil
 }
 
+func renderMessageWillExpire(nbDays int, groupedProjects map[uint]GroupedMessageProject) (html string, text string, err error) {
+	fmt.Println("api ~ messages.go ~ HERE HERE HER EHER EHERE HERE")
+
+	html, text, err = renderTemplate(
+		"message_will_expire/html",
+		newGroupedMessageProjectData{NbDays: nbDays, GroupedProjects: groupedProjects},
+	)
+	if err != nil {
+		return "", "", err
+	}
+
+	return html, text, nil
+
+}
+
 func InviteMail(inviter models.User, projectName string) (email *Email, err error) {
 	html, text, err := renderInviteTemplate(inviter.Email, projectName)
 	if err != nil {
@@ -335,6 +402,23 @@ func NewDeviceMail(deviceName string, userID string) (email *Email, err error) {
 		FromEmail: KEYSTONE_MAIL,
 		FromName:  "Keystone",
 		Subject:   fmt.Sprintf("A new device has been registered"),
+		HtmlBody:  html,
+		TextBody:  text,
+	}
+
+	return email, nil
+}
+
+func MessageWillExpireMail(nbDays int, groupedProjects map[uint]GroupedMessageProject) (email *Email, err error) {
+	html, text, err := renderMessageWillExpire(nbDays, groupedProjects)
+	if err != nil {
+		return nil, err
+	}
+
+	email = &Email{
+		FromEmail: KEYSTONE_MAIL,
+		FromName:  "Keystone",
+		Subject:   "Some message will expire",
 		HtmlBody:  html,
 		TextBody:  text,
 	}
