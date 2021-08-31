@@ -1,0 +1,3 @@
+! ks destroy
+
+stderr ' ERROR : Project Does Not Exist'

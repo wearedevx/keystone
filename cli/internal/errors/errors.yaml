@@ -141,14 +141,14 @@ errors:
   # PROJECT_ERRORS
   # –––––––––––––––––
   - type: ProjectDoesntExist
-    name: "Project Doesn't Exist"
+    name: "Project Does Not Exist"
     params:
       - name: Name
         type: string
       - name: ProjectId
         type: string
     template: |
-      {{ ERROR }} {{- ": '" | red }} {{- .Name | red }} {{- "'" | red }}
+      {{ ERROR }} {{- ": " | red }} {{- .Name | red }} 
       Project in your keystone.yaml does not exist or your are not part of it.
 
       If you have this configuration from a project member, ask them to add you in the keystone project.

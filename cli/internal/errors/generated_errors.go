@@ -91,7 +91,7 @@ You can manage roles for the current project by editing the roles file:
 
 `,
 	"ProjectDoesntExist": `
-{{ ERROR }} {{- ": '" | red }} {{- .Name | red }} {{- "'" | red }}
+{{ ERROR }} {{- ": " | red }} {{- .Name | red }} 
 Project in your keystone.yaml does not exist or your are not part of it.
 
 If you have this configuration from a project member, ask them to add you in the keystone project.
@@ -101,8 +101,8 @@ If you have this configuration from a project member, ask them to add you in the
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
 Available environments are: {{ .Available }}
 
-To create a new environment:
-  $ ks env new {{ .Environment }}
+To use another environment:
+  $ ks env {{ .Environment }}
 
 `,
 	"EnvironmentAlreadyExists": `
@@ -473,7 +473,7 @@ func ProjectDoesntExist(name string, projectid string, cause error) *Error {
 		"Name":      string(name),
 		"ProjectId": string(projectid),
 	}
-	return NewError("Project Doesn't Exist", helpTexts["ProjectDoesntExist"], meta, cause)
+	return NewError("Project Does Not Exist", helpTexts["ProjectDoesntExist"], meta, cause)
 }
 
 func EnvironmentDoesntExist(environment string, available string, cause error) *Error {
