@@ -363,7 +363,7 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 	}
 
 	s = s.sendMessageAndUpdateEnvironment(messagesToWrite)
-	ui.PrintSuccess("Secrets and fies sent to user for %d environments.", len(environments))
+	ui.PrintSuccess("Secrets and files sent to user for %d environments.", len(environments))
 
 	return s
 }

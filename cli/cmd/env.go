@@ -16,9 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -45,7 +42,7 @@ With an argument name, activates the environment:
 $ ks env staging
 ` + "```" + `
 `,
-	Args: cobra.MaximumNArgs(1),
+	Args: cobra.NoArgs,
 	Run: func(_ *cobra.Command, args []string) {
 		var err *errors.Error
 
@@ -57,47 +54,6 @@ $ ks env staging
 			return
 		}
 
-		fetch()
-
-		locallyModified := ctx.LocallyModifiedFiles(currentEnvironment)
-		if len(locallyModified) != 0 {
-			ui.Print(ui.RenderTemplate("local changes", `
-{{ ERROR }} {{ "You have locally modified files:" | red }}
-{{ range $file := .Files }}  - {{ $file.Path }}
-{{ end }}
-
-If you want to make those changes permanent for the '{{ .Environment }}'
-and send them all members:
-  $ ks file set <filepath>
-
-If you want to discard those changes:
-  $ ks file reset [filepath]...
-`, map[string]interface{}{
-				"Environment": currentEnvironment,
-				"Files":       locallyModified,
-			}))
-
-			os.Exit(1)
-		}
-
-		// Set the current environment
-		envName := args[0]
-		ctx.SetCurrent(envName)
-
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
-
-		ui.Print(ui.RenderTemplate("using env", `
-{{ OK }} {{ .Message | bright_green }}
-
-To load its variables:
-  $ eval $(ks source)
-`, map[string]string{
-			"Message": fmt.Sprintf("Using the '%s' environment", envName),
-			"EnvName": envName,
-		}))
 	},
 }
 
