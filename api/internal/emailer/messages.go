@@ -159,7 +159,7 @@ func renderTemplate(
 	htmlBuffer := bytes.NewBufferString(html)
 
 	// Render the content template
-	if err = templates["invite/html"].Execute(
+	if err = templates[templateName].Execute(
 		htmlBuffer,
 		data,
 	); err != nil {
