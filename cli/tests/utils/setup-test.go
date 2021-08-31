@@ -195,6 +195,55 @@ current: 0
 	return err
 }
 
+func CreateProject(env *testscript.Env) (err error) {
+	Repo := new(repo.Repo)
+	project := models.Project{}
+	user := models.User{}
+
+	if err = faker.FakeData(&project); err != nil {
+		return err
+	}
+
+	if err = faker.FakeData(&user); err != nil {
+		return err
+	}
+
+	keyPair, err := keys.New(keys.TypeEC)
+
+	device := "device-test"
+	deviceUID := uuid.NewV4().String()
+	user.ID = 0
+	user.Email = "email@example.com"
+	user.Devices = []models.Device{{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value}}
+
+	Repo.
+		GetOrCreateUser(&user).
+		GetOrCreateProject(&project).
+		ProjectAddMembers(
+			project,
+			[]models.MemberRole{
+				{MemberID: user.UserID, RoleID: 4},
+			},
+			user,
+		)
+
+	if err := Repo.Err(); err != nil {
+		fmt.Println("Get Or Create User, or Project, or add Member to Project", err)
+		os.Exit(1)
+	}
+
+	cwd := env.Getenv("WORK")
+
+	pathToKeystoneFile := path.Join(cwd, "keystone.yaml")
+	err = ioutil.WriteFile(pathToKeystoneFile, []byte(`project_id: `+project.UUID+`
+name: `+project.Name+`
+env: []
+files: []
+ci_services: []`), 0o660)
+
+	return nil
+}
+
 func getHomeDir(env *testscript.Env) string {
 	return path.Join(env.Getenv("WORK"), "home")
 }

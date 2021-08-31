@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
@@ -142,6 +143,57 @@ func (r *Repo) ProjectGetMembers(project *Project, members *[]ProjectMember) IRe
 		Error
 
 	return r
+}
+
+// ProjectGetAdmins returns all admins of a project
+func (r *Repo) ProjectGetAdmins(project *Project, members *[]ProjectMember) IRepo {
+	if r.err != nil {
+		return r
+	}
+
+	r.err = r.GetDb().
+		Preload("User").
+		Joins(
+			"inner join roles as r on role_id = r.id and r.name = ?",
+			"admin",
+		).
+		Where("project_id = ?", project.ID).
+		Find(members).
+		Error
+
+	return r
+}
+
+func (r *Repo) ProjectIsMemberAdmin(
+	project *Project,
+	member *ProjectMember,
+) bool {
+	if r.err != nil {
+		return false
+	}
+
+	err := r.GetDb().
+		Joins(
+			"inner join users as u on u.user_id = ?",
+			member.UserID,
+		).
+		Joins(
+			"inner join roles as r on role_id = r.id and r.name = ?",
+			"admin",
+		).
+		Where("project_id = ?", project.ID).
+		First(member).
+		Error
+
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			r.err = err
+		}
+
+		return false
+	}
+
+	return true
 }
 
 // From a list of MemberEnvironmentRole, fetches users from database
