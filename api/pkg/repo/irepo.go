@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"gorm.io/gorm"
 )
@@ -16,6 +17,7 @@ type IRepo interface {
 	DeleteLoginRequest(string) bool
 	DeleteAllProjectMembers(project *models.Project) IRepo
 	DeleteExpiredMessages() IRepo
+	GetGroupedMessagesWillExpireByUser(groupedMessageUser *map[uint]emailer.GroupedMessagesUser) IRepo
 	DeleteMessage(messageID uint, userID uint) IRepo
 	DeleteProject(project *models.Project) IRepo
 	DeleteProjectsEnvironments(project *models.Project) IRepo
