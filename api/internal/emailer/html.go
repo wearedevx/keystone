@@ -343,7 +343,7 @@ const BASE_HTML string = `
         <td class="container">
           <div class="content">
 
-            <!-- START CENTERED WHITE CONTAINER -->
+            !-- START CENTERED WHITE CONTAINER -->
             <table role="presentation" class="main">
 
               <!-- START MAIN CONTENT AREA -->
@@ -369,12 +369,6 @@ const BASE_HTML string = `
                 <tr>
                   <td class="content-block">
                     <span class="apple-link">DevX, 2 av Président Pierre Angot, 64000 Pau, Nouvelle-Aquitaine, France</span>
-                    <br> Don't like these emails? <a href="http://i.imgur.com/CScmqnj.gif">Unsubscribe</a>.
-                  </td>
-                </tr>
-                <tr>
-                  <td class="content-block powered-by">
-                    Powered by <a href="http://htmlemail.io">HTMLemail</a>.
                   </td>
                 </tr>
               </table>
