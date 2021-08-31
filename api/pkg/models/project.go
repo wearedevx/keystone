@@ -11,13 +11,13 @@ import (
 )
 
 type Project struct {
-	ID           uint            `json:"id" gorm:"primaryKey"`
-	UUID         string          `json:"uuid" gorm:"not null;unique"`
+	ID           uint            `json:"id" gorm:"primaryKey" faker:"-"`
+	UUID         string          `json:"uuid" gorm:"not null;unique" faker:"word,unique"`
 	Name         string          `json:"name" gorm:"not null"`
-	Members      []ProjectMember `json:"members"`
+	Members      []ProjectMember `json:"members" faker:"-"`
 	UserID       uint            `json:"user_id"`
-	User         User            `json:"user"`
-	Environments []Environment   `json:"environments"`
+	User         User            `json:"user" faker:"-"`
+	Environments []Environment   `json:"environments" faker:"-"`
 	CreatedAt    time.Time       `json:"create_at"`
 	UpdatedAt    time.Time       `json:"update_at"`
 }

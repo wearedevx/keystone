@@ -1,5 +1,4 @@
 # Init with name
-exec whoami
 ks init my_project
 
 # stdout 'All done!'

@@ -139,6 +139,12 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 		}
 	}
 
+	// Prevent users that are not admin on the project from deleting it
+	userIsAdmin := Repo.ProjectIsMemberAdmin(&project, &models.ProjectMember{UserID: user.ID})
+	if err := Repo.Err(); err != nil || !userIsAdmin {
+		return &result, http.StatusNotFound, err
+	}
+
 	areInProjects, err := Repo.CheckMembersAreInProject(project, input.Members)
 
 	if len(areInProjects) != len(input.Members) {
