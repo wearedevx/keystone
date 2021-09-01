@@ -4,7 +4,7 @@ SQL_PROXY_PORT=5432
 MAX_RETRIES=10
 RETRY_DELAY=2
 
-function wait_for_database() {
+function wait_for_database {
 	ready="0"
 	tries=0
 
