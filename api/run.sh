@@ -4,19 +4,19 @@ SQL_PROXY_PORT=5432
 MAX_RETRIES=10
 RETRY_DELAY=2
 
-function wait_for_database {
+wait_for_database() {
 	ready="0"
 	tries=0
 
 	echo "Waiting for database to become available...";
 
-	while [ $ready == "0" ]; do
+	while [ "$ready" == "0" ]; do
 		if [ $tries -eq $MAX_RETRIES ]; then
 			echo "Max wait time for database exceeded"
 			exit 1;
 		fi
 
-		ready="$(lsof -i ":${SQL_PROXY_PORT}" | grep LISTEN | wc -l | xargs)";
+		ready="$(lsof -i ":${SQL_PROXY_PORT}" | grep "LISTEN" | wc -l | xargs)";
 
 		sleep $RETRY_DELAY;
 
