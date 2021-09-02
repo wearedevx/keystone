@@ -98,6 +98,9 @@ jobs:
         run: |-
           gcloud run services update-traffic ${{ secrets.SERVICE }} --to-tags=${{ steps.cloud_run_tag.outputs.tag }}=100 --region=${{ env.REGION }}
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: Remove Unused Revisions
         id: remove-unused-revisions
         run: |-
