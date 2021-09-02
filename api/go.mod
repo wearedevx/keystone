@@ -5,8 +5,11 @@ go 1.16
 require (
 	github.com/GoogleCloudPlatform/cloudsql-proxy v1.22.0
 	github.com/bxcodec/faker/v3 v3.6.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
-	github.com/gofrs/uuid v4.0.0+incompatible // indirect
+	github.com/go-redis/redis/v8 v8.11.3
+	github.com/gofrs/uuid v4.0.0+incompatible
+	github.com/gomodule/redigo v1.8.5 // indirect
 	github.com/google/go-github/v32 v32.1.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/k3a/html2text v1.0.8
@@ -25,7 +28,6 @@ require (
 	golang.org/x/sys v0.0.0-20210915083310-ed5796bab164 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
-	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.9
