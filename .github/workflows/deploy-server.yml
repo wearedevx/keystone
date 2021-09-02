@@ -98,13 +98,13 @@ jobs:
         run: |-
           gcloud run services update-traffic ${{ secrets.SERVICE }} --to-tags=${{ steps.cloud_run_tag.outputs.tag }}=100 --region=${{ env.REGION }}
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-
       - name: Remove Unused Revisions
         id: remove-unused-revisions
+        env: 
+          GCP_PROJECT: ${{ secrets.PROJECT_ID }}
+          GCP_REGION: ${{ env.REGION }}
         run: |-
-          GCP_PROJECT=${{ env.PROJECT_ID }} GCP_REGION=${{ env.REGION }} api/remove_unused_revisions.sh 
+          api/remove_unused_revisions.sh 
 
       - name: Dispatch Builds
         uses: peter-evans/repository-dispatch@v1.0.0
