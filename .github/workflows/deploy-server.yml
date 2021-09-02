@@ -47,9 +47,6 @@ jobs:
           # Set to true to authenticate the Cloud Run action
           export_default_credentials: true
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-
       - name: Authorize Docker push
         run: gcloud auth configure-docker
 
