@@ -37,6 +37,7 @@ jobs:
 
           # Actual generation
           cd keystone/cli
+          rm -rf ../../keystone-documentation/content/docs/cli/*
           go run main.go documentation -t hugo -d ../../keystone-documentation/content/docs/cli
           cd ../..
 
