@@ -108,13 +108,14 @@ func (ctx *Context) AddFile(file FileKey, envContentMap map[string][]byte) *Cont
 	current := ctx.CurrentEnvironment()
 
 	// Use current content for current environment.
+	src := path.Join(ctx.Wd, file.Path)
 	dest := path.Join(ctx.CachedEnvironmentFilesPath(current), file.Path)
 	dir := filepath.Dir(dest)
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return ctx.setError(kserrors.CopyFailed(file.Path, dest, err))
 	}
 
-	if err := CopyFile(file.Path, dest); err != nil {
+	if err := CopyFile(src, dest); err != nil {
 		return ctx.setError(kserrors.CopyFailed(file.Path, dest, err))
 	}
 

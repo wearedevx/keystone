@@ -30,7 +30,7 @@ do
 		--region=$GCP_REGION \
 		--async;
 
-	((count++));
+	count=$((count + 1));
 done
 
 echo "Deleted ${count} revisions"

@@ -40,6 +40,8 @@ var skipPrompts bool
 
 var ctx *core.Context
 
+var CWD string
+
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "ks <command> [sub-command] [inputs]...",
@@ -174,6 +176,12 @@ func Initialize() {
 }
 
 func init() {
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	CWD = cwd
+
 	// Call directly initConfig. cobra doesn't call initConfig func.
 	config.InitConfig(cfgFile)
 	// cobra.OnInitialize(initConfig)
