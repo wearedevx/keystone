@@ -196,6 +196,23 @@ func (r *Repo) ProjectIsMemberAdmin(
 	return true
 }
 
+func (r *Repo) IsMemberOfProject(project *Project, member *ProjectMember) IRepo {
+	if r.err != nil {
+		return r
+	}
+
+	r.err = r.GetDb().
+		Joins(
+			"inner join users as u on u.id = ?",
+			member.UserID,
+		).
+		Where("project_id = ?", project.ID).
+		First(member).
+		Error
+
+	return r
+}
+
 // From a list of MemberEnvironmentRole, fetches users from database
 // Returns the found Users and a slice of not found userIDs
 func (r *Repo) usersInMemberRoles(mers []MemberRole) (map[string]User, []string) {
