@@ -11,7 +11,8 @@ import (
 
 func TestMain(m *testing.M) {
 	testscript.RunMain(m, map[string]func() int{
-		"ks": cmd.Execute,
+		"ks":                 cmd.Execute,
+		"githubLoginSuccess": utils.GithubLoginSuccess,
 	})
 }
 

@@ -33,10 +33,16 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 
 }
 
-func GetProjectsMembers(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
+func GetProjectsMembers(
+	params router.Params,
+	_ io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
 	var project models.Project
+	var member models.ProjectMember
 	var projectID = params.Get("projectID").(string)
 	var result models.GetMembersResponse
 
@@ -44,11 +50,18 @@ func GetProjectsMembers(params router.Params, _ io.ReadCloser, Repo repo.IRepo, 
 		return &result, http.StatusBadRequest, nil
 	}
 
+	member.UserID = user.ID
+
 	Repo.GetProjectByUUID(projectID, &project).
+		IsMemberOfProject(&project, &member).
 		ProjectGetMembers(&project, &result.Members)
 
 	if err = Repo.Err(); err != nil {
-		return &result, http.StatusInternalServerError, err
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusNotFound
+		} else {
+			status = http.StatusInternalServerError
+		}
 	}
 
 	return &result, status, err

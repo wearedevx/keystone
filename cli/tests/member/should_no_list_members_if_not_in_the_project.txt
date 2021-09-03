@@ -1,0 +1,20 @@
+# Init a project
+
+ks init list-members-project
+
+# Do NOT add members to project
+# ks member add -r developer -u john.doe@gitlab -u jane.to@github
+
+# logout
+ks logout
+
+# Execute fake github login success after 3s
+githubLoginSuccess &
+
+# Log new user
+ks login -s --with=github
+
+# list members of project
+! ks member
+
+stderr ' ERROR : Project Does Not Exist'
