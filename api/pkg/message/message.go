@@ -1,29 +1,35 @@
 package message
 
 import (
-	"github.com/wearedevx/keystone/api/internal/redis"
+	. "github.com/wearedevx/keystone/api/internal/redis"
 )
 
-var Redis *redis.Redis
+// var Redis *redis.Redis
 
-func GetMessageByUuid(uuid string) ([]byte, error) {
+type MessageService struct {
+	redis *Redis
+}
+
+func NewMessageService() *MessageService {
+	return &MessageService{
+		redis: new(Redis),
+	}
+}
+
+func (m *MessageService) GetMessageByUuid(uuid string) ([]byte, error) {
 	value := ""
-	Redis.Read(uuid, &value)
+	m.redis.Read(uuid, &value)
 
-	if Redis.Err() != nil {
-		return nil, Redis.Err()
+	if m.redis.Err() != nil {
+		return nil, m.redis.Err()
 	}
 
-	Redis.Delete(uuid)
+	m.redis.Delete(uuid)
 
 	return []byte(value), nil
 }
 
-func WriteMessageWithUuid(uuid string, value []byte) error {
-	Redis.Write(uuid, string(value))
-	return Redis.Err()
-}
-
-func init() {
-	Redis = new(redis.Redis)
+func (m *MessageService) WriteMessageWithUuid(uuid string, value []byte) error {
+	m.redis.Write(uuid, string(value))
+	return m.redis.Err()
 }
