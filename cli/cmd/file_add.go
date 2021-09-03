@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"reflect"
+	"strings"
 
 	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
@@ -63,32 +63,36 @@ ks file add -s ./credentials.json`,
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		filePath := args[0]
+		filePath, ferr := cleanPathArgument(args[0], ctx.Wd)
+		if ferr != nil {
+			ui.PrintError(ferr.Error())
+			os.Exit(1)
+		}
 
 		environments := ctx.AccessibleEnvironments
-
 		environmentFileMap := map[string][]byte{}
 
 		useOldFile := checkFileAlreadyInCache(filePath)
 		if !useOldFile {
+			absPath := filepath.Join(ctx.Wd, filePath)
 
-			if !utils.FileExists(path.Join(ctx.Wd, filePath)) {
+			if !utils.FileExists(absPath) {
 				err = kserrors.CannotAddFile(filePath, errors.New("file not found"))
 				err.Print()
 
-				return
+				os.Exit(1)
 			}
 
 			/* #nosec
 			 * Contents are read and copied, not ever run
 			 */
-			currentContent, erro := ioutil.ReadFile(filePath)
+			currentContent, erro := ioutil.ReadFile(absPath)
 
 			if erro != nil {
 				err = kserrors.CannotAddFile(filePath, erro)
 				err.Print()
 
-				return
+				os.Exit(1)
 			}
 
 			environmentFileMap[currentEnvironment] = currentContent
@@ -247,4 +251,21 @@ func checkFileAlreadyInCache(fileName string) bool {
 		return !override
 	}
 	return false
+}
+
+func cleanPathArgument(
+	filePathArg string,
+	wd string,
+) (filePath string, err error) {
+	filePathInCwd := filepath.Join(CWD, filePathArg)
+	filePathClean := filepath.Clean(filePathInCwd)
+
+	if !strings.HasPrefix(filePathClean, wd) {
+		return "", fmt.Errorf("File %s not in project", filePath)
+	}
+
+	filePath = strings.TrimPrefix(filePathClean, ctx.Wd)
+	filePath = strings.TrimPrefix(filePath, "/")
+
+	return filePath, nil
 }
