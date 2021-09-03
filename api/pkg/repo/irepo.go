@@ -2,6 +2,7 @@ package repo
 
 import (
 	"github.com/wearedevx/keystone/api/internal/emailer"
+	"github.com/wearedevx/keystone/api/pkg/message"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"gorm.io/gorm"
 )
@@ -49,6 +50,7 @@ type IRepo interface {
 	GetUser(*models.User) IRepo
 	GetUserByEmail(string, *[]models.User) IRepo
 	ListProjectMembers(userIDList []string, projectMember *[]models.ProjectMember) IRepo
+	MessageService() *message.MessageService
 	ProjectAddMembers(models.Project, []models.MemberRole, models.User) IRepo
 	ProjectGetAdmins(project *models.Project, members *[]models.ProjectMember) IRepo
 	ProjectIsMemberAdmin(project *models.Project, member *models.ProjectMember) bool

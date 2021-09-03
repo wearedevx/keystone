@@ -11,7 +11,6 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	uuid "github.com/satori/go.uuid"
-	"github.com/wearedevx/keystone/api/pkg/message"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 
@@ -54,6 +53,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	project := models.Project{
 		UUID: projectID,
 	}
+
 	if err = Repo.GetProject(&project).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			response.Error = err
@@ -106,7 +106,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 			// If not found
 			if err == nil && !errors.Is(Repo.Err(), repo.ErrorNotFound) {
 				curr.Environment = environment
-				curr.Message.Payload, err = message.GetMessageByUuid(curr.Message.Uuid)
+				curr.Message.Payload, err = Repo.MessageService().GetMessageByUuid(curr.Message.Uuid)
 
 				if err != nil {
 					// fmt.Println("api ~ messages.go ~ err", err)
@@ -203,7 +203,12 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			break
 		}
 
-		message.WriteMessageWithUuid(messageToWrite.Uuid, clientMessage.Payload)
+		Repo.
+			MessageService().
+			WriteMessageWithUuid(
+				messageToWrite.Uuid,
+				clientMessage.Payload,
+			)
 
 		if clientMessage.UpdateEnvironmentVersion {
 			// Change environment version id.
