@@ -107,25 +107,24 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 
 		if can {
 			curr := models.GetMessageResponse{}
-			if err = Repo.GetMessagesForUserOnEnvironment(publicKey, environment, &curr.Message).Err(); err != nil && !errors.Is(Repo.Err(), repo.ErrorNotFound) {
+			err = Repo.GetMessagesForUserOnEnvironment(publicKey, environment, &curr.Message).Err()
+
+			if err != nil {
 				response.Error = Repo.Err()
 				response.Success = false
 				status = http.StatusBadRequest
 				goto done
 			}
 
-			// If not found
-			if err == nil && !errors.Is(Repo.Err(), repo.ErrorNotFound) {
-				curr.Environment = environment
-				curr.Message.Payload, err = Repo.MessageService().GetMessageByUuid(curr.Message.Uuid)
+			curr.Environment = environment
+			curr.Message.Payload, err = Repo.MessageService().GetMessageByUuid(curr.Message.Uuid)
 
-				if err != nil {
-					// fmt.Println("api ~ messages.go ~ err", err)
-					response.Error = err
-					return &response, http.StatusNotFound, err
-				} else {
-					result.Environments[environment.Name] = curr
-				}
+			if err != nil {
+				// fmt.Println("api ~ messages.go ~ err", err)
+				response.Error = err
+				return &response, http.StatusNotFound, err
+			} else {
+				result.Environments[environment.Name] = curr
 			}
 		}
 	}
