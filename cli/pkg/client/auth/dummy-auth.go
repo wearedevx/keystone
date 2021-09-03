@@ -5,11 +5,9 @@ package auth
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/xanzy/go-gitlab"
 	"golang.org/x/oauth2"
 )
 
@@ -18,7 +16,6 @@ type dummyAuthService struct {
 	ctx          context.Context
 	conf         *oauth2.Config
 	loginRequest models.LoginRequest
-	client       *gitlab.Client
 	token        *oauth2.Token
 }
 
@@ -86,19 +83,11 @@ func (g dummyAuthService) Finish(pk []byte, device string, deviceUID string) (mo
 }
 
 func (g dummyAuthService) CheckAccount(account map[string]string) (bool, error) {
-	gUser, _, err := g.client.Users.CurrentUser()
+	var err error
 
 	if err != nil {
 		return false, err
 	}
 
-	if account["account_type"] != string(models.GitlabAccountType) {
-		return false, nil
-	}
-
-	if account["ext_id"] == strconv.Itoa(gUser.ID) {
-		return true, nil
-	}
-
-	return false, nil
+	return true, nil
 }

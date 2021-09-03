@@ -48,6 +48,7 @@ type IRepo interface {
 	GetRolesMemberCanInvite(projectMember models.ProjectMember, roles *[]models.Role) IRepo
 	GetUser(*models.User) IRepo
 	GetUserByEmail(string, *[]models.User) IRepo
+	IsMemberOfProject(*models.Project, *models.ProjectMember) IRepo
 	ListProjectMembers(userIDList []string, projectMember *[]models.ProjectMember) IRepo
 	ProjectAddMembers(models.Project, []models.MemberRole, models.User) IRepo
 	ProjectGetAdmins(project *models.Project, members *[]models.ProjectMember) IRepo
