@@ -10,13 +10,15 @@ import (
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
 	// . "github.com/wearedevx/keystone/internal/models"
 	. "github.com/wearedevx/keystone/api/internal/utils"
+	"github.com/wearedevx/keystone/api/pkg/message"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 type Repo struct {
-	err error
-	tx  *gorm.DB
+	err      error
+	tx       *gorm.DB
+	messages *message.MessageService
 }
 
 var db *gorm.DB
@@ -54,8 +56,9 @@ func AutoMigrate() error {
 func Transaction(fn func(IRepo) error) error {
 	err := db.Transaction(func(tx *gorm.DB) error {
 		repo := &Repo{
-			err: nil,
-			tx:  tx,
+			err:      nil,
+			tx:       tx,
+			messages: message.NewMessageService(),
 		}
 		return fn(repo)
 
