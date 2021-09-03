@@ -79,6 +79,10 @@ func (repo *Repo) GetDb() *gorm.DB {
 	return repo.tx
 }
 
+func (repo *Repo) MessageService() *message.MessageService {
+	return repo.messages
+}
+
 func (repo *Repo) notFoundAsBool(call func() error) (bool, error) {
 	var err error
 	found := false
