@@ -3,7 +3,7 @@ ks init test-env
 ks file
 stdout '.*No files are currently tracked as secret files\..*'
 
-ks file add --skip nofile.txt
+! ks file add --skip nofile.txt
 
 cmp stderr file_not_added_str_expected.txt 
 
