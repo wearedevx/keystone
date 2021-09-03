@@ -2,6 +2,7 @@ package repo
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -41,9 +42,9 @@ func (repo *Repo) GetMessagesForUserOnEnvironment(publicKey models.Device, envir
 		First(&message).
 		Error
 
-	// if errors.Is(repo.Err(), ErrorNotFound) {
-	// 	repo.err = nil
-	// }
+	if errors.Is(repo.Err(), ErrorNotFound) {
+		repo.err = nil
+	}
 
 	return repo
 }

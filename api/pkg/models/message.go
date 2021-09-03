@@ -108,7 +108,7 @@ type GetMessageByEnvironmentResponse struct {
 }
 
 type GetMessageResponse struct {
-	Message     Message     `json:"message"`
+	Message     Message     `json:"message,omitempty"`
 	Environment Environment `json:"environment"`
 }
 
