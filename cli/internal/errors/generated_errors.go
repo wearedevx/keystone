@@ -102,7 +102,7 @@ If you have this configuration from a project member, ask them to add you in the
 Available environments are: {{ .Available }}
 
 To use another environment:
-  $ ks env {{ .Environment }}
+  $ ks env switch {{ .Environment }}
 
 `,
 	"EnvironmentAlreadyExists": `
@@ -111,7 +111,7 @@ You tried to create an environment with the name '{{ .Environment }}',
 but your project already have one with that name.
 
 To use the '{{ .Environment }}':
-  $ ks env {{ .Environment }}
+  $ ks env switch {{ .Environment }}
 
 `,
 	"FailedToSetCurrentEnvironment": `
@@ -137,7 +137,7 @@ You are trying to remove the '{{ .Environment }}' environment,
 but it is currently in use.
 
 Change to another environment:
-  $ ks env default
+  $ ks env switch <environment>
 
 `,
 	"CannotGetEnvironmentKeys": `
@@ -263,7 +263,7 @@ This happened because: {{ .Cause }}
 No version of '{{ .Path }}' was found for the '{{ .Environment }}' environment.
 
 To get the latest variables and files for '{{ .Environment }}':
-  $ ks --env {{ .Environment }} pull
+  $ ks file && ks secret
 
 `,
 	"CannotCreateDirectory": `

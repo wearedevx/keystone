@@ -274,7 +274,7 @@ func CheckExpiredTokenError(err *kserrors.Error) {
 }
 
 func Logout() {
-	fmt.Printf("Logout user")
+	fmt.Print("Logout user\n")
 	SetCurrentAccount(-1)
 	SetAuthToken("")
 	Write()
