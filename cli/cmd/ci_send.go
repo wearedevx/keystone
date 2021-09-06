@@ -45,7 +45,10 @@ ks ci send --env prod
 		mustNotHaveMissingSecrets(environment)
 		mustNotHaveMissingFiles(environment)
 
-		ui.Print("You are about to send the '%s' environment to your CI services.")
+		ui.Print(
+			"You are about to send the '%s' environment to your CI services.",
+			environment,
+		)
 		if !prompts.Confirm("Continue") {
 			os.Exit(0)
 		}
