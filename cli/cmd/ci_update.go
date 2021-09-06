@@ -12,16 +12,16 @@ import (
 
 // setupCmd represents the setup command
 var setupCmd = &cobra.Command{
-	Use:   "setup [ci service name]",
-	Short: "Sets up CI service integration",
-	Long: `Sets up CI service integration.
+	Use:   "update [ci service name]",
+	Short: "Updates a CI service integration",
+	Long: `Updates CI service integration.
 
 Use this command to modify CI service specific settings
 like API key and project name.`,
-	Example: `ks ci setup
+	Example: `ks ci update
 
 # To avoid the prompt
-ks ci setup my-gitub-ci-service`,
+ks ci update my-gitub-ci-service`,
 	Args: cobra.MaximumNArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		ctx := core.New(core.CTX_RESOLVE)
