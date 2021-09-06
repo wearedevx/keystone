@@ -81,7 +81,7 @@ func PickCiService(name string, ctx *core.Context, apiUrl string) (CiService, er
 		return nil, err
 	}
 
-	services := make([]prompts.SelectCIServiceItem, len(availableServices))
+	services := make([]prompts.SelectCIServiceItem, 0)
 
 	for typ, name := range availableServices {
 		services = append(services, prompts.SelectCIServiceItem{
