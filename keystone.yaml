@@ -19,7 +19,10 @@ env:
   strict: true
 - key: MANDRILL_API_KEY
   strict: true
-files: []
+files:
+- path: api/keystone-server-credentials.json
+  strict: false
+  fromcache: false
 options:
   strict: false
 ci_services:

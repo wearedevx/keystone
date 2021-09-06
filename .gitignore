@@ -12,3 +12,5 @@ core/tests/
 .keystone
 
 config/test/test.go
+
+api/keystone-server-credentials.json

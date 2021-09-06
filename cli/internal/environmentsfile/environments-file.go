@@ -24,7 +24,7 @@ type Env struct {
 type EnvironmentsFile struct {
 	path         string `yaml:"-"`
 	err          error  `yaml:"-"`
-	Current      string `yaml:"current"`
+	Current      string `yaml:"current" default:"dev"`
 	Environments []Env  `yaml:"environments"`
 }
 
