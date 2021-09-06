@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/google/go-github/v32/github"
@@ -69,7 +70,7 @@ func (g *gitHubCiService) Setup() CiService {
 
 	// These are the prompts for keys and such
 	// as those are all github specifics
-	g.askForKeys()
+	g.askForRepoUrl()
 	g.askForApiKey()
 
 	return g
@@ -203,7 +204,7 @@ func (g *gitHubCiService) initClient() {
 	g.client = client
 }
 
-func (g *gitHubCiService) getKeys() ServicesKeys {
+func (g *gitHubCiService) getOptions() ServicesKeys {
 	return g.servicesKeys
 }
 
@@ -235,18 +236,74 @@ func (g *gitHubCiService) setApiKey(apiKey ApiKey) {
 	config.Write()
 }
 
-func (g *gitHubCiService) askForKeys() CiService {
-	serviceName := availableServices[GithubCI]
-	servicesKeys := g.getKeys()
+func (g *gitHubCiService) askForRepoUrl() CiService {
+	// serviceName := availableServices[GithubCI]
+	serviceOptions := g.getOptions()
+	owner := serviceOptions["Owner"]
+	project := serviceOptions["Project"]
 
-	for key, value := range servicesKeys {
-		servicesKeys[key] = prompts.StringInput(
-			serviceName+" "+key,
-			value,
-		)
+	serviceUrl := ""
+
+	if serviceOptions["Owner"] != "" && serviceOptions["Project"] != "" {
+		serviceUrl = "https://github.com/" + serviceOptions["Owner"] + "/" + serviceOptions["Project"]
 	}
 
-	g.setKeys(servicesKeys)
+	urlIsValid := false
+
+	for !urlIsValid {
+		serviceUrl = prompts.StringInput(
+			"GitHub repository URL",
+			serviceUrl,
+		)
+
+		u, err := new(url.URL).Parse(serviceUrl)
+		if err != nil {
+			ui.Print(ui.RenderTemplate(
+				"malformed-url",
+				`{{ "Warning" | yellow }} The url is malformed
+This caused by: {{ .Cause }}`,
+				map[string]string{
+					"Cause": err.Error(),
+				},
+			),
+			)
+			continue
+		}
+
+		p := u.EscapedPath()
+		p = strings.TrimPrefix(p, "/")
+		parts := strings.Split(p, "/")
+
+		if (len(parts) != 2) || (u.Hostname() != "github.com") {
+			ui.Print(ui.RenderTemplate(
+				"not-a-github-url",
+				`{{ "Warning" | yellow }} This is not a valid github URL`,
+				map[string]string{},
+			),
+			)
+			continue
+		}
+
+		owner = parts[0]
+		project = parts[1]
+
+		if len(owner) == 0 || len(project) == 0 {
+			ui.Print(ui.RenderTemplate(
+				"not-a-valid-repo",
+				`{{ "Warning" | yellow }} This is not a valid repository URL`,
+				map[string]string{},
+			),
+			)
+			continue
+		}
+
+		urlIsValid = true
+	}
+
+	serviceOptions["Owner"] = owner
+	serviceOptions["Project"] = project
+
+	g.setKeys(serviceOptions)
 
 	return g
 }
