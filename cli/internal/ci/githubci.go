@@ -77,7 +77,7 @@ func (g *gitHubCiService) Setup() CiService {
 
 func (g *gitHubCiService) CheckSetup() {
 	if len(g.servicesKeys["Owner"]) == 0 || len(g.servicesKeys["Project"]) == 0 || len(g.getApiKey()) == 0 {
-		g.err = fmt.Errorf("There is missing information in CI service settings.\nUse $ ks ci setup %s", g.name)
+		g.err = fmt.Errorf("There is missing information in CI service settings.\nUse $ ks ci update %s", g.name)
 	}
 }
 
