@@ -1,0 +1,4 @@
+FROM cossacklabs/ci-py-go-themis
+
+
+RUN sudo apt-get -qq install libsodium-dev pkg-config

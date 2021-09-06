@@ -35,15 +35,15 @@ func (repo *Repo) GetMessagesForUserOnEnvironment(publicKey models.Device, envir
 		return repo
 	}
 
-	err := repo.GetDb().
+	repo.err = repo.GetDb().
 		Model(&models.Message{}).
 		Preload("Sender").
 		Where("recipient_device_id = ? AND environment_id = ?", publicKey.ID, environment.EnvironmentID).
 		First(&message).
 		Error
 
-	if !errors.Is(err, ErrorNotFound) {
-		// repo.err = err
+	if errors.Is(repo.Err(), ErrorNotFound) {
+		repo.err = nil
 	}
 
 	return repo

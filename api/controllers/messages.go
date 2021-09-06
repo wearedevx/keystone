@@ -10,14 +10,18 @@ import (
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
+	uuid "github.com/satori/go.uuid"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
+	"github.com/wearedevx/keystone/api/internal/redis"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/internal/utils"
 )
+
+var Redis *redis.Redis
 
 type GenericResponse struct {
 	Success bool  `json:"success"`
@@ -49,6 +53,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	project := models.Project{
 		UUID: projectID,
 	}
+
 	if err = Repo.GetProject(&project).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			response.Error = err
@@ -92,17 +97,28 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 
 		if can {
 			curr := models.GetMessageResponse{}
-			if err = Repo.GetMessagesForUserOnEnvironment(publicKey, environment, &curr.Message).Err(); err != nil {
+			err = Repo.GetMessagesForUserOnEnvironment(publicKey, environment, &curr.Message).Err()
+
+			if err != nil {
 				response.Error = Repo.Err()
 				response.Success = false
 				return &response, http.StatusBadRequest, nil
 			}
 
 			curr.Environment = environment
-			result.Environments[environment.Name] = curr
-		}
+			curr.Message.Payload, err = Repo.MessageService().GetMessageByUuid(curr.Message.Uuid)
 
+			if err != nil {
+				// fmt.Println("api ~ messages.go ~ err", err)
+				response.Error = err
+				return &response, http.StatusNotFound, err
+			} else {
+				result.Environments[environment.Name] = curr
+			}
+		}
 	}
+
+	// spew.Dump("api ~ messsages.go ~ result", result)
 
 	return &result, status, nil
 }
@@ -117,13 +133,13 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		return nil, http.StatusBadRequest, err
 	}
 
-	for _, message := range payload.Messages {
+	for _, clientMessage := range payload.Messages {
 		// - gather information for the checks
 		projectMember := models.ProjectMember{
-			UserID: message.RecipientID,
+			UserID: clientMessage.RecipientID,
 		}
 		environment := &models.Environment{
-			EnvironmentID: message.EnvironmentID,
+			EnvironmentID: clientMessage.EnvironmentID,
 		}
 
 		if err = Repo.
@@ -155,13 +171,13 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		}
 
 		// If ok, remove potential old messages for recipient.
-		if err = Repo.RemoveOldMessageForRecipient(message.RecipientDeviceID, message.EnvironmentID).Err(); err != nil {
+		if err = Repo.RemoveOldMessageForRecipient(clientMessage.RecipientDeviceID, clientMessage.EnvironmentID).Err(); err != nil {
 			fmt.Printf("err: %+v\n", err)
 			break
 		}
 
 		senderDevice := models.Device{
-			UID: message.SenderDeviceUID,
+			UID: clientMessage.SenderDeviceUID,
 		}
 
 		if err = Repo.GetPublicKey(&senderDevice).Err(); err != nil {
@@ -173,11 +189,11 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		}
 
 		messageToWrite := &models.Message{
-			RecipientID:       message.RecipientID,
-			Payload:           message.Payload,
-			EnvironmentID:     message.EnvironmentID,
+			RecipientID:       clientMessage.RecipientID,
+			Uuid:              uuid.NewV4().String(),
+			EnvironmentID:     clientMessage.EnvironmentID,
 			SenderID:          user.ID,
-			RecipientDeviceID: message.RecipientDeviceID,
+			RecipientDeviceID: clientMessage.RecipientDeviceID,
 			SenderDeviceID:    senderDevice.ID,
 		}
 
@@ -186,7 +202,14 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			break
 		}
 
-		if message.UpdateEnvironmentVersion {
+		Repo.
+			MessageService().
+			WriteMessageWithUuid(
+				messageToWrite.Uuid,
+				clientMessage.Payload,
+			)
+
+		if clientMessage.UpdateEnvironmentVersion {
 			// Change environment version id.
 			err = Repo.SetNewVersionID(environment)
 
@@ -326,4 +349,8 @@ func AlertMessagesWillExpire(w http.ResponseWriter, r *http.Request, _ httproute
 	}
 
 	http.Error(w, "OK", http.StatusOK)
+}
+
+func init() {
+	Redis = new(redis.Redis)
 }
