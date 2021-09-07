@@ -44,7 +44,7 @@ type User struct {
 	Email       string      `json:"email" gorm:"not null" faker:"email"`
 	CreatedAt   time.Time   `json:"created_at"`
 	UpdatedAt   time.Time   `json:"updated_at"`
-	Devices     []Device    `json:"devices" faker:"-"`
+	Devices     []Device    `json:"devices" faker:"-" gorm:"many2many:user_device;"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
@@ -93,7 +93,7 @@ type LoginPayload struct {
 type UserPublicKeys struct {
 	UserID     uint     `json:"user_id"`
 	UserUID    string   `json:"user_uid"` // UserID as string (e.g: toto@github)
-	PublicKeys []Device `json:"publick_keys"`
+	PublicKeys []Device `json:"publick_keys" gorm:"many2many:user_device"`
 }
 
 type PublicKeys struct {

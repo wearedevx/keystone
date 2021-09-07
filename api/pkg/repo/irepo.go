@@ -31,7 +31,7 @@ type IRepo interface {
 	GetEnvironmentsByProjectUUID(projectUUID string, foundEnvironments *[]models.Environment) IRepo
 	GetInvitableRoles(models.Role, *[]models.Role) IRepo
 	GetLoginRequest(string) (models.LoginRequest, bool)
-	GetMessagesForUserOnEnvironment(publicKey models.Device, environment models.Environment, message *models.Message) IRepo
+	GetMessagesForUserOnEnvironment(device models.Device, environment models.Environment, message *models.Message) IRepo
 	GetOrCreateEnvironment(*models.Environment) IRepo
 	GetOrCreateEnvironmentType(*models.EnvironmentType) IRepo
 	GetOrCreateProject(*models.Project) IRepo
@@ -62,7 +62,8 @@ type IRepo interface {
 	SetLoginRequestCode(string, string) models.LoginRequest
 	SetNewVersionID(environment *models.Environment) error
 	WriteMessage(user models.User, message models.Message) IRepo
-	GetPublicKeys(uint, *[]models.Device) IRepo
-	GetPublicKey(publicKey *models.Device) IRepo
+	GetDevices(uint, *[]models.Device) IRepo
+	GetDevice(device *models.Device) IRepo
+	GetDeviceByUserID(userID uint, device *models.Device) IRepo
 	RevokeDevice(userID uint, deviceName string) IRepo
 }

@@ -32,7 +32,13 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		UserID:      fmt.Sprintf("%s@%s", user.Username, user.AccountType),
 	}
 
-	r.err = db.Where(foundUser).Preload("Devices").First(&foundUser).Error
+	r.err = db.Where(&foundUser).
+		Joins("Devices").
+		// Joins("left join user_device on user_device.user_id = users.id").
+		// Joins("left join devices on devices.id = user_device.device_id").
+		First(&foundUser).Error
+
+	fmt.Println(foundUser)
 
 	if r.err == nil {
 		for _, device := range user.Devices {
@@ -47,8 +53,8 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 				}
 			}
 			if !found {
-				device.UserID = foundUser.ID
-				if err := r.AddNewDevice(device, foundUser.UserID, foundUser.Email).Err(); err != nil {
+				userID := foundUser.ID
+				if err := r.AddNewDevice(device, userID, foundUser.UserID, foundUser.Email).Err(); err != nil {
 					r.err = err
 					return r
 				}

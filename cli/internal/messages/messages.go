@@ -144,7 +144,7 @@ func (s *messageService) fetchNewMessages(result *models.GetMessageByEnvironment
 // Since the payload in GetMessageByEnvironmentResponse is bytes anyway,
 // the decryption is done in place.
 func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvironmentResponse) (err *kserrors.Error) {
-	privateKey, e := config.GetCurrentUserPrivateKey()
+	privateKey, e := config.GetUserPrivateKey()
 	if e != nil {
 		return kserrors.CouldNotDecryptMessages("Failed to get the current user private key", e)
 	}
@@ -379,7 +379,7 @@ func (s *messageService) getCurrentUserInformation() (models.User, []byte) {
 		return currentUser, []byte{}
 	}
 
-	senderPrivateKey, err := config.GetCurrentUserPrivateKey()
+	senderPrivateKey, err := config.GetUserPrivateKey()
 	if err != nil {
 		s.err = kserrors.MustBeLoggedIn(nil)
 		return currentUser, []byte{}
@@ -405,13 +405,13 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 	}
 
 	// Create one message per user
-	for _, userPublicKeys := range userPublicKeys.Keys {
+	for _, userPublicKey := range userPublicKeys.Keys {
 
-		for _, userDevice := range userPublicKeys.PublicKeys {
+		for _, userDevice := range userPublicKey.PublicKeys {
 
 			// Don't send to current device
 			if userDevice.UID != config.GetDeviceUID() {
-				message, err := s.prepareMessage(senderPrivateKey, environment, userDevice, userDevice.UserID, PayloadContent)
+				message, err := s.prepareMessage(senderPrivateKey, environment, userDevice, userPublicKey.UserID, PayloadContent)
 				if err != nil {
 					return messages, kserrors.CouldNotEncryptMessages(err)
 				}
