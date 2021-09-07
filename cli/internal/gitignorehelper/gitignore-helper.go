@@ -8,8 +8,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/denormal/go-gitignore"
 	"github.com/wearedevx/keystone/cli/internal/utils"
-	. "github.com/wearedevx/keystone/cli/internal/utils"
 )
 
 func GitIgnore(wd string, thatPath string) error {
@@ -74,23 +74,10 @@ func GitUnignore(wd string, thatPath string) error {
 func IsIgnored(wd string, thatPath string) bool {
 	gitignorePath := path.Join(wd, ".gitignore")
 
-	if FileExists(gitignorePath) {
-		/* #nosec */
-		f, err := os.OpenFile(gitignorePath, os.O_RDONLY, 0o644)
-		if err != nil {
-			return false
-		}
-		defer utils.Close(f)
+	if utils.FileExists(gitignorePath) {
+		ignore, _ := gitignore.NewFromFile(gitignorePath)
 
-		scanner := bufio.NewScanner(f)
-		for scanner.Scan() {
-			line := scanner.Text()
-
-			if line == thatPath {
-				return true
-			}
-		}
-
+		return ignore.Ignore(thatPath)
 	}
 
 	return false

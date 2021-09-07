@@ -13,6 +13,7 @@ import (
 	"github.com/udhos/equalfile"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/utils"
@@ -336,6 +337,7 @@ func (ctx *Context) FilesUseEnvironment(
 				return ctx.setError(kserrors.CannotCopyFile(file.Path, cachedFilePath, err))
 			}
 		}
+		gitignorehelper.GitIgnore(ctx.Wd, file.Path)
 	}
 
 	return ctx
