@@ -37,8 +37,6 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 
 	r.err = db.Where(&foundUser).
 		Preload("Devices").
-		// Joins("left join user_device on user_device.user_id = users.id").
-		// Joins("left join devices on devices.id = user_device.device_id").
 		First(&foundUser).Error
 
 	fmt.Println(foundUser)

@@ -2,7 +2,6 @@ package repo
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -31,7 +30,8 @@ func (r *Repo) GetDeviceByUserID(userID uint, device *models.Device) IRepo {
 	r.err = r.GetDb().
 		Joins("left join user_devices on user_devices.device_id = devices.id").
 		Joins("left join users on users.id = user_devices.user_id").
-		Where(&device, "users.id = ?", userID).
+		Where(&device).
+		Where("users.id = ?", userID).
 		First(device).
 		Error
 
@@ -114,8 +114,6 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 
 	userDevice := models.UserDevice{UserID: userID, DeviceID: device.ID}
 
-	fmt.Println("🍨🍨🍨🍨🍨")
-	fmt.Println(userDevice)
 	db.Create(&userDevice)
 
 	// Get project on which user is present
