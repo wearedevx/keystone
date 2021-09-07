@@ -47,8 +47,7 @@ func ShowAlreadyLoggedInAndExit(account models.User) {
 func LogIntoExisitingAccount(accountIndex int, currentAccount models.User, c auth.AuthService) {
 	config.SetCurrentAccount(accountIndex)
 
-	publicKey, _ := config.GetCurrentUserPublicKey()
-	fmt.Printf("publicKey: %+v\n", publicKey)
+	publicKey, _ := config.GetUserPublicKey()
 	// publicKey := []byte(currentAccount["public_key"])
 	_, jwtToken, err := c.Finish(publicKey, config.GetDeviceName(), config.GetDeviceUID())
 
@@ -92,10 +91,11 @@ func CreateAccountAndLogin(c auth.AuthService) {
 			"username":     user.Username,
 			"fullname":     user.Fullname,
 			"email":        user.Email,
-			"public_key":   string(keyPair.Public.Value),
-			"private_key":  string(keyPair.Private.Value),
 		},
 	)
+
+	config.SetUserPublicKey(string(keyPair.Public.Value))
+	config.SetUserPrivateKey(string(keyPair.Private.Value))
 
 	config.SetCurrentAccount(accountIndex)
 	config.SetAuthToken(jwtToken)
