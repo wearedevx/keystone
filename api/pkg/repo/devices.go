@@ -29,8 +29,8 @@ func (r *Repo) GetDeviceByUserID(userID uint, device *models.Device) IRepo {
 	}
 
 	r.err = r.GetDb().
-		Joins("left join user_device on user_device.device_id = devices.id").
-		Joins("left join users on users.id = user_device.user_id").
+		Joins("left join user_devices on user_devices.device_id = devices.id").
+		Joins("left join users on users.id = user_devices.user_id").
 		Where(&device, "users.id = ?", userID).
 		First(device).
 		Error
@@ -44,13 +44,11 @@ func (r *Repo) GetDevices(userID uint, devices *[]models.Device) IRepo {
 	}
 
 	r.err = r.GetDb().
-		Joins("left join user_device on user_device.device_id = devices.id").
-		Joins("left join users on users.id = user_device.user_id").
+		Joins("left join user_devices on user_devices.device_id = devices.id").
+		Joins("left join users on users.id = user_devices.user_id").
 		Where("users.id = ?", userID).
 		Find(devices).
 		Error
-
-	fmt.Println(devices)
 
 	return r
 }
@@ -62,8 +60,8 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 
 	device := models.Device{}
 	r.err = r.GetDb().
-		Joins("left join user_device on user_device.device_id = devices.id").
-		Joins("left join users on users.id = user_device.user_id").
+		Joins("left join user_devices on user_devices.device_id = devices.id").
+		Joins("left join users on users.id = user_devices.user_id").
 		Where("users.user_id = ? and name = ?", userID, deviceName).
 		Find(&device).
 		Error

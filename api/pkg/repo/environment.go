@@ -70,7 +70,7 @@ func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *Pub
 	inner join roles as r on ret.role_id = r.id
 	inner join project_members as pm on r.id = pm.role_id and pm.project_id = e.project_id
 	inner join users as u on u.id = pm.user_id
-	inner join user_device as ud on u.id = ud.user_id
+	inner join user_devices as ud on u.id = ud.user_id
 	inner join devices as d on ud.device_id = d.user_id
 	where e.environment_id = ?
 	and ret.read = true
