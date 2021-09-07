@@ -32,8 +32,11 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		UserID:      fmt.Sprintf("%s@%s", user.Username, user.AccountType),
 	}
 
+	err := db.SetupJoinTable(&User{}, "Devices", &UserDevice{})
+	fmt.Println(err)
+
 	r.err = db.Where(&foundUser).
-		Joins("Devices").
+		Preload("Devices").
 		// Joins("left join user_device on user_device.user_id = users.id").
 		// Joins("left join devices on devices.id = user_device.device_id").
 		First(&foundUser).Error
