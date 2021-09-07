@@ -97,35 +97,64 @@ func (repo *Repo) DeleteExpiredMessages() IRepo {
 }
 
 func (repo *Repo) GetGroupedMessagesWillExpireByUser(groupedMessageUser *map[uint]emailer.GroupedMessagesUser) IRepo {
+	if repo.Err() != nil {
+		return repo
+	}
 	// FIXME: Should this time not be defined in code,
 	// but in a configuration, or in call parameters ?
+	// Gaellus says yeah
 	nbDaysBeforeTTLAlert := 5
 
-	messages := &[]models.Message{}
+	messages := []models.Message{}
 
-	repo.err = repo.GetDb().Model(&models.Message{}).
-		Where(fmt.Sprintf("created_at < now() - interval '%d days'", nbDaysBeforeTTLAlert-1)).
-		Where(fmt.Sprintf("created_at > now() - interval '%d days'", nbDaysBeforeTTLAlert+1)).
+	repo.err = repo.
+		GetDb().
+		Where(
+			fmt.Sprintf(
+				"date_trunc('day', created_at) < date_trunc('day', now() - interval '%d days')",
+				nbDaysBeforeTTLAlert-1,
+			),
+		).
+		Where(
+			fmt.Sprintf(
+				"date_trunc('day', created_at) > date_trunc('day', now() - interval '%d days')",
+				nbDaysBeforeTTLAlert+1,
+			),
+		).
 		Preload("Sender").
 		Preload("Recipient").
 		Preload("Environment").
 		Preload("Environment.Project").
-		Find(messages).
+		Find(&messages).
 		Error
 
 	// Group messages by recipient, project and environment.
-	for _, message := range *messages {
-		if _, ok := (*groupedMessageUser)[message.RecipientID]; !ok {
-			(*groupedMessageUser)[message.RecipientID] = emailer.GroupedMessagesUser{Recipient: message.Recipient, Projects: make(map[uint]emailer.GroupedMessageProject)}
+	for _, message := range messages {
+		perUser, ok := (*groupedMessageUser)[message.RecipientID]
+		if !ok {
+			perUser = emailer.GroupedMessagesUser{
+				Recipient: message.Recipient,
+				Projects:  make(map[uint]emailer.GroupedMessageProject),
+			}
 		}
 
-		if _, ok := (*groupedMessageUser)[message.RecipientID].Projects[message.Environment.ProjectID]; !ok {
-			(*groupedMessageUser)[message.RecipientID].Projects[message.Environment.ProjectID] = emailer.GroupedMessageProject{Project: message.Environment.Project, Environments: make(map[string]models.Environment)}
+		perProject, ok := perUser.Projects[message.Environment.ProjectID]
+		if !ok {
+			perProject = emailer.GroupedMessageProject{
+				Project:      message.Environment.Project,
+				Environments: make(map[string]models.Environment),
+			}
 		}
 
-		if _, ok := (*groupedMessageUser)[message.RecipientID].Projects[message.Environment.ProjectID].Environments[message.EnvironmentID]; !ok {
-			(*groupedMessageUser)[message.RecipientID].Projects[message.Environment.ProjectID].Environments[message.EnvironmentID] = message.Environment
+		environment, ok := perProject.Environments[message.EnvironmentID]
+		if !ok {
+			environment = message.Environment
 		}
+
+		perProject.Environments[message.EnvironmentID] = environment
+		perUser.Projects[message.Environment.ProjectID] = perProject
+		(*groupedMessageUser)[message.RecipientID] = perUser
+
 	}
 
 	return repo
