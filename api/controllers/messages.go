@@ -14,11 +14,11 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 
+	"github.com/wearedevx/keystone/api/internal/constants"
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/internal/redis"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
-	"github.com/wearedevx/keystone/api/internal/utils"
 )
 
 var Redis *redis.Redis
@@ -311,11 +311,9 @@ func DeleteExpiredMessages(w http.ResponseWriter, r *http.Request, _ httprouter.
 		return
 	}
 
-	actual := utils.GetEnv("X_KS_TTL", "")
+	actual := constants.KsTTLHeader
 	if actual == "" {
-		fmt.Println("Missing TTL authorization key")
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
+		actual = "a very long secret header"
 	}
 
 	if token == "" || token != actual {
@@ -345,11 +343,9 @@ func AlertMessagesWillExpire(w http.ResponseWriter, r *http.Request, _ httproute
 		return
 	}
 
-	actual := utils.GetEnv("X_KS_TTL", "")
+	actual := constants.KsTTLHeader
 	if actual == "" {
-		fmt.Println("Missing TTL authorization key")
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
+		actual = "a very long secret header"
 	}
 
 	if token == "" || token != actual {

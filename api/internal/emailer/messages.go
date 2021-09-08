@@ -327,8 +327,6 @@ func renderNewDevice(deviceName string, userID string) (html string, text string
 }
 
 func renderMessageWillExpire(nbDays int, groupedProjects map[uint]GroupedMessageProject) (html string, text string, err error) {
-	fmt.Println("api ~ messages.go ~ HERE HERE HER EHER EHERE HERE")
-
 	html, text, err = renderTemplate(
 		"message_will_expire/html",
 		newGroupedMessageProjectData{NbDays: nbDays, GroupedProjects: groupedProjects},
