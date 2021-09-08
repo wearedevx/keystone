@@ -7,10 +7,11 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go/v4"
-	"github.com/wearedevx/keystone/api/internal/utils"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"golang.org/x/xerrors"
 )
+
+var salt string
 
 type customClaims struct {
 	DeviceUID string `json:"device_uid"`
@@ -18,16 +19,16 @@ type customClaims struct {
 }
 
 func MakeToken(user models.User, deviceUID string) (string, error) {
-	salt := []byte(utils.GetEnv("JWT_SALT", "aaP|**P1n}1tqWK"))
+	salt := []byte(salt)
 
 	claims := customClaims{
 		DeviceUID: deviceUID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: &jwt.Time{
-				time.Now().Add(30 * 24 * time.Hour),
+				Time: time.Now().Add(30 * 24 * time.Hour),
 			},
 			IssuedAt: &jwt.Time{
-				time.Now(),
+				Time: time.Now(),
 			},
 			Issuer:  "keystone",
 			Subject: user.UserID,
