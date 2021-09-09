@@ -1,11 +1,12 @@
 CREATE TABLE IF NOT EXISTS public.public_keys (
   id bigserial NOT NULL,
   user_id bigserial NOT NULL,
-  key bytea NOT NULL,
+  key text NOT NULL,
   created_at timestamptz NULL,
   updated_at timestamptz NULL,
   CONSTRAINT public_keys_pkey PRIMARY KEY (id)
 );
+
 DROP INDEX IF EXISTS idx_public_keys_user_id;
 CREATE INDEX idx_public_keys_user_id ON public.public_keys USING btree (user_id);
 ALTER TABLE

@@ -34,11 +34,15 @@ services:
     environment:
       - DATABASE_URL=postgres://ks:ks@db:5432/ks?sslmode=disable
       - JWT_SALT=aaP|**P1n}1tqWK
+      - DB_HOST=db
+      - DB_NAME=ks
+      - DB_USER=ks
+      - DB_PASSWORD=ks
     volumes:
       - ./api/:/home/golang/app:delegated
     ports:
       - "9001:9001"
-    command: sh -c "go get -u github.com/mitranim/gow && gow run main.go"
+    command: sh -c "make run"
 
   cli:
     image: cossacklabs/ci-py-go-themis

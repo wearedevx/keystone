@@ -50,4 +50,4 @@ run-test:
 	go run -tags test -ldflags "$(LDFLAGS)" main.go
 
 run:
-	go run -ldflags "$(LDFLAGS)" main.go
+	go get -u github.com/mitranim/gow && gow run -ldflags "$(LDFLAGS)" main.go
