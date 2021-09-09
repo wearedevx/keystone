@@ -15,6 +15,7 @@ type Device struct {
 	PublicKey []byte    `json:"public_key"`
 	Name      string    `json:"name"`
 	UID       string    `json:"uid"`
+	Users     []User    `json:"users" gorm:"many2many:user_devices;"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

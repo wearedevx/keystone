@@ -1,1 +1,1 @@
-DROP TABLE public.user_device
+DROP TABLE public.user_devices

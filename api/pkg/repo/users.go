@@ -39,8 +39,6 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		Preload("Devices").
 		First(&foundUser).Error
 
-	fmt.Println(foundUser)
-
 	if r.err == nil {
 		for _, device := range user.Devices {
 			found := false
@@ -66,7 +64,20 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 	} else if errors.Is(r.err, gorm.ErrRecordNotFound) {
 		user.UserID = user.Username + "@" + string(user.AccountType)
 
-		r.err = db.Create(&user).Error
+		r.err = db.Omit("Devices").Create(&user).Error
+		if r.err != nil {
+			return r
+		}
+
+		// r.err = db.Model(&user).Association("Devices").Append(user.Devices)
+
+		for _, device := range user.Devices {
+			r.err = r.AddNewDevice(device, user.ID, user.UserID, user.Email).Err()
+			if r.err != nil {
+				return r
+			}
+
+		}
 	}
 
 	return r

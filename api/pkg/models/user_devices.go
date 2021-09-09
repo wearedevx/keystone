@@ -19,21 +19,26 @@ type UserDevice struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (pm *UserDevice) BeforeCreate(tx *gorm.DB) (err error) {
-	pm.CreatedAt = time.Now()
-	pm.UpdatedAt = time.Now()
+func (ud *UserDevice) BeforeCreate(tx *gorm.DB) (err error) {
+	ud.CreatedAt = time.Now()
+	ud.UpdatedAt = time.Now()
 
 	return nil
 }
 
-func (pm *UserDevice) Deserialize(in io.Reader) error {
-	return json.NewDecoder(in).Decode(pm)
+func (ud *UserDevice) BeforeUpdate(tx *gorm.DB) (err error) {
+	ud.UpdatedAt = time.Now()
+	return nil
 }
 
-func (pm *UserDevice) Serialize(out *string) (err error) {
+func (ud *UserDevice) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(ud)
+}
+
+func (ud *UserDevice) Serialize(out *string) (err error) {
 	var sb strings.Builder
 
-	err = json.NewEncoder(&sb).Encode(pm)
+	err = json.NewEncoder(&sb).Encode(ud)
 
 	*out = sb.String()
 
