@@ -21,7 +21,8 @@ fi
 touch $DBFILE
 
 cd ../api
-make -i run-test &
+# make -i run-test &
+go run -tags test -ldflags "$LDFLAGS" main.go &
 
 cd ../cli
 
