@@ -19,7 +19,7 @@ func TestEnvironment(t *testing.T) {
 	Repo := new(repo.Repo)
 
 	publicKeys := models.PublicKeys{
-		Keys: make([]models.UserPublicKey, 0),
+		Keys: make([]models.UserPublicKeys, 0),
 	}
 
 	Repo.GetEnvironmentPublicKeys("1", &publicKeys)

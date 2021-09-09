@@ -29,7 +29,7 @@ go test -tags test -ldflags "$LDFLAGS" -work "$@"
 
 EXIT_STATUS_CODE=$?
 
-rm "/tmp/keystone_gorm"*
+# rm "/tmp/keystone_gorm"*
 
 # In case the tests failed or succeeded too fast
 # the API is not started yet, and lsof fails,
