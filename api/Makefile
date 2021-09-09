@@ -2,6 +2,14 @@ ifeq ($(PREFIX),)
     PREFIX := /usr/local
 endif
 
+DB_HOST ?= localhost
+DB_PORT ?= 5432
+DB_USER ?= ks
+DB_PASSWORD ?= ks
+DB_NAME ?= ks
+DB_DIALECT ?= postgres
+
+JWT_SALT ?= aaP|**P1n}1tqW
 
 BASE := github.com/wearedevx/keystone/api
 REPO_PKG := $(BASE)/pkg/repo
@@ -37,6 +45,9 @@ build:
 install:
 	chmod +x server
 	cp ks $(PREFIX)/bin
+
+run-test:
+	go run -tags test -ldflags "$(LDFLAGS)" main.go
 
 run:
 	go run -ldflags "$(LDFLAGS)" main.go

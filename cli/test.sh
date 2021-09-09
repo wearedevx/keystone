@@ -7,7 +7,8 @@ fi
 
 export $(cat .env-dev | xargs)
 
-LDFLAGS="-X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=$KSAPI_URL"
+LDFLAGS="-X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=$KSAPI_URL \
+	-X github.com/wearedevx/keystone/api/pkg/jwt.salt=${JWT_SALT}"
 NOSPIN=true
 
 DBFILE="${TMPDIR}keystone_gorm.db"
@@ -20,7 +21,7 @@ fi
 touch $DBFILE
 
 cd ../api
-go run -tags test main.go &
+make -i run-test &
 
 cd ../cli
 

@@ -2,7 +2,6 @@ package jwt
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -55,7 +54,6 @@ func VerifyToken(token string) (string, string, error) {
 	trimedToken := cleanUpToken(token)
 
 	t, err := jwt.Parse(trimedToken, func(token *jwt.Token) (interface{}, error) {
-		salt := os.Getenv("JWT_SALT")
 		return []byte(salt), nil
 	})
 
