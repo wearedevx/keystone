@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -24,6 +25,7 @@ func GetDevices(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user mod
 			status = http.StatusInternalServerError
 		}
 
+		fmt.Println(result.Devices)
 		return &result, status, err
 	}
 
