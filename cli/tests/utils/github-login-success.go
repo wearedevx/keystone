@@ -23,8 +23,8 @@ func GithubLoginSuccess() int {
 	Repo := new(repo.Repo)
 	db := Repo.GetDb()
 
-	if error := db.Last(&lr); error != nil {
-		fmt.Println(error)
+	if error := db.Last(&lr).Error; error != nil {
+		fmt.Println("Error :", error)
 	}
 
 	// simulate github POST on auth cloud function
@@ -47,6 +47,7 @@ func GithubLoginSuccess() int {
 	request, err := http.NewRequest("GET", "http://localhost:9001/auth-redirect/?state="+codedState+"&code=youpicode", nil)
 
 	if err == nil {
+		fmt.Println("reguest auth-redirect")
 		_, err = client.Do(request)
 	}
 
