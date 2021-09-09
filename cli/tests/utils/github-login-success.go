@@ -17,14 +17,14 @@ func EndScript() int {
 func GithubLoginSuccess() int {
 	time.Sleep(3000 * time.Millisecond)
 
-	lr := LoginRequest{}
+	lrs := []LoginRequest{}
 
 	// Retrieve login_attemps in db
 	Repo := new(repo.Repo)
 	db := Repo.GetDb()
 
-	if error := db.Last(&lr); error != nil {
-		fmt.Println(error)
+	if error := db.Find(&lrs).Error; error != nil {
+		fmt.Println("Error :", error)
 	}
 
 	// simulate github POST on auth cloud function
@@ -35,23 +35,26 @@ func GithubLoginSuccess() int {
 		Timeout: timeout,
 	}
 
-	state := AuthState{
-		TemporaryCode: lr.TemporaryCode,
-		Version:       "test",
-	}
-	codedState, err := state.Encode()
-	if err != nil {
-		panic(err)
-	}
+	for _, lr := range lrs {
+		state := AuthState{
+			TemporaryCode: lr.TemporaryCode,
+			Version:       "test",
+		}
+		codedState, err := state.Encode()
+		if err != nil {
+			panic(err)
+		}
 
-	request, err := http.NewRequest("GET", "http://localhost:9001/auth-redirect/?state="+codedState+"&code=youpicode", nil)
+		request, err := http.NewRequest("GET", "http://localhost:9001/auth-redirect/?state="+codedState+"&code=youpicode", nil)
 
-	if err == nil {
-		_, err = client.Do(request)
-	}
+		if err == nil {
+			fmt.Println("reguest auth-redirect")
+			_, err = client.Do(request)
+		}
 
-	if err != nil {
-		panic(err)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	fmt.Println("github login success End")

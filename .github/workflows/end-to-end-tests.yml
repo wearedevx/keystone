@@ -67,6 +67,9 @@ jobs:
           tar -xf gokart_0.1.0_linux_x86_64.tar.gz
           mv ./gokart /usr/local/bin
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: Run End-to-end Tests
         run: |-
           cd cli

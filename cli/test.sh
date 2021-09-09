@@ -30,6 +30,12 @@ go test -tags test -ldflags "$LDFLAGS" -work "$@"
 
 EXIT_STATUS_CODE=$?
 
+if [ $EXIT_STATUS_CODE -eq 0 ]; then
+	echo "All tests passed";
+else
+	echo "Some test failed";
+fi
+
 # rm "/tmp/keystone_gorm"*
 
 # In case the tests failed or succeeded too fast
@@ -39,6 +45,8 @@ EXIT_STATUS_CODE=$?
 # we wait long enough, ie. when lsof succeeds
 for i in {0..10}; do
 	pid=$(lsof -t -i :9001);
+	echo "pid: ${pid}"
+
 	if [ $? -eq 0 ]; then
 		kill -9 $pid;
 		break;
