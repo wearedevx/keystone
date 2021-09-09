@@ -11,15 +11,17 @@ import (
 )
 
 type Project struct {
-	ID           uint            `json:"id" gorm:"primaryKey" faker:"-"`
-	UUID         string          `json:"uuid" gorm:"not null;unique" faker:"word,unique"`
-	Name         string          `json:"name" gorm:"not null"`
-	Members      []ProjectMember `json:"members" faker:"-"`
-	UserID       uint            `json:"user_id"`
-	User         User            `json:"user" faker:"-"`
-	Environments []Environment   `json:"environments" faker:"-"`
-	CreatedAt    time.Time       `json:"created_at"`
-	UpdatedAt    time.Time       `json:"updated_at"`
+	ID                  uint            `json:"id" gorm:"primaryKey" faker:"-"`
+	UUID                string          `json:"uuid" gorm:"not null;unique" faker:"word,unique"`
+	TTL                 int             `json:"ttl" gorm:"column:ttl;not null;default:7" default:"7"`
+	DaysBeforeTTLExpiry int             `json:"days_before_ttl_expiry" gorm:"column:ttl_notify_days;not null;default:2" default:"2"`
+	Name                string          `json:"name" gorm:"not null"`
+	Members             []ProjectMember `json:"members" faker:"-"`
+	UserID              uint            `json:"user_id"`
+	User                User            `json:"user" faker:"-"`
+	Environments        []Environment   `json:"environments" faker:"-"`
+	CreatedAt           time.Time       `json:"created_at"`
+	UpdatedAt           time.Time       `json:"updated_at"`
 }
 
 func (p *Project) BeforeCreate(tx *gorm.DB) (err error) {

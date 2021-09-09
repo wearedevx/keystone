@@ -103,9 +103,13 @@ func (c *Context) CachedDotEnvPath() string {
 }
 
 func (c *Context) CachedEnvironmentPath(environmentName string) string {
-	p := path.Join(c.cacheDirPath(), environmentName)
+	if environmentName == "" {
+		environmentName = "dev"
+	}
 
+	p := path.Join(c.cacheDirPath(), environmentName)
 	c.mustEnvironmentNameBeValid(environmentName)
+
 	if !c.fileBelongsToContext(p) {
 		kserrors.
 			EnvironmentDoesntExist(environmentName, "dev, staging, prod", nil).

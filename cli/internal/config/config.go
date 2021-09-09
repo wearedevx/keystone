@@ -110,38 +110,22 @@ func userFromAccount(account map[string]string) (user models.User) {
 	return user
 }
 
-func GetCurrentUserPrivateKey() (privateKey []byte, err error) {
-	index := -1
-	accounts := GetAllAccounts()
-
-	if viper.IsSet("current") {
-		index = viper.Get("current").(int)
-
-		if index >= 0 && index < len(accounts) {
-			account := accounts[index]
-
-			privateKey = []byte(account["private_key"])
-		}
-	}
-
+func GetUserPrivateKey() (privateKey []byte, err error) {
+	privateKey = []byte(viper.Get("private_key").(string))
 	return privateKey, err
 }
 
-func GetCurrentUserPublicKey() (publicKey []byte, err error) {
-	index := -1
-	accounts := GetAllAccounts()
-
-	if viper.IsSet("current") {
-		index = viper.Get("current").(int)
-
-		if index >= 0 && index < len(accounts) {
-			account := accounts[index]
-
-			publicKey = []byte(account["public_key"])
-		}
-	}
-
+func GetUserPublicKey() (publicKey []byte, err error) {
+	publicKey = []byte(viper.Get("public_key").(string))
 	return publicKey, err
+}
+
+func SetUserPrivateKey(privateKey string) {
+	viper.Set("private_key", privateKey)
+}
+
+func SetUserPublicKey(publicKey string) {
+	viper.Set("public_key", publicKey)
 }
 
 // Sets the current account as the index at `index`
@@ -274,7 +258,7 @@ func CheckExpiredTokenError(err *kserrors.Error) {
 }
 
 func Logout() {
-	fmt.Printf("Logout user")
+	fmt.Print("Logout user\n")
 	SetCurrentAccount(-1)
 	SetAuthToken("")
 	Write()

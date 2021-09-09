@@ -47,7 +47,7 @@ func ShowAlreadyLoggedInAndExit(account models.User) {
 func LogIntoExisitingAccount(accountIndex int, currentAccount models.User, c auth.AuthService) {
 	config.SetCurrentAccount(accountIndex)
 
-	publicKey, _ := config.GetCurrentUserPublicKey()
+	publicKey, _ := config.GetUserPublicKey()
 	// publicKey := []byte(currentAccount["public_key"])
 	_, jwtToken, err := c.Finish(publicKey, config.GetDeviceName(), config.GetDeviceUID())
 
@@ -91,10 +91,11 @@ func CreateAccountAndLogin(c auth.AuthService) {
 			"username":     user.Username,
 			"fullname":     user.Fullname,
 			"email":        user.Email,
-			"public_key":   string(keyPair.Public.Value),
-			"private_key":  string(keyPair.Private.Value),
 		},
 	)
+
+	config.SetUserPublicKey(string(keyPair.Public.Value))
+	config.SetUserPrivateKey(string(keyPair.Private.Value))
 
 	config.SetCurrentAccount(accountIndex)
 	config.SetAuthToken(jwtToken)
@@ -165,6 +166,8 @@ ks login ––with=github`,
 	Args: cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
 		ctx := context.Background()
+		fmt.Println(viper.GetViper().ConfigFileUsed())
+		fmt.Println(viper.Get("device_uid"))
 
 		currentAccount, accountIndex := config.GetCurrentAccount()
 

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"time"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -79,53 +78,80 @@ func (repo *Repo) DeleteExpiredMessages() IRepo {
 		return repo
 	}
 
-	// FIXME: Should this time not be defined in code,
-	// but in a configuration, or in call parameters ?
-	aWeekAgo := time.Now().
-		Add(-1 * 7 * 24 * time.Hour).
-		Truncate(time.Minute)
-
+	// Per project message deletion
+	// NOTE: DELETE FROM ... USING ... is Postgres specific
 	repo.err = repo.GetDb().
-		Delete(
-			&models.Message{},
-			"created_at < ?",
-			aWeekAgo,
+		Raw(
+			`DELETE
+FROM messages m
+WHERE 
+	m.id IN (
+		SELECT mm.id FROM messages mm
+		JOIN environments e ON e.environment_id = mm.environment_id
+		JOIN projects p ON p.id = e.project_id
+		WHERE mm.created_at < now() - (p.ttl || ' days')::interval
+	);`,
 		).
 		Error
 
 	return repo
 }
 
-func (repo *Repo) GetGroupedMessagesWillExpireByUser(groupedMessageUser *map[uint]emailer.GroupedMessagesUser) IRepo {
-	// FIXME: Should this time not be defined in code,
-	// but in a configuration, or in call parameters ?
-	nbDaysBeforeTTLAlert := 5
+func (repo *Repo) GetGroupedMessagesWillExpireByUser(
+	groupedMessageUser *map[uint]emailer.GroupedMessagesUser,
+) IRepo {
+	if repo.Err() != nil {
+		return repo
+	}
 
-	messages := &[]models.Message{}
+	messages := []models.Message{}
 
-	repo.err = repo.GetDb().Model(&models.Message{}).
-		Where(fmt.Sprintf("created_at < now() - interval '%d days'", nbDaysBeforeTTLAlert-1)).
-		Where(fmt.Sprintf("created_at > now() - interval '%d days'", nbDaysBeforeTTLAlert+1)).
+	repo.err = repo.
+		GetDb().
+		Model(&models.Message{}).
+		Joins("inner join environments on messages.environment_id = environments.environment_id").
+		Joins("inner join projects on environments.project_id = projects.id").
+		Where("date_trunc('day', messages.created_at) < date_trunc('day', now() - (projects.ttl - projects.days_before_ttl_expiry - 1 || ' days')::interval)").
+		Where("date_trunc('day', messages.created_at) > date_trunc('day', now() - (projects.ttl - projects.days_before_ttl_expiry + 1 || ' days')::interval)").
 		Preload("Sender").
 		Preload("Recipient").
 		Preload("Environment").
 		Preload("Environment.Project").
-		Find(messages).
+		Find(&messages).
 		Error
+	fmt.Printf("messages: %+v\n", len(messages))
+
+	if repo.Err() != nil {
+		return repo
+	}
 
 	// Group messages by recipient, project and environment.
-	for _, message := range *messages {
-		if _, ok := (*groupedMessageUser)[message.RecipientID]; !ok {
-			(*groupedMessageUser)[message.RecipientID] = emailer.GroupedMessagesUser{Recipient: message.Recipient, Projects: make(map[uint]emailer.GroupedMessageProject)}
+	for _, message := range messages {
+		perUser, ok := (*groupedMessageUser)[message.RecipientID]
+		if !ok {
+			perUser = emailer.GroupedMessagesUser{
+				Recipient: message.Recipient,
+				Projects:  make(map[uint]emailer.GroupedMessageProject),
+			}
 		}
 
-		if _, ok := (*groupedMessageUser)[message.RecipientID].Projects[message.Environment.ProjectID]; !ok {
-			(*groupedMessageUser)[message.RecipientID].Projects[message.Environment.ProjectID] = emailer.GroupedMessageProject{Project: message.Environment.Project, Environments: make(map[string]models.Environment)}
+		perProject, ok := perUser.Projects[message.Environment.ProjectID]
+		if !ok {
+			perProject = emailer.GroupedMessageProject{
+				Project:      message.Environment.Project,
+				Environments: make(map[string]models.Environment),
+			}
 		}
 
-		if _, ok := (*groupedMessageUser)[message.RecipientID].Projects[message.Environment.ProjectID].Environments[message.EnvironmentID]; !ok {
-			(*groupedMessageUser)[message.RecipientID].Projects[message.Environment.ProjectID].Environments[message.EnvironmentID] = message.Environment
+		environment, ok := perProject.Environments[message.EnvironmentID]
+		if !ok {
+			environment = message.Environment
 		}
+
+		perProject.Environments[message.EnvironmentID] = environment
+		perUser.Projects[message.Environment.ProjectID] = perProject
+		(*groupedMessageUser)[message.RecipientID] = perUser
+
 	}
 
 	return repo

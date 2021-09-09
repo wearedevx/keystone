@@ -47,7 +47,7 @@ ks ci rm my-github-ci-service
 
 		var serviceName string
 
-		if len(args[0]) == 1 {
+		if len(args) == 1 {
 			serviceName = args[0]
 		} else {
 			serviceName = prompts.StringInput(

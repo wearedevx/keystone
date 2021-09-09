@@ -23,15 +23,32 @@ type Repo struct {
 
 var db *gorm.DB
 
+var dbHost string
+var dbPort string
+var dbUser string
+var dbPassword string
+var dbName string
+var dbDialect string
+var dbDriverName string
+
+func getOrDefault(s string, d string) string {
+	if s == "" {
+		return d
+	}
+
+	return s
+}
+
 // getDSN builds the postgres DSN from environment variables
 func getDSN() string {
-	host := GetEnv("DB_HOST", "db")
-	port := GetEnv("DB_PORT", "5432")
-	user := GetEnv("DB_USER", "ks")
-	password := GetEnv("DB_PASSWORD", "ks")
-	dbname := GetEnv("DB_NAME", "ks")
-
-	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		getOrDefault(dbHost, "127.0.0.1"),
+		getOrDefault(dbPort, "5432"),
+		getOrDefault(dbUser, "ks"),
+		getOrDefault(dbPassword, "ks"),
+		getOrDefault(dbName, "ks"),
+	)
 }
 
 // getPostrgres gets the postgres driver for GORM
@@ -41,10 +58,9 @@ func getPostgres() gorm.Dialector {
 	config := postgres.Config{
 		DSN: getDSN(),
 	}
-	fmt.Printf("config: %+v\n", config)
 
-	if driver := os.Getenv("DB_DRIVERNAME"); driver != "" {
-		config.DriverName = driver
+	if dbDriverName != "" {
+		config.DriverName = dbDriverName
 	}
 
 	return postgres.New(config)

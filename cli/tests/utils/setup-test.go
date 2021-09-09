@@ -116,11 +116,11 @@ accounts:
   fullname: `+user.Fullname+`
   user_id: `+user.UserID+`
   username: `+user.Username+`
-  public_key: !!binary `+pub+`
-  private_key: !!binary `+priv+`
 auth_token: `+token+`
 device: `+device+`
 device_uid: `+deviceUID+`
+public_key: !!binary `+pub+`
+private_key: !!binary `+priv+`
 current: 0
 `), 0o666)
 
@@ -177,11 +177,11 @@ accounts:
   fullname: `+user.Fullname+`
   user_id: `+user.UserID+`
   username: `+user.Username+`
-  public_key: !!binary `+pub+`
-  private_key: !!binary `+priv+`
 auth_token: `+token+`
 device: `+device+`
 device_uid: `+deviceUID+`
+public_key: !!binary `+pub+`
+private_key: !!binary `+priv+`
 current: 0
 `), 0o660)
 

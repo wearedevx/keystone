@@ -35,7 +35,7 @@ jobs:
           keystone_slot_4: ${{ secrets.KEYSTONE_PROD_SLOT_4 }}
           keystone_slot_5: ${{ secrets.KEYSTONE_PROD_SLOT_5 }}
 
-      - name: Setup Working Directory (Develop)
+      - name: Setup Working Directory
         run: |
            cd cli
            mkdir snap
@@ -85,6 +85,7 @@ jobs:
           fi
 
       - name: Snapcraft Publish Edge
+        if: ${{ steps.release_type.outputs.release_type == 'edge' }}
         uses: snapcore/action-publish@v1
         with:
           store_login: ${{ secrets.STORE_LOGIN }}

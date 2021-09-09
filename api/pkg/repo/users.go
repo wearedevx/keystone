@@ -32,7 +32,12 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		UserID:      fmt.Sprintf("%s@%s", user.Username, user.AccountType),
 	}
 
-	r.err = db.Where(foundUser).Preload("Devices").First(&foundUser).Error
+	err := db.SetupJoinTable(&User{}, "Devices", &UserDevice{})
+	fmt.Println(err)
+
+	r.err = db.Where(&foundUser).
+		Preload("Devices").
+		First(&foundUser).Error
 
 	if r.err == nil {
 		for _, device := range user.Devices {
@@ -47,8 +52,8 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 				}
 			}
 			if !found {
-				device.UserID = foundUser.ID
-				if err := r.AddNewDevice(device, foundUser.UserID, foundUser.Email).Err(); err != nil {
+				userID := foundUser.ID
+				if err := r.AddNewDevice(device, userID, foundUser.UserID, foundUser.Email).Err(); err != nil {
 					r.err = err
 					return r
 				}
@@ -59,7 +64,20 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 	} else if errors.Is(r.err, gorm.ErrRecordNotFound) {
 		user.UserID = user.Username + "@" + string(user.AccountType)
 
-		r.err = db.Create(&user).Error
+		r.err = db.Omit("Devices").Create(&user).Error
+		if r.err != nil {
+			return r
+		}
+
+		// r.err = db.Model(&user).Association("Devices").Append(user.Devices)
+
+		for _, device := range user.Devices {
+			r.err = r.AddNewDevice(device, user.ID, user.UserID, user.Email).Err()
+			if r.err != nil {
+				return r
+			}
+
+		}
 	}
 
 	return r
