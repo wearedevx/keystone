@@ -127,7 +127,7 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 
 	var projects_list []string
 	var adminEmail string
-	r.GetAdminsFromUserProjects(userID, userName, projects_list, adminEmail)
+	r.GetAdminsFromUserProjects(userID, userName, projects_list, &adminEmail)
 
 	// Send mail to admins of user projects
 	e, err := emailer.NewDeviceAdminMail(userName, projects_list, device.Name)
