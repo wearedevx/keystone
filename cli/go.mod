@@ -21,7 +21,7 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.0
 	github.com/udhos/equalfile v0.3.0
-	github.com/wearedevx/keystone/api v0.0.0-20210812092632-041a0cf4cfa1
+	github.com/wearedevx/keystone/api v0.0.0-20210910095952-c0e2ba65920c
 	github.com/xanzy/go-gitlab v0.49.0
 	go.uber.org/zap v1.18.1 // indirect
 	golang.org/x/net v0.0.0-20210726213435-c6fcb2dbf985 // indirect

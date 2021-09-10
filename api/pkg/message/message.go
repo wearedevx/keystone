@@ -1,18 +1,18 @@
 package message
 
 import (
-	"github.com/wearedevx/keystone/api/internal/redis"
+	. "github.com/wearedevx/keystone/api/internal/redis"
 )
 
 // var Redis *redis.Redis
 
 type MessageService struct {
-	redis *redis.Redis
+	redis *Redis
 }
 
 func NewMessageService() *MessageService {
 	return &MessageService{
-		redis: redis.NewRedis(),
+		redis: NewRedis(),
 	}
 }
 

@@ -8,8 +8,10 @@ type Redis struct {
 
 var fakeRedis map[string]string
 
-func init() {
+func NewRedis() *Redis {
 	fakeRedis = make(map[string]string)
+
+	return new(Redis)
 }
 
 func (r *Redis) Err() error {
