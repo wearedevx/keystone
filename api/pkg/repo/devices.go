@@ -2,7 +2,6 @@ package repo
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -101,7 +100,6 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 
 	r.GetDevices(userID, &result.Devices)
 
-	fmt.Println(device)
 	for _, existingDevice := range result.Devices {
 		if existingDevice.Name == device.Name {
 			r.err = errors.New("Device name already registered for this account")
@@ -109,7 +107,9 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 		}
 	}
 
-	r.err = db.Create(&device).Error
+	if err := db.Find(&device).Error; err != nil {
+		r.err = db.Create(&device).Error
+	}
 
 	if r.err != nil {
 		return r
@@ -150,10 +150,11 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 		return r
 	}
 
-	if err = e.Send([]string{userEmail}); err != nil {
-
-		r.err = err
-		return r
+	if userEmail != "" {
+		if err = e.Send([]string{userEmail}); err != nil {
+			r.err = err
+			return r
+		}
 	}
 
 	return r
