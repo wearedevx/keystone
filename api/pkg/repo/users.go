@@ -36,7 +36,9 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 	fmt.Println(err)
 
 	r.err = db.Where(&foundUser).
-		Preload("Devices").
+		Preload("Devices", func(db *gorm.DB) *gorm.DB {
+			return db.Unscoped()
+		}).
 		First(&foundUser).Error
 
 	if r.err == nil {
@@ -45,10 +47,11 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 			for _, fdevice := range foundUser.Devices {
 				if fdevice.UID == device.UID {
 					found = true
+					fdevice.DeletedAt = gorm.DeletedAt{}
 					if !bytes.Equal(device.PublicKey, fdevice.PublicKey) {
 						fdevice.PublicKey = device.PublicKey
-						db.Save(&fdevice)
 					}
+					db.Save(&fdevice)
 				}
 			}
 			if !found {
@@ -64,20 +67,11 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 	} else if errors.Is(r.err, gorm.ErrRecordNotFound) {
 		user.UserID = user.Username + "@" + string(user.AccountType)
 
-		r.err = db.Omit("Devices").Create(&user).Error
+		r.err = db.Create(&user).Error
 		if r.err != nil {
 			return r
 		}
 
-		// r.err = db.Model(&user).Association("Devices").Append(user.Devices)
-
-		for _, device := range user.Devices {
-			r.err = r.AddNewDevice(device, user.ID, user.UserID, user.Email).Err()
-			if r.err != nil {
-				return r
-			}
-
-		}
 	}
 
 	return r

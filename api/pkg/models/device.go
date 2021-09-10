@@ -18,6 +18,7 @@ type Device struct {
 	Users     []User    `json:"users" gorm:"many2many:user_devices;"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	DeletedAt gorm.DeletedAt
 }
 
 func (pm *Device) BeforeCreate(tx *gorm.DB) (err error) {
