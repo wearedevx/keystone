@@ -66,12 +66,12 @@ jobs:
         run: |-
           docker build \
             -t ${{ env.GCR_IMAGE }} \
-            --build-arg DB_HOST \
-            --build-arg DB_PORT \
-            --build-arg DB_NAME \
-            --build-arg DB_USER \
-            --build-arg DB_PASSWORD \
-            --build-arg JWT_SALT \
+            --build-arg DB_HOST=${{ env.DB_HOST }} \
+            --build-arg DB_PORT=${{ env.DB_PORT }} \
+            --build-arg DB_NAME=${{ env.DB_NAME }} \
+            --build-arg DB_USER=${{ env.DB_USER }} \
+            --build-arg DB_PASSWORD=${{ env.DB_PASSWORD }} \
+            --build-arg JWT_SALT=${{ env.JWT_SALT }} \
             ./api/
 
           docker push ${{ env.GCR_IMAGE }}
