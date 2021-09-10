@@ -89,6 +89,6 @@ func init() {
 
 	err = autoMigrate()
 	if err != nil {
-		panic(err)
+		// ignore... make the tests fail if there is an output
 	}
 }
