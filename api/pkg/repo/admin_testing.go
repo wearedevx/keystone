@@ -28,8 +28,9 @@ func (r *Repo) GetAdminsFromUserProjects(userID uint, userName string, projects_
 		rows.Scan(&adminEmail, &projects)
 		re := regexp.MustCompile(`\{(.+)?\}`)
 		res := re.FindStringSubmatch(projects)
-
-		projects_list = strings.Split(res[1], ",")
+		if len(res) > 0 {
+			projects_list = strings.Split(res[1], ",")
+		}
 	}
 	return r
 }
