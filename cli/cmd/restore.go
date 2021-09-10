@@ -39,14 +39,19 @@ This will override all the data you have stored locally.`,
 			os.Exit(1)
 		}
 
-		password := prompts.StringInput("Password to encrypt backup", "")
+		if password == "" {
+			password = prompts.StringInput("Password to decrypt backup", "")
 
-		ui.Print(ui.RenderTemplate("confirm files rm",
-			`{{ CAREFUL }} You are about to remove the content of .keystone/ which contain all your local secrets and files.
+		}
+
+		if !skipPrompts {
+			ui.Print(ui.RenderTemplate("confirm files rm",
+				`{{ CAREFUL }} You are about to remove the content of .keystone/ which contain all your local secrets and files.
 This will override the changes you and other members made since the backup.
 It will update other members secrets and files.`, map[string]string{}))
-		if !prompts.Confirm("Continue") {
-			os.Exit(0)
+			if !prompts.Confirm("Continue") {
+				os.Exit(0)
+			}
 		}
 
 		if err := os.RemoveAll(ctx.DotKeystonePath()); err != nil {
@@ -104,6 +109,7 @@ It will update other members secrets and files.`, map[string]string{}))
 
 func init() {
 	RootCmd.AddCommand(restoreCmd)
+	restoreCmd.Flags().StringVarP(&password, "password", "p", "", "password to encrypt backup with")
 }
 
 func decryptBackup(backup []byte, password string) []byte {
