@@ -42,6 +42,7 @@ var deviceRevokeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		ui.PrintSuccess("Device has been revoked and will no longer be updated with new secrets.")
+		ui.Print("If you did this because your account has been compromised, make sure to change your secrets.")
 
 	},
 }
