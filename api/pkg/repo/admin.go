@@ -16,7 +16,7 @@ func (r *Repo) GetAdminsFromUserProjects(userID uint, userName string, projects_
 	LEFT join projects p on pm.project_id = p.id
 	where r.name = 'admin' and p.id in (
 	select pm.project_id from project_members pm where pm.user_id = ?) and u.user_id != ?
-	group by u.user_id, u.email;`, userID, userName).Rows()
+	group by u.id, u.email;`, userID, userName).Rows()
 
 	if err != nil {
 		r.err = err
