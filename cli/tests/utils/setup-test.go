@@ -149,7 +149,9 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	deviceUID := uuid.NewV4().String()
 	user.ID = 0
 	user.Email = "email@example.com"
-	user.Devices = []models.Device{{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value}}
+	user.Devices = []models.Device{
+		{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value},
+		{Name: "device-test-2", UID: uuid.NewV4().String(), PublicKey: keyPair.Public.Value}}
 
 	Repo.GetOrCreateUser(&user)
 
