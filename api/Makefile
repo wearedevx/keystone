@@ -39,8 +39,9 @@ LDFLAGS := $(DB_HOST_FLAG) \
 	$(KS_TTL_FLAG)
 
 build:
+	mkdir ./build
 	go clean
-	go build -ldflags "$(LDFLAGS)" -o server
+	go build -ldflags "$(LDFLAGS)" -v -o ./build/server
 
 install:
 	chmod +x server
