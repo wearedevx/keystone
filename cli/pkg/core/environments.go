@@ -18,15 +18,13 @@ func (ctx *Context) CurrentEnvironment() string {
 		return ""
 	}
 
-	environmentsfile := &EnvironmentsFile{}
+	environmentsfile := &EnvironmentsFile{
+		Current: "dev",
+	}
 	environmentsfile.Load(ctx.dotKeystonePath())
 
 	if err := environmentsfile.Err(); err != nil {
 		ctx.setError(kserrors.CannotReadEnvironment(ctx.environmentFilePath(), err))
-	}
-
-	if environmentsfile.Current != "" {
-		ctx.mustEnvironmentNameBeValid(environmentsfile.Current)
 	}
 
 	return environmentsfile.Current
@@ -86,7 +84,7 @@ func (ctx *Context) ListEnvironments() []string {
 			}
 		}
 
-		if !contained {
+		if !contained && envname != "" {
 			ctx.mustEnvironmentNameBeValid(envname)
 			envs = append(envs, envname)
 		}

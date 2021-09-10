@@ -28,7 +28,7 @@ RUN cp migrate.linux-amd64 ./build/migrate
 RUN chmod +x ./build/migrate
 
 COPY run.sh ./build/run.sh
-# COPY keystone-server-credentials.json ./build/credentials.json
+COPY keystone-server-credentials.json ./build/credentials.json
 
 # Use the official Debian slim image for a lean production container.
 # https://hub.docker.com/_/debian

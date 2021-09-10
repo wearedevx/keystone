@@ -22,7 +22,7 @@ var ciSendCmd = &cobra.Command{
 
 This command will send all your secrets and files followed by keystone to your CI service.
 
-The CI service must have been setup using: ` + "`" + `ks ci setup` + "`" + `
+The CI service must have been setup using: ` + "`" + `ks ci add` + "`" + `
 `,
 	Example: `# To send the current environment:
 ks ci send
@@ -45,7 +45,10 @@ ks ci send --env prod
 		mustNotHaveMissingSecrets(environment)
 		mustNotHaveMissingFiles(environment)
 
-		ui.Print("You are about to send the '%s' environment to your CI services.")
+		ui.Print(
+			"You are about to send the '%s' environment to your CI services.",
+			environment,
+		)
 		if !prompts.Confirm("Continue") {
 			os.Exit(0)
 		}

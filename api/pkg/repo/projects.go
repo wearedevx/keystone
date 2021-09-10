@@ -174,7 +174,7 @@ func (r *Repo) ProjectIsMemberAdmin(
 
 	err := r.GetDb().
 		Joins(
-			"inner join users as u on u.user_id = ?",
+			"inner join users as u on u.id = ?",
 			member.UserID,
 		).
 		Joins(

@@ -112,6 +112,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 	err = repo.Transaction(func(Repo repo.IRepo) error {
 		if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
+			fmt.Printf("err: %+v\n", err)
 			if strings.Contains(err.Error(), "already registered") {
 				http.Error(w, err.Error(), http.StatusConflict)
 			} else {
@@ -122,11 +123,13 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID)
 		if err != nil {
+			fmt.Printf("err: %+v\n", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return err
 		}
 
 		if err = user.Serialize(&serializedUser); err != nil {
+			fmt.Printf("err: %+v\n", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return err
 		}
@@ -141,6 +144,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		w.Header().Add("Authorization", fmt.Sprintf("Bearer %s", jwtToken))
 		w.Header().Add("Content-Type", "application/octet-stream")
 		w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
+
 		if _, err := w.Write(responseBody.Bytes()); err != nil {
 			fmt.Printf("err: %+v\n", err)
 		}

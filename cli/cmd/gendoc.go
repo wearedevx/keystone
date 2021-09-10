@@ -17,6 +17,11 @@ package cmd
 
 import (
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"log"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -24,25 +29,10 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 )
 
-// gendocCmd represents the gendoc command
-// var gendocCmd = &cobra.Command{
-// 	Use:   "gendoc",
-// 	Short: "A brief description of your command",
-// 	Long: `A longer description that spans multiple lines and likely contains examples
-// and usage of using your command. For example:
-//
-// Cobra is a CLI library for Go that empowers applications.
-// This application is a tool to generate the needed files
-// to quickly create a Cobra application.`,
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		fmt.Println("gendoc called")
-//
-// 		doc.GenMarkdownTree(cmd, "./doc")
-// 	},
-// }
-
+// hels to determine output format
 type documentationType string
 
 const (
@@ -51,9 +41,23 @@ const (
 	Man                    = "man"
 )
 
+// documentation format
 var doctype string
+
+// output directory
 var destination string
 
+// init initializes the package
+func init() {
+	genCmd := newGenDocCommand(RootCmd)
+
+	genCmd.Flags().StringVarP(&doctype, "type", "t", "md", "either 'hugo' or 'md'")
+	genCmd.Flags().StringVarP(&destination, "destination", "d", "./doc", "target directory")
+
+	RootCmd.AddCommand(genCmd)
+}
+
+// Generates a new Documentation Generation Command
 func newGenDocCommand(rootCmd *cobra.Command) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "documentation",
@@ -69,7 +73,7 @@ keystone documentation man`,
 
 			switch documentationType(doctype) {
 			case Hugo:
-				err = doc.GenMarkdownTreeCustom(rootCmd, destination, prepender, linkHandler)
+				err = doc.GenMarkdownTreeCustom(rootCmd, destination, hugoFrontMatterPrepender, hugoLinkHandler)
 
 			case Md:
 				err = doc.GenMarkdownTree(rootCmd, destination)
@@ -93,9 +97,27 @@ keystone documentation man`,
 	return cmd
 }
 
+/*********************/
+/* Hugo Link handler */
+/*********************/
+
+func hugoLinkHandler(name string) string {
+	base := strings.TrimSuffix(name, path.Ext(name))
+	return "/docs/cli/" + strings.ToLower(base) + "/"
+}
+
+/**************************/
+/* Front Matter Prepender */
+/**************************/
+
+// fmTemplate is the Front Matter template used
+// with Hugo static site generator
 const fmTemplate = `---
 date: %s
 title: "%s"
+description: |-
+%s
+
 slug: %s
 url: %s
 menu:
@@ -104,35 +126,183 @@ menu:
 ---
 `
 
-func prepender(filename string) string {
+// hugoFrontMatterPrepender returns the Front Matter for the given markdown file
+func hugoFrontMatterPrepender(filename string) string {
 	now := time.Now().Format(time.RFC3339)
 	name := filepath.Base(filename)
+	description := getDescription(filename)
 	base := strings.TrimSuffix(name, path.Ext(name))
 	url := "/docs/cli/" + strings.ToLower(base) + "/"
 	parent := "cli"
 
-	return fmt.Sprintf(fmTemplate, now, strings.Replace(base, "_", " ", -1), base, url, parent)
+	return fmt.Sprintf(
+		fmTemplate,
+		now,
+		strings.Replace(base, "_", " ", -1),
+		description,
+		base,
+		url,
+		parent,
+	)
 }
 
-func linkHandler(name string) string {
-	base := strings.TrimSuffix(name, path.Ext(name))
-	return "/docs/cli/" + strings.ToLower(base) + "/"
+/*********************/
+/* Hugo utilities */
+/*********************/
+
+// getDescription returns a descrition for a command based on the "Short"
+// property of the command associated with the file `filename`
+func getDescription(filename string) (description string) {
+	source := findMatchingSource(filename)
+
+	if utils.FileExists(source) {
+		command := findCommand(source)
+		if command == nil {
+			log.Fatal(fmt.Errorf("Command not found in %s", source))
+		}
+
+		description = findStringValueAt(command, "Short")
+
+		description = padMultiline(description)
+	}
+
+	return description
 }
 
-func init() {
-	genCmd := newGenDocCommand(RootCmd)
+// findMatchingSource finds the matching source for a markdown file
+// as given by the prepender callback.
+// ALSO: getDescription()
+func findMatchingSource(filename string) (source string) {
+	filename = filepath.Base(filename)
+	filename = strings.TrimPrefix(filename, "ks_")
+	filename = strings.Replace(filename, ".md", ".go", -1)
+	filename = strings.Replace(filename, "-", "_", -1)
 
-	genCmd.Flags().StringVarP(&doctype, "type", "t", "md", "either 'hugo' or 'md'")
-	genCmd.Flags().StringVarP(&destination, "destination", "d", "./doc", "target directory")
+	if filename == "ks.go" {
+		filename = "root.go"
+	}
 
-	RootCmd.AddCommand(genCmd)
-	// Here you will define your flags and configuration settings.
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// gendocCmd.PersistentFlags().String("foo", "", "A help for foo")
+	source = path.Join(wd, "cmd", filename)
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// gendocCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	return source
+}
+
+// findCommand finds the Cobra command declared in the given source file
+// and returns the associated AST node
+// Exits with error if no command could be found
+// ALSO: getDescription()
+func findCommand(source string) (command *ast.CompositeLit) {
+	fset := token.NewFileSet()
+	node, err := parser.ParseFile(fset, source, nil, parser.ParseComments)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ast.Inspect(node, func(n ast.Node) bool {
+		d, ok := n.(*ast.Ident)
+		if ok && strings.HasSuffix(d.Name, "Cmd") && d.Obj != nil {
+			a, ok := d.Obj.Decl.(*ast.ValueSpec)
+			if ok {
+				for _, v := range a.Values {
+					e, _ := v.(*ast.UnaryExpr)
+					command = e.X.(*ast.CompositeLit)
+					return false
+				}
+			}
+		}
+		return true
+	})
+
+	return command
+}
+
+// findStringValueAt returns the values associated with `field` in the given
+// composite literal
+// NOTE: The implementation of the string fetching is quite naive and
+// could break easily if the input gets too exotic.
+// It currenty supports values that are plain string literals and
+// concatenation of string literals; anything beyond thait is likely to break
+// appart
+func findStringValueAt(
+	command *ast.CompositeLit,
+	field string,
+) (value string) {
+	elmts := command.Elts
+
+	for _, e := range elmts {
+		kv := e.(*ast.KeyValueExpr)
+		key, _ := kv.Key.(*ast.Ident)
+		if key.Name == field {
+			v, ok := kv.Value.(*ast.BinaryExpr)
+			if ok {
+				value = recomposeString(v)
+				break
+			}
+			vb, ok := kv.Value.(*ast.BasicLit)
+			if ok {
+				value = vb.Value
+				break
+			}
+
+		}
+	}
+
+	value = unQuote(value)
+
+	return value
+}
+
+// unQuote removes starting and and ending quotes and back-ticks
+// form any string
+func unQuote(in string) string {
+	in = strings.TrimPrefix(in, "`")
+	in = strings.TrimSuffix(in, "`")
+	in = strings.TrimPrefix(in, "\"")
+	in = strings.TrimSuffix(in, "\"")
+
+	return in
+}
+
+// padMultiline prepends a double space before every line
+// while removing any leading tab
+func padMultiline(in string) (out string) {
+	parts := strings.Split(in, "\n")
+	for i, part := range parts {
+		parts[i] = "  " + strings.TrimPrefix(part, "\t")
+	}
+
+	out = strings.Join(parts, "\n")
+
+	return out
+}
+
+// recomposeString makes a string out of binary Expressions
+// such as string concatenation
+func recomposeString(binaryExpression *ast.BinaryExpr) (result string) {
+	var left string
+	var right string
+
+	l, ok := binaryExpression.X.(*ast.BasicLit)
+	if !ok {
+		lbin := binaryExpression.X.(*ast.BinaryExpr)
+		left = recomposeString(lbin)
+	} else {
+		left = l.Value
+	}
+
+	r, ok := binaryExpression.Y.(*ast.BasicLit)
+	if !ok {
+		rbin := binaryExpression.Y.(*ast.BinaryExpr)
+		right = recomposeString(rbin)
+	} else {
+		right = r.Value
+	}
+
+	result = strings.ReplaceAll(left+right, "`\"`", "`")
+	return result
 }

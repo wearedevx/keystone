@@ -12,7 +12,14 @@ env:
   DATABASE_URL: postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@127.0.0.1:5432/${{ secrets.DB_NAME }}?sslmode=disable
   REF: ${{ github.event.client_payload.ref }}
   TAG: ${{ github.event.client_payload.tag }}
-
+  JWT_SALT: ${{ secrets.JWT_SALT }}
+  DB_HOST: ${{ secrets.DB_HOST }}
+  DB_NAME: ${{ secrets.DB_NAME}}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  REDIS_HOST: ${{ secrets.REDIS_HOST }}
+  REDIS_PORT: ${{ secrets.REDIS_PORT }}
+  REDIS_INDEX: ${{ secrets.REDIS_INDEX }}
 jobs:
   #####################
   # Server deployment #
@@ -51,8 +58,24 @@ jobs:
         run: gcloud auth configure-docker
 
       - name: Build and Push Container
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: 5432
+          DB_NAME: ${{ secrets.DB_NAME}}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SALT: ${{ secrets.JWT_SALT }}
         run: |-
-          docker build -t ${{ env.GCR_IMAGE }} ./api/
+          docker build \
+            -t ${{ env.GCR_IMAGE }} \
+            --build-arg DB_HOST=${{ env.DB_HOST }} \
+            --build-arg DB_PORT=${{ env.DB_PORT }} \
+            --build-arg DB_NAME=${{ env.DB_NAME }} \
+            --build-arg DB_USER=${{ env.DB_USER }} \
+            --build-arg DB_PASSWORD=${{ env.DB_PASSWORD }} \
+            --build-arg JWT_SALT=${{ env.JWT_SALT }} \
+            ./api/
+
           docker push ${{ env.GCR_IMAGE }}
 
       - name: Run Migrations
@@ -89,7 +112,7 @@ jobs:
           region: ${{ env.REGION }}
           no_traffic: ${{ env.TAG == 'develop' }}
           tag: ${{ steps.cloud_run_tag.outputs.tag }}
-          env_vars: JWT_SALT=${{ secrets.JWT_SALT }},DB_HOST=${{ secrets.DB_HOST }},DB_NAME=${{ secrets.DB_NAME}},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ secrets.CLOUDSQL_CREDENTIALS }},X_KS_TTL=${{ secrets.X_KS_TTL }},MANDRILL_API_KEY=${{ env.MANDRILL_API_KEY }}
+          env_vars: CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ secrets.CLOUDSQL_CREDENTIALS }},X_KS_TTL=${{ secrets.X_KS_TTL }},MANDRILL_API_KEY=${{ env.MANDRILL_API_KEY }},REDIS_HOST=${{ env.REDIS_HOST }},REDIS_PORT=${{ env.REDIS_PORT }},REDIS_INDEX=${{ env.REDIS_INDEX }}
           flags: --allow-unauthenticated --add-cloudsql-instances ${{ secrets.CLOUDSQL_INSTANCE }} --service-account=${{ secrets.KS_SERVER_SERVICE_ACCOUNT }}
 
       - name: Setup Traffic

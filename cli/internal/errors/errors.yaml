@@ -167,7 +167,7 @@ errors:
       Available environments are: {{ .Available }}
 
       To use another environment:
-        $ ks env {{ .Environment }}
+        $ ks env switch {{ .Environment }}
 
   - type: EnvironmentAlreadyExists
     name: "Environment Already Exists"
@@ -180,7 +180,7 @@ errors:
       but your project already have one with that name.
 
       To use the '{{ .Environment }}':
-        $ ks env {{ .Environment }}
+        $ ks env switch {{ .Environment }}
 
   - type: FailedToSetCurrentEnvironment
     name: "Failed To Set Current Environment"
@@ -224,7 +224,7 @@ errors:
       but it is currently in use.
 
       Change to another environment:
-        $ ks env default
+        $ ks env switch <environment>
 
   - type: CannotGetEnvironmentKeys
     name: "Cannot Get Environment Puplic Keys"
@@ -352,7 +352,7 @@ errors:
       - name: EnvironmentsName
         type: string
     template: |
-      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- "'" | red }}
+      {{ ERROR }} {{ .Name | red }}
       We couldn't find data for the following environments: '{{ .EnvironmentsName }}', but a new value has been set by another member.
       Ask someone to push their environments to make new data available to you.
 
@@ -428,7 +428,7 @@ errors:
       No version of '{{ .Path }}' was found for the '{{ .Environment }}' environment.
 
       To get the latest variables and files for '{{ .Environment }}':
-        $ ks --env {{ .Environment }} pull
+        $ ks file && ks secret
 
   # FILE_SYSTEM_ERRORS
   # ––––––––––––––––––
