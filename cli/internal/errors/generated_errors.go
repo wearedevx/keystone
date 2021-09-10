@@ -219,7 +219,7 @@ Only files belonging to {{ .Wd }} or its subdirectories can be added.
 
 `,
 	"EnvironmentsHaveChanged": `
-{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- "'" | red }}
+{{ ERROR }} {{ .Name | red }}
 We couldn't find data for the following environments: '{{ .EnvironmentsName }}', but a new value has been set by another member.
 Ask someone to push their environments to make new data available to you.
 
