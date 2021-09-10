@@ -88,14 +88,15 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType,
 
 	keyPair, err := keys.New(keys.TypeEC)
 
-	device := "device-test"
 	deviceUID := uuid.NewV4().String()
+	device := "device-test-" + deviceUID
 	user.Username = username
 	user.AccountType = accountType
 	user.UserID = fmt.Sprintf("%s@%s", user.Username, user.AccountType)
 	user.Devices = []models.Device{{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value}}
 
 	if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
+		fmt.Println(err)
 		return err
 	}
 
