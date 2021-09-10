@@ -68,5 +68,5 @@ type IRepo interface {
 	GetDevice(device *models.Device) IRepo
 	GetDeviceByUserID(userID uint, device *models.Device) IRepo
 	RevokeDevice(userID uint, deviceName string) IRepo
-	GetAdminsFromUserProjects(userID uint, userName string, projects_list []string, adminEmail string) IRepo
+	GetAdminsFromUserProjects(userID uint, userName string, projects_list []string, adminEmail *string) IRepo
 }

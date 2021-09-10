@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (r *Repo) GetAdminsFromUserProjects(userID uint, userName string, projects_list []string, adminEmail string) IRepo {
+func (r *Repo) GetAdminsFromUserProjects(userID uint, userName string, projects_list []string, adminEmail *string) IRepo {
 	// Get project on which user is present
 	rows, err := r.GetDb().Raw(`
 	SELECT u.email, group_concat(p.name) FROM users u
@@ -25,7 +25,7 @@ func (r *Repo) GetAdminsFromUserProjects(userID uint, userName string, projects_
 
 	var projects string
 	for rows.Next() {
-		rows.Scan(&adminEmail, &projects)
+		rows.Scan(adminEmail, &projects)
 		re := regexp.MustCompile(`\{(.+)?\}`)
 		res := re.FindStringSubmatch(projects)
 		if len(res) > 0 {
