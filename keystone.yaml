@@ -19,6 +19,8 @@ env:
   strict: true
 - key: MANDRILL_API_KEY
   strict: true
+- key: DB_HOST
+  strict: true
 files:
 - path: api/keystone-server-credentials.json
   strict: false

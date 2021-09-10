@@ -75,6 +75,7 @@ func Transaction(fn func(IRepo) error) error {
 			tx:       tx,
 			messages: message.NewMessageService(),
 		}
+
 		return fn(repo)
 
 	})

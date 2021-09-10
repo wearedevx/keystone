@@ -4,7 +4,6 @@ package redis
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
@@ -13,14 +12,14 @@ import (
 
 type Redis struct {
 	err error
+	rdb *redis.Client
 }
-
-var rdb *redis.Client
 
 var ctx = context.Background()
 
-func init() {
+func NewRedis() *Redis {
 	var err error
+	var r Redis
 
 	redisHost := GetEnv("REDIS_HOST", "redis")
 	redisPort := GetEnv("REDIS_PORT", "6379")
@@ -32,7 +31,7 @@ func init() {
 		panic(err)
 	}
 
-	rdb = redis.NewClient(&redis.Options{
+	r.rdb = redis.NewClient(&redis.Options{
 		Addr:     redisHost + ":" + redisPort,
 		Password: "",            // no password set
 		DB:       redisIndexInt, // use default DB
@@ -41,6 +40,8 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	return &r
 }
 
 func (r *Redis) Err() error {
@@ -48,7 +49,7 @@ func (r *Redis) Err() error {
 }
 
 func (r *Redis) Read(key string, value *string) IRedis {
-	val, err := rdb.Get(ctx, key).Result()
+	val, err := r.rdb.Get(ctx, key).Result()
 
 	if err != nil && err != redis.Nil {
 		r.err = err
@@ -60,12 +61,10 @@ func (r *Redis) Read(key string, value *string) IRedis {
 
 func (r *Redis) Write(key string, value string) IRedis {
 	if r.Err() != nil {
-		fmt.Println("api ~ redis.go ~ r.Err()", r.Err())
-
 		return r
 	}
 
-	err := rdb.Set(ctx, key, value, 0).Err()
+	err := r.rdb.Set(ctx, key, value, 0).Err()
 
 	if err != nil {
 		r.err = err
@@ -75,7 +74,7 @@ func (r *Redis) Write(key string, value string) IRedis {
 }
 
 func (r *Redis) Delete(key string) IRedis {
-	intCmd := rdb.Del(ctx, key)
+	intCmd := r.rdb.Del(ctx, key)
 
 	_, err := intCmd.Result()
 

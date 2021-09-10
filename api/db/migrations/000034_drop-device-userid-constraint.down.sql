@@ -8,4 +8,4 @@ UPDATE
 
 ALTER TABLE
   public.devices
-ALTER COLUMN user_id add not NULL;
+ALTER COLUMN user_id set not NULL;
