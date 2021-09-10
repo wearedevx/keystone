@@ -61,9 +61,10 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 	r.err = r.GetDb().
 		Joins("left join user_devices on user_devices.device_id = devices.id").
 		Joins("left join users on users.id = user_devices.user_id").
-		Where("users.user_id = ? and name = ?", userID, deviceName).
+		Where("users.id = ? and devices.name = ?", userID, deviceName).
 		Find(&device).
 		Error
+
 	if r.err != nil {
 		return r
 	}
@@ -84,9 +85,7 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 	}
 
 	r.err = r.GetDb().
-		Model(&models.Device{}).
-		Where("id = ?", device.ID).
-		Delete(models.Device{}).Error
+		Delete(&device).Error
 
 	if r.err != nil {
 		return r
@@ -102,6 +101,7 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 
 	r.GetDevices(userID, &result.Devices)
 
+	fmt.Println(device)
 	for _, existingDevice := range result.Devices {
 		if existingDevice.Name == device.Name {
 			r.err = errors.New("Device name already registered for this account")
@@ -122,7 +122,6 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 	r.err = db.Create(&userDevice).Error
 
 	if r.err != nil {
-		fmt.Println("🍜🍜🍜🍜🍜🍜")
 		return r
 	}
 
