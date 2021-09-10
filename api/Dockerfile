@@ -30,8 +30,7 @@ RUN go mod download
 COPY . ./
 
 # Build the binary.
-RUN env
-RUN go build -v -o ./build/server
+RUN make build
 
 # download the cloudsql proxy binary
 RUN wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O ./build/cloud_sql_proxy
