@@ -21,6 +21,8 @@ env:
   strict: true
 - key: DB_HOST
   strict: true
+- key: DB_NAME
+  strict: true
 files:
 - path: api/keystone-server-credentials.json
   strict: false
