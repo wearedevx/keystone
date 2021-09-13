@@ -11,9 +11,12 @@ import (
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	. "github.com/wearedevx/keystone/cli/ui"
 )
+
+var configFilePath string
 
 func castAccount(rawAccount map[interface{}]interface{}, account *map[string]string) {
 	*account = make(map[string]string)
@@ -26,13 +29,9 @@ func castAccount(rawAccount map[interface{}]interface{}, account *map[string]str
 // Writes the global config to the disk
 // Exits with 1 status code
 func Write() {
-	configPath, err := ConfigPath()
-	if err != nil {
-		PrintError(err.Error())
-		os.Exit(1)
-	}
+	utils.CreateFileIfNotExists(configFilePath, "")
 
-	if err := viper.WriteConfigAs(configPath); err != nil {
+	if err := viper.WriteConfigAs(configFilePath); err != nil {
 		Print(RenderTemplate("config write error", `
 {{ ERROR }} {{ . | red }}
 
@@ -213,10 +212,10 @@ func createFileIfNotExist(filePath string) {
 
 // initConfig reads in config file and ENV variables if set.
 func InitConfig(cfgFile string) {
-
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
+		configFilePath = cfgFile
 	} else {
 		configDir, err := ConfigDir()
 		if err != nil {
@@ -228,7 +227,7 @@ func InitConfig(cfgFile string) {
 		viper.SetConfigType("yaml")
 		viper.SetConfigPermissions(0o600)
 
-		_, err = ConfigPath()
+		configFilePath, err = ConfigPath()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}

@@ -24,4 +24,4 @@ LDFLAGS="$API_FLAG \
   $GITLAB_CLIENT_ID_FLAG \
   $GITLAB_CLIENT_SECRET_FLAG"
 
-go run -ldflags "$LDFLAGS" main.go "$@"
+go run -ldflags "$LDFLAGS" main.go --config="/tmp/keystone/config.yaml" "$@" 
