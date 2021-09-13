@@ -1,10 +1,9 @@
-package secret
+package init
 
 import (
 	"testing"
 
 	"github.com/rogpeppe/go-internal/testscript"
-	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/cmd"
 	"github.com/wearedevx/keystone/cli/tests/utils"
 )
@@ -17,10 +16,12 @@ func TestMain(m *testing.M) {
 
 func setupFunc(env *testscript.Env) error {
 	utils.SetupEnvVars(env)
-	utils.CreateFakeUserWithUsername("john.doe", models.GitHubAccountType, env)
 	utils.CreateAndLogUser(env)
+	utils.CreateProject(env)
+
 	return nil
 }
+
 func TestCommands(t *testing.T) {
 	testscript.Run(t, testscript.Params{
 		Dir:                  "./",

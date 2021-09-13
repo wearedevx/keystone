@@ -32,7 +32,14 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		UserID:      fmt.Sprintf("%s@%s", user.Username, user.AccountType),
 	}
 
-	r.err = db.Where(foundUser).Preload("Devices").First(&foundUser).Error
+	err := db.SetupJoinTable(&User{}, "Devices", &UserDevice{})
+	fmt.Println(err)
+
+	r.err = db.Where(&foundUser).
+		Preload("Devices", func(db *gorm.DB) *gorm.DB {
+			return db.Unscoped()
+		}).
+		First(&foundUser).Error
 
 	if r.err == nil {
 		for _, device := range user.Devices {
@@ -40,15 +47,16 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 			for _, fdevice := range foundUser.Devices {
 				if fdevice.UID == device.UID {
 					found = true
+					fdevice.DeletedAt = gorm.DeletedAt{}
 					if !bytes.Equal(device.PublicKey, fdevice.PublicKey) {
 						fdevice.PublicKey = device.PublicKey
-						db.Save(&fdevice)
 					}
+					db.Save(&fdevice)
 				}
 			}
 			if !found {
-				device.UserID = foundUser.ID
-				if err := r.AddNewDevice(device, foundUser.UserID, foundUser.Email).Err(); err != nil {
+				userID := foundUser.ID
+				if err := r.AddNewDevice(device, userID, foundUser.UserID, foundUser.Email).Err(); err != nil {
 					r.err = err
 					return r
 				}
@@ -60,6 +68,10 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		user.UserID = user.Username + "@" + string(user.AccountType)
 
 		r.err = db.Create(&user).Error
+		if r.err != nil {
+			return r
+		}
+
 	}
 
 	return r

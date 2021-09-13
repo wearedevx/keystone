@@ -60,11 +60,10 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 
 	// Get publicKey by device name to send message to current user device
 	publicKey := models.Device{
-		UID:    deviceUID,
-		UserID: user.ID,
+		UID: deviceUID,
 	}
 
-	if err = Repo.GetPublicKey(&publicKey).Err(); err != nil {
+	if err = Repo.GetDeviceByUserID(user.ID, &publicKey).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			response.Error = err
 			return &response, http.StatusNotFound, err
@@ -164,7 +163,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			UID: message.SenderDeviceUID,
 		}
 
-		if err = Repo.GetPublicKey(&senderDevice).Err(); err != nil {
+		if err = Repo.GetDevice(&senderDevice).Err(); err != nil {
 			if errors.Is(err, repo.ErrorNotFound) {
 				return response, http.StatusNotFound, err
 			}

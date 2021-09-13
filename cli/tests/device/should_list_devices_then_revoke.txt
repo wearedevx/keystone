@@ -1,0 +1,16 @@
+# Init with name
+ks init test-device
+
+ks device
+
+
+stdout 'device-test'
+stdout 'device-test-2'
+
+ks device revoke device-test-2
+
+ks device
+
+stdout 'device-test'
+
+! stdout 'device-test-2'

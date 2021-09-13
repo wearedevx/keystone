@@ -88,14 +88,15 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType,
 
 	keyPair, err := keys.New(keys.TypeEC)
 
-	device := "device-test"
 	deviceUID := uuid.NewV4().String()
+	device := "device-test-" + deviceUID
 	user.Username = username
 	user.AccountType = accountType
 	user.UserID = fmt.Sprintf("%s@%s", user.Username, user.AccountType)
 	user.Devices = []models.Device{{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value}}
 
 	if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -116,11 +117,11 @@ accounts:
   fullname: `+user.Fullname+`
   user_id: `+user.UserID+`
   username: `+user.Username+`
-  public_key: !!binary `+pub+`
-  private_key: !!binary `+priv+`
 auth_token: `+token+`
 device: `+device+`
 device_uid: `+deviceUID+`
+public_key: !!binary `+pub+`
+private_key: !!binary `+priv+`
 current: 0
 `), 0o666)
 
@@ -149,7 +150,9 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	deviceUID := uuid.NewV4().String()
 	user.ID = 0
 	user.Email = "email@example.com"
-	user.Devices = []models.Device{{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value}}
+	user.Devices = []models.Device{
+		{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value},
+		{Name: "device-test-2", UID: uuid.NewV4().String(), PublicKey: keyPair.Public.Value}}
 
 	Repo.GetOrCreateUser(&user)
 
@@ -177,11 +180,11 @@ accounts:
   fullname: `+user.Fullname+`
   user_id: `+user.UserID+`
   username: `+user.Username+`
-  public_key: !!binary `+pub+`
-  private_key: !!binary `+priv+`
 auth_token: `+token+`
 device: `+device+`
 device_uid: `+deviceUID+`
+public_key: !!binary `+pub+`
+private_key: !!binary `+priv+`
 current: 0
 `), 0o660)
 

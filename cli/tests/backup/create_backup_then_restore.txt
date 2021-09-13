@@ -1,0 +1,34 @@
+# Init a project
+
+ks init project-backup
+
+# Add secret to project
+ks secret add LABEL value -s
+
+# Remove members to project
+ks backup -p password -n backup
+
+stdout 'OK  Backup created'
+
+# Removed .keystone to then restore it
+rm -rf .keystone
+
+ks restore -p password -s backup.tar.gz
+
+stdout 'OK  Backup restored'
+
+ks secret
+cmp stdout expected.txt 
+
+-- expected.txt --
+Environment dev up to date ✔
+Environment staging up to date ✔
+Environment prod up to date ✔
+╭─────────────┬────────────────────────────────────────────╮
+│ SECRET NAME │                ENVIRONMENTS                │
+│             ├──────────────┬──────────────┬──────────────┤
+│             │ DEV          │ PROD         │ STAGING      │
+├─────────────┼──────────────┼──────────────┼──────────────┤
+│ LABEL *     │ value        │ value        │ value        │
+╰─────────────┴──────────────┴──────────────┴──────────────╯
+ * Required secrets; A Available secrets

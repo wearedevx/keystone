@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -17,13 +18,14 @@ func GetDevices(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user mod
 		Devices: []models.Device{},
 	}
 
-	if err = Repo.GetPublicKeys(user.ID, &result.Devices).Err(); err != nil {
+	if err = Repo.GetDevices(user.ID, &result.Devices).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
 		} else {
 			status = http.StatusInternalServerError
 		}
 
+		fmt.Println(result.Devices)
 		return &result, status, err
 	}
 
