@@ -47,7 +47,7 @@ ks ci send --env prod
 
 		ui.Print(
 			"You are about to send the '%s' environment to your CI services.",
-			environment,
+			environment.Name,
 		)
 		if !prompts.Confirm("Continue") {
 			os.Exit(0)
