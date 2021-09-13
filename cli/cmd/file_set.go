@@ -96,7 +96,12 @@ ks --env staging file set ./config.php
 		if err = ctx.
 			CompareNewFileWhithChanges(filePath, changes).
 			SetFile(filePath, content).
-			FilesUseEnvironment(currentEnvironment, currentEnvironment, core.CTX_OVERWRITE_LOCAL_FILES).
+			// Local files should be kept during a file set
+			FilesUseEnvironment(
+				currentEnvironment,
+				currentEnvironment,
+				core.CTX_KEEP_LOCAL_FILES,
+			).
 			Err(); err != nil {
 			err.Print()
 			os.Exit(1)
