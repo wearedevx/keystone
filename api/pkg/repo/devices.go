@@ -2,6 +2,7 @@ package repo
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -107,10 +108,13 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 		}
 	}
 
+	fmt.Println("🐦🐦", device)
 	if err := db.Where("uid = ?", device.UID).Find(&device).Error; err != nil {
+		fmt.Println(err)
 		r.err = db.Create(&device).Error
 	}
 
+	fmt.Println("🦒🦒", device)
 	if device.ID == 0 {
 		r.err = db.Create(&device).Error
 	}
