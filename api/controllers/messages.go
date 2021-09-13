@@ -49,41 +49,29 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	response := GenericResponse{
 		Success: false,
 	}
-
 	project := models.Project{
 		UUID: projectID,
 	}
-
-	if err = Repo.GetProject(&project).Err(); err != nil {
-		if errors.Is(err, repo.ErrorNotFound) {
-			response.Error = err
-			return &response, http.StatusNotFound, err
-		}
-
-		return &response, http.StatusInternalServerError, err
-	}
-
-	// Get publicKey by device name to send message to current user device
 	publicKey := models.Device{
 		UID: deviceUID,
-	}
-
-	if err = Repo.GetDeviceByUserID(user.ID, &publicKey).Err(); err != nil {
-		if errors.Is(err, repo.ErrorNotFound) {
-			response.Error = err
-			return &response, http.StatusNotFound, err
-		}
-
-		return &response, http.StatusInternalServerError, err
 	}
 	var result = models.GetMessageByEnvironmentResponse{
 		Environments: map[string]models.GetMessageResponse{},
 	}
-
 	var environments []models.Environment
-	if err = Repo.GetEnvironmentsByProjectUUID(projectID, &environments).Err(); err != nil {
-		response.Error = err
-		return &response, http.StatusBadRequest, err
+
+	// Get publicKey by device name to send message to current user device
+	if err = Repo.
+		GetProject(&project).
+		GetDeviceByUserID(user.ID, &publicKey).
+		GetEnvironmentsByProjectUUID(projectID, &environments).
+		Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			response.Error = err
+			return &response, http.StatusNotFound, err
+		}
+
+		return &response, http.StatusInternalServerError, err
 	}
 
 	for _, environment := range environments {
@@ -105,10 +93,12 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 			}
 
 			curr.Environment = environment
+
+			fmt.Println("Getting messages from external storage...")
 			curr.Message.Payload, err = Repo.MessageService().GetMessageByUuid(curr.Message.Uuid)
 
 			if err != nil {
-				// fmt.Println("api ~ messages.go ~ err", err)
+				fmt.Println("api ~ messages.go ~ err", err)
 				response.Error = err
 				return &response, http.StatusNotFound, err
 			} else {
