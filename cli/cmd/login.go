@@ -166,9 +166,6 @@ ks login ––with=github`,
 	Args: cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
 		ctx := context.Background()
-		fmt.Println(viper.GetViper().ConfigFileUsed())
-		fmt.Println(viper.Get("device_uid"))
-
 		currentAccount, accountIndex := config.GetCurrentAccount()
 
 		// Already logged in

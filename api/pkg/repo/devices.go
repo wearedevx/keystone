@@ -107,7 +107,11 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 		}
 	}
 
-	if err := db.Find(&device).Error; err != nil {
+	if err := db.Where("uid = ?", device.UID).Find(&device).Error; err != nil {
+		r.err = db.Create(&device).Error
+	}
+
+	if device.ID == 0 {
 		r.err = db.Create(&device).Error
 	}
 
