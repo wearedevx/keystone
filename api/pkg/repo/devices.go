@@ -2,6 +2,8 @@ package repo
 
 import (
 	"errors"
+	"fmt"
+	"regexp"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -61,7 +63,7 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 	r.err = r.GetDb().
 		Joins("left join user_devices on user_devices.device_id = devices.id").
 		Joins("left join users on users.id = user_devices.user_id").
-		Where("users.id = ? and devices.name = ?", userID, deviceName).
+		Where("users.id = ? and devices.uid = ?", userID, deviceName).
 		Find(&device).
 		Error
 
@@ -70,7 +72,7 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 	}
 
 	if device.ID == 0 {
-		r.err = errors.New("No device found with this name")
+		r.err = errors.New("No device")
 		return r
 	}
 
@@ -97,21 +99,27 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, userEmail string) IRepo {
 	db := r.GetDb()
 
-	var result = models.GetDevicesResponse{
-		Devices: []models.Device{},
-	}
+	// var result = models.GetDevicesResponse{
+	// 	Devices: []models.Device{},
+	// }
 
-	r.GetDevices(userID, &result.Devices)
+	// r.GetDevices(userID, &result.Devices)
 
-	if r.err != nil {
+	// if r.err != nil {
+	// 	return r
+	// }
+
+	// for _, existingDevice := range result.Devices {
+	// 	if existingDevice.Name == device.Name {
+	// 		r.err = errors.New("Device name already registered for this account")
+	// 		return r
+	// 	}
+	// }
+
+	matched, _ := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, device.Name)
+	if !matched {
+		r.err = errors.New("Incorrect device name. Device name must be alphanumeric with ., -, _")
 		return r
-	}
-
-	for _, existingDevice := range result.Devices {
-		if existingDevice.Name == device.Name {
-			r.err = errors.New("Device name already registered for this account")
-			return r
-		}
 	}
 
 <<<<<<< HEAD

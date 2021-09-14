@@ -44,7 +44,7 @@ func DeleteDevice(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user m
 
 	var result = &models.RemoveDeviceResponse{Success: true}
 
-	var deviceName = params.Get("name").(string)
+	var deviceUID = params.Get("uid").(string)
 
 	if err = Repo.RevokeDevice(user.ID, deviceName).Err(); err != nil {
 		result.Error = err.Error()

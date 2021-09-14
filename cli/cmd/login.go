@@ -131,7 +131,6 @@ func selectDeviceName() string {
 
 		validate := func(input string) error {
 			matched, err := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, input)
-			fmt.Println(matched)
 			if !matched {
 				return errors.New("Incorrect device name. Device name must be alphanumeric with ., -, _")
 			}
