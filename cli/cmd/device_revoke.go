@@ -8,6 +8,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 // deviceCmd represents the device command
@@ -17,12 +18,12 @@ var deviceRevokeCmd = &cobra.Command{
 	Long:  `Revoke access to one of your device.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		argc := len(args)
-		if argc == 0 || argc > 1 {
-			ui.PrintError(fmt.Sprintf("invalid number of arguments. Expected 1, got %d", argc))
-			os.Exit(1)
-		}
-		deviceName := args[0]
+		// argc := len(args)
+		// if argc == 0 || argc > 1 {
+		// 	ui.PrintError(fmt.Sprintf("invalid number of arguments. Expected 1, got %d", argc))
+		// 	os.Exit(1)
+		// }
+		// deviceName := args[0]
 
 		c, kcErr := client.NewKeystoneClient()
 
@@ -31,10 +32,14 @@ var deviceRevokeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		devices, err := c.Devices().GetAll()
+
+		device := prompts.SelectDevice(devices)
+
 		kf := keystonefile.KeystoneFile{}
 		kf.Load(ctx.Wd)
 
-		err := c.Devices().Revoke(deviceName)
+		err = c.Devices().Revoke(device.UID)
 
 		// ui.PrintError(err)
 		if err != nil {
