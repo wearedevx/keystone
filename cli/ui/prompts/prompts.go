@@ -70,6 +70,25 @@ func Confirm(message string) bool {
 	return false
 }
 
+func StringInputWithValidation(message string, defaultValue string, validation promptui.ValidateFunc) string {
+	p := promptui.Prompt{
+		Label:    message,
+		Default:  defaultValue,
+		Validate: validation,
+	}
+
+	answer, err := p.Run()
+
+	if err != nil {
+		if err.Error() != "^C" && err.Error() != "" {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
+	return strings.Trim(answer, " ")
+}
 func StringInput(message string, defaultValue string) string {
 	p := promptui.Prompt{
 		Label:   message,

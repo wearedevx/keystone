@@ -2,7 +2,6 @@ package repo
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -101,6 +100,10 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 
 	r.GetDevices(userID, &result.Devices)
 
+	if r.err != nil {
+		return r
+	}
+
 	for _, existingDevice := range result.Devices {
 		if existingDevice.Name == device.Name {
 			r.err = errors.New("Device name already registered for this account")
@@ -108,13 +111,10 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 		}
 	}
 
-	fmt.Println("🐦🐦", device)
 	if err := db.Where("uid = ?", device.UID).Find(&device).Error; err != nil {
-		fmt.Println(err)
 		r.err = db.Create(&device).Error
 	}
 
-	fmt.Println("🦒🦒", device)
 	if device.ID == 0 {
 		r.err = db.Create(&device).Error
 	}
@@ -127,6 +127,11 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 
 	err := db.SetupJoinTable(&models.User{}, "Devices", &models.UserDevice{})
 
+	if err != nil {
+		r.err = err
+		return r
+	}
+
 	r.err = db.Create(&userDevice).Error
 
 	if r.err != nil {
@@ -136,6 +141,10 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 	var projects_list []string
 	var adminEmail string
 	r.GetAdminsFromUserProjects(userID, userName, projects_list, &adminEmail)
+
+	if r.err != nil {
+		return r
+	}
 
 	// Send mail to admins of user projects
 	e, err := emailer.NewDeviceAdminMail(userName, projects_list, device.Name)

@@ -17,8 +17,10 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/spf13/cobra"
@@ -126,9 +128,20 @@ func selectDeviceName() string {
 		if skipPrompts {
 			return defaultName
 		}
-		deviceName := prompts.StringInput(
+
+		validate := func(input string) error {
+			matched, err := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, input)
+			fmt.Println(matched)
+			if !matched {
+				return errors.New("Incorrect device name. Device name must be alphanumeric with ., -, _")
+			}
+			return err
+		}
+
+		deviceName := prompts.StringInputWithValidation(
 			"Enter the name you want this device to have",
 			defaultName,
+			validate,
 		)
 		return deviceName
 	}
