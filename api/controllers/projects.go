@@ -26,6 +26,7 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 	if err = Repo.GetOrCreateProject(&project).Err(); err != nil {
 		return &project, http.StatusInternalServerError, err
 	}
+
 	project.User = user
 	project.UserID = user.ID
 

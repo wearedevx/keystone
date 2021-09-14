@@ -28,3 +28,22 @@ func GetOrganizations(params router.Params, _ io.ReadCloser, Repo repo.IRepo, us
 
 	return &result, status, err
 }
+
+func PostOrganization(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+
+	status = http.StatusOK
+
+	orga := models.Organization{}
+
+	if err = orga.Deserialize(body); err != nil {
+		return &orga, http.StatusBadRequest, err
+	}
+
+	orga.OwnerID = user.ID
+
+	if err = Repo.GetDb().Create(&orga).Error; err != nil {
+		return &orga, http.StatusInternalServerError, err
+	}
+
+	return &orga, status, err
+}

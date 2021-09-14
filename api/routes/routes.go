@@ -50,6 +50,7 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.DELETE("/messages/:messageID", AuthedHandler(DeleteMessage))
 
 	router.GET("/organizations", AuthedHandler(GetOrganizations))
+	router.POST("/organizations", AuthedHandler(PostOrganization))
 
 	router.ServeHTTP(w, r)
 }
