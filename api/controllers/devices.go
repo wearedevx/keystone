@@ -36,9 +36,9 @@ func DeleteDevice(params router.Params, _ io.ReadCloser, Repo repo.IRepo, u mode
 	status = http.StatusNoContent
 	var result = &models.RemoveDeviceResponse{Success: true}
 
-	var deviceName = params.Get("name").(string)
+	var deviceUID = params.Get("uid").(string)
 
-	if err = Repo.RevokeDevice(u.ID, deviceName).Err(); err != nil {
+	if err = Repo.RevokeDevice(u.ID, deviceUID).Err(); err != nil {
 		result.Error = err.Error()
 		result.Success = false
 		return result, http.StatusConflict, nil

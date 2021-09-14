@@ -113,6 +113,53 @@ type SelectCIServiceItem struct {
 	Type string
 }
 
+func SelectDevice(devices []models.Device) models.Device {
+	items := make([]map[string]string, 0)
+
+	for _, device := range devices {
+		var newItem = make(map[string]string, 0)
+		newItem["Name"] = device.Name
+		newItem["UID"] = device.UID
+		newItem["CreatedAt"] = device.CreatedAt.Format("2006/01/02")
+		if device.LastUsedAt.IsZero() {
+			newItem["LastUsedAtString"] = "never used"
+		} else {
+			newItem["LastUsedAtString"] = fmt.Sprintf("last used on %s", device.CreatedAt.Format("2006/01/02"))
+		}
+
+		items = append(items, newItem)
+	}
+
+	prompt := promptui.Select{
+		Label: "Select a Device to revoke",
+		Items: items,
+		Templates: &promptui.SelectTemplates{
+			Active: fmt.Sprintf(
+				"%s {{ .Name | underline }}, {{ .LastUsedAtString  }}, added on {{ .CreatedAt  }}",
+				promptui.IconSelect,
+			),
+			Inactive: "{{ .Name }}, {{ .LastUsedAtString  }}, added on {{ .CreatedAt  }}",
+			Selected: fmt.Sprintf(
+				`{{ "%s" | green }} {{ .Name | faint }}`,
+				promptui.IconGood,
+			),
+		},
+	}
+
+	index, _, err := prompt.Run()
+	if err != nil {
+		if err.Error() != "^C" {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
+	if !Confirm(fmt.Sprintf("Sure you want to revoke %s", devices[index].Name)) {
+		os.Exit(0)
+	}
+	return devices[index]
+}
 func SelectCIService(items []SelectCIServiceItem) SelectCIServiceItem {
 	prompt := promptui.Select{
 		Label: "Select a CI service",
