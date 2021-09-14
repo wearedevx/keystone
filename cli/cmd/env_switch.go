@@ -64,6 +64,7 @@ If you want to discard those changes:
 
 		// Set the current environment
 		envName := args[0]
+		ctx.MustHaveAccessToEnvironment(envName)
 		ctx.SetCurrent(envName)
 
 		if err = ctx.Err(); err != nil {
