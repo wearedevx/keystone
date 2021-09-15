@@ -45,10 +45,17 @@ var deviceCmd = &cobra.Command{
 
 		fmt.Println()
 		for _, device := range devices {
-			fmt.Printf("  - %s, created at %s\n", device.Name, device.CreatedAt.Format("2006/01/02"))
+
+			lastUsedAtString := ""
+			if device.LastUsedAt.IsZero() {
+				lastUsedAtString = "never used"
+			} else {
+				lastUsedAtString = fmt.Sprintf("last used on %s", device.CreatedAt.Format("2006/01/02"))
+			}
+			fmt.Printf("  - %s, %s, created at %s\n", device.Name, lastUsedAtString, device.CreatedAt.Format("2006/01/02"))
 		}
 		fmt.Println()
-		fmt.Println("To revoke access to one of these devices, use :\n  $ ks device revoke <device>")
+		fmt.Println("To revoke access to one of these devices, use :\n  $ ks device revoke")
 
 	},
 }

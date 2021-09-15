@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -59,11 +60,10 @@ var RootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() int {
-	Initialize()
 	if err := RootCmd.Execute(); err != nil {
-		// fmt.Println(err)
 		os.Exit(1)
 	}
+
 	return 0
 }
 
@@ -81,8 +81,19 @@ func isIn(haystack []string, needle string) bool {
 	return false
 }
 
-func Initialize() {
+func findCurrentCommand(args []string) string {
+	for _, candidate := range args {
+		if !strings.HasPrefix(candidate, "-") &&
+			!strings.HasPrefix(candidate, "/") &&
+			candidate != "ks" {
+			return candidate
+		}
+	}
 
+	return ""
+}
+
+func Initialize() {
 	if len(os.Args) <= 1 {
 		return
 	}
@@ -94,7 +105,7 @@ func Initialize() {
 	askHelp := core.Contains(os.Args, "--help")
 
 	if len(os.Args) > 1 {
-		command := os.Args[1]
+		command := findCurrentCommand(os.Args)
 		checkEnvironment = !isIn(noEnvironmentCommands, command) && !askHelp
 		checkProject = !isIn(noProjectCommands, command) && !askHelp
 		checkLogin = !isIn(noLoginCommands, command) && !askHelp
@@ -116,7 +127,9 @@ func Initialize() {
 	current := ctx.CurrentEnvironment()
 	ctx.SetError(nil)
 
-	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
+	if currentEnvironment == "" {
+		currentEnvironment = current
+	}
 
 	if checkProject && !isKeystoneFile {
 		errors.NotAKeystoneProject(".", nil).Print()
@@ -156,7 +169,9 @@ func Initialize() {
 		}
 		ctx.RemoveForbiddenEnvironments(ctx.AccessibleEnvironments)
 
-		currentEnvironment = ctx.CurrentEnvironment()
+		if currentEnvironment == "" {
+			currentEnvironment = ctx.CurrentEnvironment()
+		}
 	}
 
 	if checkEnvironment && !ctx.HasEnvironment(currentEnvironment) {
@@ -182,10 +197,6 @@ func init() {
 	}
 	CWD = cwd
 
-	// Call directly initConfig. cobra doesn't call initConfig func.
-	config.InitConfig(cfgFile)
-	// cobra.OnInitialize(initConfig)
-
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
@@ -195,16 +206,24 @@ func init() {
 	// setCmd.PersistentFlags().String("foo", "", "A help for foo")
 	RootCmd.PersistentFlags().BoolVarP(&quietOutput, "quiet", "q", false, "make the output machine readable")
 
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/keystone/keystone.yaml)")
+	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.config/keystone/keystone.yaml)")
 
 	RootCmd.PersistentFlags().BoolVarP(&skipPrompts, "skip", "s", false, "skip prompts and use default")
 
+	RootCmd.PersistentFlags().StringVarP(&currentEnvironment, "env", "e", "", "environment to use instead of the current one")
+
+	cobra.OnInitialize(func() {
+		// Call directly initConfig. cobra doesn't call initConfig func.
+		config.InitConfig(cfgFile)
+		Initialize()
+	})
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	noEnvironmentCommands = []string{
 		"login", "logout", "documentation", "init", "whoami", "invite", "version", "device",
 	}
+
 	noProjectCommands = noEnvironmentCommands
 
 	noLoginCommands = []string{"login", "source", "documentation", "version"}

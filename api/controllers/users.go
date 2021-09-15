@@ -113,7 +113,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	err = repo.Transaction(func(Repo repo.IRepo) error {
 		if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
 			fmt.Printf("err: %+v\n", err)
-			if strings.Contains(err.Error(), "already registered") {
+			if strings.Contains(err.Error(), "Incorrect device name") {
 				http.Error(w, err.Error(), http.StatusConflict)
 			} else {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)

@@ -2,9 +2,12 @@ package repo
 
 import (
 	"errors"
+	"fmt"
+	"regexp"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"gorm.io/gorm"
 )
 
 func (r *Repo) GetDevice(device *models.Device) IRepo {
@@ -60,7 +63,7 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 	r.err = r.GetDb().
 		Joins("left join user_devices on user_devices.device_id = devices.id").
 		Joins("left join users on users.id = user_devices.user_id").
-		Where("users.id = ? and devices.name = ?", userID, deviceName).
+		Where("users.id = ? and devices.uid = ?", userID, deviceName).
 		Find(&device).
 		Error
 
@@ -69,7 +72,7 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 	}
 
 	if device.ID == 0 {
-		r.err = errors.New("No device found with this name")
+		r.err = errors.New("No device")
 		return r
 	}
 
@@ -94,25 +97,38 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 }
 
 func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, userEmail string) IRepo {
-	var result = models.GetDevicesResponse{
-		Devices: []models.Device{},
+	db := r.GetDb()
+
+	// var result = models.GetDevicesResponse{
+	// 	Devices: []models.Device{},
+	// }
+
+	// r.GetDevices(userID, &result.Devices)
+
+	// if r.err != nil {
+	// 	return r
+	// }
+
+	// for _, existingDevice := range result.Devices {
+	// 	if existingDevice.Name == device.Name {
+	// 		r.err = errors.New("Device name already registered for this account")
+	// 		return r
+	// 	}
+	// }
+
+	matched, _ := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, device.Name)
+	if !matched {
+		r.err = errors.New("Incorrect device name. Device name must be alphanumeric with ., -, _")
+		return r
 	}
 
-	r.GetDevices(userID, &result.Devices)
-
-	for _, existingDevice := range result.Devices {
-		if existingDevice.Name == device.Name {
-			r.err = errors.New("Device name already registered for this account")
-			return r
+	if err := db.Where("uid = ?", device.UID).First(&device).Error; err != nil {
+		fmt.Printf("r.err: %+v\n", r.err)
+		if errors.Is(gorm.ErrRecordNotFound, err) {
+			r.err = db.Create(&device).Error
+		} else {
+			r.err = err
 		}
-	}
-
-	if err := db.Where("uid = ?", device.UID).Find(&device).Error; err != nil {
-		r.err = db.Create(&device).Error
-	}
-
-	if device.ID == 0 {
-		r.err = db.Create(&device).Error
 	}
 
 	if r.err != nil {
@@ -123,6 +139,11 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 
 	err := db.SetupJoinTable(&models.User{}, "Devices", &models.UserDevice{})
 
+	if err != nil {
+		r.err = err
+		return r
+	}
+
 	r.err = db.Create(&userDevice).Error
 
 	if r.err != nil {
@@ -132,6 +153,10 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 	var projects_list []string
 	var adminEmail string
 	r.GetAdminsFromUserProjects(userID, userName, projects_list, &adminEmail)
+
+	if r.err != nil {
+		return r
+	}
 
 	// Send mail to admins of user projects
 	e, err := emailer.NewDeviceAdminMail(userName, projects_list, device.Name)

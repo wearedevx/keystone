@@ -32,8 +32,7 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		UserID:      fmt.Sprintf("%s@%s", user.Username, user.AccountType),
 	}
 
-	err := db.SetupJoinTable(&User{}, "Devices", &UserDevice{})
-	fmt.Println(err)
+	db.SetupJoinTable(&User{}, "Devices", &UserDevice{})
 
 	r.err = db.Where(&foundUser).
 		Preload("Devices", func(db *gorm.DB) *gorm.DB {
@@ -67,11 +66,17 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 	} else if errors.Is(r.err, gorm.ErrRecordNotFound) {
 		user.UserID = user.Username + "@" + string(user.AccountType)
 
-		r.err = db.Create(&user).Error
+		r.err = db.Omit("Devices").Create(&user).Error
 		if r.err != nil {
 			return r
 		}
 
+		for _, device := range user.Devices {
+			if err := r.AddNewDevice(device, user.ID, user.UserID, user.Email).Err(); err != nil {
+				r.err = err
+				return r
+			}
+		}
 	}
 
 	return r
