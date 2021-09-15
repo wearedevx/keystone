@@ -13,6 +13,7 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 
+	"github.com/wearedevx/keystone/api/internal/activitylog"
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
@@ -40,81 +41,101 @@ func (gr *GenericResponse) Serialize(out *string) (err error) {
 
 func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
-	var projectID = params.Get("projectID").(string)
-	var deviceUID = params.Get("device").(string)
 	response := GenericResponse{
 		Success: false,
 	}
 
-	project := models.Project{
-		UUID: projectID,
+	var projectID = params.Get("projectID").(string)
+	var deviceUID = params.Get("device").(string)
+	var project = models.Project{UUID: projectID}
+	var publicKey = models.Device{}
+	var environments []models.Environment
+	var result = models.GetMessageByEnvironmentResponse{
+		Environments: map[string]models.GetMessageResponse{},
 	}
+	var logContext = activitylog.Context{
+		UserID:    user.ID,
+		ProjectID: project.ID,
+		Action:    "GetMessagesFromProjectByUser",
+	}
+
 	if err = Repo.GetProject(&project).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			response.Error = err
-			return &response, http.StatusNotFound, err
+			status = http.StatusNotFound
+			goto done
 		}
 
-		return &response, http.StatusInternalServerError, err
+		status = http.StatusInternalServerError
+		goto done
 	}
 
 	// Get publicKey by device name to send message to current user device
-	publicKey := models.Device{
-		UID:    deviceUID,
-		UserID: user.ID,
-	}
+	publicKey.UID = deviceUID
+	publicKey.UserID = user.ID
 
 	if err = Repo.GetPublicKey(&publicKey).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			response.Error = err
-			return &response, http.StatusNotFound, err
+			status = http.StatusNotFound
+			goto done
 		}
 
-		return &response, http.StatusInternalServerError, err
-	}
-	var result = models.GetMessageByEnvironmentResponse{
-		Environments: map[string]models.GetMessageResponse{},
+		status = http.StatusAlreadyReported
+		goto done
 	}
 
-	var environments []models.Environment
 	if err = Repo.GetEnvironmentsByProjectUUID(projectID, &environments).Err(); err != nil {
 		response.Error = err
-		return &response, http.StatusBadRequest, err
+		status = http.StatusBadRequest
+		goto done
 	}
 
 	for _, environment := range environments {
 		// - rights check
+		logContext.EnvironmentID = environment.ID
+
 		can, err := rights.CanUserReadEnvironment(Repo, user.ID, project.ID, &environment)
 		if err != nil {
 			response.Error = err
-			return &response, http.StatusNotFound, err
+			status = http.StatusNotFound
+			goto done
 		}
 
 		if can {
 			curr := models.GetMessageResponse{}
 			if err = Repo.GetMessagesForUserOnEnvironment(publicKey, environment, &curr.Message).Err(); err != nil {
-				response.Error = Repo.Err()
+				response.Error = err
 				response.Success = false
-				return &response, http.StatusBadRequest, nil
+				status = http.StatusBadRequest
+				goto done
 			}
 
 			curr.Environment = environment
 			result.Environments[environment.Name] = curr
 		}
-
 	}
+	logContext.EnvironmentID = 0
 
-	return &result, status, nil
+done:
+	return &result, status, logContext.IntoError(err)
 }
 
 // WriteMessages writes messages to users
 func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	response := &models.GetEnvironmentsResponse{}
+	logContext := activitylog.Context{
+		UserID: user.ID,
+		Action: "WriteMessages",
+	}
+	senderDevice := models.Device{}
 
 	payload := &models.MessagesToWritePayload{}
-	if err := payload.Deserialize(body); err != nil {
-		return nil, http.StatusBadRequest, err
+	if err = payload.Deserialize(body); err != nil {
+		status = http.StatusBadRequest
+		response = nil
+		goto done
 	}
 
 	for _, message := range payload.Messages {
@@ -130,14 +151,19 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			GetProjectMember(&projectMember).
 			GetEnvironment(environment).
 			Err(); err != nil {
-			return response, http.StatusNotFound, err
+			status = http.StatusNotFound
+			goto done
 		}
+
+		logContext.ProjectID = projectMember.ProjectID
+		logContext.EnvironmentID = environment.ID
 
 		// - check if user has rights to write on environment
 		can, err := rights.CanUserWriteOnEnvironment(Repo, user.ID, environment.Project.ID, environment)
 
 		if err != nil {
-			return response, http.StatusNotFound, err
+			status = http.StatusNotFound
+			goto done
 		}
 
 		if !can {
@@ -147,7 +173,8 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		// - check recipient exists with read rights.
 		can, err = rights.CanUserReadEnvironment(Repo, projectMember.UserID, projectMember.ProjectID, environment)
 		if err != nil {
-			return response, http.StatusNotFound, err
+			status = http.StatusNotFound
+			goto done
 		}
 
 		if !can {
@@ -160,16 +187,18 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			break
 		}
 
-		senderDevice := models.Device{
+		senderDevice = models.Device{
 			UID: message.SenderDeviceUID,
 		}
 
 		if err = Repo.GetPublicKey(&senderDevice).Err(); err != nil {
 			if errors.Is(err, repo.ErrorNotFound) {
-				return response, http.StatusNotFound, err
+				status = http.StatusNotFound
+			} else {
+				status = http.StatusInternalServerError
 			}
 
-			return response, http.StatusInternalServerError, err
+			goto done
 		}
 
 		messageToWrite := &models.Message{
@@ -192,10 +221,12 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 
 			if err != nil {
 				if errors.Is(err, repo.ErrorNotFound) {
-					return response, http.StatusNotFound, err
+					status = http.StatusNotFound
+				} else {
+					status = http.StatusInternalServerError
 				}
 
-				return response, http.StatusInternalServerError, err
+				goto done
 			}
 		}
 
@@ -203,13 +234,18 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		response.Environments = append(response.Environments, *environment)
 	}
 
-	return response, status, nil
+done:
+	return response, status, logContext.IntoError(err)
 }
 
 func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusNoContent
 	response := &GenericResponse{}
 	response.Success = true
+	logContext := activitylog.Context{
+		UserID: user.ID,
+		Action: "DeleteMessage",
+	}
 
 	var messageID = params.Get("messageID").(string)
 
@@ -218,7 +254,9 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 	if err != nil {
 		response.Success = false
 		response.Error = err
-		return response, status, nil
+		err = nil
+
+		goto done
 	}
 
 	if err = Repo.DeleteMessage(uint(id), user.ID).Err(); err != nil {
@@ -226,7 +264,8 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 		response.Success = false
 	}
 
-	return response, status, nil
+done:
+	return response, status, logContext.IntoError(err)
 }
 
 func getTTLToken(r *http.Request) (string, bool) {

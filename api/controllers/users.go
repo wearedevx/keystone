@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/wearedevx/keystone/api/internal/activitylog"
 	log "github.com/wearedevx/keystone/api/internal/utils/cloudlogger"
 	"github.com/wearedevx/keystone/api/pkg/jwt"
 
@@ -32,23 +33,43 @@ func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var serializedUser string
 
 	err = repo.Transaction(func(Repo repo.IRepo) error {
+		alogger := activitylog.NewActivityLogger(Repo)
+		logContext := activitylog.Context{
+			Action: "PostUser",
+		}
+		err = nil
+		status = http.StatusOK
+		msg := ""
+
 		if err = user.Deserialize(r.Body); err != nil {
-			http.Error(w, "Bad request", http.StatusBadRequest)
-			return err
+			msg = "Bad Request"
+			status = http.StatusBadRequest
+
+			goto done
 		}
 
 		if err = Repo.GetOrCreateUser(user).Err(); err != nil {
-			http.Error(w, "Not found", http.StatusNotFound)
-			return err
+			msg = "Not Found"
+			status = http.StatusNotFound
+
+			goto done
 		}
 
 		if err = user.Serialize(&serializedUser); err != nil {
-			fmt.Println(err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return err
+			msg = "Internal Server Error"
+			status = http.StatusInternalServerError
+
+			goto done
 		}
 
-		return nil
+	done:
+		alogger.Save(logContext.IntoError(err))
+
+		if err != nil {
+			http.Error(w, msg, status)
+		}
+
+		return err
 	})
 
 	if err == nil {
@@ -111,30 +132,51 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	}
 
 	err = repo.Transaction(func(Repo repo.IRepo) error {
-		if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
-			fmt.Printf("err: %+v\n", err)
-			if strings.Contains(err.Error(), "already registered") {
-				http.Error(w, err.Error(), http.StatusConflict)
-			} else {
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			}
-			return err
+		err = nil
+		msg := ""
+		status := http.StatusOK
+		alogger := activitylog.NewActivityLogger(Repo)
+		logContext := activitylog.Context{
+			Action: "PostUserToken",
 		}
 
+		if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
+			if strings.Contains(err.Error(), "already registered") {
+				msg = err.Error()
+				status = http.StatusConflict
+			} else {
+				msg = "Internal Server Error"
+				status = http.StatusInternalServerError
+			}
+
+			goto done
+		}
+
+		logContext.UserID = user.ID
 		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID)
+
 		if err != nil {
-			fmt.Printf("err: %+v\n", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return err
+			msg = "Internal Server Error"
+			status = http.StatusInternalServerError
+
+			goto done
 		}
 
 		if err = user.Serialize(&serializedUser); err != nil {
-			fmt.Printf("err: %+v\n", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return err
+			msg = "Internal Server Error"
+			status = http.StatusInternalServerError
+
+			goto done
 		}
 
-		return nil
+	done:
+		alogger.Save(logContext.IntoError(err))
+
+		if err != nil {
+			http.Error(w, msg, status)
+		}
+
+		return err
 	})
 
 	if err == nil {
@@ -206,20 +248,36 @@ func PostLoginRequest(w http.ResponseWriter, _ *http.Request, _ httprouter.Param
 	var response string
 	var err error
 
-	err = repo.Transaction(func(Repo repo.IRepo) error {
+	err = repo.Transaction(func(Repo repo.IRepo) (err error) {
 		loginRequest := Repo.CreateLoginRequest()
+		alogger := activitylog.NewActivityLogger(Repo)
+		logContext := activitylog.Context{
+			Action: "PostLoginRequest",
+		}
+		var msg string
+		var status int
 
 		if err = Repo.Err(); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return err
+			msg = "Status Internal Server Error"
+			status = http.StatusInternalServerError
+
+			goto done
 		}
 
 		if err = loginRequest.Serialize(&response); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return err
+			msg = "Status Internal Server Error"
+			status = http.StatusInternalServerError
+
+			goto done
 		}
 
-		return nil
+	done:
+		alogger.Save(logContext.IntoError(err))
+		if err != nil {
+			http.Error(w, msg, status)
+		}
+
+		return err
 	})
 
 	if err == nil {
@@ -243,25 +301,44 @@ func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		return
 	}
 
-	err = repo.Transaction(func(Repo repo.IRepo) error {
+	err = repo.Transaction(func(Repo repo.IRepo) (err error) {
+		alogger := activitylog.NewActivityLogger(Repo)
+		logContext := activitylog.Context{
+			Action: "GetLoginRequest",
+		}
+		var status int
+		var msg string
+
 		loginRequest, found := Repo.GetLoginRequest(temporaryCode)
 
 		if err = Repo.Err(); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return err
+			msg = err.Error()
+			status = http.StatusInternalServerError
+
+			goto done
 		}
 
 		if !found {
 			log.Error(r, "Login Request not found with: `%s`", temporaryCode)
-			http.Error(w, "Not Found", http.StatusNotFound)
-			return err
+			msg = "Not Found"
+			status = http.StatusNotFound
+
+			goto done
 		}
 
 		err = loginRequest.Serialize(&response)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return err
+			msg = err.Error()
+			status = http.StatusInternalServerError
+
+			goto done
+		}
+
+	done:
+		alogger.Save(logContext.IntoError(err))
+		if err != nil {
+			http.Error(w, msg, status)
 		}
 
 		return nil
@@ -278,7 +355,11 @@ func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 
 func GetUserKeys(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
+	logContext := activitylog.Context{
+		Action: "GetUserKeys",
+	}
 
+	targetUser := models.User{}
 	userPublicKeys := models.UserPublicKeys{
 		UserID:     0,
 		PublicKeys: make([]models.Device, 0),
@@ -287,10 +368,13 @@ func GetUserKeys(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ model
 	userID := params.Get("userID").(string)
 
 	if userID == "" {
-		return &userPublicKeys, http.StatusBadRequest, errors.New("bad request")
+		status = http.StatusBadRequest
+		err = errors.New("bad request")
+
+		goto done
 	}
 
-	targetUser := models.User{UserID: userID}
+	targetUser.UserID = userID
 
 	if err = Repo.GetUser(&targetUser).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
@@ -303,5 +387,6 @@ func GetUserKeys(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ model
 		userPublicKeys.PublicKeys = targetUser.Devices
 	}
 
-	return &userPublicKeys, status, err
+done:
+	return &userPublicKeys, status, logContext.IntoError(err)
 }

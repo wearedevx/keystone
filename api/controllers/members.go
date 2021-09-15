@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/wearedevx/keystone/api/internal/activitylog"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -16,27 +17,31 @@ import (
 
 // DoUsersExist checks if users exists in the Keystone database
 // This is not project dependant, it checks all users in the whole world
-func DoUsersExist(_ router.Params, body io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
+func DoUsersExist(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusBadRequest
 	response := &models.CheckMembersResponse{}
 	payload := &models.CheckMembersPayload{}
+	logContext := activitylog.Context{
+		UserID: user.ID,
+		Action: "DoUserExist",
+	}
 
 	// input check
 	err = payload.Deserialize(body)
 
-	if err != nil {
-		return response, status, err
-	}
-
-	// actual work
-
 	users := make(map[string]models.User)
 	notFounds := make([]string, 0)
 
+	if err != nil {
+		goto done
+	}
+
+	// actual work
 	Repo.FindUsers(payload.MemberIDs, &users, &notFounds)
 
-	if Repo.Err() != nil {
-		return response, http.StatusInternalServerError, Repo.Err()
+	if err = Repo.Err(); err != nil {
+		status = http.StatusInternalServerError
+		goto done
 	}
 
 	if len(notFounds) != 0 {
@@ -46,7 +51,8 @@ func DoUsersExist(_ router.Params, body io.ReadCloser, Repo repo.IRepo, _ models
 		status = http.StatusNotFound
 	}
 
-	return response, status, err
+done:
+	return response, status, logContext.IntoError(err)
 }
 
 // PutMembersSetRole sets the role for a given project member
@@ -54,21 +60,27 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 	status = http.StatusOK
 	payload := &models.SetMemberRolePayload{}
 	project := models.Project{}
+	member := models.User{}
+	role := models.Role{}
+	can := false
 
 	// input check
 	var projectID = params.Get("projectID").(string)
 
+	logContext := activitylog.Context{
+		UserID: user.ID,
+		Action: "PutMemberSetRole",
+	}
+
 	err = payload.Deserialize(body)
 	if err != nil {
-		return response, http.StatusInternalServerError, err
+		status = http.StatusInternalServerError
+		goto done
 	}
 
 	// actual work
-	member := models.User{
-		UserID: payload.MemberID,
-	}
-
-	role := models.Role{Name: payload.RoleName}
+	member.UserID = payload.MemberID
+	role.Name = payload.RoleName
 
 	if err = Repo.GetProjectByUUID(projectID, &project).
 		GetUser(&member).
@@ -80,16 +92,20 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 			status = http.StatusInternalServerError
 		}
 
-		return response, status, err
+		goto done
 	}
 
-	can, err := rights.CanUserSetMemberRole(Repo, user, member, role, project)
+	logContext.ProjectID = project.ID
+
+	can, err = rights.CanUserSetMemberRole(Repo, user, member, role, project)
 	if err != nil {
-		return response, http.StatusInternalServerError, err
+		status = http.StatusInternalServerError
+		goto done
 	}
 
 	if !can {
-		return response, http.StatusForbidden, errors.New("operation not allowed")
+		status = http.StatusForbidden
+		goto done
 	}
 
 	if err = Repo.ProjectSetRoleForUser(project, member, role).Err(); err != nil {
@@ -100,7 +116,8 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 		}
 	}
 
-	return response, status, err
+done:
+	return response, status, logContext.IntoError(err)
 }
 
 func checkUserCanChangeMember(Repo repo.IRepo, user models.User, project models.Project, other models.User) (can bool, err error) {

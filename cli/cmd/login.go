@@ -48,6 +48,7 @@ func LogIntoExisitingAccount(accountIndex int, currentAccount models.User, c aut
 	config.SetCurrentAccount(accountIndex)
 
 	publicKey, _ := config.GetCurrentUserPublicKey()
+	fmt.Printf("publicKey: %+v\n", publicKey)
 	// publicKey := []byte(currentAccount["public_key"])
 	_, jwtToken, err := c.Finish(publicKey, config.GetDeviceName(), config.GetDeviceUID())
 

@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/wearedevx/keystone/api/internal/activitylog"
 	. "github.com/wearedevx/keystone/api/pkg/jwt"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -87,12 +88,15 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 				http.Error(dw, message, status)
 				return err
 			}
+
 			foundDevice := false
+
 			for _, device := range user.Devices {
 				if device.UID == deviceUID {
 					foundDevice = true
 				}
 			}
+
 			if !foundDevice {
 				http.Error(dw, "Device not registered", http.StatusNotFound)
 				return err
@@ -102,7 +106,15 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			// Actual call to the handler (i.e. Controller function)
 			result, status, err := handler(p, r.Body, Repo, user)
 
-			if err != nil {
+			// Activity logging
+			alogger := activitylog.NewActivityLogger(Repo)
+			if e := alogger.Save(err).Err(); e != nil {
+				http.Error(dw, e.Error(), http.StatusInternalServerError)
+
+				return e
+			}
+
+			if err != nil && status >= 400 {
 				http.Error(dw, err.Error(), status)
 				return err
 			}
@@ -124,6 +136,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			if out.Len() > 0 {
 				dw.Header().Add("Content-Type", "application/json; charset=utf-8")
 				dw.Header().Add("Content-Length", strconv.Itoa(out.Len()))
+
 				if _, err := dw.Write(out.Bytes()); err != nil {
 					fmt.Printf("err: %+v\n", err)
 				}
@@ -132,10 +145,6 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			if status != 200 && !wroteStatus {
 				dw.WriteHeader(status)
 			}
-
-			// if Repo.Err() != nil {
-			// 	fmt.Println(Repo.Err())
-			// }
 
 			return nil
 		})
