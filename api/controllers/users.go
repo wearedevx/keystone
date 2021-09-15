@@ -141,7 +141,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		}
 
 		if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
-			if strings.Contains(err.Error(), "already registered") {
+			if strings.Contains(err.Error(), "Incorrect device name") {
 				msg = err.Error()
 				status = http.StatusConflict
 			} else {
