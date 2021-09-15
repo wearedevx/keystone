@@ -22,6 +22,16 @@ CREATE INDEX idx_activity_logs_environment_id ON public.activity_logs USING btre
 
 -- public.activity_logs foreign keys
 
-ALTER TABLE public.activity_logs ADD CONSTRAINT fk_activity_logs_project FOREIGN KEY (project_id) REFERENCES projects(id);
-ALTER TABLE public.activity_logs ADD CONSTRAINT fk_activity_logs_user FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE public.activity_logs ADD CONSTRAINT fk_activity_logs_environment FOREIGN KEY (environment_id) REFERENCES environments(id);
+ALTER TABLE public.activity_logs
+  DROP CONSTRAINT IF EXISTS fk_activity_logs_project;
+ALTER TABLE public.activity_logs
+  DROP CONSTRAINT IF EXISTS fk_activity_logs_user;
+ALTER TABLE public.activity_logs
+  DROP CONSTRAINT IF EXISTS fk_activity_logs_environment;
+
+ALTER TABLE public.activity_logs
+	ADD CONSTRAINT fk_activity_logs_project FOREIGN KEY (project_id) REFERENCES projects(id);
+ALTER TABLE public.activity_logs
+  ADD CONSTRAINT fk_activity_logs_user FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE public.activity_logs
+  ADD CONSTRAINT fk_activity_logs_environment FOREIGN KEY (environment_id) REFERENCES environments(id);

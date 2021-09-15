@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -46,7 +45,7 @@ func DeleteDevice(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user m
 
 	var deviceUID = params.Get("uid").(string)
 
-	if err = Repo.RevokeDevice(user.ID, deviceName).Err(); err != nil {
+	if err = Repo.RevokeDevice(user.ID, deviceUID).Err(); err != nil {
 		result.Error = err.Error()
 		result.Success = false
 		status = http.StatusConflict

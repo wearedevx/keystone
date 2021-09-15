@@ -1,4 +1,4 @@
 ALTER TABLE
   devices
 ADD
-  COLUMN deleted_at timestamptz NULL;
+  COLUMN IF NOT EXISTS deleted_at timestamptz NULL;

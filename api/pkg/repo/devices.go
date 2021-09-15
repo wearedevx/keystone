@@ -2,12 +2,10 @@ package repo
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"gorm.io/gorm"
 )
 
 func (r *Repo) GetDevice(device *models.Device) IRepo {
@@ -122,23 +120,12 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 		return r
 	}
 
-<<<<<<< HEAD
 	if err := db.Where("uid = ?", device.UID).Find(&device).Error; err != nil {
 		r.err = db.Create(&device).Error
 	}
 
 	if device.ID == 0 {
 		r.err = db.Create(&device).Error
-=======
-	fmt.Println("🐦🐦", device)
-	if err := db.Where("uid = ?", device.UID).First(&device).Error; err != nil {
-		fmt.Printf("r.err: %+v\n", r.err)
-		if errors.Is(gorm.ErrRecordNotFound, err) {
-			r.err = db.Create(&device).Error
-		} else {
-			r.err = err
-		}
->>>>>>> e52eb02 (fix(): devices)
 	}
 
 	if r.err != nil {
