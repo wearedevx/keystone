@@ -169,7 +169,9 @@ func Initialize() {
 		}
 		ctx.RemoveForbiddenEnvironments(ctx.AccessibleEnvironments)
 
-		// currentEnvironment = ctx.CurrentEnvironment()
+		if currentEnvironment == "" {
+			currentEnvironment = ctx.CurrentEnvironment()
+		}
 	}
 
 	if checkEnvironment && !ctx.HasEnvironment(currentEnvironment) {
