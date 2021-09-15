@@ -9,4 +9,6 @@ SET organization_id =  ( SELECT id FROM public.organizations o WHERE o.owner_id 
 
 alter table public.projects
 alter column organization_id type integer,
-alter column organization_id set not null
+alter column organization_id set not null,
+ADD CONSTRAINT fk_project_organization FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+

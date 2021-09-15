@@ -174,9 +174,11 @@ func OrganizationsSelect(organizations []models.Organization) models.Organizatio
 	i, _, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return models.Organization{}
+		if err.Error() != "^C" {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+		os.Exit(0)
 	}
 	return organizations[i]
-
 }

@@ -1,23 +1,37 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // orgaCmd represents the orga command
 var orgaCmd = &cobra.Command{
 	Use:   "orga",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Manage organizations",
+	Long: `Manages organizations.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Used without arguments, displays a list of all members,
+grouped by their role.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("orga called")
+		c, err := client.NewKeystoneClient()
+		if err != nil {
+			err.Print()
+			os.Exit(1)
+		}
+
+		organizations, _ := c.Organizations().GetAll()
+
+		ui.Print("Organizations your are in:")
+		ui.Print("---")
+		for _, orga := range organizations {
+			ui.Print(orga.Name)
+		}
+
+		ui.Print("")
 	},
 }
 

@@ -30,7 +30,6 @@ func GetOrganizations(params router.Params, _ io.ReadCloser, Repo repo.IRepo, us
 }
 
 func PostOrganization(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
-
 	status = http.StatusOK
 
 	orga := models.Organization{}
