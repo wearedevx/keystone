@@ -84,7 +84,8 @@ func isIn(haystack []string, needle string) bool {
 func findCurrentCommand(args []string) string {
 	for _, candidate := range args {
 		if !strings.HasPrefix(candidate, "-") &&
-			!strings.HasPrefix(candidate, "/") {
+			!strings.HasPrefix(candidate, "/") &&
+			candidate != "ks" {
 			return candidate
 		}
 	}
@@ -126,7 +127,9 @@ func Initialize() {
 	current := ctx.CurrentEnvironment()
 	ctx.SetError(nil)
 
-	RootCmd.PersistentFlags().StringVar(&currentEnvironment, "env", current, "environment to use instead of the current one")
+	if currentEnvironment == "" {
+		currentEnvironment = current
+	}
 
 	if checkProject && !isKeystoneFile {
 		errors.NotAKeystoneProject(".", nil).Print()
@@ -166,7 +169,7 @@ func Initialize() {
 		}
 		ctx.RemoveForbiddenEnvironments(ctx.AccessibleEnvironments)
 
-		currentEnvironment = ctx.CurrentEnvironment()
+		// currentEnvironment = ctx.CurrentEnvironment()
 	}
 
 	if checkEnvironment && !ctx.HasEnvironment(currentEnvironment) {
@@ -204,6 +207,8 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.config/keystone/keystone.yaml)")
 
 	RootCmd.PersistentFlags().BoolVarP(&skipPrompts, "skip", "s", false, "skip prompts and use default")
+
+	RootCmd.PersistentFlags().StringVarP(&currentEnvironment, "env", "e", "", "environment to use instead of the current one")
 
 	cobra.OnInitialize(func() {
 		// Call directly initConfig. cobra doesn't call initConfig func.
