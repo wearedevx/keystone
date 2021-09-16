@@ -67,6 +67,8 @@ func (s *environmentService) GetAccessibleEnvironments() []models.Environment {
 			s.ctx.SetError(kserrors.ServiceNotAvailable(err))
 		} else if strings.Contains(err.Error(), auth.DeviceNotRegistered.Error()) {
 			s.ctx.SetError(kserrors.DeviceNotRegistered(err))
+		} else if strings.Contains(err.Error(), "not found") {
+			s.ctx.SetError(kserrors.ProjectDoesntExist("", "", err))
 		} else {
 			s.ctx.SetError(kserrors.UnkownError(err))
 		}

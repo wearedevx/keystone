@@ -2,11 +2,11 @@ package models
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
-	"strconv"
 	"strings"
 	"time"
+	"unsafe"
 
 	"gorm.io/gorm"
 )
@@ -21,7 +21,7 @@ type ActivityLog struct {
 	Environment   Environment `json:"environment"`
 	Action        string      `json:"action"`
 	Success       bool        `json:"success"`
-	Error         string      `json:"error"`
+	Message       string      `json:"error" gorm:"column=error"`
 	CreatedAt     time.Time   `json:"created_at"`
 	UpdatedAt     time.Time   `json:"updated_at"`
 }
@@ -53,59 +53,28 @@ func (pm *ActivityLog) Serialize(out *string) (err error) {
 	return err
 }
 
-func (pm *ActivityLog) FromString(s string) bool {
-	parts := strings.Split(s, " ")
-	ok := false
-
-	for _, p := range parts {
-		key, value, err := splitKeyValue(p)
-		if err != nil {
-			switch key {
-			case "user":
-				pm.UserID = mustParseUint(value)
-				ok = true
-			case "project":
-				pm.ProjectID = mustParseUint(value)
-				ok = true
-			case "environment":
-				pm.EnvironmentID = mustParseUint(value)
-				ok = true
-			case "action":
-				value = strings.TrimPrefix(value, "\"")
-				value = strings.TrimSuffix(value, "\"")
-				pm.Action = value
-				ok = true
-			case "success":
-				pm.Success = value == "true"
-				ok = true
-			case "error":
-				value = strings.TrimPrefix(value, "\"")
-				value = strings.TrimSuffix(value, "\"")
-				pm.Error = value
-				ok = true
-			}
-		}
-
-	}
-
-	return ok
+func (pm ActivityLog) Error() string {
+	return pm.Message
 }
 
-func mustParseUint(value string) uint {
-	uid, err := strconv.ParseUint(value, 10, 64)
-
+func (pm *ActivityLog) SetError(err error) *ActivityLog {
 	if err != nil {
-		panic(err)
+		pm.Message = err.Error()
+		pm.Success = false
+	} else {
+		pm.Success = true
 	}
 
-	return uint(uid)
+	return pm
 }
 
-func splitKeyValue(s string) (key, value string, err error) {
-	r := strings.Split(s, "=")
-	if len(r) != 2 {
-		return "", "", errors.New("invalid key value pair")
-	}
+func (pm *ActivityLog) Ptr() unsafe.Pointer {
+	return (unsafe.Pointer)(pm)
+}
 
-	return r[0], r[1], nil
+func ErrorIsActivityLog(err interface{}) bool {
+	activityLogType := fmt.Sprintf("%T", ActivityLog{})
+	errType := fmt.Sprintf("%T", err)
+
+	return activityLogType == errType
 }

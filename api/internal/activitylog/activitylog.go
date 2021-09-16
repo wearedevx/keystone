@@ -1,40 +1,11 @@
 package activitylog
 
 import (
-	"fmt"
+	"unsafe"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
-
-type Context struct {
-	UserID        uint
-	ProjectID     uint
-	EnvironmentID uint
-	Action        string
-	Success       bool
-}
-
-func (cerr Context) IntoError(err error) error {
-	msg := ""
-	success := true
-
-	if err != nil {
-		msg = err.Error()
-		success = false
-	}
-
-	return fmt.Errorf(
-		"user=%d project=%d environment=%d action=\"%s\" success=%t error=\"%s\" %w",
-		cerr.UserID,
-		cerr.ProjectID,
-		cerr.EnvironmentID,
-		cerr.Action,
-		success,
-		msg,
-		err,
-	)
-}
 
 type activityLogger struct {
 	err  error
@@ -42,7 +13,7 @@ type activityLogger struct {
 }
 
 type ActivityLogger interface {
-	Save(err error) ActivityLogger
+	Save(err unsafe.Pointer) ActivityLogger
 	Err() error
 }
 
@@ -54,13 +25,13 @@ func (logger *activityLogger) Err() error {
 	return logger.err
 }
 
-func (logger *activityLogger) Save(err error) ActivityLogger {
+func (logger *activityLogger) Save(err unsafe.Pointer) ActivityLogger {
 	if logger.err != nil {
 		return logger
 	}
 
-	log := new(models.ActivityLog)
-	if log.FromString(err.Error()) {
+	if models.ErrorIsActivityLog(err) {
+		log := (*models.ActivityLog)(err)
 		logger.err = logger.repo.SaveActivityLog(log).Err()
 	}
 

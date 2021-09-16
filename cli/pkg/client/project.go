@@ -87,7 +87,6 @@ func (p *Project) SetMemberRole(memberId string, role string) (err error) {
 }
 
 func (p *Project) GetAccessibleEnvironments() ([]models.Environment, error) {
-
 	var result models.GetEnvironmentsResponse
 
 	err := p.r.get("/projects/"+p.id+"/environments", &result, nil)

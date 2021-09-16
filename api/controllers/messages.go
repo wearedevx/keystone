@@ -13,7 +13,6 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 
-	"github.com/wearedevx/keystone/api/internal/activitylog"
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
@@ -53,7 +52,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	var result = models.GetMessageByEnvironmentResponse{
 		Environments: map[string]models.GetMessageResponse{},
 	}
-	var logContext = activitylog.Context{
+	var log = models.ActivityLog{
 		UserID:    user.ID,
 		ProjectID: project.ID,
 		Action:    "GetMessagesFromProjectByUser",
@@ -92,7 +91,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 
 	for _, environment := range environments {
 		// - rights check
-		logContext.EnvironmentID = environment.ID
+		log.EnvironmentID = environment.ID
 
 		can, err := rights.CanUserReadEnvironment(Repo, user.ID, project.ID, &environment)
 		if err != nil {
@@ -114,17 +113,17 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 			result.Environments[environment.Name] = curr
 		}
 	}
-	logContext.EnvironmentID = 0
+	log.EnvironmentID = 0
 
 done:
-	return &result, status, logContext.IntoError(err)
+	return &result, status, log.SetError(err)
 }
 
 // WriteMessages writes messages to users
 func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	response := &models.GetEnvironmentsResponse{}
-	logContext := activitylog.Context{
+	log := models.ActivityLog{
 		UserID: user.ID,
 		Action: "WriteMessages",
 	}
@@ -154,8 +153,8 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			goto done
 		}
 
-		logContext.ProjectID = projectMember.ProjectID
-		logContext.EnvironmentID = environment.ID
+		log.ProjectID = projectMember.ProjectID
+		log.EnvironmentID = environment.ID
 
 		// - check if user has rights to write on environment
 		can, err := rights.CanUserWriteOnEnvironment(Repo, user.ID, environment.Project.ID, environment)
@@ -234,14 +233,14 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 	}
 
 done:
-	return response, status, logContext.IntoError(err)
+	return response, status, log.SetError(err)
 }
 
 func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusNoContent
 	response := &GenericResponse{}
 	response.Success = true
-	logContext := activitylog.Context{
+	log := models.ActivityLog{
 		UserID: user.ID,
 		Action: "DeleteMessage",
 	}
@@ -264,7 +263,7 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 	}
 
 done:
-	return response, status, logContext.IntoError(err)
+	return response, status, log.SetError(err)
 }
 
 func getTTLToken(r *http.Request) (string, bool) {

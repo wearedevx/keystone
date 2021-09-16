@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/wearedevx/keystone/api/internal/activitylog"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -18,12 +17,12 @@ import (
 // DoUsersExist checks if users exists in the Keystone database
 // This is not project dependant, it checks all users in the whole world
 func DoUsersExist(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
-	status = http.StatusBadRequest
+	status = http.StatusOK
 	response := &models.CheckMembersResponse{}
 	payload := &models.CheckMembersPayload{}
-	logContext := activitylog.Context{
+	log := models.ActivityLog{
 		UserID: user.ID,
-		Action: "DoUserExist",
+		Action: "DoUsersExist",
 	}
 
 	// input check
@@ -52,7 +51,7 @@ func DoUsersExist(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mod
 	}
 
 done:
-	return response, status, logContext.IntoError(err)
+	return response, status, log.SetError(err)
 }
 
 // PutMembersSetRole sets the role for a given project member
@@ -67,7 +66,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 	// input check
 	var projectID = params.Get("projectID").(string)
 
-	logContext := activitylog.Context{
+	log := models.ActivityLog{
 		UserID: user.ID,
 		Action: "PutMemberSetRole",
 	}
@@ -95,7 +94,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 		goto done
 	}
 
-	logContext.ProjectID = project.ID
+	log.ProjectID = project.ID
 
 	can, err = rights.CanUserSetMemberRole(Repo, user, member, role, project)
 	if err != nil {
@@ -117,7 +116,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 	}
 
 done:
-	return response, status, logContext.IntoError(err)
+	return response, status, log.SetError(err)
 }
 
 func checkUserCanChangeMember(Repo repo.IRepo, user models.User, project models.Project, other models.User) (can bool, err error) {

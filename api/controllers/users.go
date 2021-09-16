@@ -34,7 +34,7 @@ func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	err = repo.Transaction(func(Repo repo.IRepo) error {
 		alogger := activitylog.NewActivityLogger(Repo)
-		logContext := activitylog.Context{
+		log := models.ActivityLog{
 			Action: "PostUser",
 		}
 		err = nil
@@ -63,7 +63,7 @@ func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		}
 
 	done:
-		alogger.Save(logContext.IntoError(err))
+		alogger.Save(log.SetError(err).Ptr())
 
 		if err != nil {
 			http.Error(w, msg, status)
@@ -136,7 +136,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		msg := ""
 		status := http.StatusOK
 		alogger := activitylog.NewActivityLogger(Repo)
-		logContext := activitylog.Context{
+		log := models.ActivityLog{
 			Action: "PostUserToken",
 		}
 
@@ -152,7 +152,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			goto done
 		}
 
-		logContext.UserID = user.ID
+		log.UserID = user.ID
 		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID)
 
 		if err != nil {
@@ -170,7 +170,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		}
 
 	done:
-		alogger.Save(logContext.IntoError(err))
+		alogger.Save(log.SetError(err).Ptr())
 
 		if err != nil {
 			http.Error(w, msg, status)
@@ -251,7 +251,7 @@ func PostLoginRequest(w http.ResponseWriter, _ *http.Request, _ httprouter.Param
 	err = repo.Transaction(func(Repo repo.IRepo) (err error) {
 		loginRequest := Repo.CreateLoginRequest()
 		alogger := activitylog.NewActivityLogger(Repo)
-		logContext := activitylog.Context{
+		log := models.ActivityLog{
 			Action: "PostLoginRequest",
 		}
 		var msg string
@@ -272,7 +272,7 @@ func PostLoginRequest(w http.ResponseWriter, _ *http.Request, _ httprouter.Param
 		}
 
 	done:
-		alogger.Save(logContext.IntoError(err))
+		alogger.Save(log.SetError(err).Ptr())
 		if err != nil {
 			http.Error(w, msg, status)
 		}
@@ -303,7 +303,7 @@ func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 
 	err = repo.Transaction(func(Repo repo.IRepo) (err error) {
 		alogger := activitylog.NewActivityLogger(Repo)
-		logContext := activitylog.Context{
+		alog := models.ActivityLog{
 			Action: "GetLoginRequest",
 		}
 		var status int
@@ -336,7 +336,7 @@ func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		}
 
 	done:
-		alogger.Save(logContext.IntoError(err))
+		alogger.Save(alog.SetError(err).Ptr())
 		if err != nil {
 			http.Error(w, msg, status)
 		}
@@ -355,7 +355,7 @@ func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 
 func GetUserKeys(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
-	logContext := activitylog.Context{
+	log := models.ActivityLog{
 		Action: "GetUserKeys",
 	}
 
@@ -388,5 +388,5 @@ func GetUserKeys(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ model
 	}
 
 done:
-	return &userPublicKeys, status, logContext.IntoError(err)
+	return &userPublicKeys, status, log.SetError(err)
 }

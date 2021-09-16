@@ -7,7 +7,6 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 
-	"github.com/wearedevx/keystone/api/internal/activitylog"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -15,7 +14,7 @@ import (
 
 func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
-	logContext := activitylog.Context{
+	log := models.ActivityLog{
 		UserID: user.ID,
 		Action: "PostProject",
 	}
@@ -38,7 +37,7 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 	project.UserID = user.ID
 
 done:
-	return &project, status, logContext.IntoError(err)
+	return &project, status, log.SetError(err)
 }
 
 func GetProjectsMembers(
@@ -53,7 +52,7 @@ func GetProjectsMembers(
 	var member models.ProjectMember
 	var projectID = params.Get("projectID").(string)
 	var result models.GetMembersResponse
-	var logContext = activitylog.Context{
+	var log = models.ActivityLog{
 		UserID: user.ID,
 		Action: "GetProjectMembers",
 	}
@@ -69,7 +68,7 @@ func GetProjectsMembers(
 		IsMemberOfProject(&project, &member).
 		ProjectGetMembers(&project, &result.Members)
 
-	logContext.ProjectID = project.ID
+	log.ProjectID = project.ID
 
 	if err = Repo.Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
@@ -94,7 +93,7 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 	members := make([]string, 0)
 	input := models.AddMembersPayload{}
 	result := models.AddMembersResponse{}
-	logContext := activitylog.Context{
+	log := models.ActivityLog{
 		UserID: user.ID,
 		Action: "PostProjectMembers",
 	}
@@ -115,7 +114,7 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 		goto done
 	}
 
-	logContext.ProjectID = project.ID
+	log.ProjectID = project.ID
 
 	for _, member := range input.Members {
 		members = append(members, member.MemberID)
@@ -159,7 +158,7 @@ done:
 
 func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
-	logContext := activitylog.Context{
+	log := models.ActivityLog{
 		UserID: user.ID,
 		Action: "DeleteProjectsMembers",
 	}
@@ -189,7 +188,7 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 		goto done
 	}
 
-	logContext.ProjectID = project.ID
+	log.ProjectID = project.ID
 
 	// Prevent users that are not admin on the project from deleting it
 	userIsAdmin = Repo.ProjectIsMemberAdmin(&project, &models.ProjectMember{UserID: user.ID})
@@ -232,7 +231,7 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 	}
 
 done:
-	return &result, status, logContext.IntoError(err)
+	return &result, status, log.SetError(err)
 }
 
 // checkUserCanAddMembers checks wether a user can add all the members in `members` to `project`
@@ -311,7 +310,7 @@ func GetAccessibleEnvironments(params router.Params, _ io.ReadCloser, Repo repo.
 	var projectID = params.Get("projectID").(string)
 	var project models.Project
 	var can bool
-	var logContext = activitylog.Context{
+	var log = models.ActivityLog{
 		UserID: user.ID,
 		Action: "GetAccessibleEnvironments",
 	}
@@ -327,10 +326,10 @@ func GetAccessibleEnvironments(params router.Params, _ io.ReadCloser, Repo repo.
 		goto done
 	}
 
-	logContext.ProjectID = project.ID
+	log.ProjectID = project.ID
 
 	for _, environment := range environments {
-		logContext.EnvironmentID = environment.ID
+		log.EnvironmentID = environment.ID
 
 		can, err = rights.CanUserWriteOnEnvironment(Repo, user.ID, project.ID, &environment)
 		if err != nil {
@@ -344,12 +343,12 @@ func GetAccessibleEnvironments(params router.Params, _ io.ReadCloser, Repo repo.
 	}
 
 done:
-	return &result, status, logContext.IntoError(err)
+	return &result, status, log.SetError(err)
 }
 
 func DeleteProject(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusNoContent
-	logContext := activitylog.Context{
+	log := models.ActivityLog{
 		UserID: user.ID,
 		Action: "DeleteProject",
 	}
@@ -363,11 +362,11 @@ func DeleteProject(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 		DeleteProjectsEnvironments(&project).
 		DeleteProject(&project)
 
-	logContext.ProjectID = project.ID
+	log.ProjectID = project.ID
 
 	if err = Repo.Err(); err != nil {
 		status = http.StatusInternalServerError
 	}
 
-	return nil, status, logContext.IntoError(err)
+	return nil, status, log.SetError(err)
 }

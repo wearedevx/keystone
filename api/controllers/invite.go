@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wearedevx/keystone/api/internal/activitylog"
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -29,7 +28,7 @@ func PostInvite(
 	result := &models.GetInviteResponse{}
 
 	status = http.StatusOK
-	logContext := activitylog.Context{
+	log := models.ActivityLog{
 		UserID: user.ID,
 		Action: "PostInvite",
 	}
@@ -57,5 +56,5 @@ func PostInvite(
 	}
 
 done:
-	return result, status, logContext.IntoError(err)
+	return result, status, log.SetError(err)
 }

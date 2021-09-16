@@ -7,7 +7,6 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 
-	"github.com/wearedevx/keystone/api/internal/activitylog"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -25,7 +24,7 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.I
 	// - fetch the environment to check rights
 	environment := models.Environment{EnvironmentID: envID}
 
-	e := activitylog.Context{
+	log := models.ActivityLog{
 		UserID:        user.ID,
 		EnvironmentID: environment.ID,
 		Action:        "GetEnvironmentPublicKeys",
@@ -62,5 +61,5 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.I
 	}
 
 done:
-	return &result, status, e.IntoError(err)
+	return &result, status, log.SetError(err)
 }

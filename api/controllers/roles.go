@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wearedevx/keystone/api/internal/activitylog"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -14,7 +13,7 @@ import (
 // Returns a List of Roles
 func GetRoles(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
-	logContext := activitylog.Context{
+	log := models.ActivityLog{
 		UserID: user.ID,
 		Action: "GetRoles",
 	}
@@ -58,5 +57,5 @@ func GetRoles(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user model
 	}
 
 done:
-	return &result, status, logContext.IntoError(err)
+	return &result, status, log.SetError(err)
 }

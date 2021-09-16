@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wearedevx/keystone/api/internal/activitylog"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -13,7 +12,7 @@ import (
 
 // Returns a List of Roles
 func GetDevices(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
-	e := activitylog.Context{
+	log := models.ActivityLog{
 		UserID: user.ID,
 		Action: "GetDevices",
 	}
@@ -31,12 +30,12 @@ func GetDevices(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user mod
 		}
 	}
 
-	return &result, status, e.IntoError(err)
+	return &result, status, log.SetError(err)
 }
 
 func DeleteDevice(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusNoContent
-	e := activitylog.Context{
+	log := models.ActivityLog{
 		UserID: user.ID,
 		Action: "DeleteDevice",
 	}
@@ -53,5 +52,5 @@ func DeleteDevice(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user m
 		result = nil
 	}
 
-	return result, status, e.IntoError(err)
+	return result, status, log.SetError(err)
 }
