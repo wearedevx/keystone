@@ -1,12 +1,31 @@
 package repo
 
 import (
+	"errors"
+	"regexp"
+
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"gorm.io/gorm"
 )
 
-func (repo *Repo) CreateOrganization(orga *models.Organization) IRepo {
-	repo.err = repo.GetDb().Create(orga).Error
-	return repo
+func (r *Repo) CreateOrganization(orga *models.Organization) IRepo {
+	matched, _ := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, orga.Name)
+	if !matched {
+		r.err = errors.New("Incorrect organization name. Organization name must be alphanumeric with ., -, _")
+		return r
+	}
+
+	if err := r.GetDb().Where("name = ?", orga.Name).First(&orga).Error; err != nil {
+		if errors.Is(gorm.ErrRecordNotFound, err) {
+			r.err = r.GetDb().Create(orga).Error
+			return r
+		}
+		r.err = err
+		return r
+	} else {
+		r.err = errors.New("Organization name already taken. Choose another one.")
+		return r
+	}
 }
 
 func (r *Repo) GetOrganizations(userID uint, result *models.GetOrganizationsResponse) IRepo {

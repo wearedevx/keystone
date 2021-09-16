@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -40,7 +41,13 @@ func PostOrganization(params router.Params, body io.ReadCloser, Repo repo.IRepo,
 
 	orga.OwnerID = user.ID
 
-	if err = Repo.GetDb().Create(&orga).Error; err != nil {
+	if err := Repo.CreateOrganization(&orga).Err(); err != nil {
+		if strings.Contains(err.Error(), "Incorrect organization name") {
+			return &orga, http.StatusForbidden, err
+		}
+		if strings.Contains(err.Error(), "Organization name already taken") {
+			return &orga, http.StatusConflict, err
+		}
 		return &orga, http.StatusInternalServerError, err
 	}
 

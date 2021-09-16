@@ -33,10 +33,10 @@ var orgaAddCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		organization, _ := c.Organizations().CreateOrganization(organizationName)
+		organization, createErr := c.Organizations().CreateOrganization(organizationName)
 
-		if err != nil {
-			ui.PrintError(err.Error())
+		if createErr != nil {
+			ui.PrintError(createErr.Error())
 			os.Exit(1)
 		}
 		ui.PrintSuccess("Organization %s has been created", organization.Name)
