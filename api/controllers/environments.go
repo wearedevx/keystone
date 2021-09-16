@@ -25,9 +25,8 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.I
 	environment := models.Environment{EnvironmentID: envID}
 
 	log := models.ActivityLog{
-		UserID:        user.ID,
-		EnvironmentID: environment.ID,
-		Action:        "GetEnvironmentPublicKeys",
+		UserID: &user.ID,
+		Action: "GetEnvironmentPublicKeys",
 	}
 
 	if err = Repo.GetEnvironment(&environment).
@@ -40,6 +39,8 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.I
 
 		goto done
 	}
+
+	log.EnvironmentID = &environment.ID
 
 	// - check user has access to that environment
 	can, err = rights.CanUserReadEnvironment(Repo, user.ID, environment.ProjectID, &environment)

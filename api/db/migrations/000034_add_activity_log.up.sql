@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS public.activity_logs (
 	environment_id INTEGER NULL,
 	action VARCHAR(255) DEFAULT '',
 	success BOOLEAN NOT NULL DEFAULT FALSE,
-	error VARCHAR(255) DEFAULT '',
+	message VARCHAR(255) DEFAULT '',
 	created_at TIMESTAMPTZ NOT NULL,
 	updated_at TIMESTAMPTZ,
 	CONSTRAINT acitivity_logs_pkey PRIMARY KEY (id)

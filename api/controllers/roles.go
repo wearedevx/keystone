@@ -14,7 +14,7 @@ import (
 func GetRoles(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	log := models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "GetRoles",
 	}
 

@@ -15,7 +15,7 @@ import (
 func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	log := models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "PostProject",
 	}
 
@@ -36,6 +36,8 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 	project.User = user
 	project.UserID = user.ID
 
+	log.ProjectID = &project.ID
+
 done:
 	return &project, status, log.SetError(err)
 }
@@ -53,7 +55,7 @@ func GetProjectsMembers(
 	var projectID = params.Get("projectID").(string)
 	var result models.GetMembersResponse
 	var log = models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "GetProjectMembers",
 	}
 
@@ -68,7 +70,7 @@ func GetProjectsMembers(
 		IsMemberOfProject(&project, &member).
 		ProjectGetMembers(&project, &result.Members)
 
-	log.ProjectID = project.ID
+	log.ProjectID = &project.ID
 
 	if err = Repo.Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
@@ -79,7 +81,7 @@ func GetProjectsMembers(
 	}
 
 done:
-	return &result, status, err
+	return &result, status, log.SetError(err)
 }
 
 func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
@@ -94,7 +96,7 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 	input := models.AddMembersPayload{}
 	result := models.AddMembersResponse{}
 	log := models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "PostProjectMembers",
 	}
 
@@ -114,7 +116,7 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 		goto done
 	}
 
-	log.ProjectID = project.ID
+	log.ProjectID = &project.ID
 
 	for _, member := range input.Members {
 		members = append(members, member.MemberID)
@@ -153,13 +155,13 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 	}
 
 done:
-	return &result, status, err
+	return &result, status, log.SetError(err)
 }
 
 func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	log := models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "DeleteProjectsMembers",
 	}
 
@@ -188,7 +190,7 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 		goto done
 	}
 
-	log.ProjectID = project.ID
+	log.ProjectID = &project.ID
 
 	// Prevent users that are not admin on the project from deleting it
 	userIsAdmin = Repo.ProjectIsMemberAdmin(&project, &models.ProjectMember{UserID: user.ID})
@@ -311,7 +313,7 @@ func GetAccessibleEnvironments(params router.Params, _ io.ReadCloser, Repo repo.
 	var project models.Project
 	var can bool
 	var log = models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "GetAccessibleEnvironments",
 	}
 
@@ -326,10 +328,10 @@ func GetAccessibleEnvironments(params router.Params, _ io.ReadCloser, Repo repo.
 		goto done
 	}
 
-	log.ProjectID = project.ID
+	log.ProjectID = &project.ID
 
 	for _, environment := range environments {
-		log.EnvironmentID = environment.ID
+		log.Environment = environment
 
 		can, err = rights.CanUserWriteOnEnvironment(Repo, user.ID, project.ID, &environment)
 		if err != nil {
@@ -349,7 +351,7 @@ done:
 func DeleteProject(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusNoContent
 	log := models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "DeleteProject",
 	}
 
@@ -362,7 +364,7 @@ func DeleteProject(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 		DeleteProjectsEnvironments(&project).
 		DeleteProject(&project)
 
-	log.ProjectID = project.ID
+	log.ProjectID = &project.ID
 
 	if err = Repo.Err(); err != nil {
 		status = http.StatusInternalServerError

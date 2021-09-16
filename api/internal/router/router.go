@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"strconv"
 	"time"
-	"unsafe"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/wearedevx/keystone/api/internal/activitylog"
@@ -116,8 +115,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			// Activity logging
 			alogger := activitylog.NewActivityLogger(Repo)
 			if err != nil {
-				ptr := (unsafe.Pointer)(&err)
-				if e := alogger.Save(ptr).Err(); e != nil {
+				if e := alogger.Save(err).Err(); e != nil {
 					http.Error(dw, e.Error(), http.StatusInternalServerError)
 
 					return e

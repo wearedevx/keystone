@@ -29,7 +29,7 @@ func PostInvite(
 
 	status = http.StatusOK
 	log := models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "PostInvite",
 	}
 

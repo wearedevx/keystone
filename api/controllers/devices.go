@@ -13,7 +13,7 @@ import (
 // Returns a List of Roles
 func GetDevices(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	log := models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "GetDevices",
 	}
 
@@ -36,7 +36,7 @@ func GetDevices(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user mod
 func DeleteDevice(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusNoContent
 	log := models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "DeleteDevice",
 	}
 

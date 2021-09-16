@@ -21,7 +21,7 @@ func DoUsersExist(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mod
 	response := &models.CheckMembersResponse{}
 	payload := &models.CheckMembersPayload{}
 	log := models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "DoUsersExist",
 	}
 
@@ -67,7 +67,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 	var projectID = params.Get("projectID").(string)
 
 	log := models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "PutMemberSetRole",
 	}
 
@@ -94,7 +94,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 		goto done
 	}
 
-	log.ProjectID = project.ID
+	log.ProjectID = &project.ID
 
 	can, err = rights.CanUserSetMemberRole(Repo, user, member, role, project)
 	if err != nil {

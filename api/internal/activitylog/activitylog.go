@@ -1,8 +1,6 @@
 package activitylog
 
 import (
-	"unsafe"
-
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
@@ -13,7 +11,7 @@ type activityLogger struct {
 }
 
 type ActivityLogger interface {
-	Save(err unsafe.Pointer) ActivityLogger
+	Save(err error) ActivityLogger
 	Err() error
 }
 
@@ -25,13 +23,13 @@ func (logger *activityLogger) Err() error {
 	return logger.err
 }
 
-func (logger *activityLogger) Save(err unsafe.Pointer) ActivityLogger {
+func (logger *activityLogger) Save(err error) ActivityLogger {
 	if logger.err != nil {
 		return logger
 	}
 
 	if models.ErrorIsActivityLog(err) {
-		log := (*models.ActivityLog)(err)
+		log := err.(*models.ActivityLog)
 		logger.err = logger.repo.SaveActivityLog(log).Err()
 	}
 

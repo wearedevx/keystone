@@ -53,9 +53,8 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 		Environments: map[string]models.GetMessageResponse{},
 	}
 	var log = models.ActivityLog{
-		UserID:    user.ID,
-		ProjectID: project.ID,
-		Action:    "GetMessagesFromProjectByUser",
+		UserID: &user.ID,
+		Action: "GetMessagesFromProjectByUser",
 	}
 
 	if err = Repo.GetProject(&project).Err(); err != nil {
@@ -68,6 +67,8 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 		status = http.StatusInternalServerError
 		goto done
 	}
+
+	log.ProjectID = &project.ID
 
 	// Get publicKey by device name to send message to current user device
 	publicKey.UID = deviceUID
@@ -91,7 +92,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 
 	for _, environment := range environments {
 		// - rights check
-		log.EnvironmentID = environment.ID
+		log.Environment = environment
 
 		can, err := rights.CanUserReadEnvironment(Repo, user.ID, project.ID, &environment)
 		if err != nil {
@@ -113,7 +114,6 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 			result.Environments[environment.Name] = curr
 		}
 	}
-	log.EnvironmentID = 0
 
 done:
 	return &result, status, log.SetError(err)
@@ -124,7 +124,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 	status = http.StatusOK
 	response := &models.GetEnvironmentsResponse{}
 	log := models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "WriteMessages",
 	}
 	senderDevice := models.Device{}
@@ -141,23 +141,23 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		projectMember := models.ProjectMember{
 			UserID: message.RecipientID,
 		}
-		environment := &models.Environment{
+		environment := models.Environment{
 			EnvironmentID: message.EnvironmentID,
 		}
 
 		if err = Repo.
 			GetProjectMember(&projectMember).
-			GetEnvironment(environment).
+			GetEnvironment(&environment).
 			Err(); err != nil {
 			status = http.StatusNotFound
 			goto done
 		}
 
-		log.ProjectID = projectMember.ProjectID
-		log.EnvironmentID = environment.ID
+		log.ProjectID = &projectMember.ProjectID
+		log.EnvironmentID = &environment.ID
 
 		// - check if user has rights to write on environment
-		can, err := rights.CanUserWriteOnEnvironment(Repo, user.ID, environment.Project.ID, environment)
+		can, err := rights.CanUserWriteOnEnvironment(Repo, user.ID, environment.Project.ID, &environment)
 
 		if err != nil {
 			status = http.StatusNotFound
@@ -169,7 +169,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		}
 
 		// - check recipient exists with read rights.
-		can, err = rights.CanUserReadEnvironment(Repo, projectMember.UserID, projectMember.ProjectID, environment)
+		can, err = rights.CanUserReadEnvironment(Repo, projectMember.UserID, projectMember.ProjectID, &environment)
 		if err != nil {
 			status = http.StatusNotFound
 			goto done
@@ -215,7 +215,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 
 		if message.UpdateEnvironmentVersion {
 			// Change environment version id.
-			err = Repo.SetNewVersionID(environment)
+			err = Repo.SetNewVersionID(&environment)
 
 			if err != nil {
 				if errors.Is(err, repo.ErrorNotFound) {
@@ -229,7 +229,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		}
 
 		// Change environment version id.
-		response.Environments = append(response.Environments, *environment)
+		response.Environments = append(response.Environments, environment)
 	}
 
 done:
@@ -241,7 +241,7 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 	response := &GenericResponse{}
 	response.Success = true
 	log := models.ActivityLog{
-		UserID: user.ID,
+		UserID: &user.ID,
 		Action: "DeleteMessage",
 	}
 
@@ -257,7 +257,8 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 		goto done
 	}
 
-	if err = Repo.DeleteMessage(uint(id), user.ID).Err(); err != nil {
+	if err = Repo.
+		DeleteMessage(uint(id), user.ID).Err(); err != nil {
 		response.Error = err
 		response.Success = false
 	}

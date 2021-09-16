@@ -63,7 +63,7 @@ func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		}
 
 	done:
-		alogger.Save(log.SetError(err).Ptr())
+		alogger.Save(log.SetError(err))
 
 		if err != nil {
 			http.Error(w, msg, status)
@@ -152,7 +152,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 			goto done
 		}
 
-		log.UserID = user.ID
+		log.User = user
 		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID)
 
 		if err != nil {
@@ -170,7 +170,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		}
 
 	done:
-		alogger.Save(log.SetError(err).Ptr())
+		alogger.Save(log.SetError(err))
 
 		if err != nil {
 			http.Error(w, msg, status)
@@ -272,7 +272,7 @@ func PostLoginRequest(w http.ResponseWriter, _ *http.Request, _ httprouter.Param
 		}
 
 	done:
-		alogger.Save(log.SetError(err).Ptr())
+		alogger.Save(log.SetError(err))
 		if err != nil {
 			http.Error(w, msg, status)
 		}
@@ -336,7 +336,7 @@ func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		}
 
 	done:
-		alogger.Save(alog.SetError(err).Ptr())
+		alogger.Save(alog.SetError(err))
 		if err != nil {
 			http.Error(w, msg, status)
 		}
