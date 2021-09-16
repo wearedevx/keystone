@@ -53,3 +53,34 @@ func PostOrganization(params router.Params, body io.ReadCloser, Repo repo.IRepo,
 
 	return &orga, status, err
 }
+
+func UpdateOrganization(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+	status = http.StatusOK
+
+	orga := models.Organization{}
+
+	if err = orga.Deserialize(body); err != nil {
+		return &orga, http.StatusBadRequest, err
+	}
+
+	isOwner, err := Repo.IsUserOwnerOfOrga(&user, &orga)
+
+	if err != nil {
+		return &orga, http.StatusBadRequest, err
+	}
+	if !isOwner {
+		return &orga, http.StatusForbidden, errors.New("You are not the organization's owner")
+	}
+
+	if err := Repo.UpdateOrganization(&orga).Err(); err != nil {
+		if strings.Contains(err.Error(), "Incorrect organization name") {
+			return &orga, http.StatusForbidden, err
+		}
+		if strings.Contains(err.Error(), "Organization name already taken") {
+			return &orga, http.StatusConflict, err
+		}
+		return &orga, http.StatusInternalServerError, err
+	}
+
+	return &orga, status, err
+}

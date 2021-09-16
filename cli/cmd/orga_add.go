@@ -10,6 +10,8 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
+var private bool
+
 // addCmd represents the add command
 var orgaAddCmd = &cobra.Command{
 	Use:   "add",
@@ -33,7 +35,7 @@ var orgaAddCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		organization, createErr := c.Organizations().CreateOrganization(organizationName)
+		organization, createErr := c.Organizations().CreateOrganization(organizationName, private)
 
 		if createErr != nil {
 			ui.PrintError(createErr.Error())
@@ -45,4 +47,5 @@ var orgaAddCmd = &cobra.Command{
 
 func init() {
 	orgaCmd.AddCommand(orgaAddCmd)
+	orgaAddCmd.Flags().BoolVarP(&private, "private", "p", false, "Make the organization private.")
 }

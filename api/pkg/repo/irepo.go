@@ -61,5 +61,7 @@ type IRepo interface {
 	GetPublicKey(publicKey *models.Device) IRepo
 	RevokeDevice(userID uint, deviceName string) IRepo
 	CreateOrganization(orga *models.Organization) IRepo
+	UpdateOrganization(orga *models.Organization) IRepo
 	GetOrganizations(userID uint, result *models.GetOrganizationsResponse) IRepo
+	IsUserOwnerOfOrga(*models.User, *models.Organization) (bool, error)
 }
