@@ -100,7 +100,8 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 		}
 	}
 
-	if resp.StatusCode == http.StatusUnauthorized {
+	if resp.StatusCode == http.StatusUnauthorized ||
+		resp.StatusCode == http.StatusForbidden {
 		return auth.ErrorUnauthorized
 	}
 

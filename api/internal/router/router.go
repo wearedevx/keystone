@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/wearedevx/keystone/api/internal/activitylog"
 	. "github.com/wearedevx/keystone/api/pkg/jwt"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -71,6 +72,8 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			return
 		}
 
+		var toLog error
+
 		err = repo.Transaction(func(Repo repo.IRepo) error {
 			user := models.User{UserID: userID}
 
@@ -88,7 +91,9 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 				http.Error(dw, message, status)
 				return err
 			}
+
 			foundDevice := false
+
 			for _, device := range user.Devices {
 				if device.UID == deviceUID {
 					device.LastUsedAt = time.Now()
@@ -99,6 +104,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 					foundDevice = true
 				}
 			}
+
 			if !foundDevice {
 				http.Error(dw, "Device not registered", http.StatusNotFound)
 				return err
@@ -107,11 +113,15 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			p := newParams(r, params)
 			// Actual call to the handler (i.e. Controller function)
 			result, status, err := handler(p, r.Body, Repo, user)
+			toLog = err
 
-			if err != nil {
+			if err != nil && status >= 400 {
 				http.Error(dw, err.Error(), status)
 				return err
 			}
+			// since status <= 400, there is no error
+			// to report
+			err = nil
 
 			// serialize the response for the user
 			var serialized string
@@ -130,6 +140,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			if out.Len() > 0 {
 				dw.Header().Add("Content-Type", "application/json; charset=utf-8")
 				dw.Header().Add("Content-Length", strconv.Itoa(out.Len()))
+
 				if _, err := dw.Write(out.Bytes()); err != nil {
 					fmt.Printf("err: %+v\n", err)
 				}
@@ -139,9 +150,18 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 				dw.WriteHeader(status)
 			}
 
-			// if Repo.Err() != nil {
-			// 	fmt.Println(Repo.Err())
-			// }
+			return nil
+		})
+
+		// Activity logging
+		repo.Transaction(func(Repo repo.IRepo) error {
+			alogger := activitylog.NewActivityLogger(Repo)
+
+			if toLog != nil {
+				if err := alogger.Save(toLog).Err(); err != nil {
+					fmt.Printf("err: %+v\n", err)
+				}
+			}
 
 			return nil
 		})

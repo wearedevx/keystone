@@ -28,18 +28,17 @@ func GithubLoginSuccess() int {
 	}
 
 	// simulate github POST on auth cloud function
-
-	timeout := time.Duration(20 * time.Second)
-
-	client := http.Client{
-		Timeout: timeout,
-	}
-
 	for _, lr := range lrs {
+		timeout := time.Duration(20 * time.Second)
+
+		client := http.Client{
+			Timeout: timeout,
+		}
 		state := AuthState{
 			TemporaryCode: lr.TemporaryCode,
 			Version:       "test",
 		}
+
 		codedState, err := state.Encode()
 		if err != nil {
 			panic(err)
@@ -55,9 +54,9 @@ func GithubLoginSuccess() int {
 		if err != nil {
 			panic(err)
 		}
-	}
 
-	fmt.Println("github login success End")
+		fmt.Println("github login success End")
+	}
 
 	return 0
 }

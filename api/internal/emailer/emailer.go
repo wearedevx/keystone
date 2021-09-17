@@ -25,7 +25,7 @@ func send(email *Email) (err error) {
 	client := mandrill.ClientWithKey(mandrillKey)
 
 	responses, err := client.MessagesSend(email.toMandrill())
-	fmt.Println(fmt.Printf("### EMAIL SENT TO %s ###", email.To))
+	fmt.Printf("### EMAIL SENT TO %s ###\n", email.To)
 
 	if err != nil {
 		return fmt.Errorf("Error sending mail: %s | %w", err.Error(), EmailErrorClientError)

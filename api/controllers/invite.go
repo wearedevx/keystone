@@ -27,26 +27,34 @@ func PostInvite(
 	targetUsers := []models.User{}
 	result := &models.GetInviteResponse{}
 
+	status = http.StatusOK
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "PostInvite",
+	}
+
 	// check if user exist
 	if err = Repo.GetUserByEmail(targetEmail, &targetUsers).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 
 			e, err := emailer.InviteMail(user, payload.ProjectName)
 			if err != nil {
-				return result, http.StatusInternalServerError, err
+				status = http.StatusInternalServerError
+				goto done
 			}
 
 			if err = e.Send([]string{targetEmail}); err != nil {
-				return result, http.StatusInternalServerError, err
+				status = http.StatusInternalServerError
+				goto done
 			}
 		}
 
 	} else {
-
 		for _, user := range targetUsers {
 			result.UserUIDs = append(result.UserUIDs, user.UserID)
 		}
 	}
 
-	return result, http.StatusOK, nil
+done:
+	return result, status, log.SetError(err)
 }

@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 	"time"
@@ -50,6 +51,8 @@ type User struct {
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
+
+	u.UserID = fmt.Sprintf("%s@%s", u.Username, u.AccountType)
 
 	return nil
 }

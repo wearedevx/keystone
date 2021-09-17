@@ -99,23 +99,6 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, userEmail string) IRepo {
 	db := r.GetDb()
 
-	// var result = models.GetDevicesResponse{
-	// 	Devices: []models.Device{},
-	// }
-
-	// r.GetDevices(userID, &result.Devices)
-
-	// if r.err != nil {
-	// 	return r
-	// }
-
-	// for _, existingDevice := range result.Devices {
-	// 	if existingDevice.Name == device.Name {
-	// 		r.err = errors.New("Device name already registered for this account")
-	// 		return r
-	// 	}
-	// }
-
 	matched, _ := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, device.Name)
 	if !matched {
 		r.err = errors.New("Incorrect device name. Device name must be alphanumeric with ., -, _")

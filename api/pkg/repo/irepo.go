@@ -61,6 +61,7 @@ type IRepo interface {
 	ProjectSetRoleForUser(models.Project, models.User, models.Role) IRepo
 	CheckMembersAreInProject(models.Project, []string) ([]string, error)
 	RemoveOldMessageForRecipient(userID uint, environmentID string) IRepo
+	SaveActivityLog(al *models.ActivityLog) IRepo
 	SetLoginRequestCode(string, string) models.LoginRequest
 	SetNewVersionID(environment *models.Environment) error
 	WriteMessage(user models.User, message models.Message) IRepo

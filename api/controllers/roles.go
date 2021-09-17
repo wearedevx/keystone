@@ -13,6 +13,11 @@ import (
 // Returns a List of Roles
 func GetRoles(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "GetRoles",
+	}
+
 	var result = models.GetRolesResponse{
 		Roles: []models.Role{},
 	}
@@ -27,7 +32,7 @@ func GetRoles(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user model
 				status = http.StatusInternalServerError
 			}
 
-			return &result, status, err
+			goto done
 		}
 	} else {
 		project := models.Project{UUID: projectID}
@@ -46,10 +51,11 @@ func GetRoles(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user model
 				status = http.StatusNotFound
 			}
 
-			return &result, status, err
+			goto done
 		}
 
 	}
 
-	return &result, status, err
+done:
+	return &result, status, log.SetError(err)
 }
