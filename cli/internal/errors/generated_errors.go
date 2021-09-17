@@ -86,9 +86,6 @@ This happened because: {{ .Cause }}
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
 Available roles are: {{ .Available }}
 
-You can manage roles for the current project by editing the roles file:
-  .keystone/roles.yaml
-
 `,
 	"ProjectDoesntExist": `
 {{ ERROR }} {{- ": '" | red }} {{- .Name | red }} {{- "'" | red }}
@@ -101,8 +98,8 @@ If you have this configuration from a project member, ask them to add you in the
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
 Available environments are: {{ .Available }}
 
-To create a new environment:
-  $ ks env new {{ .Environment }}
+To use another environment:
+  $ ks env {{ .Environment }}
 
 `,
 	"EnvironmentAlreadyExists": `
