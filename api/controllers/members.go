@@ -57,6 +57,15 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 
 	// input check
 	var projectID = params.Get("projectID").(string)
+	isPaid, err := Repo.IsProjectOrganizationPaid(projectID)
+
+	if err != nil {
+		return response, http.StatusInternalServerError, err
+	}
+
+	if !isPaid {
+		return response, http.StatusForbidden, errors.New("This feature is not allowed for free organization")
+	}
 
 	err = payload.Deserialize(body)
 	if err != nil {

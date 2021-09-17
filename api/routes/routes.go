@@ -26,12 +26,13 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.DELETE("/projects/:projectID/members", AuthedHandler(DeleteProjectsMembers))
 	router.PUT("/projects/:projectID/members/role", AuthedHandler(PutMembersSetRole))
 	router.GET("/projects/:projectID/environments", AuthedHandler(GetAccessibleEnvironments))
+	router.GET("/projects/:projectID/organization", AuthedHandler(GetProjectsOrganization))
 
 	router.GET("/environments/:envID/public-keys", AuthedHandler(GetEnvironmentPublicKeys))
 	router.DELETE("/messages-expired", DeleteExpiredMessages)
 	router.POST("/messages", AuthedHandler(WriteMessages))
 
-	router.GET("/roles", AuthedHandler(GetRoles))
+	router.GET("/roles/:projectID", AuthedHandler(GetRoles))
 
 	router.GET("/devices", AuthedHandler(GetDevices))
 	router.DELETE("/devices/:name", AuthedHandler(DeleteDevice))

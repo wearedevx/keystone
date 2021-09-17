@@ -99,7 +99,7 @@ ks member set-role sandra@github`,
 
 		// Get all roles, te make sure the role exists
 		// And to be able to list them in the prompt
-		roles, err := c.Roles().GetAll()
+		roles, err := c.Roles().GetAll(ctx.GetProjectID())
 		if err != nil {
 			ui.PrintError(err.Error())
 			os.Exit(1)

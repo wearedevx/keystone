@@ -19,6 +19,7 @@ type Project struct {
 	User           User            `json:"user"`
 	Environments   []Environment   `json:"environments"`
 	OrganizationID uint            `json:"organization_id"`
+	Organization   Organization    `json:"organization"`
 	CreatedAt      time.Time       `json:"create_at"`
 	UpdatedAt      time.Time       `json:"update_at"`
 }
