@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS public.public_keys (
   id bigserial NOT NULL,
   user_id bigserial NOT NULL,
-  key text NOT NULL,
+  key bytea NOT NULL,
   created_at timestamptz NULL,
   updated_at timestamptz NULL,
   CONSTRAINT public_keys_pkey PRIMARY KEY (id)
