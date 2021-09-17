@@ -1,6 +1,8 @@
 package activitylog
 
 import (
+	"fmt"
+
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
@@ -31,6 +33,8 @@ func (logger *activityLogger) Save(err error) ActivityLogger {
 	if models.ErrorIsActivityLog(err) {
 		log := err.(*models.ActivityLog)
 		logger.err = logger.repo.SaveActivityLog(log).Err()
+		fmt.Printf("log: %+v %s\n", log.Success, log.Message)
+		fmt.Printf("logger.err: %+v\n", logger.err)
 	}
 
 	return logger

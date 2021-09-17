@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -36,7 +37,10 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 	project.User = user
 	project.UserID = user.ID
 
-	log.ProjectID = &project.ID
+	if project.ID != 0 {
+		log.ProjectID = &project.ID
+	}
+	fmt.Printf("log.ProjectID: %+v\n", log.ProjectID)
 
 done:
 	return &project, status, log.SetError(err)
@@ -328,7 +332,9 @@ func GetAccessibleEnvironments(params router.Params, _ io.ReadCloser, Repo repo.
 		goto done
 	}
 
-	log.ProjectID = &project.ID
+	if project.ID != 0 {
+		log.ProjectID = &project.ID
+	}
 
 	for _, environment := range environments {
 		log.Environment = environment

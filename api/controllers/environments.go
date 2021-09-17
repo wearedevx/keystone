@@ -50,6 +50,7 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.I
 	}
 
 	if !can {
+		err = errors.New("permission denied")
 		status = http.StatusForbidden
 		goto done
 	}

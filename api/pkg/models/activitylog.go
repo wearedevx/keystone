@@ -74,8 +74,9 @@ func (pm *ActivityLog) Ptr() unsafe.Pointer {
 
 func ErrorIsActivityLog(err error) bool {
 	activityLogPtrType := fmt.Sprintf("%T", &ActivityLog{})
-
 	errType := fmt.Sprintf("%T", err)
+	fmt.Printf("activityLogPtrType: %+v\n", activityLogPtrType)
+	fmt.Printf("errType: %+v\n", errType)
 
 	return activityLogPtrType == errType
 }

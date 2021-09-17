@@ -396,6 +396,9 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 
 	userPublicKeys, err := s.client.Users().GetEnvironmentPublicKeys(environmentId)
 	if err != nil {
+		if errors.Is(err, auth.ErrorUnauthorized) {
+			return messages, kserrors.PermissionDenied(environment.Name, err)
+		}
 		return messages, kserrors.CannotGetEnvironmentKeys(environment.Name, err)
 	}
 

@@ -67,6 +67,7 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		user.UserID = user.Username + "@" + string(user.AccountType)
 
 		r.err = db.Omit("Devices").Create(&user).Error
+		fmt.Printf("user: %+v\n", user)
 		if r.err != nil {
 			return r
 		}

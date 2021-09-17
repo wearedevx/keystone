@@ -72,6 +72,8 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			return
 		}
 
+		var toLog error
+
 		err = repo.Transaction(func(Repo repo.IRepo) error {
 			user := models.User{UserID: userID}
 
@@ -111,16 +113,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			p := newParams(r, params)
 			// Actual call to the handler (i.e. Controller function)
 			result, status, err := handler(p, r.Body, Repo, user)
-
-			// Activity logging
-			alogger := activitylog.NewActivityLogger(Repo)
-			if err != nil {
-				if e := alogger.Save(err).Err(); e != nil {
-					http.Error(dw, e.Error(), http.StatusInternalServerError)
-
-					return e
-				}
-			}
+			toLog = err
 
 			if err != nil && status >= 400 {
 				http.Error(dw, err.Error(), status)
@@ -155,6 +148,19 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 
 			if status != 200 && !wroteStatus {
 				dw.WriteHeader(status)
+			}
+
+			return nil
+		})
+
+		// Activity logging
+		repo.Transaction(func(Repo repo.IRepo) error {
+			alogger := activitylog.NewActivityLogger(Repo)
+
+			if toLog != nil {
+				if err := alogger.Save(toLog).Err(); err != nil {
+					fmt.Printf("err: %+v\n", err)
+				}
 			}
 
 			return nil
