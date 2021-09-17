@@ -2,7 +2,6 @@ package repo
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
@@ -106,7 +105,6 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 	}
 
 	if err := db.Where("uid = ?", device.UID).First(&device).Error; err != nil {
-		fmt.Printf("r.err: %+v\n", r.err)
 		if errors.Is(gorm.ErrRecordNotFound, err) {
 			r.err = db.Create(&device).Error
 		} else {

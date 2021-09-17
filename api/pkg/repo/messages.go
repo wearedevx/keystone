@@ -3,7 +3,6 @@ package repo
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"strings"
 
@@ -119,7 +118,6 @@ func (repo *Repo) GetGroupedMessagesWillExpireByUser(
 		Preload("Environment.Project").
 		Find(&messages).
 		Error
-	fmt.Printf("messages: %+v\n", len(messages))
 
 	if repo.Err() != nil {
 		return repo

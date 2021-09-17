@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -40,7 +39,6 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 	if project.ID != 0 {
 		log.ProjectID = &project.ID
 	}
-	fmt.Printf("log.ProjectID: %+v\n", log.ProjectID)
 
 done:
 	return &project, status, log.SetError(err)
