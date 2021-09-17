@@ -43,6 +43,10 @@ build:
 	go clean
 	go build -ldflags "$(LDFLAGS)" -v -o ./build/server
 
+build-debug:
+	go clean
+	go build -gcflags="all=-N -l" -ldflags="$(LDFLAGS)" -v -o ./server
+
 install:
 	chmod +x server
 	cp ks $(PREFIX)/bin
@@ -52,3 +56,6 @@ run-test:
 
 run:
 	go get -u github.com/mitranim/gow && gow run -ldflags "$(LDFLAGS)" main.go
+
+run-debug:
+	dlv --listen=:40000 --headless=true --api-version=2 --accept-multiclient exec ./server
