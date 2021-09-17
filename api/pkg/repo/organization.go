@@ -65,6 +65,7 @@ func (r *Repo) GetOrganizations(userID uint, result *models.GetOrganizationsResp
 
 	orgas := make([]models.Organization, 0)
 	err := r.GetDb().
+		Preload("Owner").
 		Joins("left join projects p on p.organization_id = organizations.id").
 		Joins("left join project_members pm on pm.project_id = p.id").
 		Joins("left join users u on u.id = pm.user_id").

@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -27,11 +28,21 @@ grouped by their role.`,
 
 		ui.Print("Organizations your are in:")
 		ui.Print("---")
+		currentUser, _ := config.GetCurrentAccount()
+
 		for _, orga := range organizations {
-			ui.Print(orga.Name)
+			orgaString := orga.Name
+			if orga.Owner.UserID == currentUser.UserID {
+				orgaString += " 👑"
+			}
+			if orga.Private {
+				orgaString += " P"
+			}
+			ui.Print(orgaString)
 		}
 
 		ui.Print("")
+		ui.Print(" 👑 : You own; P : private")
 	},
 }
 

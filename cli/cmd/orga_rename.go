@@ -67,6 +67,8 @@ to quickly create a Cobra application.`,
 
 		if foundOrga.ID == 0 {
 			ui.PrintError("You don't own an organization named %s", organizationName)
+			ui.Print("To see organizations you own, use : $ ks orga")
+			os.Exit(1)
 		}
 
 		foundOrga.Name = newName
@@ -77,7 +79,7 @@ to quickly create a Cobra application.`,
 			ui.PrintError(updateErr.Error())
 			os.Exit(1)
 		}
-		ui.PrintSuccess("Organization %s has been updated", organization.Name)
+		ui.PrintSuccess("Organization %s has been updated to %s", organizationName, organization.Name)
 	},
 }
 
