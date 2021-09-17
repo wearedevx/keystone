@@ -47,6 +47,8 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	response := GenericResponse{
 		Success: false,
 	}
+	var projectID = params.Get("projectID").(string)
+	var deviceUID = params.Get("device").(string)
 	project := models.Project{
 		UUID: projectID,
 	}
@@ -192,7 +194,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			break
 		}
 
-		senderDevice := models.Device{
+		senderDevice = models.Device{
 			UID: clientMessage.SenderDeviceUID,
 		}
 
