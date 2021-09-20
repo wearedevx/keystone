@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
-	. "github.com/wearedevx/keystone/api/internal/utils"
 )
 
 type Redis struct {
@@ -15,15 +14,17 @@ type Redis struct {
 	rdb *redis.Client
 }
 
+var rdb *redis.Client
+
+var redisHost string
+var redisPort string
+var redisIndex string
+
 var ctx = context.Background()
 
 func NewRedis() *Redis {
 	var err error
 	var r Redis
-
-	redisHost := GetEnv("REDIS_HOST", "redis")
-	redisPort := GetEnv("REDIS_PORT", "6379")
-	redisIndex := GetEnv("REDIS_INDEX", "0")
 
 	redisIndexInt, err := strconv.Atoi(redisIndex)
 

@@ -11,10 +11,15 @@ DB_DIALECT ?= postgres
 
 JWT_SALT ?= aaP|**P1n}1tqW
 
+REDIS_HOST ?= localhost
+REDIS_PORT ?= 6379
+REDIS_INDEX ?= 0
+
 BASE := github.com/wearedevx/keystone/api
 REPO_PKG := $(BASE)/pkg/repo
 JWT_PKG := $(BASE)/pkg/jwt
 CONSTANTS_PKG := $(BASE)/internal/constants
+REDIS_PKG := $(BASE)/internal/redis
 
 DB_HOST_FLAG := -X $(REPO_PKG).dbHost=$(DB_HOST)
 DB_PORT_FLAG := -X $(REPO_PKG).dbPort=$(DB_PORT)
@@ -27,6 +32,10 @@ DB_DRIVERNAME_FLAG := -X $(REPO_PKG).dbDriverName=$(DB_DRIVERNAME)
 JWT_SALT_FLAG := -X $(JWT_PKG).salt=$(JWT_SALT)
 
 KS_TTL_FLAG := -X $(CONSTANTS_PKG).KsTTLHeader=$(X_KS_TTL)
+
+REDIS_HOST_FLAG := $(REDIS_PKG).redisHost=$(REDIS_HOST)
+REDIS_PORT_FLAG := $(REDIS_PKG).redisPort=$(REDIS_PORT)
+REDIS_INDEX_FLAG := $(REDIS_PKG).redisIndex=$(REDIS_INDEX)
  
 LDFLAGS := $(DB_HOST_FLAG) \
 	$(DB_PORT_FLAG) \
@@ -39,13 +48,8 @@ LDFLAGS := $(DB_HOST_FLAG) \
 	$(KS_TTL_FLAG)
 
 build:
-	mkdir ./build
 	go clean
-	go build -ldflags "$(LDFLAGS)" -v -o ./build/server
-
-build-debug:
-	go clean
-	go build -gcflags="all=-N -l" -ldflags="$(LDFLAGS)" -v -o ./server
+	go build -ldflags "$(LDFLAGS)" -o server
 
 install:
 	chmod +x server
@@ -55,7 +59,4 @@ run-test:
 	go run -tags test -ldflags "$(LDFLAGS)" main.go
 
 run:
-	go get -u github.com/mitranim/gow && gow run -ldflags "$(LDFLAGS)" main.go
-
-run-debug:
-	dlv --listen=:40000 --headless=true --api-version=2 --accept-multiclient exec ./server
+	go run -ldflags "$(LDFLAGS)" main.go

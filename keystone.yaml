@@ -19,9 +19,11 @@ env:
   strict: true
 - key: MANDRILL_API_KEY
   strict: true
-- key: DB_HOST
+- key: REDIS_HOST
   strict: true
-- key: DB_NAME
+- key: REDIS_PORT
+  strict: true
+- key: REDIS_INDEX
   strict: true
 files:
 - path: api/keystone-server-credentials.json

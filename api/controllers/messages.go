@@ -65,17 +65,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	}
 
 	// Get publicKey by device name to send message to current user device
-	if err = Repo.
-		GetProject(&project).
-		GetDeviceByUserID(user.ID, &publicKey).
-		GetEnvironmentsByProjectUUID(projectID, &environments).
-		Err(); err != nil {
-		if err = Repo.GetProject(&project).Err(); err != nil {
-			if errors.Is(err, repo.ErrorNotFound) {
-				response.Error = err
-				status = http.StatusNotFound
-				goto done
-			}
+	publicKey.UID = deviceUID
 
 			status = http.StatusBadRequest
 			goto done
@@ -99,20 +89,16 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 
 		if can {
 			curr := models.GetMessageResponse{}
-			if err = Repo.GetMessagesForUserOnEnvironment(
-				publicKey,
-				environment,
-				&curr.Message,
-			).Err(); err != nil {
-				response.Error = err
+			err = Repo.GetMessagesForUserOnEnvironment(publicKey, environment, &curr.Message).Err()
+
+			if err != nil {
+				response.Error = Repo.Err()
 				response.Success = false
 				status = http.StatusBadRequest
 				goto done
 			}
 
 			curr.Environment = environment
-
-			fmt.Println("Getting messages from external storage...")
 			curr.Message.Payload, err = Repo.MessageService().GetMessageByUuid(curr.Message.Uuid)
 
 			if err != nil {

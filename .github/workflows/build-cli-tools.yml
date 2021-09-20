@@ -57,7 +57,7 @@ jobs:
           sudo apt install libvshadow-utils pkg-config
 
       - name: Snapcraft Build
-        uses: snapcore/action-build@v1.0.8
+        uses: snapcore/action-build@v1.0.9
         with:
            path: cli/
         id: snapcraft

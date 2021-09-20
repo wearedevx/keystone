@@ -118,6 +118,11 @@ func (repo *Repo) GetGroupedMessagesWillExpireByUser(
 		Preload("Environment.Project").
 		Find(&messages).
 		Error
+	fmt.Printf("messages: %+v\n", len(messages))
+
+	if repo.Err() != nil {
+		return repo
+	}
 
 	if repo.Err() != nil {
 		return repo
