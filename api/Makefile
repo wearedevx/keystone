@@ -51,8 +51,13 @@ LDFLAGS := $(DB_HOST_FLAG) \
 	$(KS_TTL_FLAG)
 
 build:
+	mkdir ./build
 	go clean
-	go build -ldflags "$(LDFLAGS)" -o server
+	go build -ldflags "$(LDFLAGS)" -v -o ./build/server
+
+build-debug:
+	go clean
+	go build -gcflags="all=-N -l" -ldflags="$(LDFLAGS)" -v -o ./server
 
 install:
 	chmod +x server
@@ -62,4 +67,7 @@ run-test:
 	go run -tags test -ldflags "$(LDFLAGS)" main.go
 
 run:
-	go run -ldflags "$(LDFLAGS)" main.go
+	go get -u github.com/mitranim/gow && gow run -ldflags "$(LDFLAGS)" main.go
+
+run-debug:
+	dlv --listen=:40000 --headless=true --api-version=2 --accept-multiclient exec ./server
