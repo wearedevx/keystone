@@ -47,33 +47,51 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	response := GenericResponse{
 		Success: false,
 	}
+
 	var projectID = params.Get("projectID").(string)
 	var deviceUID = params.Get("device").(string)
-	project := models.Project{
-		UUID: projectID,
-	}
-	publicKey := models.Device{
-		UID: deviceUID,
-	}
+	var project = models.Project{UUID: projectID}
+	var publicKey = models.Device{}
+	var environments []models.Environment
 	var result = models.GetMessageByEnvironmentResponse{
 		Environments: map[string]models.GetMessageResponse{},
 	}
-	var environments []models.Environment
 	var log = models.ActivityLog{
 		UserID: &user.ID,
 		Action: "GetMessagesFromProjectByUser",
 	}
 
+	if err = Repo.GetProject(&project).Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			response.Error = err
+			status = http.StatusNotFound
+			goto done
+		}
+
+		status = http.StatusInternalServerError
+		goto done
+	}
+
+	log.ProjectID = &project.ID
+
 	// Get publicKey by device name to send message to current user device
 	publicKey.UID = deviceUID
 
-			status = http.StatusBadRequest
+	if err = Repo.GetDeviceByUserID(user.ID, &publicKey).Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			response.Error = err
+			status = http.StatusNotFound
 			goto done
 		}
+
+		status = http.StatusAlreadyReported
+		goto done
 	}
 
-	if project.ID != 0 {
-		log.ProjectID = &project.ID
+	if err = Repo.GetEnvironmentsByProjectUUID(projectID, &environments).Err(); err != nil {
+		response.Error = err
+		status = http.StatusBadRequest
+		goto done
 	}
 
 	for _, environment := range environments {
@@ -102,9 +120,9 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 			curr.Message.Payload, err = Repo.MessageService().GetMessageByUuid(curr.Message.Uuid)
 
 			if err != nil {
+				// fmt.Println("api ~ messages.go ~ err", err)
 				response.Error = err
-				status = http.StatusNotFound
-				goto done
+				return &response, http.StatusNotFound, err
 			} else {
 				result.Environments[environment.Name] = curr
 			}
