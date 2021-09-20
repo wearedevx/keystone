@@ -3,6 +3,26 @@
 # https://hub.docker.com/_/golang
 FROM golang:1.16-buster as builder
 
+ARG DB_HOST
+ARG DB_PORT
+ARG DB_NAME
+ARG DB_USER
+ARG DB_PASSWORD
+ARG JWT_SALT
+ARG REDIS_HOST
+ARG REDIS_PORT
+ARG REDIS_INDEX
+
+ENV DB_HOST=$DB_HOST
+ENV DB_PORT=$DB_PORT
+ENV DB_NAME=$DB_NAME
+ENV DB_USER=$DB_USER
+ENV DB_PASSWORD=$DB_PASSWORD
+ENV JWT_SALT=$JWT_SALT
+ENV REDIS_HOST=$REDIS_HOST
+ENV REDIS_PORT=$REDIS_PORT
+ENV REDIS_INDEX=$REDIS_INDEX
+
 # Create and change to the app directory.
 WORKDIR /app
 
@@ -16,7 +36,7 @@ RUN go mod download
 COPY . ./
 
 # Build the binary.
-RUN go build -v -o ./build/server
+RUN make build
 
 # download the cloudsql proxy binary
 RUN wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O ./build/cloud_sql_proxy

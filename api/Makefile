@@ -2,11 +2,24 @@ ifeq ($(PREFIX),)
     PREFIX := /usr/local
 endif
 
+DB_HOST ?= localhost
+DB_PORT ?= 5432
+DB_USER ?= ks
+DB_PASSWORD ?= ks
+DB_NAME ?= ks
+DB_DIALECT ?= postgres
+
+JWT_SALT ?= aaP|**P1n}1tqW
+
+REDIS_HOST ?= localhost
+REDIS_PORT ?= 6379
+REDIS_INDEX ?= 0
 
 BASE := github.com/wearedevx/keystone/api
 REPO_PKG := $(BASE)/pkg/repo
 JWT_PKG := $(BASE)/pkg/jwt
 CONSTANTS_PKG := $(BASE)/internal/constants
+REDIS_PKG := $(BASE)/internal/redis
 
 DB_HOST_FLAG := -X $(REPO_PKG).dbHost=$(DB_HOST)
 DB_PORT_FLAG := -X $(REPO_PKG).dbPort=$(DB_PORT)
@@ -19,6 +32,10 @@ DB_DRIVERNAME_FLAG := -X $(REPO_PKG).dbDriverName=$(DB_DRIVERNAME)
 JWT_SALT_FLAG := -X $(JWT_PKG).salt=$(JWT_SALT)
 
 KS_TTL_FLAG := -X $(CONSTANTS_PKG).KsTTLHeader=$(X_KS_TTL)
+
+REDIS_HOST_FLAG := $(REDIS_PKG).redisHost=$(REDIS_HOST)
+REDIS_PORT_FLAG := $(REDIS_PKG).redisPort=$(REDIS_PORT)
+REDIS_INDEX_FLAG := $(REDIS_PKG).redisIndex=$(REDIS_INDEX)
  
 LDFLAGS := $(DB_HOST_FLAG) \
 	$(DB_PORT_FLAG) \

@@ -74,6 +74,9 @@ jobs:
             --build-arg DB_USER=${{ env.DB_USER }} \
             --build-arg DB_PASSWORD=${{ env.DB_PASSWORD }} \
             --build-arg JWT_SALT=${{ env.JWT_SALT }} \
+            --build-arg REDIS_HOST=${{ env.REDIS_HOST }} \
+            --bulid-arg REDIS_PORT=${{ env.REDIS_PORT }} \
+            --build-arg REDIS_INDEX=${{ env.REDIS_INDEX }} \
             ./api/
 
           docker push ${{ env.GCR_IMAGE }}
@@ -112,7 +115,7 @@ jobs:
           region: ${{ env.REGION }}
           no_traffic: ${{ env.TAG == 'develop' }}
           tag: ${{ steps.cloud_run_tag.outputs.tag }}
-          env_vars: CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ secrets.CLOUDSQL_CREDENTIALS }},X_KS_TTL=${{ secrets.X_KS_TTL }},MANDRILL_API_KEY=${{ env.MANDRILL_API_KEY }},REDIS_HOST=${{ env.REDIS_HOST }},REDIS_PORT=${{ env.REDIS_PORT }},REDIS_INDEX=${{ env.REDIS_INDEX }}
+          env_vars: CLOUDSQL_INSTANCE=${{ secrets.CLOUDSQL_INSTANCE }},CLOUDSQL_CREDENTIALS=${{ secrets.CLOUDSQL_CREDENTIALS }},X_KS_TTL=${{ secrets.X_KS_TTL }},MANDRILL_API_KEY=${{ env.MANDRILL_API_KEY }}
           flags: --allow-unauthenticated --add-cloudsql-instances ${{ secrets.CLOUDSQL_INSTANCE }} --service-account=${{ secrets.KS_SERVER_SERVICE_ACCOUNT }}
 
       - name: Setup Traffic
