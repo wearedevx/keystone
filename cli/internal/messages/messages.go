@@ -151,7 +151,7 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 
 	for environmentName, environment := range byEnvironment.Environments {
 		msg := environment.Message
-		if msg.Sender.UserID != "" {
+		if msg.Sender.UserID != "" && len(msg.Payload) > 0 {
 			upks, e := s.client.Users().GetUserPublicKey(msg.Sender.UserID)
 			if e != nil {
 				return kserrors.CouldNotDecryptMessages(fmt.Sprintf("Failed to get the public key for user %s", msg.Sender.UserID), e)

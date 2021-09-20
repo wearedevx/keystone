@@ -8,9 +8,11 @@ type Redis struct {
 
 var fakeRedis map[string]string
 
-func NewRedis() *Redis {
+func init() {
 	fakeRedis = make(map[string]string)
+}
 
+func NewRedis() *Redis {
 	return new(Redis)
 }
 
