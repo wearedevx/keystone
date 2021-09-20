@@ -14,23 +14,34 @@ import (
 
 func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "PostProject",
+	}
 
 	project := models.Project{}
 
 	if err = project.Deserialize(body); err != nil {
-		return &project, http.StatusBadRequest, err
+		status = http.StatusBadRequest
+		goto done
 	}
 
 	project.UserID = user.ID
 
 	if err = Repo.GetOrCreateProject(&project).Err(); err != nil {
-		return &project, http.StatusInternalServerError, err
+		status = http.StatusInternalServerError
+		goto done
 	}
+
 	project.User = user
 	project.UserID = user.ID
 
-	return &project, status, err
+	if project.ID != 0 {
+		log.ProjectID = &project.ID
+	}
 
+done:
+	return &project, status, log.SetError(err)
 }
 
 func GetProjectsMembers(
@@ -45,9 +56,14 @@ func GetProjectsMembers(
 	var member models.ProjectMember
 	var projectID = params.Get("projectID").(string)
 	var result models.GetMembersResponse
+	var log = models.ActivityLog{
+		UserID: &user.ID,
+		Action: "GetProjectMembers",
+	}
 
 	if projectID == "" {
-		return &result, http.StatusBadRequest, nil
+		status = http.StatusBadRequest
+		goto done
 	}
 
 	member.UserID = user.ID
@@ -55,6 +71,8 @@ func GetProjectsMembers(
 	Repo.GetProjectByUUID(projectID, &project).
 		IsMemberOfProject(&project, &member).
 		ProjectGetMembers(&project, &result.Members)
+
+	log.ProjectID = &project.ID
 
 	if err = Repo.Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
@@ -64,21 +82,32 @@ func GetProjectsMembers(
 		}
 	}
 
-	return &result, status, err
+done:
+	return &result, status, log.SetError(err)
 }
 
 func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
+	var can bool
+	var areInProjects []string
 	var project models.Project
 	var projectID = params.Get("projectID").(string)
 
+	members := make([]string, 0)
 	input := models.AddMembersPayload{}
 	result := models.AddMembersResponse{}
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "PostProjectMembers",
+	}
+
 	err = input.Deserialize(body)
 
 	if projectID == "" || err != nil {
-		return &result, http.StatusBadRequest, nil
+		status = http.StatusBadRequest
+		err = nil
+		goto done
 	}
 
 	if err = Repo.GetProjectByUUID(projectID, &project).Err(); err != nil {
@@ -86,30 +115,31 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 			status = http.StatusNotFound
 		}
 
-		return &result, status, err
+		goto done
 	}
 
-	members := make([]string, 0)
+	log.ProjectID = &project.ID
+
 	for _, member := range input.Members {
 		members = append(members, member.MemberID)
 	}
 
-	areInProjects, err := Repo.CheckMembersAreInProject(project, members)
+	areInProjects, err = Repo.CheckMembersAreInProject(project, members)
 
 	if len(areInProjects) > 0 {
 		status = http.StatusConflict
 		result.Error = "user already in project"
 
-		return &result, status, err
+		goto done
 	}
 
-	can, err := checkUserCanAddMembers(Repo, user, project, input.Members)
+	can, err = checkUserCanAddMembers(Repo, user, project, input.Members)
 
 	if err != nil {
 		status = http.StatusInternalServerError
 		result.Error = err.Error()
 
-		return &result, status, err
+		goto done
 	}
 
 	if can {
@@ -126,20 +156,29 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 		result.Error = "operation not allowed"
 	}
 
-	return &result, status, err
+done:
+	return &result, status, log.SetError(err)
 }
 
 func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "DeleteProjectsMembers",
+	}
 
 	var project models.Project
 	var projectID = params.Get("projectID").(string)
 	input := models.RemoveMembersPayload{}
 	result := models.RemoveMembersResponse{}
+	var can, userIsAdmin bool
+	var areInProjects []string
+
 	err = input.Deserialize(body)
 
 	if projectID == "" || err != nil {
-		return &result, http.StatusBadRequest, err
+		status = http.StatusBadRequest
+		goto done
 	}
 
 	if err = Repo.GetProjectByUUID(projectID, &project).Err(); err != nil {
@@ -150,29 +189,33 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 			status = http.StatusInternalServerError
 			result.Error = err.Error()
 		}
+		goto done
 	}
+
+	log.ProjectID = &project.ID
 
 	// Prevent users that are not admin on the project from deleting it
-	userIsAdmin := Repo.ProjectIsMemberAdmin(&project, &models.ProjectMember{UserID: user.ID})
-	if err := Repo.Err(); err != nil || !userIsAdmin {
-		return &result, http.StatusNotFound, err
+	userIsAdmin = Repo.ProjectIsMemberAdmin(&project, &models.ProjectMember{UserID: user.ID})
+	if err = Repo.Err(); err != nil || !userIsAdmin {
+		status = http.StatusNotFound
+		goto done
 	}
 
-	areInProjects, err := Repo.CheckMembersAreInProject(project, input.Members)
+	areInProjects, err = Repo.CheckMembersAreInProject(project, input.Members)
 
 	if len(areInProjects) != len(input.Members) {
 		status = http.StatusConflict
 		result.Error = "user not in project"
 
-		return &result, status, err
+		goto done
 	}
 
-	can, err := checkUserCanRemoveMembers(Repo, user, project, input.Members)
+	can, err = checkUserCanRemoveMembers(Repo, user, project, input.Members)
 	if err != nil {
 		status = http.StatusInternalServerError
 		result.Error = err.Error()
 
-		return &result, status, err
+		goto done
 	}
 
 	if can {
@@ -191,7 +234,8 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 		result.Error = "operation not allowed"
 	}
 
-	return &result, status, err
+done:
+	return &result, status, log.SetError(err)
 }
 
 // checkUserCanAddMembers checks wether a user can add all the members in `members` to `project`
@@ -269,25 +313,53 @@ func GetAccessibleEnvironments(params router.Params, _ io.ReadCloser, Repo repo.
 	var environments []models.Environment
 	var projectID = params.Get("projectID").(string)
 	var project models.Project
+	var can bool
+	var log = models.ActivityLog{
+		UserID: &user.ID,
+		Action: "GetAccessibleEnvironments",
+	}
 
-	Repo.GetProjectByUUID(projectID, &project)
+	if err = Repo.GetProjectByUUID(projectID, &project).
+		GetEnvironmentsByProjectUUID(project.UUID, &environments).
+		Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusNotFound
+		} else {
+			status = http.StatusInternalServerError
+		}
+		goto done
+	}
 
-	Repo.GetEnvironmentsByProjectUUID(project.UUID, &environments)
+	if project.ID != 0 {
+		log.ProjectID = &project.ID
+	}
 
 	for _, environment := range environments {
-		can, _ := rights.CanUserWriteOnEnvironment(Repo, user.ID, project.ID, &environment)
+		log.Environment = environment
+
+		can, err = rights.CanUserWriteOnEnvironment(Repo, user.ID, project.ID, &environment)
+		if err != nil {
+			status = http.StatusNotFound
+			goto done
+		}
+
 		if can {
 			result.Environments = append(result.Environments, environment)
 		}
 	}
-	return &result, status, err
+
+done:
+	return &result, status, log.SetError(err)
 }
 
-func DeleteProject(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
+func DeleteProject(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusNoContent
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "DeleteProject",
+	}
 
 	var projectId = params.Get("projectID").(string)
-
 	var project models.Project
 
 	Repo.
@@ -296,9 +368,11 @@ func DeleteProject(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ mod
 		DeleteProjectsEnvironments(&project).
 		DeleteProject(&project)
 
+	log.ProjectID = &project.ID
+
 	if err = Repo.Err(); err != nil {
 		status = http.StatusInternalServerError
 	}
 
-	return nil, status, err
+	return nil, status, log.SetError(err)
 }

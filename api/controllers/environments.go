@@ -19,9 +19,16 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.I
 	}
 
 	var envID = params.Get("envID").(string)
+	var can bool
 
 	// - fetch the environment to check rights
 	environment := models.Environment{EnvironmentID: envID}
+
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "GetEnvironmentPublicKeys",
+	}
+
 	if err = Repo.GetEnvironment(&environment).
 		Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
@@ -30,24 +37,31 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.I
 			status = http.StatusInternalServerError
 		}
 
-		return &result, status, err
+		goto done
 	}
 
+	log.EnvironmentID = &environment.ID
+
 	// - check user has access to that environment
-	can, err := rights.CanUserReadEnvironment(Repo, user.ID, environment.ProjectID, &environment)
+	can, err = rights.CanUserReadEnvironment(Repo, user.ID, environment.ProjectID, &environment)
 	if err != nil {
-		return &result, http.StatusInternalServerError, err
+		status = http.StatusInternalServerError
+		goto done
 	}
 
 	if !can {
-		return &result, http.StatusForbidden, err
+		err = errors.New("permission denied")
+		status = http.StatusForbidden
+		goto done
 	}
 
 	// - do the work
 	if err = Repo.GetEnvironmentPublicKeys(envID, &result).
 		Err(); err != nil {
-		return &result, http.StatusInternalServerError, err
+		status = http.StatusInternalServerError
+		goto done
 	}
 
-	return &result, status, err
+done:
+	return &result, status, log.SetError(err)
 }

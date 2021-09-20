@@ -50,6 +50,7 @@ func getLoginRequest(apiUrl string) (loginRequest models.LoginRequest, err error
 
 	if err != nil {
 		errmsg := fmt.Sprintf("Failed to send login request (%s)", err.Error())
+		fmt.Printf("loginRequest: %+v\n", loginRequest)
 		println(errmsg)
 		os.Exit(1)
 		return loginRequest, err

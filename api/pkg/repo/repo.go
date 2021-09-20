@@ -39,7 +39,6 @@ func getPostgres() gorm.Dialector {
 	config := postgres.Config{
 		DSN: getDSN(),
 	}
-	fmt.Printf("config: %+v\n", config)
 
 	if driver := os.Getenv("DB_DRIVERNAME"); driver != "" {
 		config.DriverName = driver

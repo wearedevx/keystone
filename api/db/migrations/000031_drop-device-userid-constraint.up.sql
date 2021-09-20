@@ -1,7 +1,7 @@
 ALTER TABLE
   public.devices
 DROP
-  CONSTRAINT fk_users_public_keys;
+  CONSTRAINT IF EXISTS fk_users_public_keys;
 
 ALTER TABLE
   public.devices

@@ -396,6 +396,9 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 
 	userPublicKeys, err := s.client.Users().GetEnvironmentPublicKeys(environmentId)
 	if err != nil {
+		if errors.Is(err, auth.ErrorUnauthorized) {
+			return messages, kserrors.PermissionDenied(environment.Name, err)
+		}
 		return messages, kserrors.CannotGetEnvironmentKeys(environment.Name, err)
 	}
 
@@ -408,16 +411,14 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 	for _, userPublicKey := range userPublicKeys.Keys {
 
 		for _, userDevice := range userPublicKey.PublicKeys {
-
-			// Don't send to current device
-			if userDevice.UID != config.GetDeviceUID() {
-				message, err := s.prepareMessage(senderPrivateKey, environment, userDevice, userPublicKey.UserID, PayloadContent)
-				if err != nil {
-					return messages, kserrors.CouldNotEncryptMessages(err)
-				}
-
-				messages = append(messages, message)
+			// Do send to current device !!!
+			// And all others also of course
+			message, err := s.prepareMessage(senderPrivateKey, environment, userDevice, userPublicKey.UserID, PayloadContent)
+			if err != nil {
+				return messages, kserrors.CouldNotEncryptMessages(err)
 			}
+
+			messages = append(messages, message)
 		}
 	}
 
