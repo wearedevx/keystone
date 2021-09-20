@@ -55,5 +55,8 @@ install:
 	chmod +x server
 	cp ks $(PREFIX)/bin
 
+run-test:
+	go run -tags test -ldflags "$(LDFLAGS)" main.go
+
 run:
 	go run -ldflags "$(LDFLAGS)" main.go
