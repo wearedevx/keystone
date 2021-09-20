@@ -155,7 +155,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		projectMember := models.ProjectMember{
 			UserID: clientMessage.RecipientID,
 		}
-		environment := &models.Environment{
+		environment := models.Environment{
 			EnvironmentID: clientMessage.EnvironmentID,
 		}
 
@@ -199,7 +199,7 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			break
 		}
 
-		senderDevice := models.Device{
+		senderDevice = models.Device{
 			UID: clientMessage.SenderDeviceUID,
 		}
 
