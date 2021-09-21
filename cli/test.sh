@@ -5,7 +5,7 @@ if [[ -z "${TMDIR}" ]]; then
     export TMPDIR=/tmp/
 fi
 
-export $(cat .env-dev | xargs)
+export $(cat .env-test | xargs)
 
 LDFLAGS="-X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=$KSAPI_URL \
 	-X github.com/wearedevx/keystone/api/pkg/jwt.salt=${JWT_SALT}"
