@@ -21,7 +21,10 @@ func setupFunc(env *testscript.Env) error {
 }
 
 func TestCommands(t *testing.T) {
-	utils.WaitAPIStart()
+	if err := utils.WaitAPIStart(); err != nil {
+		panic(err)
+	}
+
 	testscript.Run(t, testscript.Params{
 		Dir:                  "./",
 		Setup:                setupFunc,

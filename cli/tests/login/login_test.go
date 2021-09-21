@@ -25,7 +25,10 @@ func init() {
 }
 
 func TestLoginCommand(t *testing.T) {
-	utils.WaitAPIStart()
+	if err := utils.WaitAPIStart(); err != nil {
+		panic(err)
+	}
+
 	testscript.Run(t, testscript.Params{
 		Dir:   ".",
 		Setup: utils.SetupEnvVars,

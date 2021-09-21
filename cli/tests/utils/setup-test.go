@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -25,8 +26,14 @@ func GetGcloudFuncAuthPidFilePath() string {
 	return path.Join(os.TempDir(), "keystone_ksauth.pid")
 }
 
-func WaitAPIStart() {
-	waitForServerStarted("http://127.0.0.1:9001")
+func WaitAPIStart() error {
+	started := waitForServerStarted("http://127.0.0.1:9001")
+
+	if started {
+		return nil
+	}
+
+	return errors.New("server start timeout")
 }
 
 func isServerResponse(serverUrl string) bool {
@@ -67,15 +74,17 @@ func pollServer(serverUrl string, c chan bool, maxAttempts int) {
 	}
 }
 
-func waitForServerStarted(serverUrl string) {
-	const max_attempts int = 20
+func waitForServerStarted(serverUrl string) bool {
+	const max_attempts int = 40
+	var result bool
 
 	c := make(chan bool)
 
 	go pollServer(serverUrl, c, max_attempts)
 
-	// result := true
-	<-c
+	result = <-c
+
+	return result
 }
 
 func CreateFakeUserWithUsername(username string, accountType models.AccountType, env *testscript.Env) (err error) {
