@@ -20,6 +20,7 @@ REPO_PKG := $(BASE)/pkg/repo
 JWT_PKG := $(BASE)/pkg/jwt
 CONSTANTS_PKG := $(BASE)/internal/constants
 REDIS_PKG := $(BASE)/internal/redis
+PAYMENT_PKG := $(BASE)/internal/payment
 
 DB_HOST_FLAG := -X $(REPO_PKG).dbHost=$(DB_HOST)
 DB_PORT_FLAG := -X $(REPO_PKG).dbPort=$(DB_PORT)
@@ -36,6 +37,8 @@ KS_TTL_FLAG := -X $(CONSTANTS_PKG).KsTTLHeader=$(X_KS_TTL)
 REDIS_HOST_FLAG :=  -X $(REDIS_PKG).redisHost=$(REDIS_HOST)
 REDIS_PORT_FLAG :=  -X $(REDIS_PKG).redisPort=$(REDIS_PORT)
 REDIS_INDEX_FLAG := -X $(REDIS_PKG).redisIndex=$(REDIS_INDEX)
+
+STRIPE_KEY_FLAG := -X $(PAYMENT_PKG).stripeKey=$(STRIPE_KEY) 
  
 LDFLAGS := $(DB_HOST_FLAG) \
 	$(DB_PORT_FLAG) \
@@ -48,6 +51,7 @@ LDFLAGS := $(DB_HOST_FLAG) \
 	$(REDIS_HOST_FLAG) \
 	$(REDIS_PORT_FLAG) \
 	$(REDIS_INDEX_FLAG) \
+	$(STRIPE_KEY_FLAG) \
 	$(KS_TTL_FLAG)
 
 build:
