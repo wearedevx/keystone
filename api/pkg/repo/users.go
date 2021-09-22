@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	"gorm.io/gorm"
 )
@@ -66,6 +67,7 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 	} else if errors.Is(r.err, gorm.ErrRecordNotFound) {
 		user.UserID = user.Username + "@" + string(user.AccountType)
 
+		// Devices
 		r.err = db.Omit("Devices").Create(&user).Error
 		if r.err != nil {
 			return r
@@ -77,6 +79,19 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 				return r
 			}
 		}
+
+		// Create default orga for user
+		orga := models.Organization{
+			OwnerID: user.ID,
+			Name:    user.UserID,
+		}
+
+		if err := r.CreateOrganization(&orga).Err(); err != nil {
+			r.err = err
+			return r
+		}
+
+		r.err = db.Create(&user).Error
 	}
 
 	return r

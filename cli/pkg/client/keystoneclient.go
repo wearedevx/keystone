@@ -51,3 +51,8 @@ func (client *KeystoneClientImpl) Devices() *Devices {
 		r: client.r,
 	}
 }
+func (client *KeystoneClientImpl) Organizations() *Organizations {
+	return &Organizations{
+		r: client.r,
+	}
+}

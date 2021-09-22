@@ -135,9 +135,6 @@ errors:
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
       Available roles are: {{ .Available }}
 
-      You can manage roles for the current project by editing the roles file:
-        .keystone/roles.yaml
-
   # PROJECT_ERRORS
   # –––––––––––––––––
   - type: ProjectDoesntExist

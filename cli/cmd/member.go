@@ -125,13 +125,16 @@ func init() {
 		"prod",
 	}
 
-	// Here you will define your flags and configuration settings.
+}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// memberCmd.PersistentFlags().String("foo", "", "A help for foo")
+func isProjectOrganizationPaid(c client.KeystoneClient) bool {
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// memberCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	projectID := ctx.GetProjectID()
+	organization, err := c.Project(projectID).GetProjectsOrganization()
+
+	if err != nil {
+		ui.PrintError(err.Error())
+		os.Exit(1)
+	}
+	return organization.Paid
 }

@@ -231,7 +231,8 @@ func mustMembersExist(c client.KeystoneClient, memberIDs []string) {
 }
 
 func mustGetRoles(c client.KeystoneClient) []models.Role {
-	roles, err := c.Roles().GetAll()
+	projectID := ctx.GetProjectID()
+	roles, err := c.Roles().GetAll(projectID)
 	if err != nil {
 		ui.PrintError(err.Error())
 		os.Exit(1)

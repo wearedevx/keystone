@@ -22,7 +22,7 @@ func GetRoles(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user model
 		Roles: []models.Role{},
 	}
 
-	projectID := params.Get("add-to-project").(string)
+	projectID := params.Get("projectID").(string)
 
 	if projectID == "" {
 		if err = Repo.GetRoles(&result.Roles).Err(); err != nil {
@@ -35,25 +35,26 @@ func GetRoles(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user model
 			goto done
 		}
 	} else {
-		project := models.Project{UUID: projectID}
-		projectMember := models.ProjectMember{
-			UserID:    user.ID,
-			ProjectID: project.ID,
+		isPaid, err := Repo.IsProjectOrganizationPaid(projectID)
+		if err != nil {
+			return &result, status, err
 		}
-		roles := []models.Role{}
 
-		if err = Repo.
-			GetProject(&project).
-			GetProjectMember(&projectMember).
-			GetRolesMemberCanInvite(projectMember, &roles).
-			Err(); err != nil {
-			if errors.Is(err, repo.ErrorNotFound) {
-				status = http.StatusNotFound
+		if isPaid {
+			if err = Repo.GetRoles(&result.Roles).Err(); err != nil {
+				status = http.StatusInternalServerError
+				return &result, status, err
+			}
+		} else {
+			adminRole := models.Role{Name: "admin"}
+
+			if err = Repo.GetRole(&adminRole).Err(); err != nil {
+				status = http.StatusInternalServerError
+				goto done
 			}
 
-			goto done
+			result.Roles = []models.Role{adminRole}
 		}
-
 	}
 
 done:

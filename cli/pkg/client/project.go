@@ -11,11 +11,12 @@ type Project struct {
 	r  requester
 }
 
-func (p *Project) Init(name string) (models.Project, error) {
+func (p *Project) Init(name string, organizationID uint) (models.Project, error) {
 	var project models.Project
 
 	payload := models.Project{
-		Name: name,
+		Name:           name,
+		OrganizationID: organizationID,
 	}
 
 	err := p.r.post("/projects", payload, &project, nil)
@@ -100,4 +101,21 @@ func (p *Project) Destroy() (err error) {
 	err = p.r.del("/projects/"+p.id, nil, nil, nil)
 
 	return err
+}
+
+func (p *Project) GetProjectsOrganization() (models.Organization, error) {
+	var result models.Organization
+
+	err := p.r.get("/projects/"+p.id+"/organization", &result, nil)
+
+	return result, err
+}
+
+func (p *Project) GetRoles() ([]models.Role, error) {
+	var err error
+	var result models.GetRolesResponse
+
+	err = p.r.get("/projects/"+p.id+"roles", &result, nil)
+
+	return result.Roles, err
 }

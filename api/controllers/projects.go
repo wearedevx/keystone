@@ -110,6 +110,21 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 		goto done
 	}
 
+	isPaid, err := Repo.IsProjectOrganizationPaid(projectID)
+
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	for _, member := range input.Members {
+		role := models.Role{ID: member.RoleID}
+		if err := Repo.GetRole(&role).Err(); err == nil {
+			if role.Name != "admin" && !isPaid {
+				return nil, http.StatusForbidden, errors.New("You are not allowed to set role other than admin for free organization")
+			}
+		}
+	}
+
 	if err = Repo.GetProjectByUUID(projectID, &project).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
@@ -375,4 +390,19 @@ func DeleteProject(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 	}
 
 	return nil, status, log.SetError(err)
+}
+
+func GetProjectsOrganization(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
+
+	result := models.Organization{}
+	var projectId = params.Get("projectID").(string)
+	var organization models.Organization
+
+	Repo.GetProjectsOrganization(projectId, &organization)
+	if err != nil {
+		return nil, status, err
+	}
+	result = organization
+
+	return &result, status, err
 }
