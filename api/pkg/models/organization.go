@@ -10,14 +10,15 @@ import (
 )
 
 type Organization struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	OwnerID   uint      `json:"owner_id" gorm:"uniqueIndex:idx_organizations_owner_id"`
-	Name      string    `json:"name"`
-	Paid      bool      `json:"paid"`
-	Private   bool      `json:"private"`
-	Owner     User      `json:"owner"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID             uint      `json:"id" gorm:"primaryKey"`
+	OwnerID        uint      `json:"owner_id" gorm:"uniqueIndex:idx_organizations_owner_id"`
+	Name           string    `json:"name"`
+	Paid           bool      `json:"paid"`
+	Private        bool      `json:"private"`
+	Owner          User      `json:"owner"`
+	SubscriptionID string    `json:"subscription_id"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 func (pm *Organization) BeforeCreate(tx *gorm.DB) (err error) {
