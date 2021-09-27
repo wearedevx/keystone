@@ -486,6 +486,24 @@ func (ctx *Context) GetFileContents(
 	return contents, err
 }
 
+// GetLocalFileContents returns the file contents as a slice of bytes.
+// It returns an error if reading the file fails (Pemission denied, no exists…)
+func (ctx *Context) GetLocalFileContents(fileName string) (contents []byte, err error) {
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
+
+	filePath := path.Join(ctx.Wd, fileName)
+
+	/* #nosec */
+	contents, err = ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return contents, nil
+}
+
 // MissingFilesForEnvironment return a list of missing files for the given
 // environment.
 // The second returned value indicates whether the list contains something

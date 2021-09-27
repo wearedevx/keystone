@@ -34,6 +34,11 @@ services:
     environment:
       - DATABASE_URL=postgres://ks:ks@db:5432/ks?sslmode=disable
       - JWT_SALT=aaP|**P1n}1tqWK
+      - DB_HOST=db
+      - DB_NAME=ks
+      - DB_USER=ks
+      - DB_PASSWORD=ks
+      - REDIS_INDEX=0
     volumes:
       - ./api/:/home/golang/app:delegated
     ports:

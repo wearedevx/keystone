@@ -24,6 +24,9 @@ var ctx = context.Background()
 
 func init() {
 	var err error
+	if redisIndex == "" {
+		redisIndex = "0"
+	}
 
 	redisIndexInt, err := strconv.Atoi(redisIndex)
 
