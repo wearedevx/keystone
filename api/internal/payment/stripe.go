@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	stripe "github.com/stripe/stripe-go/v72"
@@ -15,6 +16,7 @@ import (
 	"github.com/stripe/stripe-go/v72/sub"
 	"github.com/stripe/stripe-go/v72/usagerecord"
 	"github.com/stripe/stripe-go/v72/webhook"
+	"github.com/wearedevx/keystone/api/internal/constants"
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
@@ -57,9 +59,12 @@ func (sp *stripePayment) StartCheckout(
 		Email: stripe.String(email),
 	}
 
+	successUrl := fmt.Sprintf("http://%s/checkout-success?session_id={CHECKOUT_SESSION_ID}", constants.Domain)
+	cancelUrl := fmt.Sprintf("http://%s/checkout-cancel?session_id={CHECKOUT_SESSION_ID}", constants.Domain)
+
 	sessionParams := stripe.CheckoutSessionParams{
-		SuccessURL:         stripe.String("localhost:9001/subscription/success?sesssion_id={CHECKOUT_SESSION_ID}"),
-		CancelURL:          stripe.String("localhost:9001/subscription/canceled"),
+		SuccessURL:         stripe.String(successUrl),
+		CancelURL:          stripe.String(cancelUrl),
 		PaymentMethodTypes: stripe.StringSlice([]string{"card"}),
 		Mode:               stripe.String(string(stripe.CheckoutSessionModeSubscription)),
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
@@ -81,7 +86,6 @@ func (sp *stripePayment) StartCheckout(
 	}
 
 	sessionParams.Customer = stripe.String(cus.ID)
-	sessionParams.CustomerEmail = stripe.String(email)
 	sessionParams.ClientReferenceID = stripe.String(
 		strconv.FormatUint(uint64(organization.ID), 10),
 	)
@@ -117,11 +121,14 @@ func (sp *stripePayment) HandleEvent(
 	event, err = webhook.ConstructEvent(b, r.Header.Get("Stripe-Signature"), stripeWebhookSecret)
 
 	if err != nil {
-		err = fmt.Errorf(
-			"cannot construct event %w",
-			ErrorNotAStripeEvent,
-		)
-		goto done
+		// That error can be safely ignored.
+		if !strings.Contains(err.Error(), "cannot unmarshal string into Go struct field Event.request of type stripe.EventRequest") {
+			err = fmt.Errorf(
+				"cannot construct event %w",
+				ErrorNotAStripeEvent,
+			)
+			goto done
+		}
 	}
 
 	switch event.Type {

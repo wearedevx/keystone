@@ -12,6 +12,8 @@ sigint_handler()
 trap sigint_handler SIGINT
 
 while true; do
+  eval $(cat ./.env-dev | xargs)
+  env 
   # Run the API in a background proccess
   make -i run &
   # Wait for file changes - BLOCKING

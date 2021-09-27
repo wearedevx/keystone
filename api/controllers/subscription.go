@@ -95,7 +95,7 @@ func GetCheckoutSuccess(
 ) {
 	status := http.StatusOK
 	sessionID := r.URL.Query().Get("session_id")
-	msg := "Thank you for subsribing to Keystone!"
+	msg := "Thank you for subscribing to Keystone!"
 
 	err := repo.Transaction(func(Repo repo.IRepo) error {
 		var cs models.CheckoutSession
@@ -119,7 +119,10 @@ func GetCheckoutSuccess(
 	w.Header().Add("Content-Type", "text/plain")
 	w.Header().Add("Content-Length", strconv.Itoa(len(msg)))
 	w.Write([]byte(msg))
-	w.WriteHeader(status)
+
+	if status != http.StatusOK {
+		w.WriteHeader(status)
+	}
 }
 
 func GetCheckoutCancel(
@@ -166,6 +169,7 @@ func PostStripeWebhook(
 
 	p := payment.NewStripePayment()
 	event, err = p.HandleEvent(r)
+	fmt.Printf("event: %+v\n", event)
 
 	switch event.Type {
 	case payment.EventCheckoutComplete:

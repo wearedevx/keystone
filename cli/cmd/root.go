@@ -82,7 +82,7 @@ func isIn(haystack []string, needle string) bool {
 }
 
 func findCurrentCommand(args []string) string {
-	for _, candidate := range args {
+	for _, candidate := range args[1:] {
 		if !strings.HasPrefix(candidate, "-") &&
 			!strings.HasPrefix(candidate, "/") &&
 			candidate != "ks" {

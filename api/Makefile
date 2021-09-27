@@ -8,6 +8,9 @@ DB_USER ?= ks
 DB_PASSWORD ?= ks
 DB_NAME ?= ks
 DB_DIALECT ?= postgres
+DOMAIN ?= localhost:9001
+
+STRIPE_KEY ?= sk_test
 
 JWT_SALT ?= aaP|**P1n}1tqW
 
@@ -33,6 +36,7 @@ DB_DRIVERNAME_FLAG := -X $(REPO_PKG).dbDriverName=$(DB_DRIVERNAME)
 JWT_SALT_FLAG := -X $(JWT_PKG).salt=$(JWT_SALT)
 
 KS_TTL_FLAG := -X $(CONSTANTS_PKG).KsTTLHeader=$(X_KS_TTL)
+DOMAIN_FLAG := -X $(CONSTANTS_PKG).Domain=$(DOMAIN)
 
 REDIS_HOST_FLAG :=  -X $(REDIS_PKG).redisHost=$(REDIS_HOST)
 REDIS_PORT_FLAG :=  -X $(REDIS_PKG).redisPort=$(REDIS_PORT)
@@ -54,7 +58,8 @@ LDFLAGS := $(DB_HOST_FLAG) \
 	$(REDIS_INDEX_FLAG) \
 	$(STRIPE_KEY_FLAG) \
 	$(STRIPE_WEBHOOK_FLAG) \
-	$(KS_TTL_FLAG)
+	$(KS_TTL_FLAG) \
+	$(DOMAIN_FLAG) 
 
 build:
 	mkdir ./build

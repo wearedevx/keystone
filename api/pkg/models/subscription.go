@@ -20,7 +20,7 @@ const (
 type CheckoutSession struct {
 	ID        uint                  `json:"id" gorm:"primaryKey"`
 	SessionID string                `json:"session_id" gorm:"unique"`
-	Status    CheckoutSessionStatus `json:"status"`
+	Status    CheckoutSessionStatus `json:"status" gorm:"default:pending" default:"pending"`
 	CreatedAt time.Time             `json:"created_at"`
 	UpdatedAt time.Time             `json:"updated_at"`
 }
