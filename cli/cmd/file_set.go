@@ -39,6 +39,7 @@ var setCmd = &cobra.Command{
 	Long: `Updates a file’s content for the current environment.
 
 Changes the content of a file without altering other environments.
+The local version of the file will be used.
 `,
 	Example: `ks file set ./config.php
 
@@ -67,7 +68,7 @@ ks --env staging file set ./config.php
 			os.Exit(1)
 		}
 
-		currentContent, erro := ctx.GetFileContents(filePath, currentEnvironment)
+		content, erro := ctx.GetLocalFileContents(filePath)
 		if erro != nil {
 			if erro.Error() != "No contents" {
 				err = kserrors.CannotSetFile(filePath, erro)
@@ -75,11 +76,6 @@ ks --env staging file set ./config.php
 
 				os.Exit(1)
 			}
-		}
-
-		content := currentContent
-		if !skipPrompts {
-			content = askContent(filePath, currentContent)
 		}
 
 		var printer = &ui.UiPrinter{}

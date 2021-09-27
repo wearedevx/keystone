@@ -26,6 +26,10 @@ func NewRedis() *Redis {
 	var err error
 	var r Redis
 
+	if redisIndex == "" {
+		redisIndex = "0"
+	}
+
 	redisIndexInt, err := strconv.Atoi(redisIndex)
 
 	if err != nil {

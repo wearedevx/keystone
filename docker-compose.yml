@@ -38,6 +38,7 @@ services:
       - DB_NAME=ks
       - DB_USER=ks
       - DB_PASSWORD=ks
+      - REDIS_INDEX=0
     volumes:
       - ./api/:/home/golang/app:delegated
     ports:
