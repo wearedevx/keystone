@@ -73,7 +73,7 @@ run-test:
 	go run -tags test -ldflags "$(LDFLAGS)" main.go
 
 run:
-	go get -u github.com/mitranim/gow && gow run -ldflags "$(LDFLAGS)" main.go
+	go run -ldflags "$(LDFLAGS)" main.go
 
 run-debug:
 	dlv --listen=:40000 --headless=true --api-version=2 --accept-multiclient exec ./server

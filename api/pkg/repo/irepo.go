@@ -73,7 +73,13 @@ type IRepo interface {
 	GetAdminsFromUserProjects(userID uint, userName string, projects_list []string, adminEmail *string) IRepo
 	CreateOrganization(orga *models.Organization) IRepo
 	UpdateOrganization(orga *models.Organization) IRepo
+	GetOrganization(orga *models.Organization) IRepo
 	GetOrganizations(userID uint, result *models.GetOrganizationsResponse) IRepo
 	IsUserOwnerOfOrga(*models.User, *models.Organization) (bool, error)
 	IsProjectOrganizationPaid(string) (bool, error)
+	CreateCheckoutSession(*models.CheckoutSession) IRepo
+	GetCheckoutSession(string, *models.CheckoutSession) IRepo
+	UpdateCheckoutSession(*models.CheckoutSession) IRepo
+	DeleteCheckoutSession(*models.CheckoutSession) IRepo
+	OrganizationSetPaid(organization *models.Organization, paid bool) IRepo
 }

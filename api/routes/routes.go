@@ -56,5 +56,15 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.POST("/organizations", AuthedHandler(PostOrganization))
 	router.PUT("/organizations", AuthedHandler(UpdateOrganization))
 
+	// Payment Routes
+	router.POST("/organization/:organizationID/upgrade", AuthedHandler(PostSubscription))
+	router.GET("/checkout/:sessionID/status", AuthedHandler(GetPollSubscriptionSuccess))
+
+	router.GET("/checkout-success", GetCheckoutSuccess)
+	router.GET("/checkout-cancel", GetCheckoutCancel)
+
+	// Subscription Event Webhook
+	router.POST("/subscription/webhook", PostStripeWebhook)
+
 	router.ServeHTTP(w, r)
 }

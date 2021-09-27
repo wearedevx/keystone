@@ -45,7 +45,7 @@ func NewStripePayment() Payment {
 func (sp *stripePayment) StartCheckout(
 	organization *models.Organization,
 	seats int,
-) (url string, err error) {
+) (id string, url string, err error) {
 	organizationID := strconv.FormatUint(uint64(organization.ID), 10)
 	name := organization.Name
 	email := organization.Owner.Email
@@ -82,17 +82,20 @@ func (sp *stripePayment) StartCheckout(
 
 	sessionParams.Customer = stripe.String(cus.ID)
 	sessionParams.CustomerEmail = stripe.String(email)
-	sessionParams.ClientReferenceID = stripe.String(organization.Name)
+	sessionParams.ClientReferenceID = stripe.String(
+		strconv.FormatUint(uint64(organization.ID), 10),
+	)
 
 	ses, err = session.New(&sessionParams)
 	if err != nil {
 		goto done
 	}
 
+	id = ses.ID
 	url = ses.URL
 
 done:
-	return url, err
+	return id, url, err
 }
 
 // HandleEvent returns a usable payment.Event from a webhook call
@@ -101,15 +104,6 @@ func (sp *stripePayment) HandleEvent(
 ) (paymentEvent Event, err error) {
 	var b []byte
 	var event stripe.Event
-
-	if r.Method != http.MethodPost {
-		err = fmt.Errorf(
-			"method %s not allowed %w",
-			r.Method,
-			ErrorNotAStripeEvent,
-		)
-		goto done
-	}
 
 	b, err = ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -133,7 +127,10 @@ func (sp *stripePayment) HandleEvent(
 	switch event.Type {
 	case "checkout.session.completed":
 		ses := event.Data.Object
+		oid, _ := strconv.ParseUint(ses["client_reference_id"].(string), 10, 16)
+
 		paymentEvent.Type = EventCheckoutComplete
+		paymentEvent.OrganizationID = uint(oid)
 		paymentEvent.SubscriptionID = SubscriptionID(ses["subscription"].(string))
 
 	case "invoice.paid":

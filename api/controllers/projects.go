@@ -90,6 +90,7 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 	status = http.StatusOK
 
 	var can bool
+	var isPaid bool
 	var areInProjects []string
 	var project models.Project
 	var projectID = params.Get("projectID").(string)
@@ -110,7 +111,7 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 		goto done
 	}
 
-	isPaid, err := Repo.IsProjectOrganizationPaid(projectID)
+	isPaid, err = Repo.IsProjectOrganizationPaid(projectID)
 
 	if err != nil {
 		return nil, http.StatusInternalServerError, err

@@ -25,21 +25,16 @@ var ctx = context.Background()
 func init() {
 	var err error
 
-	redisIndexInt, err := strconv.Atoi(redisIndex)
-
+	redisIndexInt, err := strconv.ParseInt(redisIndex, 10, 64)
 	if err != nil {
-		panic(err)
+		redisIndexInt = 0
 	}
 
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     redisHost + ":" + redisPort,
-		Password: "",            // no password set
-		DB:       redisIndexInt, // use default DB
+		Password: "",                 // no password set
+		DB:       int(redisIndexInt), // use default DB
 	})
-
-	if err != nil {
-		panic(err)
-	}
 }
 
 func (r *Redis) Err() error {

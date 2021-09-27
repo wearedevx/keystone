@@ -62,6 +62,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 	member := models.User{}
 	role := models.Role{}
 	can := false
+	isPaid := false
 
 	// input check
 	var projectID = params.Get("projectID").(string)
@@ -94,7 +95,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 		goto done
 	}
 
-	isPaid, err := Repo.IsProjectOrganizationPaid(projectID)
+	isPaid, err = Repo.IsProjectOrganizationPaid(projectID)
 
 	if err != nil {
 		status = http.StatusInternalServerError
@@ -107,7 +108,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 		goto done
 	}
 
-	can, err := rights.CanUserSetMemberRole(Repo, user, member, role, project)
+	can, err = rights.CanUserSetMemberRole(Repo, user, member, role, project)
 	if err != nil {
 		status = http.StatusInternalServerError
 		goto done

@@ -37,6 +37,16 @@ func (r *Repo) CreateOrganization(orga *models.Organization) IRepo {
 	}
 }
 
+func (r *Repo) GetOrganization(orga *models.Organization) IRepo {
+	if r.Err() != nil {
+		return r
+	}
+
+	r.err = r.GetDb().Where(&orga).First(&orga).Error
+
+	return r
+}
+
 func (r *Repo) UpdateOrganization(orga *models.Organization) IRepo {
 	if err := matchOrganizationName(orga.Name); err != nil {
 		r.err = err
@@ -56,6 +66,16 @@ func (r *Repo) UpdateOrganization(orga *models.Organization) IRepo {
 		r.err = errors.New("Organization name already taken. Choose another one.")
 		return r
 	}
+}
+
+func (r *Repo) OrganizationSetPaid(organization *models.Organization, paid bool) IRepo {
+	if r.err != nil {
+		return r
+	}
+
+	r.err = r.GetDb().Where(organization).Update("paid", paid).Error
+
+	return r
 }
 
 func (r *Repo) GetOrganizations(userID uint, result *models.GetOrganizationsResponse) IRepo {

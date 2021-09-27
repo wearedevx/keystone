@@ -32,10 +32,11 @@ type Payment interface {
 	// the quantity params should be the number of
 	// unique users associated with the organization
 	// that subscription is for
-	StartCheckout(organization *models.Organization, seats int) (string, error)
-	//
+	// returns a session id, a url for the user proceed, and an error
+	StartCheckout(organization *models.Organization, seats int) (string, string, error)
+	// For webhooks, returns a unified event from a request
 	HandleEvent(r *http.Request) (Event, error)
-	//
+	// returns subscription information
 	GetSubscription(subscriptionID SubscriptionID) (Subscription, error)
 	// Updates the subscription (changes the number of seats
 	UpdateSubscription(subscriptionID SubscriptionID, seats int) error
@@ -54,6 +55,7 @@ const (
 )
 
 type Event struct {
-	Type           EventType
+	Type           EventType      `json:"type"`
+	OrganizationID uint           `json:"organization_id"`
 	SubscriptionID SubscriptionID `json:"subscriptionId"`
 }

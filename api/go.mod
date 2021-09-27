@@ -19,12 +19,12 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.7.0
 	github.com/stripe/stripe-go v70.15.0+incompatible // indirect
-	github.com/stripe/stripe-go/v72 v72.65.0 // indirect
+	github.com/stripe/stripe-go/v72 v72.65.0
 	github.com/vanng822/go-premailer v1.20.1
 	github.com/xanzy/go-gitlab v0.49.0
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
-	golang.org/x/sys v0.0.0-20210921065528-437939a70204 // indirect
+	golang.org/x/sys v0.0.0-20210923061019-b8560ed6a9b7 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gorm.io/driver/postgres v1.1.0
