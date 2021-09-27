@@ -200,6 +200,12 @@ func getMemberRolesFromPrompt(c client.KeystoneClient, memberIDs []string) map[s
 	mustMembersExist(c, memberIDs)
 	roles := mustGetRoles(c)
 
+	if len(roles) == 1 {
+		fmt.Fprintln(os.Stderr, "WARNING: You are not allowed to set role other than admin for free organization")
+		ui.Print("To learn more: https://keystone.sh")
+		ui.Print("")
+	}
+
 	memberRole := make(map[string]models.Role)
 
 	for _, memberId := range memberIDs {
