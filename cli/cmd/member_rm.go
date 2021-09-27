@@ -95,7 +95,7 @@ of the secrets and files.
 			revoke := true
 
 			if !forceYes {
-				revoke = prompts.Confirm("Revoke acces to " + memberId)
+				revoke = prompts.Confirm("Revoke access to " + memberId)
 			}
 
 			if revoke {

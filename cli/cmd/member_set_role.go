@@ -105,6 +105,12 @@ ks member set-role sandra@github`,
 			os.Exit(1)
 		}
 
+		if len(roles) == 1 {
+			ui.PrintError("You are not allowed to set role for free organization")
+			ui.Print("To learn more: https://keystone.sh")
+			os.Exit(1)
+		}
+
 		// If user didnot provide a role,
 		// prompt it
 		if roleName == "" {
