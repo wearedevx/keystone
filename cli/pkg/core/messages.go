@@ -301,6 +301,7 @@ func (ctx *Context) PrepareMessagePayload(environment models.Environment) (model
 	return PayloadContent, err
 }
 
+// DEPRECATED
 func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByEnvironmentResponse) (ChangesByEnvironment, *kserrors.Error) {
 	changes := ctx.SaveMessages(messagesByEnvironments)
 

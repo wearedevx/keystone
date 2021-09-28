@@ -29,7 +29,11 @@ var dbName string
 var dbDialect string
 var dbDriverName string
 
-func getOrDefault(s string, d string) string {
+func getOrDefault(s string, env string, d string) string {
+	if s == "" {
+		s = os.Getenv(env)
+	}
+
 	if s == "" {
 		return d
 	}
@@ -41,11 +45,11 @@ func getOrDefault(s string, d string) string {
 func getDSN() string {
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		getOrDefault(dbHost, "127.0.0.1"),
-		getOrDefault(dbPort, "5432"),
-		getOrDefault(dbUser, "ks"),
-		getOrDefault(dbPassword, "ks"),
-		getOrDefault(dbName, "ks"),
+		getOrDefault(dbHost, "DB_HOST", "127.0.0.1"),
+		getOrDefault(dbPort, "DB_PORT", "5432"),
+		getOrDefault(dbUser, "DB_USER", "ks"),
+		getOrDefault(dbPassword, "DB_PASS", "ks"),
+		getOrDefault(dbName, "DB_NAME", "ks"),
 	)
 }
 

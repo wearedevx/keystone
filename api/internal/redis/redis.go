@@ -4,6 +4,7 @@ package redis
 
 import (
 	"context"
+	"os"
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
@@ -22,13 +23,25 @@ var redisIndex string
 
 var ctx = context.Background()
 
+func getOrDefault(value string, envkey string, defaultValue string) string {
+	if value != "" {
+		return value
+	}
+
+	if value = os.Getenv(envkey); value != "" {
+		return value
+	}
+
+	return defaultValue
+}
+
 func NewRedis() *Redis {
 	var err error
 	var r Redis
 
-	if redisIndex == "" {
-		redisIndex = "0"
-	}
+	redisHost = getOrDefault(redisHost, "REDIS_HOST", "localhost")
+	redisPort = getOrDefault(redisPort, "REDIS_PORT", "6379")
+	redisIndex = getOrDefault(redisIndex, "REDIS_INDEX", "0")
 
 	redisIndexInt, err := strconv.Atoi(redisIndex)
 

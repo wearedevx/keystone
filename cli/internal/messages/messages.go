@@ -403,6 +403,7 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 	}
 
 	PayloadContent, err := s.ctx.PrepareMessagePayload(environment)
+	fmt.Printf("PayloadContent: %+v\n", PayloadContent)
 	if err != nil {
 		return messages, kserrors.PayloadErrors(err)
 	}
@@ -433,15 +434,12 @@ func (s *messageService) prepareMessage(senderPrivateKey []byte, environment mod
 	var payload string
 
 	err := payloadContent.Serialize(&payload)
+	fmt.Printf("payload: %+v\n", payload)
 	if err != nil {
 		return message, err
 	}
 
-	encryptedPayload, err := crypto.EncryptMessage(senderPrivateKey, userDevice.PublicKey, string(payload))
-	if err != nil {
-		return message, err
-	}
-
+	encryptedPayload, err := crypto.EncryptMessage(senderPrivateKey, userDevice.PublicKey, []byte(payload))
 	if err != nil {
 		return message, err
 	}

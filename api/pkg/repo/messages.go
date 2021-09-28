@@ -30,6 +30,8 @@ func (gr *MessagesPayload) Serialize(out *string) error {
 }
 
 func (repo *Repo) GetMessagesForUserOnEnvironment(publicKey models.Device, environment models.Environment, message *models.Message) IRepo {
+	fmt.Printf("environment: %+v\n", environment)
+	fmt.Printf("publicKey: %+v\n", publicKey)
 	if repo.err != nil {
 		return repo
 	}

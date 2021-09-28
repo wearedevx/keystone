@@ -38,7 +38,7 @@ var sendCmd = &cobra.Command{
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		fetch()
+		// fetch()
 
 		environments := ctx.AccessibleEnvironments
 

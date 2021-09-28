@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 	"time"
@@ -100,6 +101,11 @@ func (u *MessagePayload) Serialize(out *string) (err error) {
 	var sb strings.Builder
 	err = json.NewEncoder(&sb).Encode(u)
 	*out = sb.String()
+
+	if len(*out) == 0 {
+		err = fmt.Errorf("Invalid payload length")
+	}
+
 	return err
 }
 

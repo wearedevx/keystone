@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
@@ -94,6 +93,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 		goto done
 	}
 
+	fmt.Printf("environments: %+v\n", environments)
 	for _, environment := range environments {
 		// - rights check
 		log.Environment = environment
@@ -107,6 +107,7 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 
 		if can {
 			curr := models.GetMessageResponse{}
+			fmt.Printf("curr: %+v\n", curr)
 			err = Repo.GetMessagesForUserOnEnvironment(publicKey, environment, &curr.Message).Err()
 
 			if err != nil {
@@ -120,9 +121,9 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 			curr.Message.Payload, err = Repo.MessageService().GetMessageByUuid(curr.Message.Uuid)
 
 			if err != nil {
-				// fmt.Println("api ~ messages.go ~ err", err)
-				response.Error = err
-				return &response, http.StatusNotFound, err
+				// response.Error = err
+				// status = http.StatusNotFound
+				// goto done
 			} else {
 				result.Environments[environment.Name] = curr
 			}
@@ -130,6 +131,8 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	}
 
 done:
+	fmt.Printf("result: %+v\n", result)
+	fmt.Printf("err: %+v\n", err)
 	return &result, status, log.SetError(err)
 }
 
@@ -151,6 +154,12 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 	}
 
 	for _, clientMessage := range payload.Messages {
+		if len(clientMessage.Payload) == 0 {
+			status = http.StatusBadRequest
+			err = errors.New("empty payload cannot be written")
+			goto done
+		}
+
 		// - gather information for the checks
 		projectMember := models.ProjectMember{
 			UserID: clientMessage.RecipientID,
@@ -265,25 +274,25 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 		Action: "DeleteMessage",
 	}
 
-	var messageID = params.Get("messageID").(string)
+	// var messageID = params.Get("messageID").(string)
 
-	id, err := strconv.Atoi(messageID)
+	// id, err := strconv.Atoi(messageID)
 
-	if err != nil {
-		response.Success = false
-		response.Error = err
-		err = nil
+	// if err != nil {
+	// 	response.Success = false
+	// 	response.Error = err
+	// 	err = nil
 
-		goto done
-	}
+	// 	goto done
+	// }
 
-	if err = Repo.
-		DeleteMessage(uint(id), user.ID).Err(); err != nil {
-		response.Error = err
-		response.Success = false
-	}
+	// if err = Repo.
+	// 	DeleteMessage(uint(id), user.ID).Err(); err != nil {
+	// 	response.Error = err
+	// 	response.Success = false
+	// }
 
-done:
+	// done:
 	return response, status, log.SetError(err)
 }
 
