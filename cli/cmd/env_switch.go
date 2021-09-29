@@ -76,7 +76,7 @@ If you want to discard those changes:
 {{ OK }} {{ .Message | bright_green }}
 
 To load its variables:
-  $ eval $(ks source)
+  $ eval "$(ks source)"
 `, map[string]string{
 			"Message": fmt.Sprintf("Using the '%s' environment", envName),
 			"EnvName": envName,
