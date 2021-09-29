@@ -223,11 +223,11 @@ func (ctx *Context) LocallyModifiedFiles(envname string) []FileKey {
 	}
 
 	files := ctx.ListFiles()
-	modified := make([]FileKey, len(files))
+	modified := make([]FileKey, 0)
 
-	for index, fileKey := range files {
+	for _, fileKey := range files {
 		if ctx.IsFileModified(fileKey.Path, envname) {
-			modified[index] = fileKey
+			modified = append(modified, fileKey)
 		}
 		if ctx.Err() != nil {
 			return []FileKey{}
@@ -298,9 +298,9 @@ func (ctx *Context) IsFileModified(filePath, environment string) (isModified boo
 }
 
 // FilesUseEnvironment creates copies of files found in the project’s
-// keystone.yaml file, from the environment `targeEnvironment` in cache.
+// keystone.yaml file, from the environment `targetEnvironment` in cache.
 func (ctx *Context) FilesUseEnvironment(
-	envname string,
+	currentEnvironment string,
 	targetEnvironment string,
 	forceCopy bool,
 ) *Context {
@@ -313,7 +313,7 @@ func (ctx *Context) FilesUseEnvironment(
 		return ctx.setError(kserrors.FailedToReadKeystoneFile(err))
 	}
 
-	cachePath := ctx.CachedEnvironmentFilesPath(envname)
+	cachePath := ctx.CachedEnvironmentFilesPath(targetEnvironment)
 	files := ksfile.Files
 
 	for _, file := range files {
@@ -322,14 +322,16 @@ func (ctx *Context) FilesUseEnvironment(
 
 		if !FileExists(cachedFilePath) {
 			if file.Strict {
-				return ctx.setError(kserrors.FileNotInEnvironment(file.Path, envname, nil))
+				return ctx.setError(
+					kserrors.FileNotInEnvironment(file.Path, targetEnvironment, nil),
+				)
 			}
-			fmt.Fprintf(os.Stderr, "File \"%s\" not in environment\n", file.Path)
+			ui.PrintStdErr("File \"%s\" not in environment\n", file.Path)
 		}
 
-		if ctx.IsFileModified(file.Path, envname) &&
+		if ctx.IsFileModified(file.Path, currentEnvironment) &&
 			forceCopy == CTX_KEEP_LOCAL_FILES {
-			fmt.Fprintln(os.Stderr, ui.RenderTemplate("modified file",
+			ui.PrintStdErr(ui.RenderTemplate("modified file",
 				`{{ "Warning!" | yellow }} File '{{ .Path }}' has been locally modified.
 {{ "Warning!" | yellow }}     To discard local changes, run 'ks file reset {{ .Path }}'.
 {{ "Warning!" | yellow }}     To validate them and share them with all members, run 'ks file set {{ .Path }}'`,
