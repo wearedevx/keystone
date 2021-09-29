@@ -6,9 +6,9 @@ ks file add --skip test.txt
 ks file rm --skip --force  test.txt
 
 
-stdout 'Environment dev up to date ✔'
-stdout 'Environment staging up to date ✔'
-stdout 'Environment prod up to date ✔'
+stderr 'Environment dev up to date ✔'
+stderr 'Environment staging up to date ✔'
+stderr 'Environment prod up to date ✔'
 stdout 'Force remove file on filesystem\.'
 stdout ' OK  test\.txt has been removed from the secret files\.'
 

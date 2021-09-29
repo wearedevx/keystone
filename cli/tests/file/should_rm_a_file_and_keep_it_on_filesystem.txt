@@ -5,9 +5,9 @@ ks file add --skip test.txt
 
 ks file rm --skip test.txt
 
-stdout 'Environment dev up to date ✔'
-stdout 'Environment staging up to date ✔'
-stdout 'Environment prod up to date ✔'
+stderr 'Environment dev up to date ✔'
+stderr 'Environment staging up to date ✔'
+stderr 'Environment prod up to date ✔'
 stdout 'The file is kept in your keystone project for all the environments, in case you need it again.'
 stdout 'If you want to remove it from your device, use --purge'
 

@@ -3,7 +3,6 @@ package repo
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"strings"
 
@@ -30,8 +29,6 @@ func (gr *MessagesPayload) Serialize(out *string) error {
 }
 
 func (repo *Repo) GetMessagesForUserOnEnvironment(publicKey models.Device, environment models.Environment, message *models.Message) IRepo {
-	fmt.Printf("environment: %+v\n", environment)
-	fmt.Printf("publicKey: %+v\n", publicKey)
 	if repo.err != nil {
 		return repo
 	}
@@ -121,7 +118,6 @@ func (repo *Repo) GetGroupedMessagesWillExpireByUser(
 		Preload("Environment.Project").
 		Find(&messages).
 		Error
-	fmt.Printf("messages: %+v\n", len(messages))
 
 	if repo.Err() != nil {
 		return repo

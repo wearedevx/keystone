@@ -93,7 +93,6 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 		goto done
 	}
 
-	fmt.Printf("environments: %+v\n", environments)
 	for _, environment := range environments {
 		// - rights check
 		log.Environment = environment
@@ -107,7 +106,6 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 
 		if can {
 			curr := models.GetMessageResponse{}
-			fmt.Printf("curr: %+v\n", curr)
 			err = Repo.GetMessagesForUserOnEnvironment(publicKey, environment, &curr.Message).Err()
 
 			if err != nil {
@@ -131,8 +129,6 @@ func GetMessagesFromProjectByUser(params router.Params, _ io.ReadCloser, Repo re
 	}
 
 done:
-	fmt.Printf("result: %+v\n", result)
-	fmt.Printf("err: %+v\n", err)
 	return &result, status, log.SetError(err)
 }
 

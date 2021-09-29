@@ -3,6 +3,7 @@ module github.com/wearedevx/keystone/cli
 go 1.16
 
 require (
+	github.com/GoogleCloudPlatform/cloudsql-proxy v1.22.0 // indirect
 	github.com/briandowns/spinner v1.16.0
 	github.com/bxcodec/faker/v3 v3.6.0
 	github.com/coreos/bbolt v1.3.2 // indirect
