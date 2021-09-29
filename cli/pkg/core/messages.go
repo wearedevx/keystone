@@ -326,19 +326,19 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 		if messageID != 0 {
 			// IF changes detected
 			if len(changes.Environments[environmentName]) > 0 {
-				ui.Print("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
+				ui.PrintStdErr("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
 
 				for _, change := range changes.Environments[environmentName] {
 					// No previous cotent => secret is new
 					if len(change.From) == 0 {
-						ui.Print("++ " + change.Name + " : " + change.To)
+						ui.PrintStdErr("++ " + change.Name + " : " + change.To)
 					} else {
-						ui.Print("   " + change.Name + " : " + change.From + " ↦ " + change.To)
+						ui.PrintStdErr("   " + change.Name + " : " + change.From + " ↦ " + change.To)
 					}
 
 				}
 			} else {
-				ui.Print("Environment " + environmentName + " up to date ✔")
+				ui.PrintStdErr("Environment " + environmentName + " up to date ✔")
 			}
 
 			if err := ctx.Err(); err != nil {
@@ -349,10 +349,10 @@ func (ctx *Context) WriteNewMessages(messagesByEnvironments models.GetMessageByE
 			environmentChanged := ctx.EnvironmentVersionHasChanged(environmentName, environment.Environment.VersionID)
 
 			if environmentChanged {
-				ui.Print("Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯")
+				ui.PrintStdErr("Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯")
 				changedEnvironments = append(changedEnvironments, environmentName)
 			} else {
-				ui.Print("Environment " + environmentName + " up to date ✔")
+				ui.PrintStdErr("Environment " + environmentName + " up to date ✔")
 			}
 		}
 	}

@@ -29,6 +29,8 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/core"
 )
 
+var fileResetYes bool
+
 // resetCmd represents the reset command
 var resetCmd = &cobra.Command{
 	Use:   "reset [file path]...",
@@ -73,7 +75,12 @@ The content of the files you are resetting will be replaced by their cached cont
 			nil,
 		))
 
-		if prompts.Confirm("Continue") {
+		doIt := fileResetYes
+		if !fileResetYes {
+			doIt = prompts.Confirm("Continue")
+		}
+
+		if doIt {
 			for _, file := range filesToReset {
 				if !ctx.HasFile(file) {
 					ui.Print("File '" + file + "' is not managed by Keystone, ignoring")
@@ -95,6 +102,13 @@ The content of the files you are resetting will be replaced by their cached cont
 func init() {
 	filesCmd.AddCommand(resetCmd)
 
+	resetCmd.Flags().BoolVarP(
+		&fileResetYes,
+		"yes",
+		"y",
+		false,
+		"force yes to prompts",
+	)
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command

@@ -195,27 +195,27 @@ func (s *messageService) printChanges(changes core.ChangesByEnvironment, message
 		if messageID != 0 {
 			// IF changes detected
 			if len(changes.Environments[environmentName]) > 0 {
-				s.printer.Print("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
+				s.printer.PrintStdErr("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
 
 				for _, change := range changes.Environments[environmentName] {
 					// No previous cotent => secret is new
 					if len(change.From) == 0 {
-						s.printer.Print(ui.RenderTemplate("secret added", ` {{ "++" | green }} {{ .Secret }} : {{ .To }}`, map[string]string{
+						s.printer.PrintStdErr(ui.RenderTemplate("secret added", ` {{ "++" | green }} {{ .Secret }} : {{ .To }}`, map[string]string{
 							"Secret": change.Name,
 							"From":   change.From,
 							"To":     change.To,
 						}))
 					} else if len(change.To) == 0 {
-						s.printer.Print(ui.RenderTemplate("secret deleted", ` {{ "--" | red }} {{ .Secret }} deleted.`, map[string]string{
+						s.printer.PrintStdErr(ui.RenderTemplate("secret deleted", ` {{ "--" | red }} {{ .Secret }} deleted.`, map[string]string{
 							"Secret": change.Name,
 						}))
 					} else {
-						s.printer.Print("   " + change.Name + " : " + change.From + " ↦ " + change.To)
+						s.printer.PrintStdErr("   " + change.Name + " : " + change.From + " ↦ " + change.To)
 					}
 
 				}
 			} else {
-				s.printer.Print("Environment " + environmentName + " up to date ✔")
+				s.printer.PrintStdErr("Environment " + environmentName + " up to date ✔")
 			}
 
 			if err := s.ctx.Err(); err != nil {
@@ -226,10 +226,10 @@ func (s *messageService) printChanges(changes core.ChangesByEnvironment, message
 			environmentChanged := s.ctx.EnvironmentVersionHasChanged(environmentName, environment.Environment.VersionID)
 
 			if environmentChanged {
-				s.printer.Print("Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯")
+				s.printer.PrintStdErr("Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯")
 				changedEnvironments = append(changedEnvironments, environmentName)
 			} else {
-				s.printer.Print("Environment " + environmentName + " up to date ✔")
+				s.printer.PrintStdErr("Environment " + environmentName + " up to date ✔")
 			}
 		}
 	}
@@ -403,7 +403,6 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 	}
 
 	PayloadContent, err := s.ctx.PrepareMessagePayload(environment)
-	fmt.Printf("PayloadContent: %+v\n", PayloadContent)
 	if err != nil {
 		return messages, kserrors.PayloadErrors(err)
 	}
@@ -434,7 +433,6 @@ func (s *messageService) prepareMessage(senderPrivateKey []byte, environment mod
 	var payload string
 
 	err := payloadContent.Serialize(&payload)
-	fmt.Printf("payload: %+v\n", payload)
 	if err != nil {
 		return message, err
 	}
