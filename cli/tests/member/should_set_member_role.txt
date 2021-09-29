@@ -1,9 +1,9 @@
 # Init a project
 
-ks init set-member-role-project
+ks init set-member-role-projectA -o $USER_ID 
 
 # Add members to project
-ks member add -r developer -u john.doe@gitlab -u jane.to@github
+ks member add -r admin -u john.doe@gitlab -u jane.to@github
 
 # Result check
 stdout 'Members Added'

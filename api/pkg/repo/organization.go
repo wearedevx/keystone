@@ -10,9 +10,9 @@ import (
 )
 
 func matchOrganizationName(name string) error {
-	matched, _ := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, name)
+	matched, _ := regexp.MatchString(`^[a-zA-Z0-9\.\-\_\@]{1,}$`, name)
 	if !matched {
-		err := errors.New("Incorrect organization name. Organization name must be alphanumeric with ., -, _")
+		err := errors.New("Incorrect organization name. Organization name must be alphanumeric with ., -, _, @")
 		return err
 	}
 	return nil
@@ -47,7 +47,7 @@ func (r *Repo) UpdateOrganization(orga *models.Organization) IRepo {
 	if err := r.GetDb().Where("name = ? and id != ?", orga.Name, orga.ID).First(&foundOrga).Error; err != nil {
 		if errors.Is(gorm.ErrRecordNotFound, err) {
 			fmt.Println(orga)
-			r.err = r.GetDb().Omit("paid", "owner_id").Save(&orga).Error
+			r.err = r.GetDb().Omit("paid", "user_id").Save(&orga).Error
 			return r
 		}
 		r.err = err
@@ -65,11 +65,11 @@ func (r *Repo) GetOrganizations(userID uint, result *models.GetOrganizationsResp
 
 	orgas := make([]models.Organization, 0)
 	err := r.GetDb().
-		Preload("Owner").
+		Preload("User").
 		Joins("left join projects p on p.organization_id = organizations.id").
 		Joins("left join project_members pm on pm.project_id = p.id").
 		Joins("left join users u on u.id = pm.user_id").
-		Where("(pm.user_id = ? and organizations.private = false) or organizations.owner_id = ?", userID, userID).
+		Where("(pm.user_id = ? and organizations.private = false) or organizations.user_id = ?", userID, userID).
 		Group("organizations.name").Group("organizations.id").
 		Find(&orgas).Error
 
@@ -89,7 +89,7 @@ func (r *Repo) IsUserOwnerOfOrga(user *models.User, orga *models.Organization) (
 	if err = r.GetDb().Where("id=?", orga.ID).First(&foundOrga).Error; err != nil {
 		return false, err
 	}
-	if foundOrga.OwnerID == user.ID {
+	if foundOrga.UserID == user.ID {
 		return true, nil
 	}
 

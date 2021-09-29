@@ -1,6 +1,6 @@
 # Init with name
 exec whoami
-ks init my_project
+ks init my_project -o $USER_ID
 
 # stdout 'All done!'
 

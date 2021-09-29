@@ -99,6 +99,11 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType,
 		return err
 	}
 
+	// for _, orga := range user.Organizations {
+	// 	orga.Paid = true
+	// 	Repo.GetDb().Save(&orga)
+	// }
+
 	token, err := jwt.MakeToken(user, deviceUID)
 	configDir := getConfigDir(env)
 	pathToKeystoneFile := path.Join(configDir, "keystone2.yaml")
@@ -151,7 +156,14 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	user.Email = "email@example.com"
 	user.Devices = []models.Device{{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value}}
 
-	Repo.GetOrCreateUser(&user)
+	if err := Repo.GetOrCreateUser(&user).Err(); err != nil {
+		return err
+	}
+
+	for _, orga := range user.Organizations {
+		orga.Paid = true
+		Repo.GetDb().Save(orga)
+	}
 
 	if err := Repo.Err(); err != nil {
 		fmt.Println("Get Or Create User", err)

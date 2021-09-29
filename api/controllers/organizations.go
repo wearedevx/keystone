@@ -39,7 +39,7 @@ func PostOrganization(params router.Params, body io.ReadCloser, Repo repo.IRepo,
 		return &orga, http.StatusBadRequest, err
 	}
 
-	orga.OwnerID = user.ID
+	orga.UserID = user.ID
 
 	if err := Repo.CreateOrganization(&orga).Err(); err != nil {
 		if strings.Contains(err.Error(), "Incorrect organization name") {
