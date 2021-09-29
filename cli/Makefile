@@ -30,6 +30,7 @@ build:
 	go mod edit -replace=github.com/wearedevx/keystone/cmd=./cmd
 	# go mod edit -replace=github.com/wearedevx/keystone/api=../api
 	go build -ldflags "$(LDFLAGS)" -o ks
+	go clean
 
 install:
 	chmod +x ks

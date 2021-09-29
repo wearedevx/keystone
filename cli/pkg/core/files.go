@@ -260,7 +260,19 @@ func (ctx *Context) IsFileModified(filePath, environment string) (isModified boo
 	/* #nosec */
 	cachedReader, err = os.Open(cachedPath)
 	if err != nil {
-		ctx.setError(kserrors.CannotCopyFile(localPath, cachedPath, err))
+		ui.PrintStdErr(
+			ui.RenderTemplate(
+				"name",
+				`{{ "WARNING:" | yellow }} File {{.Path}} does not exist in the {{.Environment}} environment.
+         But it might in staging or prod.
+         You may set its contents for the current environment with with ks file set.
+		 `, map[string]string{
+					"Path":        filePath,
+					"Environment": environment,
+				},
+			),
+		)
+
 		return false
 	}
 

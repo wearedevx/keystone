@@ -2,12 +2,14 @@ package ui
 
 import (
 	"fmt"
+	"os"
 
 	. "github.com/logrusorgru/aurora/v3"
 )
 
 type Printer interface {
 	Print(message string, args ...interface{})
+	PrintStdErr(message string, args ...interface{})
 }
 
 type EchoPrinter struct{}
@@ -25,6 +27,17 @@ func (ep *EchoPrinter) Print(messageString string, args ...interface{}) {
 	fmt.Println(formatted)
 }
 
+func (ep *EchoPrinter) PrintStdErr(messageString string, args ...interface{}) {
+	messageString = "echo " + "\"" + messageString + "\""
+
+	formatted := messageString
+	if len(args) > 0 {
+		formatted = Sprintf(messageString, args...)
+	}
+
+	fmt.Println(formatted)
+}
+
 func (up *UiPrinter) Print(messageString string, args ...interface{}) {
 	formatted := messageString
 	if len(args) > 0 {
@@ -32,6 +45,15 @@ func (up *UiPrinter) Print(messageString string, args ...interface{}) {
 	}
 
 	fmt.Println(formatted)
+}
+
+func (up *UiPrinter) PrintStdErr(messageString string, args ...interface{}) {
+	formatted := messageString
+	if len(args) > 0 {
+		formatted = Sprintf(messageString, args...)
+	}
+
+	fmt.Fprintln(os.Stderr, formatted)
 }
 
 func PrintError(messageString string, args ...interface{}) {
@@ -84,6 +106,15 @@ func PrintDim(messageString string, args ...interface{}) {
 	}
 
 	fmt.Println(formatted)
+}
+
+func PrintStdErr(messageString string, args ...interface{}) {
+	formatted := messageString
+	if len(args) > 0 {
+		formatted = Sprintf(messageString, args...)
+	}
+
+	fmt.Fprintln(os.Stderr, formatted)
 }
 
 func Print(messageString string, args ...interface{}) {
