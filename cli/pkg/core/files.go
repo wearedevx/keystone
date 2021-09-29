@@ -191,8 +191,15 @@ func (ctx *Context) SetFile(filePath string, content []byte) *Context {
 		return ctx
 	}
 
+	parentDir := path.Dir(dest)
+
+	if err := os.MkdirAll(parentDir, 0o700); err != nil {
+		ctx.setError(kserrors.CannotCreateDirectory(parentDir, err))
+		return ctx
+	}
+
 	/* #nosec */
-	destFile, err := os.OpenFile(dest, os.O_WRONLY|os.O_TRUNC, 0o644)
+	destFile, err := os.OpenFile(dest, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0o644)
 	if err == nil {
 		defer closeFile(destFile)
 
