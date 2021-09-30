@@ -1,9 +1,9 @@
 FROM golang:1.16
+ENV CGO_ENABLED 0
 
-RUN go get -u github.com/mitranim/gow
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
 RUN cp migrate.linux-amd64 /usr/local/bin/migrate
 
 RUN apt-get update && \
-	  apt-get install -y inotify-tools lsof && \
+	  apt-get install -y inotify-tools && \
 		rm -rf /var/lib/apt/lists/*

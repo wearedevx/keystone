@@ -41,7 +41,8 @@ services:
       - ./api/:/home/golang/app:delegated
     ports:
       - "9001:9001"
-    command: sh -c "./watch.sh"
+      - "8000:40000"
+    command: sh -c "make run-debug"
 
   cli:
     image: cossacklabs/ci-py-go-themis
