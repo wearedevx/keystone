@@ -43,6 +43,53 @@ func (ctx *Context) ListFiles() []FileKey {
 	return ksfile.Files
 }
 
+func (ctx *Context) ListCachedFilesForEnvironment(envname string) []FileKey {
+	files := make([]FileKey, 0)
+	if ctx.Err() != nil {
+		return files
+	}
+
+	cachePath := ctx.CachedEnvironmentFilesPath(envname)
+	filepaths := []string{}
+
+	err := filepath.Walk(cachePath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+
+		fileRelativePath := strings.ReplaceAll(path, cachePath, "")
+		regexp, err := regexp.Compile(`^\/`)
+
+		fileRelativePath = regexp.ReplaceAllString(fileRelativePath, "")
+
+		if len(fileRelativePath) > 0 {
+			filepaths = append(filepaths, fileRelativePath)
+		}
+		return nil
+	})
+
+	if err != nil {
+		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		return []FileKey{}
+	}
+
+	filepaths = Uniq(filepaths)
+
+	for _, f := range filepaths {
+		newFileKey := FileKey{
+			Path:      f,
+			Strict:    false,
+			FromCache: true,
+		}
+		files = append(files, newFileKey)
+	}
+
+	return files
+}
+
 func (ctx *Context) ListFilesFromCache() []FileKey {
 	if ctx.Err() != nil {
 		return make([]FileKey, 0)

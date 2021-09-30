@@ -279,7 +279,7 @@ func (ctx *Context) PrepareMessagePayload(environment models.Environment) (model
 
 	envCachePath := ctx.CachedEnvironmentFilesPath(environment.Name)
 
-	for _, file := range ctx.ListFiles() {
+	for _, file := range ctx.ListCachedFilesForEnvironment(environment.Name) {
 		filePath := path.Join(envCachePath, file.Path)
 		/* #nosec */
 		fileContent, err := ioutil.ReadFile(filePath)

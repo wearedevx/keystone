@@ -390,7 +390,11 @@ func (s *messageService) getCurrentUserInformation() (models.User, []byte) {
 
 // prepareMessages creates and encrypts messages
 // for oll the user allowed to read the given environment
-func (s *messageService) prepareMessages(currentUser models.User, senderPrivateKey []byte, environment models.Environment) ([]models.MessageToWritePayload, *kserrors.Error) {
+func (s *messageService) prepareMessages(
+	currentUser models.User,
+	senderPrivateKey []byte,
+	environment models.Environment,
+) ([]models.MessageToWritePayload, *kserrors.Error) {
 	environmentId := environment.EnvironmentID
 	messages := make([]models.MessageToWritePayload, 0)
 
@@ -409,11 +413,16 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 
 	// Create one message per user
 	for _, userPublicKey := range userPublicKeys.Keys {
-
 		for _, userDevice := range userPublicKey.PublicKeys {
 			// Do send to current device !!!
 			// And all others also of course
-			message, err := s.prepareMessage(senderPrivateKey, environment, userDevice, userPublicKey.UserID, PayloadContent)
+			message, err := s.prepareMessage(
+				senderPrivateKey,
+				environment,
+				userDevice,
+				userPublicKey.UserID,
+				PayloadContent,
+			)
 			if err != nil {
 				return messages, kserrors.CouldNotEncryptMessages(err)
 			}
@@ -428,7 +437,13 @@ func (s *messageService) prepareMessages(currentUser models.User, senderPrivateK
 // prepareMessages creates and encryps one message
 // for one environment and one project member.
 // Read rights should have been checked beforehand
-func (s *messageService) prepareMessage(senderPrivateKey []byte, environment models.Environment, userDevice models.Device, recipientID uint, payloadContent models.MessagePayload) (models.MessageToWritePayload, error) {
+func (s *messageService) prepareMessage(
+	senderPrivateKey []byte,
+	environment models.Environment,
+	userDevice models.Device,
+	recipientID uint,
+	payloadContent models.MessagePayload,
+) (models.MessageToWritePayload, error) {
 	message := models.MessageToWritePayload{}
 	var payload string
 
