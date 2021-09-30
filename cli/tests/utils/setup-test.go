@@ -144,11 +144,9 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	Repo := new(repo.Repo)
 	user := models.User{}
 
-	fmt.Println("🐲🐲🐲🐲", user)
 	if err = faker.FakeData(&user); err != nil {
 		return err
 	}
-	fmt.Println("🐲🐲🐲🐲", user)
 
 	keyPair, err := keys.New(keys.TypeEC)
 

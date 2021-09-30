@@ -2,7 +2,6 @@ package repo
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -46,7 +45,6 @@ func (r *Repo) UpdateOrganization(orga *models.Organization) IRepo {
 	foundOrga := models.Organization{}
 	if err := r.GetDb().Where("name = ? and id != ?", orga.Name, orga.ID).First(&foundOrga).Error; err != nil {
 		if errors.Is(gorm.ErrRecordNotFound, err) {
-			fmt.Println(orga)
 			r.err = r.GetDb().Omit("paid", "user_id").Save(&orga).Error
 			return r
 		}
