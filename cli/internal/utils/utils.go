@@ -104,6 +104,16 @@ func CopyFile(src, dst string) error {
 	return err
 }
 
+func RemoveFile(f string) error {
+	err := os.Remove(f)
+
+	if err != nil {
+		return fmt.Errorf("failed to remove file %s: %w", f, err)
+	}
+
+	return nil
+}
+
 func RemoveContents(dir string) error {
 	/* #nosec
 	 * as long as contents of dir are only removed
