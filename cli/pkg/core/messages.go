@@ -61,9 +61,13 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 		for _, fileChange := range fileChanges {
 			filesDir := ctx.CachedEnvironmentFilesPath(environmentName)
 			filePath := path.Join(filesDir, fileChange.Name)
+
 			err := utils.RemoveFile(filePath)
-			ctx.err = kserrors.CannotRemoveDirectoryContents(filePath, err)
-			return changes
+			if err != nil {
+				ctx.err = kserrors.CannotRemoveDirectoryContents(filePath, err)
+				return changes
+			}
+
 		}
 
 		err := ctx.saveFilesChanges(fileChanges, environmentName)

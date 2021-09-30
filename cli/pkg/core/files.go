@@ -402,6 +402,7 @@ func (ctx *Context) FilesUseEnvironment(
 			}
 
 			if err := utils.CopyFile(cachedFilePath, localPath); err != nil {
+				fmt.Printf("err: %+v\n", err)
 				return ctx.setError(kserrors.CannotCopyFile(file.Path, cachedFilePath, err))
 			}
 		}

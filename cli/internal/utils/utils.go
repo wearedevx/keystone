@@ -43,7 +43,7 @@ func CreateFileIfNotExists(filePath string, defaultContent string) error {
 		dir := filepath.Dir(filePath)
 
 		if err := os.MkdirAll(dir, 0700); err != nil {
-			return fmt.Errorf("Could not creat directory `%s` (%w)", dir, err)
+			return fmt.Errorf("Could not create directory `%s` (%w)", dir, err)
 		}
 
 		if err := ioutil.WriteFile(filePath, []byte(defaultContent), 0600); err != nil {
@@ -107,7 +107,7 @@ func CopyFile(src, dst string) error {
 func RemoveFile(f string) error {
 	err := os.Remove(f)
 
-	if err != nil {
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("failed to remove file %s: %w", f, err)
 	}
 
