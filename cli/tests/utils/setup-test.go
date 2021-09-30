@@ -144,9 +144,11 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	Repo := new(repo.Repo)
 	user := models.User{}
 
+	fmt.Println("🐲🐲🐲🐲", user)
 	if err = faker.FakeData(&user); err != nil {
 		return err
 	}
+	fmt.Println("🐲🐲🐲🐲", user)
 
 	keyPair, err := keys.New(keys.TypeEC)
 
@@ -162,7 +164,7 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 
 	for _, orga := range user.Organizations {
 		orga.Paid = true
-		Repo.GetDb().Save(orga)
+		Repo.GetDb().Save(&orga)
 	}
 
 	if err := Repo.Err(); err != nil {

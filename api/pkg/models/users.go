@@ -45,7 +45,7 @@ type User struct {
 	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
 	Devices       []Device       `json:"devices"`
-	Organizations []Organization `json:"organizations"`
+	Organizations []Organization `json:"organizations" faker:"-"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
