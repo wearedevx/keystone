@@ -81,4 +81,4 @@ run:
 	go run -ldflags "$(LDFLAGS)" main.go
 
 run-debug:
-	dlv --listen=:40000 --headless=true --api-version=2 --accept-multiclient exec ./server
+	dlv --listen=:40000 --headless=true --log=true --log-output=debugger,debuglineerr,gdbwire,lldbout,rpc --api-version=2 --accept-multiclient exec ./server
