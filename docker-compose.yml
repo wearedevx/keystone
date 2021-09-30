@@ -68,7 +68,7 @@ services:
     ports:
       - "9001:9001"
       - "8000:40000"
-    command: sh -c "make build-debug && make run-debug"
+    command: sh -c "make run-debug"
 
   cli:
     image: cossacklabs/ci-py-go-themis
