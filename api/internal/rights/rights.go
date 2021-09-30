@@ -103,7 +103,7 @@ func CanRoleAddRole(Repo repo.IRepo, role Role, roleToInvite Role) (can bool, er
 // - both users are members of `project`
 // - `users`’s role has `CanAddMembers` set to `true`,
 // - `users`’s role is a parent of `other`’s role.
-// - `users`’s role is a parent of the target `role`
+// - users`’s role is a parent of the target `role`
 func CanUserSetMemberRole(Repo repo.IRepo, user User, other User, role Role, project Project) (can bool, err error) {
 	myMember := ProjectMember{
 		UserID:    user.ID,

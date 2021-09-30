@@ -1,0 +1,15 @@
+# Init a project
+
+exec echo $USER_ID
+ks init set-member-role-projectA -o $USER_ID
+
+# Add members to project
+ks member add -r admin -u john.doe@gitlab
+
+# Result check
+stdout 'Members Added'
+
+# Set the role of a member
+! ks member set-role john.doe@gitlab lead-dev
+
+stdout 'ERROR  You are not allowed to set role for free organization'

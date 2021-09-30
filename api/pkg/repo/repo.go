@@ -72,7 +72,7 @@ func (repo *Repo) Err() error {
 }
 
 func (repo *Repo) GetDb() *gorm.DB {
-	return repo.tx
+	return db
 }
 
 func (repo *Repo) notFoundAsBool(call func() error) (bool, error) {
@@ -98,9 +98,6 @@ func init() {
 	db, err = gorm.Open(getPostgres(), &gorm.Config{
 		SkipDefaultTransaction: true,
 	})
-
-	// err = db.Drop(&User{}, &LoginRequest{}, &Environment{}, &EnvironmentUserSecret{}, &Message{}, &Project{}, &ProjectMember{}, &Secret{}, &RolesEnvironmentType{}, &Device{}, &Organization{})
-	// err = db.AutoMigrate(&User{}, &LoginRequest{}, &Environment{}, &EnvironmentUserSecret{}, &Message{}, &Project{}, &ProjectMember{}, &Secret{}, &RolesEnvironmentType{}, &Device{}, &Organization{})
 
 	if err != nil {
 		panic(err)

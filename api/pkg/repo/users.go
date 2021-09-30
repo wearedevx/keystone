@@ -68,7 +68,7 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		// Create default orga for user
 		orga := models.Organization{
 			UserID: user.ID,
-			Name:    user.UserID,
+			Name:   user.UserID,
 		}
 
 		r.err = r.CreateOrganization(&orga).Err()

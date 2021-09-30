@@ -79,7 +79,7 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 		role := models.Role{ID: member.RoleID}
 		if err := Repo.GetRole(&role).Err(); err == nil {
 			if role.Name != "admin" && !isPaid {
-				return nil, http.StatusForbidden, errors.New("You are not allowed to set role other than admin for free organization")
+				return nil, http.StatusInternalServerError, errors.New("You are not allowed to set role other than admin for free organization")
 			}
 		}
 	}

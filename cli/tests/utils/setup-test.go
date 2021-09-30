@@ -99,11 +99,6 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType,
 		return err
 	}
 
-	// for _, orga := range user.Organizations {
-	// 	orga.Paid = true
-	// 	Repo.GetDb().Save(&orga)
-	// }
-
 	token, err := jwt.MakeToken(user, deviceUID)
 	configDir := getConfigDir(env)
 	pathToKeystoneFile := path.Join(configDir, "keystone2.yaml")
@@ -232,4 +227,24 @@ func SetupEnvVars(env *testscript.Env) error {
 
 	// Create config folder
 	return os.MkdirAll(configDir, 0o770) // #nosec
+}
+
+func MakeOrgaFree(env *testscript.Env) error {
+	userID := env.Getenv("USER_ID")
+	Repo := new(repo.Repo)
+
+	user := models.User{UserID: userID}
+	if err := Repo.GetDb().Preload("Organizations").Where("user_id = ?", userID).First(&user).Error; err != nil {
+		return err
+	}
+
+	for _, orga := range user.Organizations {
+		orga.Paid = false
+		if err := Repo.GetDb().Save(&orga).Error; err != nil {
+			return err
+		}
+
+	}
+
+	return nil
 }

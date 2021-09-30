@@ -462,7 +462,7 @@ func RoleDoesNotExist(rolename string, available string, cause error) *Error {
 		"RoleName":  string(rolename),
 		"Available": string(available),
 	}
-	return NewError("Role Does Not Exist", helpTexts["RoleDoesNotExist"], meta, cause)
+	return NewError("Role Not Available", helpTexts["RoleDoesNotExist"], meta, cause)
 }
 
 func ProjectDoesntExist(name string, projectid string, cause error) *Error {
