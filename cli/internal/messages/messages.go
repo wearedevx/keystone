@@ -74,8 +74,8 @@ func (s *messageService) GetMessages() core.ChangesByEnvironment {
 
 	s.printChanges(changes, messagesByEnvironment)
 
-	// messagesIds := getMessagesIds(messagesByEnvironment)
-	// s.DeleteMessages(messagesIds)
+	messagesIds := getMessagesIds(messagesByEnvironment)
+	s.DeleteMessages(messagesIds)
 
 	return changes
 }
