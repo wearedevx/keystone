@@ -124,6 +124,9 @@ func CanUserSetMemberRole(Repo repo.IRepo, user User, other User, role Role, pro
 	canChangeOther, canChangeOtherErr := CanRoleAddRole(Repo, myMember.Role, otherMember.Role)
 	canSetTargetRole, canSetTargetRoleErr := CanRoleAddRole(Repo, myMember.Role, role)
 
+	// Owner of organization cannot have its role changed
+	isMemberOwnerOfOrga, isMemberOwnerOfOrgaErr := IsUserOwnerOfOrga(Repo, other.ID, project)
+
 	if canChangeOtherErr != nil {
 		return false, canChangeOtherErr
 	}
@@ -132,7 +135,11 @@ func CanUserSetMemberRole(Repo repo.IRepo, user User, other User, role Role, pro
 		return false, canSetTargetRoleErr
 	}
 
-	return canChangeOther && canSetTargetRole, nil
+	if isMemberOwnerOfOrgaErr != nil {
+		return false, isMemberOwnerOfOrgaErr
+	}
+
+	return canChangeOther && canSetTargetRole && !isMemberOwnerOfOrga, nil
 }
 
 // CanUserAddMemberWithRole checks if a given user can add members of
@@ -154,4 +161,16 @@ func CanUserAddMemberWithRole(Repo repo.IRepo, user User, role Role, project Pro
 	}
 
 	return can, nil
+}
+
+func IsUserOwnerOfOrga(Repo repo.IRepo, userID uint, project Project) (bool, error) {
+	orga := Organization{}
+	if err := Repo.GetProjectsOrganization(project.UUID, &orga).Err(); err != nil {
+		return false, err
+	}
+
+	if orga.UserID == userID {
+		return true, nil
+	}
+	return false, nil
 }

@@ -93,3 +93,8 @@ func (r *Repo) IsUserOwnerOfOrga(user *models.User, orga *models.Organization) (
 
 	return isOwner, err
 }
+
+func setRoleToAdminForAllProjectsFromOrga(orga *models.Organization) error {
+
+	return nil
+}
