@@ -68,4 +68,5 @@ type IRepo interface {
 	GetOrganizationProjects(*models.Organization, *[]models.Project) IRepo
 	IsUserOwnerOfOrga(*models.User, *models.Organization) (bool, error)
 	IsProjectOrganizationPaid(string) (bool, error)
+	GetUserProjects(userID uint, projects *[]models.Project) IRepo
 }

@@ -34,6 +34,20 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 
 }
 
+func GetProjects(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+	status = http.StatusOK
+
+	var result models.GetProjectsResponse
+
+	Repo.GetUserProjects(user.ID, &result.Projects)
+
+	if err = Repo.Err(); err != nil {
+		return &result, http.StatusInternalServerError, err
+	}
+
+	return &result, status, err
+}
+
 func GetProjectsMembers(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 

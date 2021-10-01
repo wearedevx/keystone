@@ -120,3 +120,12 @@ func (p *Project) GetRoles() ([]models.Role, error) {
 
 	return result.Roles, err
 }
+
+func (p *Project) GetAll() ([]models.Project, error) {
+	var err error
+	var result models.GetProjectsResponse
+
+	err = p.r.get("/projects", &result, nil)
+
+	return result.Projects, err
+}
