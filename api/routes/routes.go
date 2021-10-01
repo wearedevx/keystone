@@ -53,6 +53,7 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.GET("/organizations", AuthedHandler(GetOrganizations))
 	router.POST("/organizations", AuthedHandler(PostOrganization))
 	router.PUT("/organizations", AuthedHandler(UpdateOrganization))
+	router.GET("/organizations/:orgaID/projects", AuthedHandler(GetOrganizationProjects))
 
 	router.ServeHTTP(w, r)
 }

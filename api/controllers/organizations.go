@@ -2,13 +2,16 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
+	"gorm.io/gorm"
 )
 
 func GetOrganizations(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
@@ -83,4 +86,50 @@ func UpdateOrganization(params router.Params, body io.ReadCloser, Repo repo.IRep
 	}
 
 	return &orga, status, err
+}
+
+func GetOrganizationProjects(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+	status = http.StatusOK
+
+	var orgaID = params.Get("orgaID").(string)
+
+	var result = models.GetProjectsResponse{
+		Projects: []models.Project{},
+	}
+
+	u64, err := strconv.ParseUint(orgaID, 10, 0)
+	orga := models.Organization{ID: uint(u64)}
+
+	if err != nil {
+		status = http.StatusInternalServerError
+		return &result, status, err
+	}
+
+	fmt.Println("🍧🍧🍧🍧🍧")
+
+	if err = Repo.GetOrganizationProjects(&orga, &result.Projects).Err(); err != nil {
+		status = http.StatusInternalServerError
+		return &result, status, err
+	}
+
+	for index, project := range result.Projects {
+		projectMember := models.ProjectMember{
+			UserID:    user.ID,
+			ProjectID: project.ID,
+		}
+
+		err := Repo.GetProjectMember(&projectMember).Err()
+
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// Remove project if user is not a member
+				result.Projects = append(result.Projects[:index], result.Projects[index+1:]...)
+			} else {
+				status = http.StatusInternalServerError
+				return &result, status, err
+			}
+		}
+	}
+
+	return &result, status, err
 }

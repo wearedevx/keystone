@@ -2,6 +2,7 @@ package repo
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -15,6 +16,23 @@ func matchOrganizationName(name string) error {
 		return err
 	}
 	return nil
+}
+
+func (r *Repo) GetOrganizationByName(orga *models.Organization) IRepo {
+	if err := r.GetDb().Where("name = ?", orga.Name).First(&orga).Error; err != nil {
+		r.err = err
+		return r
+	}
+	return r
+}
+
+func (r *Repo) GetOrganizationProjects(orga *models.Organization, projects *[]models.Project) IRepo {
+	fmt.Println(orga)
+	if err := r.GetDb().Where("organization_id = ?", orga.ID).Find(&projects).Error; err != nil {
+		r.err = err
+		return r
+	}
+	return r
 }
 
 func (r *Repo) CreateOrganization(orga *models.Organization) IRepo {
