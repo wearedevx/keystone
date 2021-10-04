@@ -148,7 +148,6 @@ func (sp *stripePayment) HandleEvent(
 	}
 
 	event, err = webhook.ConstructEvent(b, r.Header.Get("Stripe-Signature"), stripeWebhookSecret)
-	fmt.Printf("event: %+v\n", event)
 
 	if err != nil {
 		// That error can be safely ignored.

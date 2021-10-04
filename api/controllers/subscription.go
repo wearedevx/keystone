@@ -182,7 +182,6 @@ func PostStripeWebhook(
 
 	p := payment.NewStripePayment()
 	event, err = p.HandleEvent(r)
-	fmt.Printf("event  : %+v\n", event)
 
 	switch event.Type {
 	case payment.EventCheckoutComplete:
@@ -212,24 +211,32 @@ func PostStripeWebhook(
 				return err
 			}
 
+			return nil
+		})
+
+	case payment.EventSubscriptionPaid:
+		var seats int64
+		organization := models.Organization{
+			SubscriptionID: string(event.SubscriptionID),
+		}
+
+		err = repo.Transaction(func(Repo repo.IRepo) error {
+			var err error
+
+			if err = Repo.
+				GetOrganization(&organization).
+				OrganizationSetPaid(&organization, true).
+				OrganizationCountMembers(&organization, &seats).
+				Err(); err != nil {
+				return err
+			}
+
 			if err = p.
 				UpdateSubscription(event.SubscriptionID, seats); err != nil {
 				return err
 			}
 
 			return nil
-		})
-
-	case payment.EventSubscriptionPaid:
-		organization := models.Organization{
-			SubscriptionID: string(event.SubscriptionID),
-		}
-
-		err = repo.Transaction(func(Repo repo.IRepo) error {
-			return Repo.
-				GetOrganization(&organization).
-				OrganizationSetPaid(&organization, true).
-				Err()
 		})
 
 	case payment.EventSubscriptionUnpaid:
@@ -260,8 +267,6 @@ func PostStripeWebhook(
 	}
 
 	if err != nil {
-		fmt.Printf("err: %+v\n", err)
-
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -291,7 +296,6 @@ func ManageSubscription(
 		status = http.StatusInternalServerError
 		goto done
 	}
-	fmt.Printf("organization: %+v\n", organization)
 
 	p = payment.NewStripePayment()
 
