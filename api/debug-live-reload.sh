@@ -12,8 +12,17 @@ runServer() {
   touch /tmp/dlv_log/output.log
 
   # run server with debug
-  dlv --listen=:40000 --headless=true --api-version=2 exec \
-   ./server | tee -a /tmp/dlv_log/output.log &
+	# dlv --listen=:40000 --headless=true --log=true --log-output=debugger,debuglineerr,gdbwire,lldbout,rpc --api-version=2 --accept-multiclient exec ./server
+  dlv \
+    --listen=:40000 \
+    --headless=true \
+    --log=true \
+    --log-output=debugger,debuglineerr,gdbwire,lldbout,rpc \
+    --api-version=2 \
+    --accept-multiclient \
+    exec \
+    --continue \
+    ./server | tee -a /tmp/dlv_log/output.log &
 
   # wait for Delve to modify log files - means /server is running
   inotifywait -e MODIFY /tmp/dlv_log/output.log &>/dev/null
@@ -37,12 +46,16 @@ killRunningServer() {
     kill $(cat /tmp/server.pid)
     rm -f /tmp/server.pid
   fi
+  
+  sleep 2
 }
 
 buildServer() {
   echo Building server
-  go build -gcflags "all=-N -l" -o ./server
+  make build-debug
+  chmod +x ./server
 }
+
 
 rerunServer () {
   killRunningServer

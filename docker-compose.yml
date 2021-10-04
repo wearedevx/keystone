@@ -42,6 +42,28 @@ services:
     ports:
       - "9001:9001"
       - "8000:40000"
+    command: sh -c "make run"
+
+  apidebug:
+    depends_on:
+      - db
+    build:
+      context: ./api/
+      dockerfile: ../Dockerfile-api
+    user: "${UID}:${GID}"
+    container_name: ks_api_debug
+    working_dir: /home/golang/app
+    environment:
+      - DATABASE_URL=postgres://ks:ks@db:5432/ks?sslmode=disable
+      - DB_HOST=db
+      - STRIPE_KEY=sk_test_WHVFLdND1gwnREj3vzw6vn14
+      - STRIPE_WEBHOOK_SECRET=whsec_LM3LntrpUcx821XOLck9FvwpsUoLW0rX
+      - JWT_SALT=aaP|**P1n}1tqWK
+    volumes:
+      - ./api/:/home/golang/app:delegated
+    ports:
+      - "9001:9001"
+      - "8000:40000"
     command: sh -c "make run-debug"
 
   cli:

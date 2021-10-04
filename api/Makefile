@@ -68,7 +68,7 @@ build:
 
 build-debug:
 	go clean
-	go build -gcflags="all=-N -l" -ldflags="$(LDFLAGS)" -v -o ./server
+	go build -gcflags="all=-N -l" -ldflags="$(LDFLAGS)" -o ./server
 
 install:
 	chmod +x server
@@ -78,7 +78,7 @@ run-test:
 	go run -tags test -ldflags "$(LDFLAGS)" main.go
 
 run:
-	go run -ldflags "$(LDFLAGS)" main.go
+	gow run -ldflags "$(LDFLAGS)" main.go
 
 run-debug:
 	./debug-live-reload.sh
