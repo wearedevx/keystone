@@ -94,6 +94,13 @@ Project in your keystone.yaml does not exist or your are not part of it.
 If you have this configuration from a project member, ask them to add you in the keystone project.
 
 `,
+	"OrganizationNotPaid": `
+{{ ERROR }} {{- ": '" | red }} {{- .Name | red }} {{- "'" | red }}
+It seems like some members of the project's organization are not admin.
+Roles feature is only available for paid organization.
+Either have a premium organization or change roles back to admin for members in your project.
+
+`,
 	"EnvironmentDoesntExist": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
 Available environments are: {{ .Available }}
@@ -471,6 +478,12 @@ func ProjectDoesntExist(name string, projectid string, cause error) *Error {
 		"ProjectId": string(projectid),
 	}
 	return NewError("Project Doesn't Exist", helpTexts["ProjectDoesntExist"], meta, cause)
+}
+
+func OrganizationNotPaid(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Organization Not Paid", helpTexts["OrganizationNotPaid"], meta, cause)
 }
 
 func EnvironmentDoesntExist(environment string, available string, cause error) *Error {

@@ -66,7 +66,7 @@ type IRepo interface {
 	GetOrganizations(userID uint, result *models.GetOrganizationsResponse) IRepo
 	GetOrganizationByName(orga *models.Organization) IRepo
 	GetOrganizationProjects(*models.Organization, *[]models.Project) IRepo
-	GetOrganizationMembers(orgaID uint, result *models.GetMembersResponse) IRepo
+	GetOrganizationMembers(orgaID uint, result *[]models.ProjectMember) IRepo
 	IsUserOwnerOfOrga(*models.User, *models.Organization) (bool, error)
 	IsProjectOrganizationPaid(string) (bool, error)
 	GetUserProjects(userID uint, projects *[]models.Project) IRepo

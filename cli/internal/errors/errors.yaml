@@ -150,6 +150,15 @@ errors:
 
       If you have this configuration from a project member, ask them to add you in the keystone project.
 
+  - type: OrganizationNotPaid
+    name: "Organization Not Paid"
+    params: []
+    template: |
+      {{ ERROR }} {{- ": '" | red }} {{- .Name | red }} {{- "'" | red }}
+      It seems like some members of the project's organization are not admin.
+      Roles feature is only available for paid organization.
+      Either have a premium organization or change roles back to admin for members in your project.
+
   # ENVIRNMENT_ERRORS
   # –––––––––––––––––
   - type: EnvironmentDoesntExist

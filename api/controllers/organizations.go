@@ -148,7 +148,7 @@ func GetOrganizationMembers(params router.Params, body io.ReadCloser, Repo repo.
 		return &result, status, err
 	}
 
-	if err = Repo.GetOrganizationMembers(orga.ID, &result).Err(); err != nil {
+	if err = Repo.GetOrganizationMembers(orga.ID, &result.Members).Err(); err != nil {
 		status = http.StatusInternalServerError
 		return &result, status, err
 	}

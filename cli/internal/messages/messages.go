@@ -279,6 +279,8 @@ func (s *messageService) sendMessageAndUpdateEnvironment(messagesToWrite models.
 		if errors.Is(err, auth.ErrorUnauthorized) {
 			s.err = kserrors.InvalidConnectionToken(err)
 			return s
+		} else if strings.Contains(err.Error(), "not paid") {
+			s.err = kserrors.OrganizationNotPaid(err)
 		} else {
 			s.err = kserrors.UnkownError(err)
 			return s

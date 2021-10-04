@@ -174,3 +174,27 @@ func IsUserOwnerOfOrga(Repo repo.IRepo, userID uint, project Project) (bool, err
 	}
 	return false, nil
 }
+
+func HasOrganizationNotPaidAndHasNonAdmin(Repo repo.IRepo, project Project) (has bool, err error) {
+	fmt.Println("🍥🍥", project)
+	members := make([]ProjectMember, 0)
+	isPaid, err := Repo.IsProjectOrganizationPaid(project.UUID)
+	if err != nil {
+		return false, err
+	}
+
+	err = Repo.GetOrganizationMembers(project.OrganizationID, &members).Err()
+	if err != nil {
+		return false, err
+	}
+
+	if !isPaid {
+		for _, member := range members {
+			if member.Role.Name != "admin" {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
+}

@@ -117,26 +117,24 @@ func setRoleToAdminForAllProjectsFromOrga(orga *models.Organization) error {
 	return nil
 }
 
-func (r *Repo) GetOrganizationMembers(orgaID uint, result *models.GetMembersResponse) IRepo {
+func (r *Repo) GetOrganizationMembers(orgaID uint, result *[]models.ProjectMember) IRepo {
 	if r.Err() != nil {
 		return r
 	}
 
-	users := make([]models.ProjectMember, 0)
 	err := r.GetDb().
 		Preload("User").
+		Preload("Role").
 		Joins("left join projects p on p.id = project_members.project_id").
 		Joins("left join organizations o on o.id = p.organization_id").
 		Where("o.id = ?", orgaID).
 		Group("project_members.user_id").Group("project_members.id").
-		Find(&users).Error
+		Find(result).Error
 
 	if err != nil {
 		r.err = err
 		return r
 	}
-
-	result.Members = users
 
 	return r
 }
