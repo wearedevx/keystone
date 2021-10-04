@@ -57,7 +57,8 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.PUT("/organizations", AuthedHandler(UpdateOrganization))
 
 	// Payment Routes
-	router.POST("/organization/:organizationID/upgrade", AuthedHandler(PostSubscription))
+	router.POST("/organization/:organizationName/upgrade", AuthedHandler(PostSubscription))
+	router.POST("/organization/:organizationName/manage", AuthedHandler(ManageSubscription))
 	router.GET("/checkout/:sessionID/status", AuthedHandler(GetPollSubscriptionSuccess))
 
 	router.GET("/checkout-success", GetCheckoutSuccess)

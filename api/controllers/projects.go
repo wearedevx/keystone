@@ -7,6 +7,7 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 
+	"github.com/wearedevx/keystone/api/internal/payment"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -86,7 +87,12 @@ done:
 	return &result, status, log.SetError(err)
 }
 
-func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func PostProjectsMembers(
+	params router.Params,
+	body io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
 	var can bool
@@ -98,6 +104,7 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 	members := make([]string, 0)
 	input := models.AddMembersPayload{}
 	result := models.AddMembersResponse{}
+	organization := models.Organization{}
 	log := models.ActivityLog{
 		UserID: &user.ID,
 		Action: "PostProjectMembers",
@@ -111,11 +118,14 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 		goto done
 	}
 
-	isPaid, err = Repo.IsProjectOrganizationPaid(projectID)
-
-	if err != nil {
-		return nil, http.StatusInternalServerError, err
+	if err = Repo.
+		GetProjectsOrganization(projectID, &organization).
+		Err(); err != nil {
+		status = http.StatusBadRequest
+		goto done
 	}
+
+	isPaid = organization.Paid
 
 	for _, member := range input.Members {
 		role := models.Role{ID: member.RoleID}
@@ -159,13 +169,21 @@ func PostProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRe
 	}
 
 	if can {
-		err = Repo.ProjectAddMembers(project, input.Members, user).Err()
-
-		if err != nil {
+		var seats int64
+		if err = Repo.
+			ProjectAddMembers(project, input.Members, user).
+			OrganizationCountMembers(&organization, &seats).
+			Err(); err != nil {
 			status = http.StatusInternalServerError
 			result.Error = err.Error()
 		} else {
 			result.Success = true
+
+			p := payment.NewStripePayment()
+			err = p.UpdateSubscription(
+				payment.SubscriptionID(organization.SubscriptionID),
+				seats,
+			)
 		}
 	} else {
 		status = http.StatusForbidden
@@ -184,11 +202,13 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 	}
 
 	var project models.Project
+	var organization models.Organization
 	var projectID = params.Get("projectID").(string)
 	input := models.RemoveMembersPayload{}
 	result := models.RemoveMembersResponse{}
 	var can, userIsAdmin bool
 	var areInProjects []string
+	var seats int64
 
 	err = input.Deserialize(body)
 
@@ -197,7 +217,11 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 		goto done
 	}
 
-	if err = Repo.GetProjectByUUID(projectID, &project).Err(); err != nil {
+	if err = Repo.
+		GetProjectByUUID(projectID, &project).
+		GetProjectsOrganization(projectID, &organization).
+		OrganizationCountMembers(&organization, &seats).
+		Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
 			result.Error = "No such project"
@@ -235,15 +259,19 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 	}
 
 	if can {
-		err = Repo.
+		if err = Repo.
 			ProjectRemoveMembers(project, input.Members).
-			Err()
-
-		if err != nil {
+			Err(); err != nil {
 			status = http.StatusInternalServerError
 			result.Error = err.Error()
 		} else {
 			result.Success = true
+
+			p := payment.NewStripePayment()
+			err = p.UpdateSubscription(
+				payment.SubscriptionID(organization.SubscriptionID),
+				seats,
+			)
 		}
 	} else {
 		status = http.StatusForbidden

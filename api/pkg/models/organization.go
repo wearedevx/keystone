@@ -16,6 +16,7 @@ type Organization struct {
 	Paid           bool      `json:"paid"`
 	Private        bool      `json:"private"`
 	Owner          User      `json:"owner"`
+	CustomerID     string    `json:"customer_id"`
 	SubscriptionID string    `json:"subscription_id"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`

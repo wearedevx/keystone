@@ -10,6 +10,7 @@ import (
 	"time"
 
 	stripe "github.com/stripe/stripe-go/v72"
+	portalsession "github.com/stripe/stripe-go/v72/billingportal/session"
 	"github.com/stripe/stripe-go/v72/checkout/session"
 	"github.com/stripe/stripe-go/v72/customer"
 	"github.com/stripe/stripe-go/v72/invoice"
@@ -46,21 +47,16 @@ func NewStripePayment() Payment {
 // that subscription is for
 func (sp *stripePayment) StartCheckout(
 	organization *models.Organization,
-	seats int,
-) (id string, url string, err error) {
+	seats int64,
+) (sessionID, customerID, url string, err error) {
 	organizationID := strconv.FormatUint(uint64(organization.ID), 10)
 	name := organization.Name
 	email := organization.Owner.Email
 	var cus *stripe.Customer
 	var ses *stripe.CheckoutSession
 
-	customerParams := stripe.CustomerParams{
-		Name:  stripe.String(name),
-		Email: stripe.String(email),
-	}
-
-	successUrl := fmt.Sprintf("http://%s/checkout-success?session_id={CHECKOUT_SESSION_ID}", constants.Domain)
-	cancelUrl := fmt.Sprintf("http://%s/checkout-cancel?session_id={CHECKOUT_SESSION_ID}", constants.Domain)
+	successUrl := fmt.Sprintf("https://%s/checkout-success?session_id={CHECKOUT_SESSION_ID}", constants.Domain)
+	cancelUrl := fmt.Sprintf("https://%s/checkout-cancel?session_id={CHECKOUT_SESSION_ID}", constants.Domain)
 
 	sessionParams := stripe.CheckoutSessionParams{
 		SuccessURL:         stripe.String(successUrl),
@@ -74,18 +70,30 @@ func (sp *stripePayment) StartCheckout(
 		},
 		Params: stripe.Params{
 			Metadata: map[string]string{
-				"seats":        strconv.Itoa(seats),
+				"seats":        strconv.FormatInt(seats, 10),
 				"organization": organizationID,
 			},
 		},
 	}
 
-	cus, err = customer.New(&customerParams)
-	if err != nil {
-		goto done
+	// Create a customer if there isn’t one already
+	if organization.CustomerID == "" {
+		customerParams := stripe.CustomerParams{
+			Name:  stripe.String(name),
+			Email: stripe.String(email),
+		}
+
+		cus, err = customer.New(&customerParams)
+		if err != nil {
+			goto done
+		}
+
+		customerID = cus.ID
+	} else {
+		customerID = organization.CustomerID
 	}
 
-	sessionParams.Customer = stripe.String(cus.ID)
+	sessionParams.Customer = stripe.String(customerID)
 	sessionParams.ClientReferenceID = stripe.String(
 		strconv.FormatUint(uint64(organization.ID), 10),
 	)
@@ -95,11 +103,32 @@ func (sp *stripePayment) StartCheckout(
 		goto done
 	}
 
-	id = ses.ID
+	sessionID = ses.ID
 	url = ses.URL
 
 done:
-	return id, url, err
+	return sessionID, customerID, url, err
+}
+
+// GetManagementLink returns a URL to a management page, for the user
+// to cancel their subscription.
+func (sp *stripePayment) GetManagementLink(
+	organization *models.Organization,
+) (url string, err error) {
+	// Authenticate your user.
+	params := &stripe.BillingPortalSessionParams{
+		Customer:  stripe.String(organization.CustomerID),
+		ReturnURL: stripe.String(fmt.Sprintf("https://%s/", constants.Domain)),
+	}
+
+	ps, err := portalsession.New(params)
+	if err != nil {
+		return "", err
+	}
+
+	url = ps.URL
+
+	return url, nil
 }
 
 // HandleEvent returns a usable payment.Event from a webhook call
@@ -119,6 +148,7 @@ func (sp *stripePayment) HandleEvent(
 	}
 
 	event, err = webhook.ConstructEvent(b, r.Header.Get("Stripe-Signature"), stripeWebhookSecret)
+	fmt.Printf("event: %+v\n", event)
 
 	if err != nil {
 		// That error can be safely ignored.
@@ -138,20 +168,25 @@ func (sp *stripePayment) HandleEvent(
 
 		paymentEvent.Type = EventCheckoutComplete
 		paymentEvent.OrganizationID = uint(oid)
+		paymentEvent.SessionID = ses["id"].(string)
+		paymentEvent.CustomerID = CustomerID(ses["customer"].(string))
 		paymentEvent.SubscriptionID = SubscriptionID(ses["subscription"].(string))
 
 	case "invoice.paid":
 		invoice := event.Data.Object
 		paymentEvent.Type = EventSubscriptionPaid
+		paymentEvent.CustomerID = CustomerID(invoice["customer"].(string))
 		paymentEvent.SubscriptionID = SubscriptionID(invoice["subscription"].(string))
 
 	case "invoice.payment_failed":
 		invoice := event.Data.Object
 		paymentEvent.Type = EventSubscriptionUnpaid
+		paymentEvent.CustomerID = CustomerID(invoice["customer"].(string))
 		paymentEvent.SubscriptionID = SubscriptionID(invoice["subscription"].(string))
 
 	case "customer.subscription.updated":
 		subscription := event.Data.Object
+		paymentEvent.CustomerID = CustomerID(subscription["customer"].(string))
 		paymentEvent.SubscriptionID = SubscriptionID(subscription["id"].(string))
 		status := subscription["status"].(string)
 
@@ -159,12 +194,18 @@ func (sp *stripePayment) HandleEvent(
 		case status == "active" || status == "trialing" || status == "incomplete":
 			paymentEvent.Type = EventSubscriptionPaid
 
-		case status == "past_due" || status == "unpaid":
+		case status == "past_due" || status == "unpaid" || status == "incomplete_expired":
 			paymentEvent.Type = EventSubscriptionUnpaid
 
 		case status == "canceled":
-			paymentEvent.Type = EventSubscriptionCancelled
+			paymentEvent.Type = EventSubscriptionCanceled
 		}
+
+	case "customer.subscription.deleted":
+		subscription := event.Data.Object
+		paymentEvent.Type = EventSubscriptionCanceled
+		paymentEvent.CustomerID = CustomerID(subscription["customer"].(string))
+		paymentEvent.SubscriptionID = SubscriptionID(subscription["id"].(string))
 
 	default:
 		paymentEvent.Type = EventNothing
@@ -234,7 +275,7 @@ func stripeSubscriptionStatus(in stripe.SubscriptionStatus) (out SubscriptionSta
 		out = SubscriptionStatusUnpaid
 
 	case in == "canceled":
-		out = SubscriptionStatusCancelled
+		out = SubscriptionStatusCanceled
 
 	default:
 		out = SubscriptionStatusUnpaid
@@ -244,7 +285,7 @@ func stripeSubscriptionStatus(in stripe.SubscriptionStatus) (out SubscriptionSta
 }
 
 // Updates the subscription (changes the number of seats)
-func (sp *stripePayment) UpdateSubscription(subscriptionID SubscriptionID, seats int) (err error) {
+func (sp *stripePayment) UpdateSubscription(subscriptionID SubscriptionID, seats int64) (err error) {
 	params := stripe.SubscriptionParams{}
 	var s *stripe.Subscription
 	var urParams *stripe.UsageRecordParams
@@ -259,7 +300,8 @@ func (sp *stripePayment) UpdateSubscription(subscriptionID SubscriptionID, seats
 			SubscriptionItem: stripe.String(si.ID),
 			Quantity:         stripe.Int64(int64(seats)),
 			Timestamp:        stripe.Int64(time.Now().Unix()),
-			Action:           stripe.String(string(stripe.UsageRecordActionSet)),
+			// no increment, the seat value is the new value
+			Action: stripe.String(string(stripe.UsageRecordActionSet)),
 		}
 
 		_, err = usagerecord.New(urParams)

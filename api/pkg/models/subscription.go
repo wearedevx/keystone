@@ -12,9 +12,9 @@ import (
 type CheckoutSessionStatus string
 
 const (
-	CheckoutSessionStatusPending   CheckoutSessionStatus = "pending"
-	CheckoutSessionStatusSuccess                         = "success"
-	CheckoutSessionStatusCandelled                       = "cancelled"
+	CheckoutSessionStatusPending  CheckoutSessionStatus = "pending"
+	CheckoutSessionStatusSuccess                        = "success"
+	CheckoutSessionStatusCanceled                       = "canceled"
 )
 
 type CheckoutSession struct {
@@ -62,6 +62,24 @@ func (e *StartSubscriptionResponse) Deserialize(in io.Reader) error {
 }
 
 func (u *StartSubscriptionResponse) Serialize(out *string) (err error) {
+	var sb strings.Builder
+
+	err = json.NewEncoder(&sb).Encode(u)
+
+	*out = sb.String()
+
+	return err
+}
+
+type ManageSubscriptionResponse struct {
+	Url string `json:"url"`
+}
+
+func (e *ManageSubscriptionResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(e)
+}
+
+func (u *ManageSubscriptionResponse) Serialize(out *string) (err error) {
 	var sb strings.Builder
 
 	err = json.NewEncoder(&sb).Encode(u)

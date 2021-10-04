@@ -44,6 +44,7 @@ type IRepo interface {
 	GetProjectByUUID(string, *models.Project) IRepo
 	GetProjectMember(*models.ProjectMember) IRepo
 	GetProjectsOrganization(string, *models.Organization) IRepo
+	OrganizationCountMembers(*models.Organization, *int64) IRepo
 	GetRole(*models.Role) IRepo
 	GetRoles(*[]models.Role) IRepo
 	GetRolesEnvironmentType(*models.RolesEnvironmentType) IRepo
@@ -73,6 +74,8 @@ type IRepo interface {
 	GetAdminsFromUserProjects(userID uint, userName string, projects_list []string, adminEmail *string) IRepo
 	CreateOrganization(orga *models.Organization) IRepo
 	UpdateOrganization(orga *models.Organization) IRepo
+	OrganizationSetCustomer(organization *models.Organization, customer string) IRepo
+	OrganizationSetSubscription(organization *models.Organization, subscription string) IRepo
 	GetOrganization(orga *models.Organization) IRepo
 	GetOrganizations(userID uint, result *models.GetOrganizationsResponse) IRepo
 	IsUserOwnerOfOrga(*models.User, *models.Organization) (bool, error)

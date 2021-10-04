@@ -14,28 +14,27 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
-// TODO: Check user is owner of organization
 func PostSubscription(
 	params router.Params,
 	_ io.ReadCloser,
 	Repo repo.IRepo,
-	_ models.User,
+	user models.User,
 ) (response router.Serde, status int, err error) {
 	status = http.StatusOK
-	var sessionID string
-	var url string
+	var sessionID, customerID, url string
+	var seats int64
 
 	p := payment.NewStripePayment()
 
-	organizationID, _ := strconv.ParseUint(
-		params.Get("organizationID").(string),
-		10,
-		64,
-	)
+	organizationName := params.Get("organizationID").(string)
+	organization := models.Organization{
+		Name: organizationName,
+	}
 
-	orga := models.Organization{ID: uint(organizationID)}
-
-	if err = Repo.GetOrganization(&orga).Err(); err != nil {
+	if err = Repo.
+		GetOrganization(&organization).
+		OrganizationCountMembers(&organization, &seats).
+		Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
 		} else {
@@ -45,15 +44,29 @@ func PostSubscription(
 		goto done
 	}
 
-	sessionID, url, err = p.StartCheckout(&orga, 0)
+	if organization.Owner.UserID != user.UserID {
+		status = http.StatusForbidden
+		err = errors.New("operation not permitted")
+		goto done
+	}
+
+	if organization.CustomerID != "" && organization.SubscriptionID != "" && organization.Paid {
+		status = http.StatusConflict
+		err = errors.New("already subscribed")
+		goto done
+	}
+
+	sessionID, customerID, url, err = p.StartCheckout(&organization, seats)
 	if err != nil {
 		status = http.StatusInternalServerError
 		goto done
 	}
 
-	if err = Repo.CreateCheckoutSession(&models.CheckoutSession{
-		SessionID: sessionID,
-	}).Err(); err != nil {
+	if err = Repo.
+		OrganizationSetCustomer(&organization, customerID).
+		CreateCheckoutSession(&models.CheckoutSession{
+			SessionID: sessionID,
+		}).Err(); err != nil {
 		status = http.StatusInternalServerError
 		goto done
 	}
@@ -169,21 +182,42 @@ func PostStripeWebhook(
 
 	p := payment.NewStripePayment()
 	event, err = p.HandleEvent(r)
-	fmt.Printf("event: %+v\n", event)
+	fmt.Printf("event  : %+v\n", event)
 
 	switch event.Type {
 	case payment.EventCheckoutComplete:
 		organization := models.Organization{
 			ID: event.OrganizationID,
 		}
+		session := models.CheckoutSession{}
 
 		err = repo.Transaction(func(Repo repo.IRepo) error {
-			Repo.GetOrganization(&organization)
-			organization.SubscriptionID = string(event.SubscriptionID)
+			var seats int64
+			var err error
+			if err = Repo.
+				GetCheckoutSession(event.SessionID, &session).
+				Err(); err != nil {
+				return err
+			}
 
-			Repo.UpdateOrganization(&organization)
+			session.Status = models.CheckoutSessionStatusSuccess
 
-			return Repo.Err()
+			if err = Repo.
+				UpdateCheckoutSession(&session).
+				OrganizationSetCustomer(&organization, string(event.CustomerID)).
+				OrganizationSetSubscription(&organization, string(event.SubscriptionID)).
+				OrganizationSetPaid(&organization, true).
+				OrganizationCountMembers(&organization, &seats).
+				Err(); err != nil {
+				return err
+			}
+
+			if err = p.
+				UpdateSubscription(event.SubscriptionID, seats); err != nil {
+				return err
+			}
+
+			return nil
 		})
 
 	case payment.EventSubscriptionPaid:
@@ -210,7 +244,7 @@ func PostStripeWebhook(
 				Err()
 		})
 
-	case payment.EventSubscriptionCancelled:
+	case payment.EventSubscriptionCanceled:
 		organization := models.Organization{
 			SubscriptionID: string(event.SubscriptionID),
 		}
@@ -226,8 +260,51 @@ func PostStripeWebhook(
 	}
 
 	if err != nil {
+		fmt.Printf("err: %+v\n", err)
+
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	return
+}
+
+func ManageSubscription(
+	params router.Params,
+	_ io.ReadCloser,
+	Repo repo.IRepo,
+	_ models.User,
+) (_ router.Serde, status int, err error) {
+	var p payment.Payment
+	var url string
+	var result models.ManageSubscriptionResponse
+
+	status = http.StatusOK
+
+	organizationName := params.Get("organizationName").(string)
+	organization := models.Organization{
+		Name: organizationName,
+	}
+
+	if err = Repo.
+		GetOrganization(&organization).
+		Err(); err != nil {
+		status = http.StatusInternalServerError
+		goto done
+	}
+	fmt.Printf("organization: %+v\n", organization)
+
+	p = payment.NewStripePayment()
+
+	url, err = p.GetManagementLink(&organization)
+	if err != nil {
+		status = http.StatusInternalServerError
+		goto done
+	}
+
+	result = models.ManageSubscriptionResponse{
+		Url: url,
+	}
+
+done:
+	return &result, status, err
 }

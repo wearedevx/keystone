@@ -10,4 +10,4 @@ ALTER TABLE public.checkout_sessions
 	DROP CONSTRAINT IF EXISTS check_checkout_status;
 
 ALTER TABLE public.checkout_sessions
-	ADD CONSTRAINT check_checkout_status CHECK (status IN ('pending', 'success', 'cancelled'));
+	ADD CONSTRAINT check_checkout_status CHECK (status IN ('pending', 'success', 'canceled'));

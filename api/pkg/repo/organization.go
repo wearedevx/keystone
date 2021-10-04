@@ -42,7 +42,11 @@ func (r *Repo) GetOrganization(orga *models.Organization) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().Where(&orga).First(&orga).Error
+	r.err = r.GetDb().
+		Where(&orga).
+		Preload("Owner").
+		First(&orga).
+		Error
 
 	return r
 }
@@ -54,7 +58,10 @@ func (r *Repo) UpdateOrganization(orga *models.Organization) IRepo {
 	}
 
 	foundOrga := models.Organization{}
-	if err := r.GetDb().Where("name = ? and id != ?", orga.Name, orga.ID).First(&foundOrga).Error; err != nil {
+	if err := r.GetDb().
+		Where("name = ? and id != ?", orga.Name, orga.ID).
+		First(&foundOrga).
+		Error; err != nil {
 		if errors.Is(gorm.ErrRecordNotFound, err) {
 			fmt.Println(orga)
 			r.err = r.GetDb().Omit("paid", "owner_id").Save(&orga).Error
@@ -68,12 +75,57 @@ func (r *Repo) UpdateOrganization(orga *models.Organization) IRepo {
 	}
 }
 
-func (r *Repo) OrganizationSetPaid(organization *models.Organization, paid bool) IRepo {
+func (r *Repo) OrganizationSetCustomer(
+	organization *models.Organization,
+	customer string,
+) IRepo {
 	if r.err != nil {
 		return r
 	}
 
-	r.err = r.GetDb().Where(organization).Update("paid", paid).Error
+	if organization.CustomerID == customer {
+		return r
+	}
+
+	r.err = r.GetDb().
+		Model(&models.Organization{}).
+		Where("id = ?", organization.ID).
+		Update("customer_id", customer).
+		Error
+
+	return r
+}
+
+func (r *Repo) OrganizationSetSubscription(
+	organization *models.Organization,
+	subscription string,
+) IRepo {
+	if r.err != nil {
+		return nil
+	}
+
+	r.err = r.GetDb().
+		Model(&models.Organization{}).
+		Where("id = ?", organization.ID).
+		Update("subscription_id", subscription).
+		Error
+
+	return r
+}
+
+func (r *Repo) OrganizationSetPaid(
+	organization *models.Organization,
+	paid bool,
+) IRepo {
+	if r.err != nil {
+		return r
+	}
+
+	r.err = r.GetDb().
+		Model(&models.Organization{}).
+		Where(organization).
+		Update("paid", paid).
+		Error
 
 	return r
 }
@@ -99,6 +151,24 @@ func (r *Repo) GetOrganizations(userID uint, result *models.GetOrganizationsResp
 	}
 
 	result.Organizations = orgas
+
+	return r
+}
+
+func (r *Repo) OrganizationCountMembers(organization *models.Organization, count *int64) IRepo {
+	if r.Err() != nil {
+		return r
+	}
+
+	r.err = r.GetDb().
+		Table("project_members").
+		Joins("inner join projects on projects.id = project_id").
+		Joins("inner join organizations on organizations.id = projects.organization_id").
+		Where("organizations.id = ?", organization.ID).
+		Select("project_members.user_id").
+		Group("project_members.user_id").
+		Count(count).
+		Error
 
 	return r
 }

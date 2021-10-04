@@ -1,6 +1,8 @@
 package client
 
 import (
+	"fmt"
+
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
@@ -34,4 +36,53 @@ func (c *Organizations) UpdateOrganization(organization models.Organization) (mo
 	err = c.r.put("/organizations", &organization, &result, nil)
 
 	return result, err
+}
+
+// GetUpgradeUrl returns an URL to a service
+// that creates a new subscription for the named organization
+// To be called to turn a non-paid organization into a paid one
+func (c *Organizations) GetUpgradeUrl(
+	organizationName string,
+) (url string, err error) {
+	var result models.StartSubscriptionResponse
+
+	err = c.r.post(
+		fmt.Sprintf("/organization/%s/upgrade", organizationName),
+		map[string]string{},
+		&result,
+		nil,
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	url = result.Url
+
+	return url, nil
+}
+
+// GetManagementUrl returns an URL to a service
+// that manages an existing subscription for the named organization
+// To be called to update payment method or cancel an existing
+// plan
+func (c *Organizations) GetManagementUrl(
+	organizationName string,
+) (url string, err error) {
+	var result models.ManageSubscriptionResponse
+
+	err = c.r.post(
+		fmt.Sprintf("/organization/%s/manage", organizationName),
+		map[string]string{},
+		&result,
+		nil,
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	url = result.Url
+
+	return url, nil
 }
