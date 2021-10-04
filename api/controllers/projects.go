@@ -27,6 +27,30 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 		return &project, http.StatusInternalServerError, err
 	}
 
+	// Add organization's owner to project as admin
+	orga := models.Organization{}
+	if err := Repo.GetProjectsOrganization(project.UUID, &orga).Err(); err != nil {
+		return &project, http.StatusInternalServerError, err
+	}
+	if user.ID != project.OrganizationID {
+
+		role := models.Role{
+			Name: "admin",
+		}
+
+		if err := Repo.GetRole(&role).Err(); err != nil {
+			return &project, http.StatusInternalServerError, err
+		}
+
+		orgaOwner := models.ProjectMember{
+			ProjectID: project.ID,
+			UserID:    project.OrganizationID,
+			RoleID:    role.ID,
+		}
+		Repo.GetDb().Save(&orgaOwner)
+
+	}
+
 	project.User = user
 	project.UserID = user.ID
 
@@ -265,6 +289,14 @@ func checkUserCanRemoveMembers(Repo repo.IRepo, user models.User, project models
 			break
 		}
 
+		isMemberOwnerOfOrga, isMemberOwnerOfOrgaErr := rights.IsUserOwnerOfOrga(Repo, m.UserID, project)
+		if isMemberOwnerOfOrgaErr != nil {
+			can = false
+			break
+		}
+		if isMemberOwnerOfOrga {
+			can = false
+		}
 		if !can {
 			break
 		}
