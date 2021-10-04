@@ -176,7 +176,6 @@ func IsUserOwnerOfOrga(Repo repo.IRepo, userID uint, project Project) (bool, err
 }
 
 func HasOrganizationNotPaidAndHasNonAdmin(Repo repo.IRepo, project Project) (has bool, err error) {
-	fmt.Println("🍥🍥", project)
 	members := make([]ProjectMember, 0)
 	isPaid, err := Repo.IsProjectOrganizationPaid(project.UUID)
 	if err != nil {

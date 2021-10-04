@@ -12,4 +12,4 @@ stdout 'Members Added'
 # Set the role of a member
 ! ks member set-role john.doe@gitlab lead-dev
 
-stdout 'ERROR  You are not allowed to set role for free organization'
+stdout 'ERROR  You are not allowed to set role other than admin for free organization'
