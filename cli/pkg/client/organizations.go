@@ -46,3 +46,12 @@ func (c *Organizations) GetProjects(orga models.Organization) ([]models.Project,
 
 	return result.Projects, err
 }
+
+func (c *Organizations) GetMembers(orga models.Organization) ([]models.ProjectMember, error) {
+	var err error
+	var result models.GetMembersResponse
+	orgaIDString := strconv.FormatUint(uint64(orga.ID), 10)
+	err = c.r.get("/organizations/"+orgaIDString+"/members", &result, nil)
+
+	return result.Members, err
+}

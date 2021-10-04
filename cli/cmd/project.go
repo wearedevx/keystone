@@ -45,7 +45,7 @@ var projectCmd = &cobra.Command{
 
 		fmt.Println()
 		for _, project := range projects {
-			fmt.Printf("  - %s, created at %s\n", project.Name, project.CreatedAt.Format("2006/01/02"))
+			fmt.Printf(" - %s, created at %s\n", project.Name, project.CreatedAt.Format("2006/01/02"))
 		}
 
 	},

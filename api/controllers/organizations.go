@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -105,8 +104,6 @@ func GetOrganizationProjects(params router.Params, body io.ReadCloser, Repo repo
 		return &result, status, err
 	}
 
-	fmt.Println("🍧🍧🍧🍧🍧")
-
 	if err = Repo.GetOrganizationProjects(&orga, &result.Projects).Err(); err != nil {
 		status = http.StatusInternalServerError
 		return &result, status, err
@@ -129,6 +126,31 @@ func GetOrganizationProjects(params router.Params, body io.ReadCloser, Repo repo
 				return &result, status, err
 			}
 		}
+	}
+
+	return &result, status, err
+}
+
+func GetOrganizationMembers(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+	status = http.StatusOK
+
+	var orgaID = params.Get("orgaID").(string)
+
+	var result = models.GetMembersResponse{
+		Members: []models.ProjectMember{},
+	}
+
+	u64, err := strconv.ParseUint(orgaID, 10, 0)
+	orga := models.Organization{ID: uint(u64)}
+
+	if err != nil {
+		status = http.StatusInternalServerError
+		return &result, status, err
+	}
+
+	if err = Repo.GetOrganizationMembers(orga.ID, &result).Err(); err != nil {
+		status = http.StatusInternalServerError
+		return &result, status, err
 	}
 
 	return &result, status, err
