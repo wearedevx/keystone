@@ -1,0 +1,9 @@
+ks orga add my-orga1 -p
+
+stdout 'Organization my-orga1 has been created'
+
+# list orgas
+ks orga
+
+# my-orga should be listed and private
+stdout 'my-orga1 👑 P'

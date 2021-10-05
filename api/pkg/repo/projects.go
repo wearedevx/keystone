@@ -405,6 +405,14 @@ func (r *Repo) DeleteProject(project *models.Project) IRepo {
 	return r
 }
 
+func (r *Repo) GetUserProjects(userID uint, projects *[]models.Project) IRepo {
+	if err := r.GetDb().Joins("left join project_members pm on projects.ID = pm.project_id").Where("pm.user_id = ?", userID).Find(&projects).Error; err != nil {
+		r.err = err
+	}
+
+	return r
+}
+
 func (r *Repo) GetProjectsOrganization(projectID string, organization *models.Organization) IRepo {
 	var project models.Project
 

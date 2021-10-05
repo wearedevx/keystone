@@ -34,6 +34,30 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 		goto done
 	}
 
+	// Add organization's owner to project as admin
+	orga := models.Organization{}
+	if err := Repo.GetProjectsOrganization(project.UUID, &orga).Err(); err != nil {
+		return &project, http.StatusInternalServerError, err
+	}
+	if user.ID != project.OrganizationID {
+
+		role := models.Role{
+			Name: "admin",
+		}
+
+		if err := Repo.GetRole(&role).Err(); err != nil {
+			return &project, http.StatusInternalServerError, err
+		}
+
+		orgaOwner := models.ProjectMember{
+			ProjectID: project.ID,
+			UserID:    project.OrganizationID,
+			RoleID:    role.ID,
+		}
+		Repo.GetDb().Save(&orgaOwner)
+
+	}
+
 	project.User = user
 	project.UserID = user.ID
 
@@ -45,11 +69,30 @@ done:
 	return &project, status, log.SetError(err)
 }
 
-func GetProjectsMembers(
+func GetProjects(
 	params router.Params,
 	_ io.ReadCloser,
 	Repo repo.IRepo,
 	user models.User,
+) (_ router.Serde, status int, err error) {
+	status = http.StatusOK
+
+	var result models.GetProjectsResponse
+
+	Repo.GetUserProjects(user.ID, &result.Projects)
+
+	if err = Repo.Err(); err != nil {
+		return &result, http.StatusInternalServerError, err
+	}
+
+	return &result, status, err
+}
+
+func GetProjectsMembers(
+	params router.Params,
+	_ io.ReadCloser,
+	Repo repo.IRepo,
+	_ models.User,
 ) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
@@ -131,7 +174,7 @@ func PostProjectsMembers(
 		role := models.Role{ID: member.RoleID}
 		if err := Repo.GetRole(&role).Err(); err == nil {
 			if role.Name != "admin" && !isPaid {
-				return nil, http.StatusForbidden, errors.New("You are not allowed to set role other than admin for free organization")
+				return nil, http.StatusInternalServerError, errors.New("You are not allowed to set role other than admin for free organization")
 			}
 		}
 	}
@@ -342,6 +385,14 @@ func checkUserCanRemoveMembers(Repo repo.IRepo, user models.User, project models
 			break
 		}
 
+		isMemberOwnerOfOrga, isMemberOwnerOfOrgaErr := rights.IsUserOwnerOfOrga(Repo, m.UserID, project)
+		if isMemberOwnerOfOrgaErr != nil {
+			can = false
+			break
+		}
+		if isMemberOwnerOfOrga {
+			can = false
+		}
 		if !can {
 			break
 		}

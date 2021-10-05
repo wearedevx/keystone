@@ -1,6 +1,6 @@
 # Init a project
 
-ks init add-member-project
+ks init add-member-project  -o $USER_ID
 
 # Add members to project
 ks member add -r developer -u john.doe@gitlab -u jane.to@github

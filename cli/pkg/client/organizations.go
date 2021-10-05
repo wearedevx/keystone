@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
@@ -85,4 +86,28 @@ func (c *Organizations) GetManagementUrl(
 	url = result.Url
 
 	return url, nil
+}
+
+func (c *Organizations) GetProjects(
+	orga models.Organization,
+) ([]models.Project, error) {
+	var err error
+	var result models.GetProjectsResponse
+	orgaIDString := strconv.FormatUint(uint64(orga.ID), 10)
+
+	err = c.r.get("/organizations/"+orgaIDString+"/projects", &result, nil)
+
+	return result.Projects, err
+}
+
+func (c *Organizations) GetMembers(
+	orga models.Organization,
+) ([]models.ProjectMember, error) {
+	var err error
+	var result models.GetMembersResponse
+	orgaIDString := strconv.FormatUint(uint64(orga.ID), 10)
+
+	err = c.r.get("/organizations/"+orgaIDString+"/members", &result, nil)
+
+	return result.Members, err
 }

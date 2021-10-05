@@ -11,13 +11,13 @@ import (
 
 type Organization struct {
 	ID             uint      `json:"id" gorm:"primaryKey"`
-	OwnerID        uint      `json:"owner_id" gorm:"uniqueIndex:idx_organizations_owner_id"`
-	Name           string    `json:"name"`
+	Name           string    `json:"name" gorm:"unique"`
 	Paid           bool      `json:"paid"`
 	Private        bool      `json:"private"`
-	Owner          User      `json:"owner"`
 	CustomerID     string    `json:"customer_id"`
 	SubscriptionID string    `json:"subscription_id"`
+	UserID         uint      `json:"user_id"`
+	User           User      `json:"user"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }

@@ -19,7 +19,7 @@ type EnvKey struct {
 type FileKey struct {
 	Path      string
 	Strict    bool
-	FromCache bool
+	FromCache bool `yaml:"-"`
 }
 
 type keystoneFileOptions struct {

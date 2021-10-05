@@ -35,6 +35,7 @@ func autoMigrate() error {
 		&User{},
 		&Device{},
 		&UserDevice{},
+		&Organization{},
 		&ActivityLog{})
 	return nil
 }

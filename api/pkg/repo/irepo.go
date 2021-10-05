@@ -78,6 +78,9 @@ type IRepo interface {
 	OrganizationSetSubscription(organization *models.Organization, subscription string) IRepo
 	GetOrganization(orga *models.Organization) IRepo
 	GetOrganizations(userID uint, result *models.GetOrganizationsResponse) IRepo
+	GetOrganizationByName(orga *models.Organization) IRepo
+	GetOrganizationProjects(*models.Organization, *[]models.Project) IRepo
+	GetOrganizationMembers(orgaID uint, result *[]models.ProjectMember) IRepo
 	IsUserOwnerOfOrga(*models.User, *models.Organization) (bool, error)
 	IsProjectOrganizationPaid(string) (bool, error)
 	CreateCheckoutSession(*models.CheckoutSession) IRepo
@@ -85,4 +88,5 @@ type IRepo interface {
 	UpdateCheckoutSession(*models.CheckoutSession) IRepo
 	DeleteCheckoutSession(*models.CheckoutSession) IRepo
 	OrganizationSetPaid(organization *models.Organization, paid bool) IRepo
+	GetUserProjects(userID uint, projects *[]models.Project) IRepo
 }

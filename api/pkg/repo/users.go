@@ -33,13 +33,12 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		UserID:      fmt.Sprintf("%s@%s", user.Username, user.AccountType),
 	}
 
-	db.SetupJoinTable(&User{}, "Devices", &UserDevice{})
-
-	r.err = db.Where(&foundUser).
-		Preload("Devices", func(db *gorm.DB) *gorm.DB {
-			return db.Unscoped()
-		}).
-		First(&foundUser).Error
+	r.err = db.
+		Where(foundUser).
+		Preload("Devices").
+		Preload("Organizations").
+		First(&foundUser).
+		Error
 
 	if r.err == nil {
 		for _, device := range user.Devices {
@@ -82,16 +81,16 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 
 		// Create default orga for user
 		orga := models.Organization{
-			OwnerID: user.ID,
+			UserID:  user.ID,
 			Name:    user.UserID,
+			Private: true,
 		}
 
-		if err := r.CreateOrganization(&orga).Err(); err != nil {
-			r.err = err
+		if r.err = r.CreateOrganization(&orga).Err(); r.err != nil {
 			return r
 		}
 
-		r.err = db.Create(&user).Error
+		user.Organizations = append(user.Organizations, orga)
 	}
 
 	return r

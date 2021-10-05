@@ -32,7 +32,7 @@ grouped by their role.`,
 
 		for _, orga := range organizations {
 			orgaString := orga.Name
-			if orga.Owner.UserID == currentUser.UserID {
+			if orga.User.UserID == currentUser.UserID {
 				orgaString += " 👑"
 			}
 			if orga.Private {

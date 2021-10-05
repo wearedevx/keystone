@@ -21,6 +21,7 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 
 	router.POST("/projects", AuthedHandler(PostProject))
 	router.DELETE("/projects/:projectID/", AuthedHandler(DeleteProject))
+	router.GET("/projects", AuthedHandler(GetProjects))
 
 	router.GET("/projects/:projectID/members", AuthedHandler(GetProjectsMembers))
 	router.POST("/projects/:projectID/members", AuthedHandler(PostProjectsMembers))
@@ -55,6 +56,8 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.GET("/organizations", AuthedHandler(GetOrganizations))
 	router.POST("/organizations", AuthedHandler(PostOrganization))
 	router.PUT("/organizations", AuthedHandler(UpdateOrganization))
+	router.GET("/organizations/:orgaID/projects", AuthedHandler(GetOrganizationProjects))
+	router.GET("/organizations/:orgaID/members", AuthedHandler(GetOrganizationMembers))
 
 	// Payment Routes
 	router.POST("/organization/:organizationName/upgrade", AuthedHandler(PostSubscription))

@@ -117,6 +117,12 @@ ks member set-role sandra@github`,
 			roleName = r.Name
 		}
 
+		if len(roles) == 1 && roleName != "admin" {
+			ui.PrintError("You are not allowed to set role other than admin for free organization")
+			ui.Print("To learn more: https://keystone.sh")
+			os.Exit(1)
+		}
+
 		// If the role exsists, do the work
 		if _, ok := getRoleWithName(roleName, roles); ok {
 			err = c.Project(projectID).SetMemberRole(memberId, roleName)

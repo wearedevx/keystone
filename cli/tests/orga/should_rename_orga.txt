@@ -1,0 +1,20 @@
+ks orga add my-orga3
+
+stdout 'Organization my-orga3 has been created'
+
+# list orgas
+ks orga
+
+# my-orga should be listed
+stdout 'my-orga3 👑'
+
+
+# rename orga
+ks orga rename my-orga3 my-orga4
+
+# list orgas
+ks orga
+
+# my-orga4 should be listed and not my-orga3
+stdout 'my-orga4 👑'
+! stdout 'my-orga3 👑'

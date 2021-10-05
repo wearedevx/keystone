@@ -103,7 +103,7 @@ func CanRoleAddRole(Repo repo.IRepo, role Role, roleToInvite Role) (can bool, er
 // - both users are members of `project`
 // - `users`’s role has `CanAddMembers` set to `true`,
 // - `users`’s role is a parent of `other`’s role.
-// - `users`’s role is a parent of the target `role`
+// - users`’s role is a parent of the target `role`
 func CanUserSetMemberRole(Repo repo.IRepo, user User, other User, role Role, project Project) (can bool, err error) {
 	myMember := ProjectMember{
 		UserID:    user.ID,
@@ -124,6 +124,9 @@ func CanUserSetMemberRole(Repo repo.IRepo, user User, other User, role Role, pro
 	canChangeOther, canChangeOtherErr := CanRoleAddRole(Repo, myMember.Role, otherMember.Role)
 	canSetTargetRole, canSetTargetRoleErr := CanRoleAddRole(Repo, myMember.Role, role)
 
+	// Owner of organization cannot have its role changed
+	isMemberOwnerOfOrga, isMemberOwnerOfOrgaErr := IsUserOwnerOfOrga(Repo, other.ID, project)
+
 	if canChangeOtherErr != nil {
 		return false, canChangeOtherErr
 	}
@@ -132,7 +135,11 @@ func CanUserSetMemberRole(Repo repo.IRepo, user User, other User, role Role, pro
 		return false, canSetTargetRoleErr
 	}
 
-	return canChangeOther && canSetTargetRole, nil
+	if isMemberOwnerOfOrgaErr != nil {
+		return false, isMemberOwnerOfOrgaErr
+	}
+
+	return canChangeOther && canSetTargetRole && !isMemberOwnerOfOrga, nil
 }
 
 // CanUserAddMemberWithRole checks if a given user can add members of
@@ -154,4 +161,39 @@ func CanUserAddMemberWithRole(Repo repo.IRepo, user User, role Role, project Pro
 	}
 
 	return can, nil
+}
+
+func IsUserOwnerOfOrga(Repo repo.IRepo, userID uint, project Project) (bool, error) {
+	orga := Organization{}
+	if err := Repo.GetProjectsOrganization(project.UUID, &orga).Err(); err != nil {
+		return false, err
+	}
+
+	if orga.UserID == userID {
+		return true, nil
+	}
+	return false, nil
+}
+
+func HasOrganizationNotPaidAndHasNonAdmin(Repo repo.IRepo, project Project) (has bool, err error) {
+	members := make([]ProjectMember, 0)
+	isPaid, err := Repo.IsProjectOrganizationPaid(project.UUID)
+	if err != nil {
+		return false, err
+	}
+
+	err = Repo.GetOrganizationMembers(project.OrganizationID, &members).Err()
+	if err != nil {
+		return false, err
+	}
+
+	if !isPaid {
+		for _, member := range members {
+			if member.Role.Name != "admin" {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }

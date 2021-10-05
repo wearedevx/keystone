@@ -118,3 +118,21 @@ func (svp *DestroyProjectPayload) Serialize(out *string) (err error) {
 
 	return err
 }
+
+type GetProjectsResponse struct {
+	Projects []Project
+}
+
+func (e *GetProjectsResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(e)
+}
+
+func (u *GetProjectsResponse) Serialize(out *string) (err error) {
+	var sb strings.Builder
+
+	err = json.NewEncoder(&sb).Encode(u)
+
+	*out = sb.String()
+
+	return err
+}

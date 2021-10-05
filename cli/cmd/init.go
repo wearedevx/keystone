@@ -22,6 +22,7 @@ import (
 )
 
 var projectName string
+var organizationName string
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
@@ -191,13 +192,34 @@ func getProject(
 	return nil
 }
 
-func init() {
-	RootCmd.AddCommand(initCmd)
+func addOrganizationToProject(c client.KeystoneClient, project *models.Project) uint {
+	organizations, err := c.Organizations().GetAll()
+	if err != nil {
+		ui.PrintError("Error getting organizations: ", err.Error())
+		os.Exit(1)
+	}
+	orga := models.Organization{}
+	if organizationName == "" {
+		orga = prompts.OrganizationsSelect(organizations)
+		project.OrganizationID = orga.ID
+		return orga.ID
+	} else {
+		for _, o := range organizations {
+			if organizationName == o.Name {
+				orga = o
+			}
+		}
+		if orga.ID == 0 {
+			ui.PrintError("Organization does not exist")
+			os.Exit(1)
+		}
+		project.OrganizationID = orga.ID
+		return orga.ID
+	}
 }
 
-func addOrganizationToProject(c client.KeystoneClient, project *models.Project) uint {
-	organizations, _ := c.Organizations().GetAll()
-	orga := prompts.OrganizationsSelect(organizations)
-	project.OrganizationID = orga.ID
-	return orga.ID
+func init() {
+	RootCmd.AddCommand(initCmd)
+
+	initCmd.Flags().StringVarP(&organizationName, "orga", "o", "", "identity provider. Either github or gitlab")
 }

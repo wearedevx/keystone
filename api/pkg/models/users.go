@@ -36,16 +36,17 @@ func (pm *InvitePayload) Serialize(out *string) (err error) {
 }
 
 type User struct {
-	ID          uint        `json:"id" gorm:"primaryKey" faker:"-"`
-	AccountType AccountType `json:"account_type" gorm:"default:custom" faker:"oneof: github, gitlab"`
-	UserID      string      `json:"user_id" gorm:"uniqueIndex"`
-	ExtID       string      `json:"ext_id" faker:"uuid_digit"`
-	Username    string      `json:"username" faker:"username"`
-	Fullname    string      `json:"fullname" gorm:"not null" faker:"name"`
-	Email       string      `json:"email" gorm:"not null" faker:"email"`
-	CreatedAt   time.Time   `json:"created_at"`
-	UpdatedAt   time.Time   `json:"updated_at"`
-	Devices     []Device    `json:"devices" faker:"-" gorm:"many2many:user_devices;"`
+	ID            uint           `json:"id" gorm:"primaryKey" faker:"-"`
+	AccountType   AccountType    `json:"account_type" gorm:"default:custom" faker:"oneof: github, gitlab"`
+	UserID        string         `json:"user_id" gorm:"uniqueIndex"`
+	ExtID         string         `json:"ext_id" faker:"uuid_digit"`
+	Username      string         `json:"username" faker:"username"`
+	Fullname      string         `json:"fullname" gorm:"not null" faker:"name"`
+	Email         string         `json:"email" gorm:"not null" faker:"email"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+	Devices       []Device       `json:"devices" faker:"-" gorm:"many2many:user_devices;"`
+	Organizations []Organization `json:"organizations" faker:"-"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {

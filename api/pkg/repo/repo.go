@@ -8,6 +8,7 @@ import (
 	"os"
 
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
+	. "github.com/wearedevx/keystone/api/internal/utils"
 	"github.com/wearedevx/keystone/api/pkg/message"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -90,7 +91,7 @@ func (repo *Repo) Err() error {
 }
 
 func (repo *Repo) GetDb() *gorm.DB {
-	return repo.tx
+	return db
 }
 
 func (repo *Repo) MessageService() *message.MessageService {

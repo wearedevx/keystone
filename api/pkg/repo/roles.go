@@ -37,7 +37,7 @@ func (repo *Repo) GetOrCreateRole(role *Role) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().Where(*role).FirstOrCreate(role).Error
+	repo.err = repo.GetDb().Where(&role).FirstOrCreate(&role).Error
 
 	return repo
 }
