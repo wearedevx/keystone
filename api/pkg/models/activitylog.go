@@ -68,6 +68,18 @@ func (pm *ActivityLog) SetError(err error) *ActivityLog {
 	return pm
 }
 
+func (pm *ActivityLog) Lite() (l ActivityLogLite) {
+	l.UserID = pm.User.UserID
+	l.ProjectName = pm.Project.Name
+	l.EnvironmentName = pm.Environment.Name
+	l.Action = pm.Action
+	l.Success = pm.Success
+	l.ErrorMessage = pm.Message
+	l.CreatedAt = pm.CreatedAt
+
+	return l
+}
+
 func (pm *ActivityLog) Ptr() unsafe.Pointer {
 	return (unsafe.Pointer)(pm)
 }
@@ -77,4 +89,48 @@ func ErrorIsActivityLog(err error) bool {
 	errType := fmt.Sprintf("%T", err)
 
 	return activityLogPtrType == errType
+}
+
+/// API types
+
+// A lighter version of the activity log with only information
+// that is safe to display (no db identifiers)
+type ActivityLogLite struct {
+	UserID          string    `json:"user_id"`
+	ProjectName     string    `json:"project_name"`
+	EnvironmentName string    `json:"environment_name"`
+	Action          string    `json:"action"`
+	Success         bool      `json:"success"`
+	ErrorMessage    string    `json:"error_message"`
+	CreatedAt       time.Time `json:"created_at"`
+}
+
+func (pm *ActivityLogLite) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(pm)
+}
+
+func (pm *ActivityLogLite) Serialize(out *string) (err error) {
+	var sb strings.Builder
+
+	err = json.NewEncoder(&sb).Encode(pm)
+	*out = sb.String()
+
+	return err
+}
+
+type GetActivityLogResponse struct {
+	Logs []ActivityLogLite
+}
+
+func (pm *GetActivityLogResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(pm)
+}
+
+func (pm *GetActivityLogResponse) Serialize(out *string) (err error) {
+	var sb strings.Builder
+
+	err = json.NewEncoder(&sb).Encode(pm)
+	*out = sb.String()
+
+	return err
 }
