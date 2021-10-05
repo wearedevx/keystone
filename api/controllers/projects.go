@@ -39,8 +39,8 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 	if err := Repo.GetProjectsOrganization(project.UUID, &orga).Err(); err != nil {
 		return &project, http.StatusInternalServerError, err
 	}
-	if user.ID != project.OrganizationID {
 
+	if user.ID != orga.UserID {
 		role := models.Role{
 			Name: "admin",
 		}
@@ -51,11 +51,11 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 
 		orgaOwner := models.ProjectMember{
 			ProjectID: project.ID,
-			UserID:    project.OrganizationID,
+			UserID:    orga.UserID,
 			RoleID:    role.ID,
 		}
-		Repo.GetDb().Save(&orgaOwner)
 
+		Repo.GetDb().Save(&orgaOwner)
 	}
 
 	project.User = user

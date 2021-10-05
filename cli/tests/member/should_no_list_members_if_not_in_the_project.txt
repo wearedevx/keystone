@@ -1,6 +1,6 @@
 # Init a project
 
-ks init list-members-project -o $USER_ID
+ks init list-members-project -o $USER_ID 
 
 # Do NOT add members to project
 # ks member add -r developer -u john.doe@gitlab -u jane.to@github

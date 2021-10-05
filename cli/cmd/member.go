@@ -101,12 +101,9 @@ func printRole(role models.Role, members []models.ProjectMember) {
 	ui.Print("---")
 
 	memberIDs := make([]string, len(members))
+
 	for idx, member := range members {
-		// FIXME: there should not be members with an empty UserID here
-		// but still it happens in tests
-		if member.User.UserID != "" {
-			memberIDs[idx] = member.User.UserID
-		}
+		memberIDs[idx] = member.User.UserID
 	}
 
 	sort.Strings(memberIDs)
