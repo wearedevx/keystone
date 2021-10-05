@@ -29,6 +29,8 @@ env:
   strict: true
 - key: DOMAIN
   strict: true
+- key: STRIPE_WEBHOOK_SECRET
+  strict: true
 files:
 - path: api/keystone-server-credentials.json
   strict: false
