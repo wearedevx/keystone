@@ -249,7 +249,6 @@ func PostLoginRequest(w http.ResponseWriter, _ *http.Request, _ httprouter.Param
 	var err error
 
 	err = repo.Transaction(func(Repo repo.IRepo) (err error) {
-		fmt.Printf("Repo: %+v\n", Repo)
 		loginRequest := Repo.CreateLoginRequest()
 		alogger := activitylog.NewActivityLogger(Repo)
 		log := models.ActivityLog{

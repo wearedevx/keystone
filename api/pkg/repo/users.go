@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	"gorm.io/gorm"
 )
@@ -32,13 +33,12 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		UserID:      fmt.Sprintf("%s@%s", user.Username, user.AccountType),
 	}
 
-	db.SetupJoinTable(&User{}, "Devices", &UserDevice{})
-
-	r.err = db.Where(&foundUser).
-		Preload("Devices", func(db *gorm.DB) *gorm.DB {
-			return db.Unscoped()
-		}).
-		First(&foundUser).Error
+	r.err = db.
+		Where(foundUser).
+		Preload("Devices").
+		Preload("Organizations").
+		First(&foundUser).
+		Error
 
 	if r.err == nil {
 		for _, device := range user.Devices {
@@ -66,6 +66,7 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 	} else if errors.Is(r.err, gorm.ErrRecordNotFound) {
 		user.UserID = user.Username + "@" + string(user.AccountType)
 
+		// Devices
 		r.err = db.Omit("Devices").Create(&user).Error
 		if r.err != nil {
 			return r
@@ -77,6 +78,19 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 				return r
 			}
 		}
+
+		// Create default orga for user
+		orga := models.Organization{
+			UserID:  user.ID,
+			Name:    user.UserID,
+			Private: true,
+		}
+
+		if r.err = r.CreateOrganization(&orga).Err(); r.err != nil {
+			return r
+		}
+
+		user.Organizations = append(user.Organizations, orga)
 	}
 
 	return r

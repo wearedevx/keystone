@@ -36,7 +36,9 @@ else
 	echo "Some test failed";
 fi
 
-# rm "/tmp/keystone_gorm"*
+if [ -f $DBFILE ]; then
+  rm $DBFILE;
+fi
 
 # In case the tests failed or succeeded too fast
 # the API is not started yet, and lsof fails,

@@ -123,10 +123,6 @@ func (repo *Repo) GetGroupedMessagesWillExpireByUser(
 		return repo
 	}
 
-	if repo.Err() != nil {
-		return repo
-	}
-
 	// Group messages by recipient, project and environment.
 	for _, message := range messages {
 		perUser, ok := (*groupedMessageUser)[message.RecipientID]

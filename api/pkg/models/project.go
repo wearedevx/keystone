@@ -20,6 +20,8 @@ type Project struct {
 	UserID              uint            `json:"user_id"`
 	User                User            `json:"user" faker:"-"`
 	Environments        []Environment   `json:"environments" faker:"-"`
+	OrganizationID      uint            `json:"organization_id"`
+	Organization        Organization    `json:"organization"`
 	CreatedAt           time.Time       `json:"created_at"`
 	UpdatedAt           time.Time       `json:"updated_at"`
 }
@@ -111,6 +113,24 @@ func (svp *DestroyProjectPayload) Serialize(out *string) (err error) {
 	var sb strings.Builder
 
 	err = json.NewEncoder(&sb).Encode(svp)
+
+	*out = sb.String()
+
+	return err
+}
+
+type GetProjectsResponse struct {
+	Projects []Project
+}
+
+func (e *GetProjectsResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(e)
+}
+
+func (u *GetProjectsResponse) Serialize(out *string) (err error) {
+	var sb strings.Builder
+
+	err = json.NewEncoder(&sb).Encode(u)
 
 	*out = sb.String()
 

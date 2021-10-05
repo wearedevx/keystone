@@ -12,8 +12,8 @@ runServer() {
   touch /tmp/dlv_log/output.log
 
   # run server with debug
-  dlv --listen=:40000 --headless=true --api-version=2 exec \
-   ./server | tee -a /tmp/dlv_log/output.log &
+  dlv --listen=:40000 --headless=true --api-version=2 --accept-multiclient exec \
+  --continue ./server | tee -a /tmp/dlv_log/output.log &
 
   # wait for Delve to modify log files - means /server is running
   inotifywait -e MODIFY /tmp/dlv_log/output.log &>/dev/null
@@ -41,7 +41,8 @@ killRunningServer() {
 
 buildServer() {
   echo Building server
-  go build -gcflags "all=-N -l" -o ./server
+  make build-debug
+  chmod +x ./server
 }
 
 rerunServer () {

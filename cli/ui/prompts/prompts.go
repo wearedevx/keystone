@@ -207,3 +207,44 @@ func Select(message string, items []string) (index int, selected string) {
 
 	return index, selected
 }
+
+func OrganizationsSelect(organizations []models.Organization) models.Organization {
+	templates := &promptui.SelectTemplates{
+		Active: fmt.Sprintf(
+			"%s {{ .Name | underline }}",
+			promptui.IconSelect,
+		),
+		Inactive: "  {{ .Name }}",
+		Selected: fmt.Sprintf(
+			`{{ "%s" | green }} {{ .Name | faint }}`,
+			promptui.IconGood,
+		),
+	}
+
+	searcher := func(input string, index int) bool {
+		orga := organizations[index]
+		name := strings.Replace(strings.ToLower(orga.Name), " ", "", -1)
+		input = strings.Replace(strings.ToLower(input), " ", "", -1)
+
+		return strings.Contains(name, input)
+	}
+
+	prompt := promptui.Select{
+		Label:     "Organization",
+		Items:     organizations,
+		Templates: templates,
+		Size:      4,
+		Searcher:  searcher,
+	}
+
+	i, _, err := prompt.Run()
+
+	if err != nil {
+		if err.Error() != "^C" {
+			ui.PrintError(err.Error())
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+	return organizations[i]
+}

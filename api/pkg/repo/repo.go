@@ -95,7 +95,7 @@ func (repo *Repo) Err() error {
 }
 
 func (repo *Repo) GetDb() *gorm.DB {
-	return repo.tx
+	return db
 }
 
 func (repo *Repo) MessageService() *message.MessageService {

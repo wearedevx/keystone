@@ -163,7 +163,14 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 		{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value},
 		{Name: "device-test-2", UID: uuid.NewV4().String(), PublicKey: keyPair.Public.Value}}
 
-	Repo.GetOrCreateUser(&user)
+	if err := Repo.GetOrCreateUser(&user).Err(); err != nil {
+		return err
+	}
+
+	for _, orga := range user.Organizations {
+		orga.Paid = true
+		Repo.GetDb().Save(&orga)
+	}
 
 	if err := Repo.Err(); err != nil {
 		fmt.Println("Get Or Create User", err)
@@ -281,4 +288,24 @@ func SetupEnvVars(env *testscript.Env) error {
 
 	// Create config folder
 	return os.MkdirAll(configDir, 0o770) // #nosec
+}
+
+func MakeOrgaFree(env *testscript.Env) error {
+	userID := env.Getenv("USER_ID")
+	Repo := new(repo.Repo)
+
+	user := models.User{UserID: userID}
+	if err := Repo.GetDb().Preload("Organizations").Where("user_id = ?", userID).First(&user).Error; err != nil {
+		return err
+	}
+
+	for _, orga := range user.Organizations {
+		orga.Paid = false
+		if err := Repo.GetDb().Save(&orga).Error; err != nil {
+			return err
+		}
+
+	}
+
+	return nil
 }

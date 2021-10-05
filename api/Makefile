@@ -8,6 +8,9 @@ DB_USER ?= ks
 DB_PASSWORD ?= ks
 DB_NAME ?= ks
 DB_DIALECT ?= postgres
+DOMAIN ?= localhost:9001
+
+STRIPE_KEY ?= sk_test
 
 JWT_SALT ?= aaP|**P1n}1tqW
 
@@ -20,6 +23,7 @@ REPO_PKG := $(BASE)/pkg/repo
 JWT_PKG := $(BASE)/pkg/jwt
 CONSTANTS_PKG := $(BASE)/internal/constants
 REDIS_PKG := $(BASE)/internal/redis
+PAYMENT_PKG := $(BASE)/internal/payment
 
 DB_HOST_FLAG := -X $(REPO_PKG).dbHost=$(DB_HOST)
 DB_PORT_FLAG := -X $(REPO_PKG).dbPort=$(DB_PORT)
@@ -32,10 +36,14 @@ DB_DRIVERNAME_FLAG := -X $(REPO_PKG).dbDriverName=$(DB_DRIVERNAME)
 JWT_SALT_FLAG := -X $(JWT_PKG).salt=$(JWT_SALT)
 
 KS_TTL_FLAG := -X $(CONSTANTS_PKG).KsTTLHeader=$(X_KS_TTL)
+DOMAIN_FLAG := -X $(CONSTANTS_PKG).Domain=$(DOMAIN)
 
 REDIS_HOST_FLAG :=  -X $(REDIS_PKG).redisHost=$(REDIS_HOST)
 REDIS_PORT_FLAG :=  -X $(REDIS_PKG).redisPort=$(REDIS_PORT)
 REDIS_INDEX_FLAG := -X $(REDIS_PKG).redisIndex=$(REDIS_INDEX)
+
+STRIPE_KEY_FLAG := -X $(PAYMENT_PKG).stripeKey=$(STRIPE_KEY) 
+STRIPE_WEBHOOK_FLAG := -X $(PAYMENT_PKG).stripeWebhookSecret=$(STRIPE_WEBHOOK_SECRET)
  
 LDFLAGS := $(DB_HOST_FLAG) \
 	$(DB_PORT_FLAG) \
@@ -48,7 +56,10 @@ LDFLAGS := $(DB_HOST_FLAG) \
 	$(REDIS_HOST_FLAG) \
 	$(REDIS_PORT_FLAG) \
 	$(REDIS_INDEX_FLAG) \
-	$(KS_TTL_FLAG)
+	$(STRIPE_KEY_FLAG) \
+	$(STRIPE_WEBHOOK_FLAG) \
+	$(KS_TTL_FLAG) \
+	$(DOMAIN_FLAG) 
 
 build:
 	mkdir ./build
@@ -57,7 +68,7 @@ build:
 
 build-debug:
 	go clean
-	go build -gcflags="all=-N -l" -ldflags="$(LDFLAGS)" -v -o ./server
+	go build -gcflags="all=-N -l" -ldflags="$(LDFLAGS)" -o ./server
 
 install:
 	chmod +x server
@@ -67,7 +78,7 @@ run-test:
 	go run -tags test -ldflags "$(LDFLAGS)" main.go
 
 run:
-	go get -u github.com/mitranim/gow && gow run -ldflags "$(LDFLAGS)" main.go
+	gow run -ldflags "$(LDFLAGS)" main.go
 
 run-debug:
 	./debug-live-reload.sh

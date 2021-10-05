@@ -1,18 +1,3 @@
-/*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
@@ -31,11 +16,13 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/prompts"
 
 	"github.com/spf13/cobra"
 )
 
 var projectName string
+var organizationName string
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
@@ -151,10 +138,12 @@ func createProject(
 	project *models.Project,
 	ksfile *keystonefile.KeystoneFile,
 ) (err error) {
+
+	organizationID := addOrganizationToProject(c, project)
 	// Remote Project Creation
 	sp := spinner.Spinner("Creating project...")
 	sp.Start()
-	*project, err = c.Project("").Init(projectName)
+	*project, err = c.Project("").Init(projectName, organizationID)
 	sp.Stop()
 
 	// Handle invalid token
@@ -203,16 +192,34 @@ func getProject(
 	return nil
 }
 
+func addOrganizationToProject(c client.KeystoneClient, project *models.Project) uint {
+	organizations, err := c.Organizations().GetAll()
+	if err != nil {
+		ui.PrintError("Error getting organizations: ", err.Error())
+		os.Exit(1)
+	}
+	orga := models.Organization{}
+	if organizationName == "" {
+		orga = prompts.OrganizationsSelect(organizations)
+		project.OrganizationID = orga.ID
+		return orga.ID
+	} else {
+		for _, o := range organizations {
+			if organizationName == o.Name {
+				orga = o
+			}
+		}
+		if orga.ID == 0 {
+			ui.PrintError("Organization does not exist")
+			os.Exit(1)
+		}
+		project.OrganizationID = orga.ID
+		return orga.ID
+	}
+}
+
 func init() {
 	RootCmd.AddCommand(initCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// initCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	initCmd.Flags().StringVarP(&organizationName, "orga", "o", "", "identity provider. Either github or gitlab")
 }

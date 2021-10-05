@@ -33,6 +33,8 @@ services:
     working_dir: /home/golang/app
     environment:
       - DATABASE_URL=postgres://ks:ks@db:5432/ks?sslmode=disable
+      - STRIPE_KEY=sk_test_WHVFLdND1gwnREj3vzw6vn14
+      - STRIPE_WEBHOOK_SECRET=whsec_j2BGp41RDVUzljaeqDEP8czzNRbcqyTg
       - JWT_SALT=aaP|**P1n}1tqWK
       - DB_HOST=db
       - DB_NAME=ks
@@ -43,6 +45,7 @@ services:
       - ./api/:/home/golang/app:delegated
     ports:
       - "9001:9001"
+      - "8000:40000"
     command: sh -c "make run"
 
   apidebug:
@@ -63,6 +66,8 @@ services:
       - DB_NAME=ks
       - DB_USER=ks
       - DB_PASSWORD=ks
+      - STRIPE_KEY=sk_test_WHVFLdND1gwnREj3vzw6vn14
+      - STRIPE_WEBHOOK_SECRET=whsec_LM3LntrpUcx821XOLck9FvwpsUoLW0rX
     volumes:
       - ./api/:/home/golang/app:delegated
     ports:

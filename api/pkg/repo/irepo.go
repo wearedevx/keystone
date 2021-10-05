@@ -43,6 +43,8 @@ type IRepo interface {
 	GetProject(*models.Project) IRepo
 	GetProjectByUUID(string, *models.Project) IRepo
 	GetProjectMember(*models.ProjectMember) IRepo
+	GetProjectsOrganization(string, *models.Organization) IRepo
+	OrganizationCountMembers(*models.Organization, *int64) IRepo
 	GetRole(*models.Role) IRepo
 	GetRoles(*[]models.Role) IRepo
 	GetRolesEnvironmentType(*models.RolesEnvironmentType) IRepo
@@ -70,4 +72,21 @@ type IRepo interface {
 	GetDeviceByUserID(userID uint, device *models.Device) IRepo
 	RevokeDevice(userID uint, deviceName string) IRepo
 	GetAdminsFromUserProjects(userID uint, userName string, projects_list []string, adminEmail *string) IRepo
+	CreateOrganization(orga *models.Organization) IRepo
+	UpdateOrganization(orga *models.Organization) IRepo
+	OrganizationSetCustomer(organization *models.Organization, customer string) IRepo
+	OrganizationSetSubscription(organization *models.Organization, subscription string) IRepo
+	GetOrganization(orga *models.Organization) IRepo
+	GetOrganizations(userID uint, result *models.GetOrganizationsResponse) IRepo
+	GetOrganizationByName(orga *models.Organization) IRepo
+	GetOrganizationProjects(*models.Organization, *[]models.Project) IRepo
+	GetOrganizationMembers(orgaID uint, result *[]models.ProjectMember) IRepo
+	IsUserOwnerOfOrga(*models.User, *models.Organization) (bool, error)
+	IsProjectOrganizationPaid(string) (bool, error)
+	CreateCheckoutSession(*models.CheckoutSession) IRepo
+	GetCheckoutSession(string, *models.CheckoutSession) IRepo
+	UpdateCheckoutSession(*models.CheckoutSession) IRepo
+	DeleteCheckoutSession(*models.CheckoutSession) IRepo
+	OrganizationSetPaid(organization *models.Organization, paid bool) IRepo
+	GetUserProjects(userID uint, projects *[]models.Project) IRepo
 }

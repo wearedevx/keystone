@@ -1,6 +1,6 @@
 
 # Init with name
-ks init test-env
+ks init test-env  -o $USER_ID
 
 ks env
 

@@ -160,6 +160,8 @@ func getMemberRolesFromFile(c client.KeystoneClient, filepath string) map[string
 	mustMembersExist(c, memberIDs)
 	roles := mustGetRoles(c)
 
+	warningFreeOrga(roles)
+
 	memberRoles := mapRoleNamesToRoles(memberRoleNames, roles)
 
 	return memberRoles
@@ -170,13 +172,15 @@ func getMemberRolesFromArgs(c client.KeystoneClient, roleName string, memberIDs 
 	roles := mustGetRoles(c)
 	foundRole := &models.Role{}
 
+	warningFreeOrga(roles)
+
 	for _, role := range roles {
 		if role.Name == roleName {
 			*foundRole = role
 		}
 	}
 
-	if foundRole == nil {
+	if foundRole.ID == 0 {
 		roleNames := []string{}
 
 		for _, role := range roles {
@@ -199,6 +203,8 @@ func getMemberRolesFromArgs(c client.KeystoneClient, roleName string, memberIDs 
 func getMemberRolesFromPrompt(c client.KeystoneClient, memberIDs []string) map[string]models.Role {
 	mustMembersExist(c, memberIDs)
 	roles := mustGetRoles(c)
+
+	warningFreeOrga(roles)
 
 	memberRole := make(map[string]models.Role)
 
@@ -231,7 +237,8 @@ func mustMembersExist(c client.KeystoneClient, memberIDs []string) {
 }
 
 func mustGetRoles(c client.KeystoneClient) []models.Role {
-	roles, err := c.Roles().GetAll()
+	projectID := ctx.GetProjectID()
+	roles, err := c.Roles().GetAll(projectID)
 	if err != nil {
 		ui.PrintError(err.Error())
 		os.Exit(1)
@@ -268,6 +275,14 @@ func mapRoleNamesToRoles(memberRoleNames map[string]string, roles []models.Role)
 	}
 
 	return memberRoles
+}
+
+func warningFreeOrga(roles []models.Role) {
+	if len(roles) == 1 {
+		fmt.Fprintln(os.Stderr, "WARNING: You are not allowed to set role other than admin for free organization")
+		ui.Print("To learn more: https://keystone.sh")
+		ui.Print("")
+	}
 }
 
 func init() {

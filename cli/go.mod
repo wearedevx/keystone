@@ -3,12 +3,8 @@ module github.com/wearedevx/keystone/cli
 go 1.16
 
 require (
-	github.com/GoogleCloudPlatform/cloudsql-proxy v1.22.0 // indirect
 	github.com/briandowns/spinner v1.16.0
 	github.com/bxcodec/faker/v3 v3.6.0
-	github.com/coreos/bbolt v1.3.2 // indirect
-	github.com/coreos/etcd v3.3.13+incompatible // indirect
-	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/cossacklabs/themis/gothemis v0.13.1
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
@@ -17,7 +13,6 @@ require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/google/go-github/v32 v32.1.0
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
 	github.com/jamesruan/sodium v0.0.0-20181216154042-9620b83ffeae
@@ -29,12 +24,10 @@ require (
 	github.com/manifoldco/promptui v0.8.0
 	github.com/mattn/go-colorable v0.1.10 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
-	github.com/prometheus/tsdb v0.7.1 // indirect
 	github.com/rogpeppe/go-internal v1.8.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
-	github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5 // indirect
 	github.com/udhos/equalfile v0.3.0
 	github.com/wearedevx/keystone/api v0.0.0-20210921142643-b2caacffdfdb
 	github.com/xanzy/go-gitlab v0.51.1

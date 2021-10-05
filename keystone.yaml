@@ -25,6 +25,10 @@ env:
   strict: true
 - key: REDIS_INDEX
   strict: true
+- key: STRIPE_KEY
+  strict: true
+- key: DOMAIN
+  strict: true
 files:
 - path: api/keystone-server-credentials.json
   strict: false

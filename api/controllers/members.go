@@ -62,6 +62,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 	member := models.User{}
 	role := models.Role{}
 	can := false
+	isPaid := false
 
 	// input check
 	var projectID = params.Get("projectID").(string)
@@ -94,7 +95,18 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 		goto done
 	}
 
-	log.ProjectID = &project.ID
+	isPaid, err = Repo.IsProjectOrganizationPaid(projectID)
+
+	if err != nil {
+		status = http.StatusInternalServerError
+		goto done
+	}
+
+	if role.Name != "admin" && !isPaid {
+		status = http.StatusForbidden
+		err = errors.New("This feature is not allowed for free organization")
+		goto done
+	}
 
 	can, err = rights.CanUserSetMemberRole(Repo, user, member, role, project)
 	if err != nil {

@@ -1,0 +1,18 @@
+ks orga add my-orga2
+
+stdout 'Organization my-orga2 has been created'
+
+# list orgas
+ks orga
+
+# my-orga should be listed and not private
+stdout 'my-orga2 👑'
+! stdout 'my-orga2 👑 P'
+
+
+# make orga private
+ks orga private my-orga2
+
+ks orga
+# my-orga should be listed and private
+stdout 'my-orga2 👑 P'

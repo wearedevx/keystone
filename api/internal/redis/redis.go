@@ -43,21 +43,16 @@ func NewRedis() *Redis {
 	redisPort = getOrDefault(redisPort, "REDIS_PORT", "6379")
 	redisIndex = getOrDefault(redisIndex, "REDIS_INDEX", "0")
 
-	redisIndexInt, err := strconv.Atoi(redisIndex)
-
+	redisIndexInt, err := strconv.ParseInt(redisIndex, 10, 64)
 	if err != nil {
-		panic(err)
+		redisIndexInt = 0
 	}
 
 	r.rdb = redis.NewClient(&redis.Options{
 		Addr:     redisHost + ":" + redisPort,
-		Password: "",            // no password set
-		DB:       redisIndexInt, // use default DB
+		Password: "",                 // no password set
+		DB:       int(redisIndexInt), // use default DB
 	})
-
-	if err != nil {
-		panic(err)
-	}
 
 	return &r
 }

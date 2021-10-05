@@ -105,6 +105,7 @@ func (r *Repo) GetProject(project *Project) IRepo {
 
 	r.err = r.GetDb().
 		Preload("Environments").
+		Preload("Organization").
 		Where(&project).
 		First(project).
 		Error
@@ -402,4 +403,41 @@ func (r *Repo) DeleteProject(project *models.Project) IRepo {
 		Error
 
 	return r
+}
+
+func (r *Repo) GetUserProjects(userID uint, projects *[]models.Project) IRepo {
+	if err := r.GetDb().Joins("left join project_members pm on projects.ID = pm.project_id").Where("pm.user_id = ?", userID).Find(&projects).Error; err != nil {
+		r.err = err
+	}
+
+	return r
+}
+
+func (r *Repo) GetProjectsOrganization(projectID string, organization *models.Organization) IRepo {
+	var project models.Project
+
+	r.GetProjectByUUID(projectID, &project)
+	if r.err != nil {
+		return r
+	}
+
+	organization.ID = project.OrganizationID
+
+	r.GetDb().First(&organization)
+
+	return r
+}
+
+func (r *Repo) IsProjectOrganizationPaid(projectID string) (bool, error) {
+	project := models.Project{UUID: projectID}
+
+	if err := r.GetProject(&project).Err(); err != nil {
+		return false, err
+	}
+
+	if project.Organization.Paid {
+		return true, nil
+	}
+
+	return false, nil
 }

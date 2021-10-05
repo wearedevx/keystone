@@ -1,5 +1,5 @@
 # Init with name
-ks init test-env
+ks init test-env  -o $USER_ID
 ks file
 stdout '.*No files are currently tracked as secret files\..*'
 
