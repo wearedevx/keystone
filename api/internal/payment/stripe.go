@@ -1,3 +1,5 @@
+// +build !test
+
 package payment
 
 import (
@@ -51,7 +53,7 @@ func (sp *stripePayment) StartCheckout(
 ) (sessionID, customerID, url string, err error) {
 	organizationID := strconv.FormatUint(uint64(organization.ID), 10)
 	name := organization.Name
-	email := organization.Owner.Email
+	email := organization.User.Email
 	var cus *stripe.Customer
 	var ses *stripe.CheckoutSession
 

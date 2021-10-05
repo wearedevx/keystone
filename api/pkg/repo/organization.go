@@ -61,7 +61,7 @@ func (r *Repo) GetOrganization(orga *models.Organization) IRepo {
 
 	r.err = r.GetDb().
 		Where(&orga).
-		Preload("Owner").
+		Preload("User").
 		First(&orga).
 		Error
 

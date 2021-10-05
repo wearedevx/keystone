@@ -21,6 +21,7 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 	}
 
 	project := models.Project{}
+	orga := models.Organization{}
 
 	if err = project.Deserialize(body); err != nil {
 		status = http.StatusBadRequest
@@ -35,7 +36,6 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 	}
 
 	// Add organization's owner to project as admin
-	orga := models.Organization{}
 	if err := Repo.GetProjectsOrganization(project.UUID, &orga).Err(); err != nil {
 		return &project, http.StatusInternalServerError, err
 	}
@@ -92,7 +92,7 @@ func GetProjectsMembers(
 	params router.Params,
 	_ io.ReadCloser,
 	Repo repo.IRepo,
-	_ models.User,
+	user models.User,
 ) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 

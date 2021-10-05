@@ -8,7 +8,6 @@ import (
 	"os"
 
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
-	. "github.com/wearedevx/keystone/api/internal/utils"
 	"github.com/wearedevx/keystone/api/pkg/message"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

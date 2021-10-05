@@ -1,6 +1,6 @@
 # Init a project
 
-ks init project-backup
+ks init project-backup -o $USER_ID
 
 # Add secret to project
 ks secret add LABEL value -s

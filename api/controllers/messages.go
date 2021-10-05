@@ -167,10 +167,8 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 			goto done
 		}
 
-<<<<<<< HEAD
 		log.ProjectID = &projectMember.ProjectID
 		log.EnvironmentID = &environment.ID
-=======
 		// If organization has not paid and there is non admin in the project, messages cannot be written
 		has, err := rights.HasOrganizationNotPaidAndHasNonAdmin(&repo.Repo{}, environment.Project)
 		if err != nil {
@@ -179,7 +177,6 @@ func WriteMessages(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mo
 		if has {
 			return response, http.StatusInternalServerError, errors.New("not paid")
 		}
->>>>>>> feat/role-paywall
 
 		// - check if user has rights to write on environment
 		can, err := rights.CanUserWriteOnEnvironment(Repo, user.ID, environment.Project.ID, &environment)

@@ -44,7 +44,7 @@ func PostSubscription(
 		goto done
 	}
 
-	if organization.Owner.UserID != user.UserID {
+	if organization.User.UserID != user.UserID {
 		status = http.StatusForbidden
 		err = errors.New("operation not permitted")
 		goto done
