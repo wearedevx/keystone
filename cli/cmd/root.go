@@ -210,7 +210,7 @@ func init() {
 
 	RootCmd.PersistentFlags().BoolVarP(&skipPrompts, "skip", "s", false, "skip prompts and use default")
 
-	RootCmd.PersistentFlags().StringVarP(&currentEnvironment, "env", "e", "", "environment to use instead of the current one")
+	RootCmd.PersistentFlags().StringVarP(&currentEnvironment, "env", "", "", "environment to use instead of the current one")
 
 	cobra.OnInitialize(func() {
 		// Call directly initConfig. cobra doesn't call initConfig func.

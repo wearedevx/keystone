@@ -24,7 +24,7 @@ type IRepo interface {
 	DeleteProjectsEnvironments(project *models.Project) IRepo
 	Err() error
 	FindUsers(userIDs []string, users *map[string]models.User, notFounds *[]string) IRepo
-	GetActivityLogs(projectID string, logs *[]models.ActivityLog) IRepo
+	GetActivityLogs(projectID string, options models.GetLogsOptions, logs *[]models.ActivityLog) IRepo
 	GetChildrenRoles(role models.Role, roles *[]models.Role) IRepo
 	GetDb() *gorm.DB
 	GetEnvironment(*models.Environment) IRepo

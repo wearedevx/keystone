@@ -128,3 +128,12 @@ func (p *Project) GetAll() ([]models.Project, error) {
 
 	return result.Projects, err
 }
+
+func (p *Project) GetLogs(options *models.GetLogsOptions) ([]models.ActivityLogLite, error) {
+	var err error
+	var result models.GetActivityLogResponse
+
+	err = p.r.post("/projects/"+p.id+"/activity-logs", options, &result, nil)
+
+	return result.Logs, err
+}

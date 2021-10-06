@@ -46,13 +46,21 @@ func (client *KeystoneClientImpl) Messages() *Messages {
 		r: client.r,
 	}
 }
+
 func (client *KeystoneClientImpl) Devices() *Devices {
 	return &Devices{
 		r: client.r,
 	}
 }
+
 func (client *KeystoneClientImpl) Organizations() *Organizations {
 	return &Organizations{
+		r: client.r,
+	}
+}
+
+func (client *KeystoneClientImpl) Logs() *Logs {
+	return &Logs{
 		r: client.r,
 	}
 }

@@ -30,7 +30,7 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.GET("/projects/:projectID/environments", AuthedHandler(GetAccessibleEnvironments))
 	router.GET("/projects/:projectID/organization", AuthedHandler(GetProjectsOrganization))
 
-	router.GET("/projects/:projectID/activity-logs", AuthedHandler(GetActivityLog))
+	router.POST("/projects/:projectID/activity-logs", AuthedHandler(GetActivityLogs))
 
 	router.GET("/environments/:envID/public-keys", AuthedHandler(GetEnvironmentPublicKeys))
 	router.DELETE("/messages-expired", DeleteExpiredMessages)

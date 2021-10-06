@@ -22,9 +22,15 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/ui"
 )
+
+var logFilterAction string
+var logFilterEnvironment string
+var logFilterUser string
+var logLimit uint64
 
 // logsCmd represents the logs command
 var logsCmd = &cobra.Command{
@@ -33,11 +39,17 @@ var logsCmd = &cobra.Command{
 	Long: `Shows activity logs for the current project.
 This functionnality requires a paid plan:
 
-ks orga upgrade <your-organization>
+` + "```" + `ks orga upgrade <your-organization>` + "```" + `
 `,
-	Example: `ks logs`,
+	Example: `ks logs
+
+# The last time a user sent secrets or files on the prod environment
+ks log -a WriteMessages -l 1 -e prod`,
 	Run: func(_ *cobra.Command, _ []string) {
 		var kerr *kserrors.Error
+
+		kf := keystonefile.KeystoneFile{}
+		kf.Load(ctx.Wd)
 
 		ks, kerr := client.NewKeystoneClient()
 
@@ -46,9 +58,13 @@ ks orga upgrade <your-organization>
 			os.Exit(1)
 		}
 
-		logs := ks.Logs()
+		options := models.NewGetLogsOption().
+			SetActions(logFilterAction).
+			SetEnvironments(logFilterEnvironment).
+			SetUsers(logFilterUser).
+			SetLimit(logLimit)
 
-		allTheLogs, err := logs.GetAll()
+		allTheLogs, err := ks.Project(kf.ProjectId).GetLogs(options)
 
 		if err != nil {
 			// TODO: have better error messages
@@ -75,7 +91,7 @@ func printAllTheLogs(logs []models.ActivityLogLite) {
 func printLog(log models.ActivityLogLite) {
 	fmt.Printf(
 		"[%s] %s on %s (%s): %s | %s\n",
-		log.CreatedAt.Format("2006-12-29 01:34:59"),
+		log.CreatedAt.Format("2006-12-29 15:04:05"),
 		log.UserID,
 		log.ProjectName,
 		log.EnvironmentName,
@@ -104,4 +120,10 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// logsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	logsCmd.Flags().StringVarP(&logFilterAction, "action", "a", "", "Comma separated list of actions to display")
+	logsCmd.Flags().StringVarP(&logFilterEnvironment, "environment", "e", "", "Comma separated list of environments to display")
+	logsCmd.Flags().StringVarP(&logFilterUser, "user", "u", "", "Comma separated list of users to display")
+
+	logsCmd.Flags().Uint64VarP(&logLimit, "limit", "l", 200, "Maximum number of logs to display")
+
 }

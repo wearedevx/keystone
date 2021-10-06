@@ -67,8 +67,8 @@ build:
 	go build -ldflags "$(LDFLAGS)" -v -o ./build/server
 
 build-debug:
-	go clean
 	go build -gcflags="all=-N -l" -ldflags="$(LDFLAGS)" -o ./server
+	chmod +x ./server
 
 install:
 	chmod +x server

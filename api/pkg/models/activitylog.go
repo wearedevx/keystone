@@ -14,11 +14,11 @@ import (
 type ActivityLog struct {
 	ID            uint        `json:"id" gorm:"primaryKey"`
 	UserID        *uint       `json:"user_id"`
-	User          User        `json:"user" gorm:"foreignKey:user_id"`
+	User          User        `json:"user"`
 	ProjectID     *uint       `json:"project_id"`
-	Project       Project     `json:"project" gorm:"foreignKey:project_id"`
+	Project       Project     `json:"project"`
 	EnvironmentID *uint       `json:"environment_id"`
-	Environment   Environment `json:"environment" gorm:"foreignKey:environment_id"`
+	Environment   Environment `json:"environment"`
 	Action        string      `json:"action"`
 	Success       bool        `json:"success"`
 	Message       string      `json:"error"`
@@ -133,4 +133,158 @@ func (pm *GetActivityLogResponse) Serialize(out *string) (err error) {
 	*out = sb.String()
 
 	return err
+}
+
+type ActionFilter string
+
+const (
+	ActionFilterGetRoles                     ActionFilter = "GetRoles"
+	ActionFilterPostUser                                  = "PostUser"
+	ActionFilterPostUserToken                             = "PostUserToken"
+	ActionFilterPostLoginRequest                          = "PostLoginRequest"
+	ActionFilterGetLoginRequest                           = "GetLoginRequest"
+	ActionFilterGetUserKeys                               = "GetUserKeys"
+	ActionFilterGetDevices                                = "GetDevices"
+	ActionFilterDeleteDevice                              = "DeleteDevice"
+	ActionFilterPostProject                               = "PostProject"
+	ActionFilterGetProjectMembers                         = "GetProjectMembers"
+	ActionFilterPostProjectMembers                        = "PostProjectMembers"
+	ActionFilterDeleteProjectsMembers                     = "DeleteProjectsMembers"
+	ActionFilterGetAccessibleEnvironments                 = "GetAccessibleEnvironments"
+	ActionFilterDeleteProject                             = "DeleteProject"
+	ActionFilterGetEnvironmentPublicKeys                  = "GetEnvironmentPublicKeys"
+	ActionFilterGetMessagesFromProjectByUser              = "GetMessagesFromProjectByUser"
+	ActionFilterWriteMessages                             = "WriteMessages"
+	ActionFilterDeleteMessage                             = "DeleteMessage"
+	ActionFilterPostInvite                                = "PostInvite"
+	ActionFilterDoUsersExist                              = "DoUsersExist"
+	ActionFilterPutMemberSetRole                          = "PutMemberSetRole"
+)
+
+func (af ActionFilter) Validate() (ok bool) {
+	switch af {
+	case ActionFilterGetRoles,
+		ActionFilterPostUser,
+		ActionFilterPostUserToken,
+		ActionFilterPostLoginRequest,
+		ActionFilterGetLoginRequest,
+		ActionFilterGetUserKeys,
+		ActionFilterGetDevices,
+		ActionFilterDeleteDevice,
+		ActionFilterPostProject,
+		ActionFilterGetProjectMembers,
+		ActionFilterPostProjectMembers,
+		ActionFilterDeleteProjectsMembers,
+		ActionFilterGetAccessibleEnvironments,
+		ActionFilterDeleteProject,
+		ActionFilterGetEnvironmentPublicKeys,
+		ActionFilterGetMessagesFromProjectByUser,
+		ActionFilterWriteMessages,
+		ActionFilterDeleteMessage,
+		ActionFilterPostInvite,
+		ActionFilterDoUsersExist,
+		ActionFilterPutMemberSetRole:
+		return true
+	default:
+		return false
+	}
+}
+
+type EnvironmentFilter string
+
+const (
+	EnvironmentFilterDev     EnvironmentFilter = "dev"
+	EnvironmentFilterStaging                   = "staging"
+	EnvironmentFilterProd                      = "prod"
+)
+
+func (ef EnvironmentFilter) Validate() (ok bool) {
+	switch ef {
+	case EnvironmentFilterDev,
+		EnvironmentFilterStaging,
+		EnvironmentFilterProd:
+		return true
+	default:
+		return false
+	}
+}
+
+type GetLogsOptions struct {
+	Actions      []ActionFilter      `json:"actions"`
+	Environments []EnvironmentFilter `json:"environments"`
+	Users        []string            `json:"users"`
+	Limit        uint64              `json:"limit" default:"200"`
+}
+
+func NewGetLogsOption() *GetLogsOptions {
+	return &GetLogsOptions{
+		Actions:      make([]ActionFilter, 0),
+		Environments: make([]EnvironmentFilter, 0),
+		Users:        make([]string, 0),
+	}
+}
+
+func (pm *GetLogsOptions) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(pm)
+}
+
+func (pm *GetLogsOptions) Serialize(out *string) (err error) {
+	var sb strings.Builder
+
+	err = json.NewEncoder(&sb).Encode(pm)
+	*out = sb.String()
+
+	return err
+}
+
+func (o *GetLogsOptions) SetActions(actions string) *GetLogsOptions {
+	if actions == "" {
+		return o
+	}
+
+	for _, action := range strings.Split(actions, ",") {
+		if f := ActionFilter(strings.TrimSpace(action)); f.Validate() {
+			o.Actions = append(o.Actions, f)
+		}
+	}
+
+	return o
+}
+
+func (o *GetLogsOptions) SetEnvironments(environments string) *GetLogsOptions {
+	if environments == "" {
+		return o
+	}
+
+	for _, environment := range strings.Split(environments, ",") {
+		if e := EnvironmentFilter(strings.TrimSpace(environment)); e.Validate() {
+			o.Environments = append(o.Environments, EnvironmentFilter(environment))
+		}
+	}
+
+	return o
+}
+
+func (o *GetLogsOptions) SetUsers(users string) *GetLogsOptions {
+	if users == "" {
+		return o
+	}
+
+	for _, user := range strings.Split(users, ",") {
+		user = strings.TrimSpace(user)
+		if user != "" {
+			o.Users = append(o.Users, user)
+		}
+	}
+	return o
+}
+
+func (o *GetLogsOptions) SetLimit(limit uint64) *GetLogsOptions {
+	if limit == 0 {
+		return o
+	}
+
+	o.Limit = limit
+
+	return o
 }

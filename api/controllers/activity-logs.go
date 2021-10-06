@@ -12,9 +12,9 @@ import (
 
 func GetActivityLogs(
 	params router.Params,
-	_ io.ReadCloser,
+	body io.ReadCloser,
 	Repo repo.IRepo,
-	user models.User,
+	_ models.User,
 ) (_ router.Serde, status int, err error) {
 	var response models.GetActivityLogResponse
 	var logs []models.ActivityLog
@@ -22,6 +22,8 @@ func GetActivityLogs(
 	status = http.StatusOK
 
 	projectID := params.Get("projectID").(string)
+	options := models.GetLogsOptions{}
+	options.Deserialize(body)
 
 	if err = Repo.
 		GetProjectsOrganization(projectID, &organization).
@@ -43,7 +45,7 @@ func GetActivityLogs(
 	}
 
 	if err = Repo.
-		GetActivityLogs(projectID, &logs).
+		GetActivityLogs(projectID, options, &logs).
 		Err(); err != nil {
 		status = http.StatusInternalServerError
 		goto done

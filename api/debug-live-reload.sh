@@ -67,6 +67,9 @@ unlockBuild() {
 }
 
 # run the server for the first time
+if [ ! -f ./server ]; then
+  buildServer
+fi
 runServer
 
 inotifywait -e MODIFY -r -m ./ |
