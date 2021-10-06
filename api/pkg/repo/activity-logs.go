@@ -45,23 +45,29 @@ func (r *Repo) GetActivityLogs(
 		req = req.Where("activity_logs.action IN (?)", options.Actions)
 	}
 
+	var l []models.ActivityLog = make([]models.ActivityLog, options.Limit)
 	r.err = req.
 		Where("projects.uuid = ?", projectID).
 		Order("created_at DESC").
 		Limit(int(options.Limit)).
 		Preload(clause.Associations).
-		Find(logs).
+		Find(&l).
 		Error
 
-	if r.err != nil {
-		reverseLogs(*logs)
+	if r.err == nil {
+		*logs = reverseLogs(l)
 	}
 
 	return r
 }
 
-func reverseLogs(logs []models.ActivityLog) {
-	for i, j := 0, len(logs)-1; i < j; i, j = i+1, j-1 {
-		logs[i], logs[j] = logs[j], logs[i]
+func reverseLogs(logs []models.ActivityLog) []models.ActivityLog {
+	out := make([]models.ActivityLog, len(logs))
+
+	for index, log := range logs {
+		backIndex := len(out) - 1 - index
+		out[backIndex] = log
 	}
+
+	return out
 }

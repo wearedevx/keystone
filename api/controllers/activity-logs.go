@@ -40,7 +40,7 @@ func GetActivityLogs(
 	// Only paid organiations can access this resource
 	if !organization.Paid {
 		status = http.StatusForbidden
-		err = errors.New("Forbidden")
+		err = errors.New("Upgrade required")
 		goto done
 	}
 
