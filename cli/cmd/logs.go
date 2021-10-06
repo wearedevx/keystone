@@ -90,21 +90,30 @@ func printAllTheLogs(logs []models.ActivityLogLite) {
 
 func printLog(log models.ActivityLogLite) {
 	fmt.Printf(
-		"[%s] %s on %s (%s): %s | %s\n",
+		"[%s] %s on %s%s: %s %s %s\n",
 		log.CreatedAt.Format("2006-12-29 15:04:05"),
 		log.UserID,
 		log.ProjectName,
-		log.EnvironmentName,
+		formatEnvironmentForLog(log.EnvironmentName),
+		formatSuccesForLog(log.Success),
 		log.Action,
-		formatForLog(log.Success, log.ErrorMessage),
+		log.ErrorMessage,
 	)
 }
 
-func formatForLog(s bool, message string) string {
+func formatEnvironmentForLog(envName string) string {
+	if envName == "" {
+		return ""
+	}
+
+	return fmt.Sprintf(" (%s)", envName)
+}
+
+func formatSuccesForLog(s bool) string {
 	if s {
-		return "SUCCESS"
+		return ""
 	} else {
-		return fmt.Sprintf("FAILURE: %s", message)
+		return "✘"
 	}
 }
 
