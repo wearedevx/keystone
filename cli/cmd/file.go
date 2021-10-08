@@ -10,7 +10,6 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
-	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -112,15 +111,13 @@ $ ks file -qf available
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		printer := &ui.UiPrinter{}
-
-		ms := messages.NewMessageService(ctx, printer)
-		ms.GetMessages()
-
-		if err := ms.Err(); err != nil {
+		if _, err := fetchMessages(nil); err != nil {
 			config.CheckExpiredTokenError(err)
 
-			fmt.Fprintf(os.Stderr, "WARNING: Could not get messages (%s)", err.Error())
+			ui.PrintStdErr(
+				"WARNING: Could not get messages (%s)",
+				err.Error(),
+			)
 		}
 
 		files := ctx.ListFiles()

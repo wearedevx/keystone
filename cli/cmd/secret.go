@@ -21,11 +21,8 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // secretsCmd represents the secrets command
@@ -41,14 +38,8 @@ Used without arguments, displays a table of secrets.`,
 		ctx.MustHaveEnvironment(currentEnvironment)
 		environments := ctx.ListEnvironments()
 
-		printer := &ui.UiPrinter{}
-
-		ms := messages.NewMessageService(ctx, printer)
-		ms.GetMessages()
-
-		if err := ms.Err(); err != nil {
-			config.CheckExpiredTokenError(err)
-
+		_, err = fetchMessages(nil)
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "WARNING: Could not get messages (%s)", err.Error())
 		}
 

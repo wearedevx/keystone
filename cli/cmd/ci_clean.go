@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -27,7 +28,7 @@ ks ci clean --env prod
 		ciService, err := SelectCiService(ctx)
 
 		if err != nil {
-			ui.PrintError(err.Error())
+			kserrors.CouldNotCleanService(err)
 			os.Exit(1)
 		}
 
@@ -39,7 +40,7 @@ ks ci clean --env prod
 				os.Exit(0)
 			}
 
-			ui.PrintError(ciService.Error().Error())
+			kserrors.CouldNotCleanService(ciService.Error())
 			os.Exit(1)
 		}
 		ui.PrintSuccess(fmt.Sprintf("Secrets successfully removed from CI service, environment %s.", currentEnvironment))

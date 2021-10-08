@@ -55,21 +55,22 @@ other_value
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		var printer = &ui.EchoPrinter{}
-
 		if config.IsLoggedIn() {
-			ms := messages.NewMessageService(ctx, printer)
-			ms.GetMessages()
-
-			if err := ms.Err(); err != nil {
-				config.CheckExpiredTokenError(err)
-
-				fmt.Fprintf(os.Stderr, "WARNING: Could not get messages (%s)", err.Error())
+			ms := messages.NewEchoMessageService(ctx)
+			if _, err := fetchMessages(ms); err != nil {
+				ui.PrintStdErr(
+					"WARNING: Could not get messages (%s)",
+					err.Error(),
+				)
 			}
 		}
 
 		env := ctx.ListSecrets()
-		ctx.FilesUseEnvironment(currentEnvironment, currentEnvironment, core.CTX_KEEP_LOCAL_FILES)
+		ctx.FilesUseEnvironment(
+			currentEnvironment,
+			currentEnvironment,
+			core.CTX_KEEP_LOCAL_FILES,
+		)
 
 		mustNotHaveAnyRequiredThingMissing(ctx)
 

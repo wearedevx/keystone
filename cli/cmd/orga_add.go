@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -17,13 +16,8 @@ var orgaAddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Create a new organization",
 	Long:  `Create a new oranization for your projects`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		argc := len(args)
-		if argc == 0 || argc > 1 {
-			ui.PrintError(fmt.Sprintf("invalid number of arguments. Expected 1, got %d", argc))
-			os.Exit(1)
-		}
-
 		organizationName := args[0]
 
 		sp := spinner.Spinner(" ")
@@ -41,6 +35,7 @@ var orgaAddCmd = &cobra.Command{
 			ui.PrintError(createErr.Error())
 			os.Exit(1)
 		}
+
 		ui.PrintSuccess("Organization %s has been created", organization.Name)
 	},
 }

@@ -16,36 +16,27 @@ var deviceRevokeCmd = &cobra.Command{
 	Use:   "revoke",
 	Short: "Revoke access to one of your device.",
 	Long:  `Revoke access to one of your device.`,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		// argc := len(args)
-		// if argc == 0 || argc > 1 {
-		// 	ui.PrintError(fmt.Sprintf("invalid number of arguments. Expected 1, got %d", argc))
-		// 	os.Exit(1)
-		// }
-		// deviceName := args[0]
-
+	Run: func(_ *cobra.Command, _ []string) {
 		c, kcErr := client.NewKeystoneClient()
-
 		if kcErr != nil {
 			fmt.Println(kcErr)
 			os.Exit(1)
 		}
 
 		devices, err := c.Devices().GetAll()
+		if err != nil {
+			handleClientError(err)
+		}
 
 		device := prompts.SelectDevice(devices)
 
 		kf := keystonefile.KeystoneFile{}
 		kf.Load(ctx.Wd)
 
-		err = c.Devices().Revoke(device.UID)
-
-		// ui.PrintError(err)
-		if err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
+		if err = c.Devices().Revoke(device.UID); err != nil {
+			handleClientError(err)
 		}
+
 		ui.PrintSuccess("Device has been revoked and will no longer be updated with new secrets.")
 		ui.Print("If you did this because your account has been compromised, make sure to change your secrets.")
 

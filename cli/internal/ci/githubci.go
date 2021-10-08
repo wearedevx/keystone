@@ -76,10 +76,18 @@ func (g *gitHubCiService) Setup() CiService {
 	return g
 }
 
-func (g *gitHubCiService) CheckSetup() {
-	if len(g.servicesKeys["Owner"]) == 0 || len(g.servicesKeys["Project"]) == 0 || len(g.getApiKey()) == 0 {
-		g.err = fmt.Errorf("There is missing information in CI service settings.\nUse $ ks ci update %s", g.name)
+func (g *gitHubCiService) CheckSetup() CiService {
+	if g.err != nil {
+		return g
 	}
+
+	if len(g.servicesKeys["Owner"]) == 0 ||
+		len(g.servicesKeys["Project"]) == 0 ||
+		len(g.getApiKey()) == 0 {
+		g.err = errors.New("Missing CI information")
+	}
+
+	return g
 }
 
 // PushSecret sends a "Message" (that's a complete encrypted environment)

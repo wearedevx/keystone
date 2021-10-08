@@ -16,7 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -58,10 +57,7 @@ ks ci rm my-github-ci-service
 
 		s, ok := ci.FindCiServiceWithName(ctx, serviceName)
 		if !ok {
-			// TODO: Create a proper error
-			kserrors.
-				UnkownError(fmt.Errorf("No such CI service: %s", serviceName)).
-				Print()
+			kserrors.NoSuchService(serviceName, nil).Print()
 			os.Exit(1)
 		}
 
@@ -73,7 +69,7 @@ This cannot be undone.`,
 
 		if prompts.Confirm("Continue") {
 			if err := ci.RemoveCiService(ctx, s.Name); err != nil {
-				ui.PrintError(err.Error())
+				kserrors.CouldNotRemoveService(err).Print()
 				os.Exit(1)
 			}
 		}

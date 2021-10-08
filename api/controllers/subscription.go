@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
+	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	"github.com/wearedevx/keystone/api/internal/payment"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -21,6 +22,11 @@ func PostSubscription(
 	user models.User,
 ) (response router.Serde, status int, err error) {
 	status = http.StatusOK
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "PostSubscription",
+	}
+
 	var sessionID, customerID, url string
 	var seats int64
 
@@ -39,6 +45,7 @@ func PostSubscription(
 			status = http.StatusNotFound
 		} else {
 			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
 		}
 
 		goto done
@@ -46,19 +53,20 @@ func PostSubscription(
 
 	if organization.User.UserID != user.UserID {
 		status = http.StatusForbidden
-		err = errors.New("operation not permitted")
+		err = apierrors.ErrorPermissionDenied()
 		goto done
 	}
 
 	if organization.CustomerID != "" && organization.SubscriptionID != "" && organization.Paid {
 		status = http.StatusConflict
-		err = errors.New("already subscribed")
+		err = apierrors.ErrorAlreadySubscribed()
 		goto done
 	}
 
 	sessionID, customerID, url, err = p.StartCheckout(&organization, seats)
 	if err != nil {
 		status = http.StatusInternalServerError
+		err = apierrors.ErrorFailedToStartCheckout(err)
 		goto done
 	}
 
@@ -68,6 +76,7 @@ func PostSubscription(
 			SessionID: sessionID,
 		}).Err(); err != nil {
 		status = http.StatusInternalServerError
+		err = apierrors.ErrorFailedToCreateResource(err)
 		goto done
 	}
 
@@ -77,7 +86,7 @@ func PostSubscription(
 	}
 
 done:
-	return response, status, err
+	return response, status, log.SetError(err)
 }
 
 func GetPollSubscriptionSuccess(
@@ -87,6 +96,11 @@ func GetPollSubscriptionSuccess(
 	user models.User,
 ) (response router.Serde, status int, err error) {
 	status = http.StatusOK
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "GetPollSubscriptionSuccess",
+	}
+
 	var cs models.CheckoutSession
 	var sessionID string = params.Get("sessionID").(string)
 
@@ -95,10 +109,11 @@ func GetPollSubscriptionSuccess(
 			status = http.StatusNotFound
 		} else {
 			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
 		}
 	}
 
-	return response, status, err
+	return response, status, log.SetError(err)
 }
 
 func GetCheckoutSuccess(
@@ -107,6 +122,7 @@ func GetCheckoutSuccess(
 	_ httprouter.Params,
 ) {
 	status := http.StatusOK
+
 	sessionID := r.URL.Query().Get("session_id")
 	msg := "Thank you for subscribing to Keystone!"
 
@@ -214,6 +230,10 @@ func PostStripeWebhook(
 			return nil
 		})
 
+		if err != nil {
+			err = apierrors.ErrorCheckoutCompleteFailed(err)
+		}
+
 	case payment.EventSubscriptionPaid:
 		var seats int64
 		organization := models.Organization{
@@ -239,6 +259,10 @@ func PostStripeWebhook(
 			return nil
 		})
 
+		if err != nil {
+			err = apierrors.ErrorSubscriptionPaidFailed(err)
+		}
+
 	case payment.EventSubscriptionUnpaid:
 		organization := models.Organization{
 			SubscriptionID: string(event.SubscriptionID),
@@ -251,6 +275,10 @@ func PostStripeWebhook(
 				Err()
 		})
 
+		if err != nil {
+			err = apierrors.ErrorSubscriptionUnpaidFailed(err)
+		}
+
 	case payment.EventSubscriptionCanceled:
 		organization := models.Organization{
 			SubscriptionID: string(event.SubscriptionID),
@@ -262,6 +290,10 @@ func PostStripeWebhook(
 				OrganizationSetPaid(&organization, false).
 				Err()
 		})
+
+		if err != nil {
+			err = apierrors.ErrorSubscriptionCanceledFailed(err)
+		}
 
 	default:
 	}
@@ -277,13 +309,16 @@ func ManageSubscription(
 	params router.Params,
 	_ io.ReadCloser,
 	Repo repo.IRepo,
-	_ models.User,
+	user models.User,
 ) (_ router.Serde, status int, err error) {
-	var p payment.Payment
 	var url string
 	var result models.ManageSubscriptionResponse
 
 	status = http.StatusOK
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "ManageSubscription",
+	}
 
 	organizationName := params.Get("organizationName").(string)
 	organization := models.Organization{
@@ -294,14 +329,16 @@ func ManageSubscription(
 		GetOrganization(&organization).
 		Err(); err != nil {
 		status = http.StatusInternalServerError
+		err = apierrors.ErrorFailedToGetResource(err)
 		goto done
 	}
 
-	p = payment.NewStripePayment()
-
-	url, err = p.GetManagementLink(&organization)
+	url, err = payment.
+		NewStripePayment().
+		GetManagementLink(&organization)
 	if err != nil {
 		status = http.StatusInternalServerError
+		err = apierrors.ErrorFailedToGetManagementLink(err)
 		goto done
 	}
 
@@ -310,5 +347,5 @@ func ManageSubscription(
 	}
 
 done:
-	return &result, status, err
+	return &result, status, log.SetError(err)
 }

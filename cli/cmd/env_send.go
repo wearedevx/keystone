@@ -22,7 +22,6 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kerrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
-	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // sendCmd represents the send command
@@ -38,8 +37,6 @@ var sendCmd = &cobra.Command{
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		// fetch()
-
 		environments := ctx.AccessibleEnvironments
 
 		for i, env := range environments {
@@ -52,8 +49,7 @@ var sendCmd = &cobra.Command{
 			}
 		}
 
-		var printer = &ui.UiPrinter{}
-		ms := messages.NewMessageService(ctx, printer)
+		ms := messages.NewMessageService(ctx)
 
 		if err = ms.SendEnvironments(environments).Err(); err != nil {
 			err.Print()

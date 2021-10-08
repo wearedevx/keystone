@@ -5,12 +5,11 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
+	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
-	"gorm.io/gorm"
 )
 
 func GetOrganizations(
@@ -24,15 +23,21 @@ func GetOrganizations(
 		Organizations: []models.Organization{},
 	}
 
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "GetOrganizations",
+	}
+
 	if err = Repo.GetOrganizations(user.ID, &result).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
 		} else {
+			err = apierrors.ErrorFailedToGetResource(err)
 			status = http.StatusInternalServerError
 		}
 	}
 
-	return &result, status, err
+	return &result, status, log.SetError(err)
 }
 
 func PostOrganization(
@@ -42,28 +47,37 @@ func PostOrganization(
 	user models.User,
 ) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "PostOrganization",
+	}
 
 	orga := models.Organization{}
 
 	if err = orga.Deserialize(body); err != nil {
 		status = http.StatusBadRequest
+		err = apierrors.ErrorBadRequest(err)
 		goto done
 	}
 
 	orga.UserID = user.ID
 
 	if err = Repo.CreateOrganization(&orga).Err(); err != nil {
-		if strings.Contains(err.Error(), "Incorrect organization name") {
-			status = http.StatusForbidden
-		} else if strings.Contains(err.Error(), "Organization name already taken") {
+		switch {
+		case errors.Is(err, repo.ErrorBadName):
+			status = http.StatusBadRequest
+			err = apierrors.ErrorBadOrganizationName()
+		case errors.Is(err, repo.ErrorNameTaken):
 			status = http.StatusConflict
-		} else {
+			err = apierrors.ErrorOrganizationNameAlreadyTaken()
+		default:
 			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToCreateResource(err)
 		}
 	}
 
 done:
-	return &orga, status, err
+	return &orga, status, log.SetError(err)
 }
 
 func UpdateOrganization(
@@ -74,11 +88,16 @@ func UpdateOrganization(
 ) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
+	log := models.ActivityLog{
+		UserID: &user.ID,
+	}
+
 	var isOwner bool
 	orga := models.Organization{}
 
 	if err = orga.Deserialize(body); err != nil {
 		status = http.StatusBadRequest
+		err = apierrors.ErrorBadRequest(err)
 		goto done
 	}
 
@@ -87,27 +106,41 @@ func UpdateOrganization(
 	switch {
 	case err != nil:
 		status = http.StatusBadRequest
+		err = apierrors.ErrorBadRequest(err)
 	case !isOwner:
 		status = http.StatusForbidden
-		err = errors.New("You are not the organization's owner")
+		err = apierrors.ErrorNotOrganizationOwner()
 	default:
 		if err = Repo.UpdateOrganization(&orga).Err(); err != nil {
-			if strings.Contains(err.Error(), "Incorrect organization name") {
+			if errors.Is(err, repo.ErrorBadName) {
 				status = http.StatusForbidden
-			} else if strings.Contains(err.Error(), "Organization name already taken") {
+				err = apierrors.ErrorBadOrganizationName()
+
+			} else if errors.Is(err, repo.ErrorNameTaken) {
 				status = http.StatusConflict
+				err = apierrors.ErrorOrganizationNameAlreadyTaken()
 			} else {
 				status = http.StatusInternalServerError
+				err = apierrors.ErrorFailedToUpdateResource(err)
 			}
 		}
 	}
 
 done:
-	return &orga, status, err
+	return &orga, status, log.SetError(err)
 }
 
-func GetOrganizationProjects(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func GetOrganizationProjects(
+	params router.Params,
+	body io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
+
+	log := models.ActivityLog{
+		UserID: &user.ID,
+	}
 
 	var orgaID = params.Get("orgaID").(string)
 
@@ -119,13 +152,18 @@ func GetOrganizationProjects(params router.Params, body io.ReadCloser, Repo repo
 	orga := models.Organization{ID: uint(u64)}
 
 	if err != nil {
-		status = http.StatusInternalServerError
-		return &result, status, err
+		status = http.StatusBadRequest
+		err = apierrors.ErrorBadRequest(err)
+
+		goto done
 	}
 
-	if err = Repo.GetOrganizationProjects(&orga, &result.Projects).Err(); err != nil {
+	if err = Repo.
+		GetOrganizationProjects(&orga, &result.Projects).
+		Err(); err != nil {
 		status = http.StatusInternalServerError
-		return &result, status, err
+		err = apierrors.ErrorFailedToGetResource(err)
+		goto done
 	}
 
 	for index, project := range result.Projects {
@@ -134,24 +172,32 @@ func GetOrganizationProjects(params router.Params, body io.ReadCloser, Repo repo
 			ProjectID: project.ID,
 		}
 
-		err := Repo.GetProjectMember(&projectMember).Err()
-
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
+		if err = Repo.
+			GetProjectMember(&projectMember).
+			Err(); err != nil {
+			if errors.Is(err, repo.ErrorNotFound) {
 				// Remove project if user is not a member
-				result.Projects = append(result.Projects[:index], result.Projects[index+1:]...)
+				result.Projects = append(
+					result.Projects[:index],
+					result.Projects[index+1:]...,
+				)
 			} else {
 				status = http.StatusInternalServerError
-				return &result, status, err
+				err = apierrors.ErrorFailedToGetResource(err)
 			}
 		}
 	}
 
-	return &result, status, err
+done:
+	return &result, status, log.SetError(err)
 }
 
 func GetOrganizationMembers(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
+
+	log := models.ActivityLog{
+		UserID: &user.ID,
+	}
 
 	var orgaID = params.Get("orgaID").(string)
 
@@ -163,14 +209,21 @@ func GetOrganizationMembers(params router.Params, body io.ReadCloser, Repo repo.
 	orga := models.Organization{ID: uint(u64)}
 
 	if err != nil {
-		status = http.StatusInternalServerError
-		return &result, status, err
+		status = http.StatusBadRequest
+		err = apierrors.ErrorBadRequest(err)
+
+		goto done
 	}
 
-	if err = Repo.GetOrganizationMembers(orga.ID, &result.Members).Err(); err != nil {
+	if err = Repo.
+		GetOrganizationMembers(orga.ID, &result.Members).
+		Err(); err != nil {
 		status = http.StatusInternalServerError
-		return &result, status, err
+		err = apierrors.ErrorFailedToGetResource(err)
+
+		goto done
 	}
 
-	return &result, status, err
+done:
+	return &result, status, log.SetError(err)
 }

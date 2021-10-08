@@ -10,6 +10,7 @@ import (
 	"github.com/cossacklabs/themis/gothemis/cell"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/archive"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -22,14 +23,10 @@ var restoreCmd = &cobra.Command{
 	Short: "Restore secrets and files from keystone created backup.",
 	Long: `Restore secrets and files from keystone created backup.
 This will override all the data you have stored locally.`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		argc := len(args)
-		if argc == 0 || argc > 1 {
-			ui.PrintError(fmt.Sprintf("invalid number of arguments. Expected 1, got %d", argc))
-			os.Exit(1)
-		}
 		if len(ctx.AccessibleEnvironments) < 3 {
-			ui.PrintError(fmt.Sprintf("You don't have the permissions to restore a backup."))
+			kserrors.RestoreDenied(nil)
 			os.Exit(1)
 		}
 
@@ -41,7 +38,6 @@ This will override all the data you have stored locally.`,
 
 		if password == "" {
 			password = prompts.StringInput("Password to decrypt backup", "")
-
 		}
 
 		if !skipPrompts {
@@ -95,8 +91,7 @@ It will update other members secrets and files.`, map[string]string{}))
 			os.Exit(1)
 		}
 
-		var printer = &ui.UiPrinter{}
-		ms := messages.NewMessageService(ctx, printer)
+		ms := messages.NewMessageService(ctx)
 		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
 			err.Print()
 			os.Exit(1)

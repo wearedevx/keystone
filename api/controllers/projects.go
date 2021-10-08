@@ -7,13 +7,18 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 
+	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	"github.com/wearedevx/keystone/api/internal/payment"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
-func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func PostProject(
+	_ router.Params,
+	body io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	log := models.ActivityLog{
 		UserID: &user.ID,
@@ -25,28 +30,36 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 
 	if err = project.Deserialize(body); err != nil {
 		status = http.StatusBadRequest
+		err = apierrors.ErrorBadRequest(err)
 		goto done
 	}
 
 	project.UserID = user.ID
 
-	if err = Repo.GetOrCreateProject(&project).Err(); err != nil {
-		status = http.StatusInternalServerError
+	if err = Repo.
+		GetOrCreateProject(&project).
+		GetProjectsOrganization(project.UUID, &orga).
+		Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusNotFound
+		} else {
+			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
+		}
 		goto done
 	}
 
 	// Add organization's owner to project as admin
-	if err := Repo.GetProjectsOrganization(project.UUID, &orga).Err(); err != nil {
-		return &project, http.StatusInternalServerError, err
-	}
-
 	if user.ID != orga.UserID {
 		role := models.Role{
 			Name: "admin",
 		}
 
 		if err := Repo.GetRole(&role).Err(); err != nil {
-			return &project, http.StatusInternalServerError, err
+			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
+
+			goto done
 		}
 
 		orgaOwner := models.ProjectMember{
@@ -55,7 +68,10 @@ func PostProject(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mode
 			RoleID:    role.ID,
 		}
 
-		Repo.GetDb().Save(&orgaOwner)
+		if err = Repo.GetDb().Save(&orgaOwner).Error; err != nil {
+			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToCreateResource(err)
+		}
 	}
 
 	project.User = user
@@ -76,16 +92,21 @@ func GetProjects(
 	user models.User,
 ) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "GetProjects",
+	}
 
 	var result models.GetProjectsResponse
 
-	Repo.GetUserProjects(user.ID, &result.Projects)
-
-	if err = Repo.Err(); err != nil {
-		return &result, http.StatusInternalServerError, err
+	if err = Repo.
+		GetUserProjects(user.ID, &result.Projects).
+		Err(); err != nil {
+		status = http.StatusInternalServerError
+		err = apierrors.ErrorFailedToGetResource(err)
 	}
 
-	return &result, status, err
+	return &result, status, log.SetError(err)
 }
 
 func GetProjectsMembers(
@@ -107,6 +128,7 @@ func GetProjectsMembers(
 
 	if projectID == "" {
 		status = http.StatusBadRequest
+		err = apierrors.ErrorBadRequest(err)
 		goto done
 	}
 
@@ -123,6 +145,7 @@ func GetProjectsMembers(
 			status = http.StatusNotFound
 		} else {
 			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
 		}
 	}
 
@@ -157,7 +180,7 @@ func PostProjectsMembers(
 
 	if projectID == "" || err != nil {
 		status = http.StatusBadRequest
-		err = nil
+		err = apierrors.ErrorBadRequest(err)
 		goto done
 	}
 
@@ -165,6 +188,7 @@ func PostProjectsMembers(
 		GetProjectsOrganization(projectID, &organization).
 		Err(); err != nil {
 		status = http.StatusBadRequest
+		err = apierrors.ErrorFailedToGetResource(err)
 		goto done
 	}
 
@@ -172,9 +196,13 @@ func PostProjectsMembers(
 
 	for _, member := range input.Members {
 		role := models.Role{ID: member.RoleID}
+
 		if err := Repo.GetRole(&role).Err(); err == nil {
 			if role.Name != "admin" && !isPaid {
-				return nil, http.StatusInternalServerError, errors.New("You are not allowed to set role other than admin for free organization")
+				status = http.StatusForbidden
+				err = apierrors.ErrorNeedsUpgrade()
+
+				goto done
 			}
 		}
 	}
@@ -182,6 +210,9 @@ func PostProjectsMembers(
 	if err = Repo.GetProjectByUUID(projectID, &project).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
+		} else {
+			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
 		}
 
 		goto done
@@ -197,6 +228,7 @@ func PostProjectsMembers(
 
 	if len(areInProjects) > 0 {
 		status = http.StatusConflict
+		err = apierrors.ErrorMemberAlreadyInProject()
 		result.Error = "user already in project"
 
 		goto done
@@ -206,6 +238,7 @@ func PostProjectsMembers(
 
 	if err != nil {
 		status = http.StatusInternalServerError
+		err = apierrors.ErrorFailedToGetPermission(err)
 		result.Error = err.Error()
 
 		goto done
@@ -218,6 +251,7 @@ func PostProjectsMembers(
 			OrganizationCountMembers(&organization, &seats).
 			Err(); err != nil {
 			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToAddMembers(err)
 			result.Error = err.Error()
 		} else {
 			result.Success = true
@@ -227,17 +261,26 @@ func PostProjectsMembers(
 				payment.SubscriptionID(organization.SubscriptionID),
 				seats,
 			)
+			if err != nil {
+				err = apierrors.ErrorFailedToUpdateSubscription(err)
+			}
 		}
 	} else {
 		status = http.StatusForbidden
-		result.Error = "operation not allowed"
+		err = apierrors.ErrorPermissionDenied()
+		result.Error = err.Error()
 	}
 
 done:
 	return &result, status, log.SetError(err)
 }
 
-func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func DeleteProjectsMembers(
+	params router.Params,
+	body io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	log := models.ActivityLog{
 		UserID: &user.ID,
@@ -270,6 +313,7 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 			result.Error = "No such project"
 		} else {
 			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
 			result.Error = err.Error()
 		}
 		goto done
@@ -278,9 +322,17 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 	log.ProjectID = &project.ID
 
 	// Prevent users that are not admin on the project from deleting it
-	userIsAdmin = Repo.ProjectIsMemberAdmin(&project, &models.ProjectMember{UserID: user.ID})
+	userIsAdmin = Repo.ProjectIsMemberAdmin(
+		&project,
+		&models.ProjectMember{UserID: user.ID},
+	)
 	if err = Repo.Err(); err != nil || !userIsAdmin {
+		if err != nil {
+			apierrors.ErrorUnknown(err)
+		}
+
 		status = http.StatusNotFound
+
 		goto done
 	}
 
@@ -288,7 +340,8 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 
 	if len(areInProjects) != len(input.Members) {
 		status = http.StatusConflict
-		result.Error = "user not in project"
+		err = apierrors.ErrorNotAMember()
+		result.Error = err.Error()
 
 		goto done
 	}
@@ -296,6 +349,7 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 	can, err = checkUserCanRemoveMembers(Repo, user, project, input.Members)
 	if err != nil {
 		status = http.StatusInternalServerError
+		err = apierrors.ErrorFailedToGetPermission(err)
 		result.Error = err.Error()
 
 		goto done
@@ -306,6 +360,7 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 			ProjectRemoveMembers(project, input.Members).
 			Err(); err != nil {
 			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToDeleteResource(err)
 			result.Error = err.Error()
 		} else {
 			result.Success = true
@@ -315,10 +370,15 @@ func DeleteProjectsMembers(params router.Params, body io.ReadCloser, Repo repo.I
 				payment.SubscriptionID(organization.SubscriptionID),
 				seats,
 			)
+
+			if err != nil {
+				apierrors.ErrorFailedToUpdateSubscription(err)
+			}
 		}
 	} else {
 		status = http.StatusForbidden
-		result.Error = "operation not allowed"
+		err = apierrors.ErrorPermissionDenied()
+		result.Error = err.Error()
 	}
 
 done:
@@ -401,7 +461,12 @@ func checkUserCanRemoveMembers(Repo repo.IRepo, user models.User, project models
 	return can, err
 }
 
-func GetAccessibleEnvironments(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func GetAccessibleEnvironments(
+	params router.Params,
+	_ io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
 	result := models.GetEnvironmentsResponse{
 		Environments: make([]models.Environment, 0),
 	}
@@ -421,6 +486,7 @@ func GetAccessibleEnvironments(params router.Params, _ io.ReadCloser, Repo repo.
 			status = http.StatusNotFound
 		} else {
 			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
 		}
 		goto done
 	}
@@ -435,6 +501,7 @@ func GetAccessibleEnvironments(params router.Params, _ io.ReadCloser, Repo repo.
 		can, err = rights.CanUserWriteOnEnvironment(Repo, user.ID, project.ID, &environment)
 		if err != nil {
 			status = http.StatusNotFound
+			err = apierrors.ErrorFailedToGetPermission(err)
 			goto done
 		}
 
@@ -447,7 +514,12 @@ done:
 	return &result, status, log.SetError(err)
 }
 
-func DeleteProject(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func DeleteProject(
+	params router.Params,
+	_ io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
 	status = http.StatusNoContent
 	log := models.ActivityLog{
 		UserID: &user.ID,
@@ -467,22 +539,50 @@ func DeleteProject(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 
 	if err = Repo.Err(); err != nil {
 		status = http.StatusInternalServerError
+		err = apierrors.ErrorFailedToDeleteResource(err)
 	}
 
 	return nil, status, log.SetError(err)
 }
 
-func GetProjectsOrganization(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
+func GetProjectsOrganization(
+	params router.Params,
+	_ io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
+	status = http.StatusAccepted
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "GetProjectsOrganization",
+	}
 
 	result := models.Organization{}
 	var projectId = params.Get("projectID").(string)
 	var organization models.Organization
 
-	Repo.GetProjectsOrganization(projectId, &organization)
-	if err != nil {
-		return nil, status, err
+	if projectId == "" {
+		status = http.StatusBadRequest
+		err = apierrors.ErrorBadRequest(errors.New("no project id"))
+
+		goto done
 	}
+
+	if err = Repo.
+		GetProjectsOrganization(projectId, &organization).
+		Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusNotFound
+		} else {
+			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
+		}
+
+		goto done
+	}
+
 	result = organization
 
-	return &result, status, err
+done:
+	return &result, status, log.SetError(err)
 }

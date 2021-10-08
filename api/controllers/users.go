@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/wearedevx/keystone/api/internal/activitylog"
+	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	log "github.com/wearedevx/keystone/api/internal/utils/cloudlogger"
 	"github.com/wearedevx/keystone/api/pkg/jwt"
 
@@ -42,15 +43,21 @@ func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		msg := ""
 
 		if err = user.Deserialize(r.Body); err != nil {
-			msg = "Bad Request"
 			status = http.StatusBadRequest
+			err = apierrors.ErrorBadRequest(err)
+			msg = err.Error()
 
 			goto done
 		}
 
 		if err = Repo.GetOrCreateUser(user).Err(); err != nil {
-			msg = "Not Found"
-			status = http.StatusNotFound
+			if errors.Is(err, repo.ErrorNotFound) {
+				status = http.StatusNotFound
+				err = repo.ErrorNotFound
+			} else {
+				status = http.StatusBadRequest
+			}
+			msg = err.Error()
 
 			goto done
 		}
@@ -369,7 +376,7 @@ func GetUserKeys(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ model
 
 	if userID == "" {
 		status = http.StatusBadRequest
-		err = errors.New("bad request")
+		err = apierrors.ErrorBadRequest(err)
 
 		goto done
 	}
@@ -381,6 +388,7 @@ func GetUserKeys(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ model
 			status = http.StatusNotFound
 		} else {
 			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToDeleteResource(err)
 		}
 	} else {
 		userPublicKeys.UserID = targetUser.ID

@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 
+	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -32,6 +33,7 @@ func GetActivityLogs(
 			status = http.StatusNotFound
 		} else {
 			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
 		}
 
 		goto done
@@ -40,7 +42,7 @@ func GetActivityLogs(
 	// Only paid organiations can access this resource
 	if !organization.Paid {
 		status = http.StatusForbidden
-		err = errors.New("Upgrade required")
+		err = apierrors.ErrorNeedsUpgrade()
 		goto done
 	}
 
@@ -48,6 +50,7 @@ func GetActivityLogs(
 		GetActivityLogs(projectID, options, &logs).
 		Err(); err != nil {
 		status = http.StatusInternalServerError
+		err = apierrors.ErrorFailedToGetResource(err)
 		goto done
 	}
 

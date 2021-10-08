@@ -12,8 +12,7 @@ import (
 func matchOrganizationName(name string) error {
 	matched, _ := regexp.MatchString(`^[a-zA-Z0-9\.\-\_\@]{1,}$`, name)
 	if !matched {
-		err := errors.New("Incorrect organization name. Organization name must be alphanumeric with ., -, _, @")
-		return err
+		return ErrorBadName
 	}
 	return nil
 }
@@ -49,7 +48,7 @@ func (r *Repo) CreateOrganization(orga *models.Organization) IRepo {
 		r.err = err
 		return r
 	} else {
-		r.err = errors.New("Organization name already taken. Choose another one.")
+		r.err = ErrorNameTaken
 		return r
 	}
 }
@@ -86,7 +85,7 @@ func (r *Repo) UpdateOrganization(orga *models.Organization) IRepo {
 		r.err = err
 		return r
 	} else {
-		r.err = errors.New("Organization name already taken. Choose another one.")
+		r.err = ErrorNameTaken
 		return r
 	}
 }

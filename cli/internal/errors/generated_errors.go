@@ -51,6 +51,11 @@ This device is not registered to your account or its access has been revoked.
 To register it, please logout, then login again.
 
 `,
+	"BadDeviceName": `
+{{ ERROR }} {{ .Name | red }}
+Device names must be alphanumeric with ., -, _
+
+`,
 	"FailedToReadKeystoneFile": `
 {{ ERROR }} {{ .Name | red }}
 The keystone.yaml file exists, but it might not be readable or writable.
@@ -98,7 +103,28 @@ If you have this configuration from a project member, ask them to add you in the
 {{ ERROR }} {{- ": '" | red }} {{- .Name | red }} {{- "'" | red }}
 It seems like some members of the project's organization are not admin.
 Roles feature is only available for paid organization.
-Either have a premium organization or change roles back to admin for members in your project.
+
+Change each member role to admin:
+  $ ks member set-role <member id>
+
+Or, upgrade your organization plan:
+  $ ks orga upgrade
+
+`,
+	"NameDoesNotMatch": `
+{{ ERROR }} {{ .Name | red }}
+
+`,
+	"CouldNotRemoveLocalFiles": `
+{{ ERROR }} {{ .Name | red }}
+The project has been destroyed on our servers,
+but some locale files could not be removed.
+
+Check file system permissions and remove the following files manually:
+  - keystone.yaml
+  - .keystone/
+
+This happened because: {{ .Cause }}
 
 `,
 	"EnvironmentDoesntExist": `
@@ -362,19 +388,145 @@ This happened because: {{ .Cause }}
 `,
 	"PayloadErrors": `
 {{ ERROR }} {{ .Name | red }}
-This happend because: {{ .Cause }}
+This happened because: {{ .Cause }}
 
 `,
 	"InvalidFileContent": `
 {{ ERROR }} {{ .Name | red }}
 The file '{{ .Path }}' content could not be decoded from a base64 string
 
-This happend because: {{ .Cause }}
+This happened because: {{ .Cause }}
 
 `,
 	"FailedCheckingChanges": `
 {{ ERROR }} {{ .Name | red }}
 Error were encountered for file: '{{ .Path }}'
+
+This happened because: {{ .Cause }}
+
+`,
+	"FeatureRequiresToUpgrade": `
+{{ ERROR }} {{ .Name | red }}
+To upgrade your plan:
+  $ ks orga upgrade
+
+`,
+	"AlreadySubscribed": `
+{{ ERROR }} {{ .Name | red }}
+You already have access to all of Keystone features!
+
+`,
+	"CannotUpgrade": `
+{{ ERROR }} {{ .Name | red }}
+Communication with the billing service failed,
+try again later.
+
+`,
+	"ManagementInaccessible": `
+{{ ERROR }} {{ .Name | red }}
+Communication with the billing service failed,
+try again later.
+
+`,
+	"BadOrganizationName": `
+{{ ERROR }} {{ .Name | red }}
+Organization names must be alphanumeric with ., -, _
+
+`,
+	"OrganizationNameAlreadyTaken": `
+
+`,
+	"MustOwnTheOrganization": `
+{{ ERROR }} {{ .Name | red }}
+You tried to perform an operation that requires ownership
+of the organization.
+
+You should ask the owner of said organization to perform it for you.
+
+`,
+	"CouldntSendInvite": `
+{{ ERROR }} {{ .Name | red }}
+
+This happened because: {{ .Cause }}
+
+`,
+	"CouldntSetRole": `
+{{ ERROR }} {{ .Name | red }}
+
+`,
+	"BackupDenied": `
+{{ ERROR }} {{ .Name | red }}
+You are not allowed to create backups.
+
+`,
+	"RestoreDenied": `
+{{ ERROR }} {{ .Name | red }}
+You are not allowed to restore backups.
+
+`,
+	"CouldNotCreateArchive": `
+{{ ERROR }} {{ .Name | red }}
+
+This happened because: {{ .Cause }}
+
+`,
+	"FailedToReadBackup": `
+{{ ERROR }} {{ .Name | red }}
+
+This happened because: {{ .Cause }}
+
+`,
+	"FailedToWriteBackup": `
+{{ ERROR }} {{ .Name | red }}
+
+This happened because: {{ .Cause }}
+
+`,
+	"CiServiceAlreadyExists": `
+{{ ERROR }} {{ .Name | red }} {{- ": " | red }} {{- .ServiceName | red }}
+If you wish to modify it, try:
+  $ ks ci edit {{ .ServiceName }}
+
+If you wish to add a new service, pick another name, then
+  $ ks ci add <other-service-name>
+
+`,
+	"NoSuchService": `
+{{ ERROR }} {{ .Name | red }} {{ .ServiceName | red }}
+
+`,
+	"CouldNotAddService": `
+{{ ERROR }} {{ .Name | red }} {{ .ServiceName | red }}
+
+This happened because: {{ .Cause }}
+
+`,
+	"CouldNotCleanService": `
+{{ ERROR }} {{ .Name | red }}
+
+This happened because: {{ .Cause }}
+
+`,
+	"CouldNotChangeService": `
+{{ ERROR }} {{ .Name | red }} {{ .ServiceName | red }}
+
+This happened because: {{ .Cause }}
+
+`,
+	"CouldNotRemoveService": `
+{{ ERROR }} {{ .Name | red }}
+
+This happened because: {{ .Cause }}
+
+`,
+	"MissingCIInformation": `
+{{ ERROR }} {{ .Name | red }}
+To edit the service, try:
+  $ ks ci edit {{ .ServiceName }}
+
+`,
+	"CouldNotSendToCIService": `
+{{ ERROR }} {{ .Name | red }}
 
 This happened because: {{ .Cause }}
 
@@ -431,6 +583,12 @@ func DeviceNotRegistered(cause error) *Error {
 	return NewError("Device not registered", helpTexts["DeviceNotRegistered"], meta, cause)
 }
 
+func BadDeviceName(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Bad Device Name", helpTexts["BadDeviceName"], meta, cause)
+}
+
 func FailedToReadKeystoneFile(cause error) *Error {
 	meta := map[string]interface{}{}
 
@@ -484,6 +642,18 @@ func OrganizationNotPaid(cause error) *Error {
 	meta := map[string]interface{}{}
 
 	return NewError("Organization Not Paid", helpTexts["OrganizationNotPaid"], meta, cause)
+}
+
+func NameDoesNotMatch(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Name Does Not Match", helpTexts["NameDoesNotMatch"], meta, cause)
+}
+
+func CouldNotRemoveLocalFiles(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Could Not Remove Local Files", helpTexts["CouldNotRemoveLocalFiles"], meta, cause)
 }
 
 func EnvironmentDoesntExist(environment string, available string, cause error) *Error {
@@ -758,4 +928,141 @@ func FailedCheckingChanges(path string, cause error) *Error {
 		"Path": string(path),
 	}
 	return NewError("Failed While Checking for Changes", helpTexts["FailedCheckingChanges"], meta, cause)
+}
+
+func FeatureRequiresToUpgrade(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("This Feature Requires to Upgrade", helpTexts["FeatureRequiresToUpgrade"], meta, cause)
+}
+
+func AlreadySubscribed(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("The Organization Has Already Been Upgraded", helpTexts["AlreadySubscribed"], meta, cause)
+}
+
+func CannotUpgrade(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Cannot Upgrade", helpTexts["CannotUpgrade"], meta, cause)
+}
+
+func ManagementInaccessible(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Management Inaccessible", helpTexts["ManagementInaccessible"], meta, cause)
+}
+
+func BadOrganizationName(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Bad Organization Name", helpTexts["BadOrganizationName"], meta, cause)
+}
+
+func OrganizationNameAlreadyTaken(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Organization Name Already Taken", helpTexts["OrganizationNameAlreadyTaken"], meta, cause)
+}
+
+func MustOwnTheOrganization(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("You Must Own the Organization", helpTexts["MustOwnTheOrganization"], meta, cause)
+}
+
+func CouldntSendInvite(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Couldn't Send Invite", helpTexts["CouldntSendInvite"], meta, cause)
+}
+
+func CouldntSetRole(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Couldn't Set Role", helpTexts["CouldntSetRole"], meta, cause)
+}
+
+func BackupDenied(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Permission Denied", helpTexts["BackupDenied"], meta, cause)
+}
+
+func RestoreDenied(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Permission Denied", helpTexts["RestoreDenied"], meta, cause)
+}
+
+func CouldNotCreateArchive(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Could Not Create Archive", helpTexts["CouldNotCreateArchive"], meta, cause)
+}
+
+func FailedToReadBackup(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Failed To Read Backup", helpTexts["FailedToReadBackup"], meta, cause)
+}
+
+func FailedToWriteBackup(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Failed To Write Backup", helpTexts["FailedToWriteBackup"], meta, cause)
+}
+
+func CiServiceAlreadyExists(servicename string, cause error) *Error {
+	meta := map[string]interface{}{
+		"ServiceName": string(servicename),
+	}
+	return NewError("A CI Service Already Exists", helpTexts["CiServiceAlreadyExists"], meta, cause)
+}
+
+func NoSuchService(servicename string, cause error) *Error {
+	meta := map[string]interface{}{
+		"ServiceName": string(servicename),
+	}
+	return NewError("No Suche Service", helpTexts["NoSuchService"], meta, cause)
+}
+
+func CouldNotAddService(servicename string, cause error) *Error {
+	meta := map[string]interface{}{
+		"ServiceName": string(servicename),
+	}
+	return NewError("Could Not Add Service", helpTexts["CouldNotAddService"], meta, cause)
+}
+
+func CouldNotCleanService(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Could Not Clean Service", helpTexts["CouldNotCleanService"], meta, cause)
+}
+
+func CouldNotChangeService(servicename string, cause error) *Error {
+	meta := map[string]interface{}{
+		"ServiceName": string(servicename),
+	}
+	return NewError("Could Not Change Service", helpTexts["CouldNotChangeService"], meta, cause)
+}
+
+func CouldNotRemoveService(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Could Not Remove Service", helpTexts["CouldNotRemoveService"], meta, cause)
+}
+
+func MissingCIInformation(servicename string, cause error) *Error {
+	meta := map[string]interface{}{
+		"ServiceName": string(servicename),
+	}
+	return NewError("Missing Information for CI Service", helpTexts["MissingCIInformation"], meta, cause)
+}
+
+func CouldNotSendToCIService(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Could Not Send to CI Service", helpTexts["CouldNotSendToCIService"], meta, cause)
 }

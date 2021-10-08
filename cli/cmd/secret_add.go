@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -92,17 +91,8 @@ ks secret add PORT`,
 
 			environmentValueMap := setValuesForEnvironments(secretName, secretValue, ctx.AccessibleEnvironments)
 
-			var printer = &ui.UiPrinter{}
-			ms := messages.NewMessageService(ctx, printer)
-			changes := ms.GetMessages()
-
-			if err = ms.Err(); err != nil {
-				config.CheckExpiredTokenError(err)
-
-				err.Print()
-				os.Exit(1)
-			}
-
+			ms := messages.NewMessageService(ctx)
+			changes := mustFetchMessages(ms)
 			flag := core.S_REQUIRED
 
 			if addOptional {

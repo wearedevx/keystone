@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/wearedevx/keystone/api/internal/activitylog"
@@ -92,22 +91,16 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 				return err
 			}
 
-			foundDevice := false
-
-			for _, device := range user.Devices {
-				if device.UID == deviceUID {
-					device.LastUsedAt = time.Now()
-					if err := Repo.GetDb().Save(&device).Error; err != nil {
-						return err
-					}
-
-					foundDevice = true
+			if err = Repo.
+				UpdateDeviceLastUsedAt(deviceUID).
+				Err(); err != nil {
+				if errors.Is(err, repo.ErrorNotFound) {
+					http.Error(
+						dw,
+						"device not registered",
+						http.StatusNotFound,
+					)
 				}
-			}
-
-			if !foundDevice {
-				http.Error(dw, "Device not registered", http.StatusNotFound)
-				return err
 			}
 
 			p := newParams(r, params)

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -32,14 +33,18 @@ func DoUsersExist(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mod
 	notFounds := make([]string, 0)
 
 	if err != nil {
+		status = http.StatusBadRequest
+		err = apierrors.ErrorBadRequest(err)
+
 		goto done
 	}
 
 	// actual work
-	Repo.FindUsers(payload.MemberIDs, &users, &notFounds)
-
-	if err = Repo.Err(); err != nil {
+	if err = Repo.
+		FindUsers(payload.MemberIDs, &users, &notFounds).
+		Err(); err != nil {
 		status = http.StatusInternalServerError
+		err = apierrors.ErrorFailedToGetResource(err)
 		goto done
 	}
 
@@ -74,7 +79,8 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 
 	err = payload.Deserialize(body)
 	if err != nil {
-		status = http.StatusInternalServerError
+		status = http.StatusBadRequest
+		err = apierrors.ErrorBadRequest(err)
 		goto done
 	}
 
@@ -90,6 +96,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 			status = http.StatusNotFound
 		} else {
 			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
 		}
 
 		goto done
@@ -99,23 +106,26 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 
 	if err != nil {
 		status = http.StatusInternalServerError
+		err = apierrors.ErrorUnknown(err)
 		goto done
 	}
 
 	if role.Name != "admin" && !isPaid {
 		status = http.StatusForbidden
-		err = errors.New("This feature is not allowed for free organization")
+		err = apierrors.ErrorNeedsUpgrade()
 		goto done
 	}
 
 	can, err = rights.CanUserSetMemberRole(Repo, user, member, role, project)
 	if err != nil {
 		status = http.StatusInternalServerError
+		err = apierrors.ErrorUnknown(err)
 		goto done
 	}
 
 	if !can {
 		status = http.StatusForbidden
+		err = apierrors.ErrorPermissionDenied()
 		goto done
 	}
 
@@ -124,6 +134,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 			status = http.StatusNotFound
 		} else {
 			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToSetRole(err)
 		}
 	}
 

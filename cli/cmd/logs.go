@@ -70,7 +70,6 @@ ks log -a WriteMessages -l 1 -e prod`,
 			// TODO: have better error messages
 			ui.PrintError(err.Error())
 			os.Exit(1)
-
 		}
 
 		printAllTheLogs(allTheLogs)

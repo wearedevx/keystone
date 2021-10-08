@@ -3,7 +3,6 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 )
 
@@ -96,12 +96,11 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	if result != nil && len(bodyBytes) >= 2 {
 		err := json.Unmarshal(bodyBytes, result)
 		if err != nil {
-			return errors.New(string(bodyBytes))
+			return apierrors.FromString(string(bodyBytes))
 		}
 	}
 
-	if resp.StatusCode == http.StatusUnauthorized ||
-		resp.StatusCode == http.StatusForbidden {
+	if resp.StatusCode == http.StatusUnauthorized {
 		return auth.ErrorUnauthorized
 	}
 

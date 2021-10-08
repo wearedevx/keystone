@@ -71,6 +71,13 @@ errors:
       This device is not registered to your account or its access has been revoked.
       To register it, please logout, then login again.
 
+  - type: BadDeviceName
+    name: "Bad Device Name"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      Device names must be alphanumeric with ., -, _
+
   # KEYSTONE_YAML_ERRORS
   # ––––––––––––––––––––
   - type: FailedToReadKeystoneFile
@@ -157,7 +164,32 @@ errors:
       {{ ERROR }} {{- ": '" | red }} {{- .Name | red }} {{- "'" | red }}
       It seems like some members of the project's organization are not admin.
       Roles feature is only available for paid organization.
-      Either have a premium organization or change roles back to admin for members in your project.
+      
+      Change each member role to admin:
+        $ ks member set-role <member id>
+
+      Or, upgrade your organization plan:
+        $ ks orga upgrade
+
+  - type: NameDoesNotMatch
+    name: "Name Does Not Match"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+
+  - type: CouldNotRemoveLocalFiles
+    name: "Could Not Remove Local Files"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      The project has been destroyed on our servers,
+      but some locale files could not be removed.
+
+      Check file system permissions and remove the following files manually:
+        - keystone.yaml
+        - .keystone/
+
+      This happened because: {{ .Cause }}
 
   # ENVIRNMENT_ERRORS
   # –––––––––––––––––
@@ -563,7 +595,7 @@ errors:
 
       This happened because: {{ .Cause }}
 
-  # DECRYPTION ERRORS
+  # ENCRYPTION ERRORS
   # -----------------
   - type: CouldNotEncryptMessages
     name: "Could not encrypt messages"
@@ -586,7 +618,7 @@ errors:
     params: []
     template: |
       {{ ERROR }} {{ .Name | red }}
-      This happend because: {{ .Cause }}
+      This happened because: {{ .Cause }}
 
   - type: InvalidFileContent
     name: "Invalid file content"
@@ -597,7 +629,7 @@ errors:
       {{ ERROR }} {{ .Name | red }}
       The file '{{ .Path }}' content could not be decoded from a base64 string
 
-      This happend because: {{ .Cause }}
+      This happened because: {{ .Cause }}
 
   - type: FailedCheckingChanges
     name: "Failed While Checking for Changes"
@@ -609,3 +641,198 @@ errors:
       Error were encountered for file: '{{ .Path }}'
 
       This happened because: {{ .Cause }}
+
+  # SUBSCRIPTION ERRORS
+  # ---------------
+  - type: FeatureRequiresToUpgrade
+    name: "This Feature Requires to Upgrade"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      To upgrade your plan:
+        $ ks orga upgrade
+
+  - type: AlreadySubscribed
+    name: "The Organization Has Already Been Upgraded"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      You already have access to all of Keystone features!
+
+  - type: CannotUpgrade
+    name: "Cannot Upgrade"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      Communication with the billing service failed,
+      try again later.
+
+  - type: ManagementInaccessible
+    name: "Management Inaccessible"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      Communication with the billing service failed,
+      try again later.
+
+  # ORGANIZATION ERRORS
+  # ---------------
+  - type: BadOrganizationName
+    name: "Bad Organization Name"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      Organization names must be alphanumeric with ., -, _
+
+  - type: OrganizationNameAlreadyTaken
+    name: "Organization Name Already Taken"
+    params: []
+    templape: |
+      {{ ERROR }} {{ .Name | red }}
+      Pick another one.
+
+  - type: MustOwnTheOrganization
+    name: "You Must Own the Organization"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      You tried to perform an operation that requires ownership
+      of the organization.
+      
+      You should ask the owner of said organization to perform it for you.
+
+  # INVITATION ERRORS
+  # ---------------
+  - type: CouldntSendInvite
+    name: "Couldn't Send Invite"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+
+      This happened because: {{ .Cause }}
+
+  # ROLE ERRORS
+  # ---------------
+  - type: CouldntSetRole
+    name: "Couldn't Set Role"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+
+  # BACKUP ERRORS
+  # ---------------
+  - type: BackupDenied
+    name: "Permission Denied"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      You are not allowed to create backups.
+
+  - type: RestoreDenied
+    name: "Permission Denied"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      You are not allowed to restore backups.
+
+  - type: CouldNotCreateArchive
+    name: "Could Not Create Archive"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+
+      This happened because: {{ .Cause }}
+
+  - type: FailedToReadBackup
+    name: "Failed To Read Backup"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+
+      This happened because: {{ .Cause }}
+
+  - type: FailedToWriteBackup
+    name: "Failed To Write Backup"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+
+      This happened because: {{ .Cause }}
+
+  # CI ERRORS
+  # ---------------
+  - type: CiServiceAlreadyExists
+    name: "A CI Service Already Exists"
+    params: 
+      - name: ServiceName
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{- ": " | red }} {{- .ServiceName | red }}
+      If you wish to modify it, try:
+        $ ks ci edit {{ .ServiceName }}
+
+      If you wish to add a new service, pick another name, then
+        $ ks ci add <other-service-name>
+
+  - type: NoSuchService
+    name: "No Suche Service"
+    params:
+      - name: "ServiceName"
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{ .ServiceName | red }}
+
+  - type: CouldNotAddService
+    name: "Could Not Add Service"
+    params:
+      - name: ServiceName
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{ .ServiceName | red }}
+
+      This happened because: {{ .Cause }}
+
+  - type: CouldNotCleanService
+    name: "Could Not Clean Service"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+
+      This happened because: {{ .Cause }}
+
+  - type: CouldNotChangeService
+    name: "Could Not Change Service"
+    params:
+      - name: "ServiceName"
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{ .ServiceName | red }}
+
+      This happened because: {{ .Cause }}
+
+  - type: CouldNotRemoveService
+    name: "Could Not Remove Service"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+
+      This happened because: {{ .Cause }}
+
+  - type: MissingCIInformation
+    name: "Missing Information for CI Service"
+    params: 
+      - name: "ServiceName"
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      To edit the service, try:
+        $ ks ci edit {{ .ServiceName }}
+
+  - type: CouldNotSendToCIService 
+    name: "Could Not Send to CI Service"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+
+      This happened because: {{ .Cause }}
+

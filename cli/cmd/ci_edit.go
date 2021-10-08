@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/ci"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -41,13 +42,13 @@ ks ci edit my-gitub-ci-service`,
 			ciService, err = SelectCiService(ctx)
 
 			if err != nil {
-				ui.PrintError(err.Error())
+				kserrors.CouldNotChangeService(serviceName, err).Print()
 				os.Exit(1)
 			}
 		}
 
 		if err = ciService.Setup().Error(); err != nil {
-			ui.PrintError(ciService.Error().Error())
+			kserrors.CouldNotChangeService(serviceName, err).Print()
 			os.Exit(1)
 		}
 		ui.PrintSuccess("CI service setup successfully")

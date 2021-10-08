@@ -3,8 +3,10 @@ package repo
 import (
 	"errors"
 	"regexp"
+	"time"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
+	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"gorm.io/gorm"
 )
@@ -53,6 +55,26 @@ func (r *Repo) GetDevices(userID uint, devices *[]models.Device) IRepo {
 	return r
 }
 
+func (r *Repo) UpdateDeviceLastUsedAt(deviceUID string) IRepo {
+	if r.Err() != nil {
+		return r
+	}
+
+	device := models.Device{
+		UID: deviceUID,
+	}
+
+	if r.err = r.GetDevice(&device).Err(); r.err != nil {
+		return r
+	}
+
+	device.LastUsedAt = time.Now()
+
+	r.err = r.GetDb().Save(&device).Error
+
+	return r
+}
+
 func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 	if r.Err() != nil {
 		return r
@@ -63,15 +85,10 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 		Joins("left join user_devices on user_devices.device_id = devices.id").
 		Joins("left join users on users.id = user_devices.user_id").
 		Where("users.id = ? and devices.uid = ?", userID, deviceName).
-		Find(&device).
+		First(&device).
 		Error
 
 	if r.err != nil {
-		return r
-	}
-
-	if device.ID == 0 {
-		r.err = errors.New("No device")
 		return r
 	}
 
@@ -100,7 +117,7 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 
 	matched, _ := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, device.Name)
 	if !matched {
-		r.err = errors.New("Incorrect device name. Device name must be alphanumeric with ., -, _")
+		r.err = apierrors.ErrorBadDeviceName()
 		return r
 	}
 

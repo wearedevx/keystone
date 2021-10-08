@@ -21,7 +21,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -54,16 +53,8 @@ ks --env staging PORT 4545
 			return
 		}
 
-		var printer = &ui.UiPrinter{}
-		ms := messages.NewMessageService(ctx, printer)
-		ms.GetMessages()
-
-		if err := ms.Err(); err != nil {
-			config.CheckExpiredTokenError(err)
-
-			err.Print()
-			os.Exit(1)
-		}
+		ms := messages.NewMessageService(ctx)
+		mustFetchMessages(ms)
 
 		ctx.SetSecret(currentEnvironment, secretName, secretValue)
 

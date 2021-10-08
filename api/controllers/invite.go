@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
+	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -40,11 +41,13 @@ func PostInvite(
 			e, err := emailer.InviteMail(user, payload.ProjectName)
 			if err != nil {
 				status = http.StatusInternalServerError
+				err = apierrors.ErrorFailedToCreateMailContent(err)
 				goto done
 			}
 
 			if err = e.Send([]string{targetEmail}); err != nil {
 				status = http.StatusInternalServerError
+				err = apierrors.ErrorFailedToSendMail(err)
 				goto done
 			}
 		}

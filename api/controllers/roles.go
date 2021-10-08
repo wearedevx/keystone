@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 
+	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -23,38 +24,32 @@ func GetRoles(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user model
 	}
 
 	projectID := params.Get("projectID").(string)
+	isPaid, err := Repo.IsProjectOrganizationPaid(projectID)
 
-	if projectID == "" {
+	// Get all roles for paid organizations
+	// otherwise, only the admin one
+	if isPaid || projectID == "" {
 		if err = Repo.GetRoles(&result.Roles).Err(); err != nil {
-			if errors.Is(err, repo.ErrorNotFound) {
-				status = http.StatusNotFound
-			} else {
-				status = http.StatusInternalServerError
-			}
+			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
 
 			goto done
 		}
 	} else {
-		isPaid, err := Repo.IsProjectOrganizationPaid(projectID)
-		if err != nil {
-			return &result, status, err
-		}
+		adminRole := models.Role{Name: "admin"}
 
-		if isPaid {
-			if err = Repo.GetRoles(&result.Roles).Err(); err != nil {
+		if err = Repo.GetRole(&adminRole).Err(); err != nil {
+			if errors.Is(err, repo.ErrorNotFound) {
+				status = http.StatusNotFound
+			} else {
 				status = http.StatusInternalServerError
-				return &result, status, err
-			}
-		} else {
-			adminRole := models.Role{Name: "admin"}
-
-			if err = Repo.GetRole(&adminRole).Err(); err != nil {
-				status = http.StatusInternalServerError
-				goto done
+				err = apierrors.ErrorFailedToGetResource(err)
 			}
 
-			result.Roles = []models.Role{adminRole}
+			goto done
 		}
+
+		result.Roles = []models.Role{adminRole}
 	}
 
 done:

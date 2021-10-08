@@ -429,6 +429,10 @@ func (r *Repo) GetProjectsOrganization(projectID string, organization *models.Or
 }
 
 func (r *Repo) IsProjectOrganizationPaid(projectID string) (bool, error) {
+	if projectID == "" {
+		return false, nil
+	}
+
 	project := models.Project{UUID: projectID}
 
 	if err := r.GetProject(&project).Err(); err != nil {

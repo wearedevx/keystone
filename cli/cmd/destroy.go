@@ -45,6 +45,7 @@ This is irreversible.
 `,
 	Example: "ks destroy",
 	Run: func(cmd *cobra.Command, args []string) {
+		var err error
 		ctx := core.New(core.CTX_RESOLVE)
 		c, kcErr := client.NewKeystoneClient()
 		if kcErr != nil {
@@ -74,19 +75,21 @@ This is permanent, and cannot be undone.
 
 		// expect result to be the project name
 		if projectName != result {
-			kserrors.UnkownError(errors.New("Invalid Project Name")).Print()
+			kserrors.NameDoesNotMatch(nil).Print()
 			os.Exit(1)
 			return
 		}
 
-		err := projectService.Destroy()
-
-		if err != nil {
-			kserrors.UnkownError(err).Print()
+		if err = projectService.Destroy(); err != nil {
+			handleClientError(err)
+			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
 
-		ctx.Destroy()
+		if err = ctx.Destroy(); err != nil {
+			kserrors.CouldNotRemoveLocalFiles(err).Print()
+			os.Exit(1)
+		}
 
 		ui.Print(ui.RenderTemplate("deletion ok",
 			`{{ OK }} The project {{ .Project }} has successfully been destroyed.

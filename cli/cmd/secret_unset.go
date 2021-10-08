@@ -20,7 +20,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -53,17 +52,8 @@ The secret must not be required.`,
 			return
 		}
 
-		var printer = &ui.UiPrinter{}
-		ms := messages.NewMessageService(ctx, printer)
-
-		changes := ms.GetMessages()
-
-		if err = ms.Err(); err != nil {
-			config.CheckExpiredTokenError(err)
-
-			err.Print()
-			os.Exit(1)
-		}
+		ms := messages.NewMessageService(ctx)
+		changes := mustFetchMessages(ms)
 
 		if err = ctx.
 			CompareRemovedSecretWithChanges(secretName, changes).

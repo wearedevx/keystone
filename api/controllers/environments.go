@@ -7,6 +7,7 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 
+	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -35,6 +36,7 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.I
 			status = http.StatusNotFound
 		} else {
 			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
 		}
 
 		goto done
@@ -50,7 +52,7 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.I
 	}
 
 	if !can {
-		err = errors.New("permission denied")
+		err = apierrors.ErrorPermissionDenied()
 		status = http.StatusForbidden
 		goto done
 	}
@@ -59,6 +61,7 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.I
 	if err = Repo.GetEnvironmentPublicKeys(envID, &result).
 		Err(); err != nil {
 		status = http.StatusInternalServerError
+		err = apierrors.ErrorFailedToGetResource(err)
 		goto done
 	}
 

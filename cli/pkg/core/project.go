@@ -45,17 +45,19 @@ func (ctx *Context) MustHaveProject() {
 }
 
 // Removes the keystone.yaml, and the .keystone file
-func (ctx *Context) Destroy() {
+func (ctx *Context) Destroy() error {
 	var err error
 
 	if err = new(KeystoneFile).
 		Load(ctx.Wd).
 		Remove().
 		Err(); err != nil {
-		panic(err)
+		return err
 	}
 
 	if err = os.RemoveAll(ctx.dotKeystonePath()); err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }

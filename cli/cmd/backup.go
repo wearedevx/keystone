@@ -11,6 +11,7 @@ import (
 	"github.com/cossacklabs/themis/gothemis/cell"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/archive"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
@@ -37,7 +38,7 @@ var backupCmd = &cobra.Command{
 		}
 
 		if len(ctx.AccessibleEnvironments) < 3 {
-			ui.PrintError(fmt.Sprintf("You don't have the permissions to create a backup."))
+			kserrors.BackupDenied(nil)
 			os.Exit(1)
 		}
 		if password == "" {
@@ -45,17 +46,17 @@ var backupCmd = &cobra.Command{
 		}
 
 		if err := archive.Tar(ctx.DotKeystonePath(), ctx.Wd); err != nil {
-			ui.PrintError(err.Error())
+			kserrors.CouldNotCreateArchive(err).Print()
 			os.Exit(1)
 		}
 
 		if err := archive.Gzip(path.Join(ctx.Wd, ".keystone.tar"), ctx.Wd); err != nil {
-			ui.PrintError(err.Error())
+			kserrors.CouldNotCreateArchive(err).Print()
 			os.Exit(1)
 		}
 
 		if err := os.Rename(path.Join(ctx.Wd, ".keystone.tar.gz"), backupName); err != nil {
-			ui.PrintError(err.Error())
+			kserrors.CouldNotCreateArchive(err).Print()
 			os.Exit(1)
 		}
 
@@ -65,7 +66,7 @@ var backupCmd = &cobra.Command{
 		contents, err := ioutil.ReadFile(backupName)
 
 		if err != nil {
-			ui.PrintError(err.Error())
+			kserrors.FailedToReadBackup(err).Print()
 			os.Exit(1)
 		}
 		encrypted := encryptBackup(contents, password)
@@ -74,7 +75,7 @@ var backupCmd = &cobra.Command{
 		 * It is unlikely that BACKUP_NAME is uncontrolled
 		 */
 		if err := ioutil.WriteFile(backupName, encrypted, 0600); err != nil {
-			ui.PrintError(err.Error())
+			kserrors.FailedToWriteBackup(err).Print()
 			os.Exit(1)
 		}
 

@@ -39,7 +39,7 @@ Valid values for environment are: "dev", "staging", and "prod"`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err *kserrors.Error
 
-		fetch()
+		fetchMessages(nil)
 
 		locallyModified := ctx.LocallyModifiedFiles(currentEnvironment)
 		if len(locallyModified) != 0 {
@@ -64,10 +64,10 @@ If you want to discard those changes:
 
 		// Set the current environment
 		envName := args[0]
-		ctx.MustHaveAccessToEnvironment(envName)
-		ctx.SetCurrent(envName)
-
-		if err = ctx.Err(); err != nil {
+		if err = ctx.
+			MustHaveAccessToEnvironment(envName).
+			SetCurrent(envName).
+			Err(); err != nil {
 			err.Print()
 			os.Exit(1)
 		}

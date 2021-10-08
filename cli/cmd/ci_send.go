@@ -34,7 +34,7 @@ ks ci send --env prod
 		var environment models.Environment
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		fetch()
+		fetchMessages(nil)
 
 		for _, accessibleEnvironment := range ctx.AccessibleEnvironments {
 			if accessibleEnvironment.Name == currentEnvironment {
@@ -56,7 +56,7 @@ ks ci send --env prod
 		message, err := ctx.PrepareMessagePayload(environment)
 
 		if err != nil {
-			ui.PrintError(err.Error())
+			kserrors.PayloadErrors(err).Print()
 			os.Exit(1)
 		}
 
@@ -74,16 +74,19 @@ ks ci send --env prod
 				os.Exit(1)
 			}
 
-			ciService.CheckSetup()
-			if ciService.Error() != nil {
-				ui.PrintError(ciService.Error().Error())
+			if err = ciService.CheckSetup().Error(); err != nil {
+				if err.Error() == "Missing CI information" {
+					kserrors.MissingCIInformation(serviceName, nil)
+				} else {
+					ui.PrintError(err.Error())
+				}
 				os.Exit(1)
 			}
 
-			ciService.PushSecret(message, currentEnvironment)
-
-			if ciService.Error() != nil {
-				ui.PrintError(ciService.Error().Error())
+			if err = ciService.
+				PushSecret(message, currentEnvironment).
+				Error(); err != nil {
+				kserrors.CouldNotSendToCIService(err)
 				os.Exit(1)
 			}
 

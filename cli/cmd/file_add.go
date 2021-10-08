@@ -27,7 +27,6 @@ import (
 	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -110,18 +109,12 @@ ks file add -s ./credentials.json`,
 				}
 			}
 
-			var printer = &ui.UiPrinter{}
-			ms := messages.NewMessageService(ctx, printer)
-			changes := ms.GetMessages()
+			ms := messages.NewMessageService(ctx)
+			changes := mustFetchMessages(ms)
 
-			if err := ms.Err(); err != nil {
-				config.CheckExpiredTokenError(err)
-
-				err.Print()
-				os.Exit(1)
-			}
-
-			if err = ctx.CompareNewFileWhithChanges(filePath, changes).Err(); err != nil {
+			if err = ctx.
+				CompareNewFileWhithChanges(filePath, changes).
+				Err(); err != nil {
 				err.Print()
 				os.Exit(1)
 			}
@@ -131,9 +124,7 @@ ks file add -s ./credentials.json`,
 				Strict: addOptional,
 			}
 
-			ctx.AddFile(file, environmentFileMap)
-
-			if err = ctx.Err(); err != nil {
+			if ctx.AddFile(file, environmentFileMap).Err(); err != nil {
 				err.Print()
 				os.Exit(1)
 			}
@@ -144,9 +135,12 @@ ks file add -s ./credentials.json`,
 				os.Exit(1)
 			}
 
-			ctx.FilesUseEnvironment(currentEnvironment, currentEnvironment, core.CTX_KEEP_LOCAL_FILES)
-
-			if err = ctx.Err(); err != nil {
+			if err = ctx.
+				FilesUseEnvironment(
+					currentEnvironment,
+					currentEnvironment,
+					core.CTX_KEEP_LOCAL_FILES,
+				).Err(); err != nil {
 				err.Print()
 				os.Exit(1)
 			}

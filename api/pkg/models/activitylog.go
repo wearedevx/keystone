@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -59,7 +60,14 @@ func (pm ActivityLog) Error() string {
 
 func (pm *ActivityLog) SetError(err error) *ActivityLog {
 	if err != nil {
-		pm.Message = err.Error()
+		message := err.Error()
+		parent := errors.Unwrap(err)
+
+		if parent != nil {
+			message = message + ": " + parent.Error()
+		}
+
+		pm.Message = message
 		pm.Success = false
 	} else {
 		pm.Success = true

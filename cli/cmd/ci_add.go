@@ -16,11 +16,11 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/ci"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -42,27 +42,24 @@ var addCmd = &cobra.Command{
 		)
 
 		if _, nameExists := ci.FindCiServiceWithName(ctx, serviceName); nameExists {
-			// TODO: add a Ci service named {{.Name}} already exists
-			ui.PrintError(fmt.Sprintf(
-				"A CI service named %s already exists",
-				serviceName,
-			))
+			kserrors.CiServiceAlreadyExists(serviceName, nil).Print()
+			os.Exit(1)
 		}
 
 		ciService, err := ci.PickCiService(serviceName, ctx, client.ApiURL)
 
 		if err != nil {
-			ui.PrintError(err.Error())
+			kserrors.CouldNotAddService(serviceName, err)
 			os.Exit(1)
 		}
 
 		if err = ciService.Setup().Error(); err != nil {
-			ui.PrintError(ciService.Error().Error())
+			kserrors.CouldNotAddService(serviceName, err)
 			os.Exit(1)
 		}
 
 		if err = ci.AddCiService(ctx, ciService); err != nil {
-			ui.PrintError(err.Error())
+			kserrors.CouldNotAddService(serviceName, err)
 			os.Exit(1)
 		}
 

@@ -20,7 +20,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
@@ -57,16 +56,8 @@ Files can be used again using "file add" command.
 		}
 
 		if promptYesNo(filePath) {
-			var printer = &ui.UiPrinter{}
-			ms := messages.NewMessageService(ctx, printer)
-			ms.GetMessages()
-
-			if err := ms.Err(); err != nil {
-				config.CheckExpiredTokenError(err)
-
-				err.Print()
-				os.Exit(1)
-			}
+			ms := messages.NewMessageService(ctx)
+			mustFetchMessages(ms)
 
 			ctx.RemoveFile(filePath, forcePrompts, purgeFile, ctx.AccessibleEnvironments)
 			if err = ctx.Err(); err != nil {

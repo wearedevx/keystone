@@ -32,7 +32,15 @@ type MessageService interface {
 	DeleteMessages(messagesIds []uint) MessageService
 }
 
-func NewMessageService(ctx *core.Context, Printer ui.Printer) (service MessageService) {
+func NewEchoMessageService(ctx *core.Context) (service MessageService) {
+	return newMessageService(ctx, &ui.EchoPrinter{})
+}
+
+func NewMessageService(ctx *core.Context) (service MessageService) {
+	return newMessageService(ctx, &ui.UiPrinter{})
+}
+
+func newMessageService(ctx *core.Context, Printer ui.Printer) (service MessageService) {
 	client, ksErr := client.NewKeystoneClient()
 
 	service = &messageService{

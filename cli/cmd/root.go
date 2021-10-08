@@ -16,18 +16,21 @@ limitations under the License.
 package cmd
 
 import (
+	"errors"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/environments"
-	"github.com/wearedevx/keystone/cli/internal/errors"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/ui"
 
+	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 )
 
@@ -132,7 +135,7 @@ func Initialize() {
 	}
 
 	if checkProject && !isKeystoneFile {
-		errors.NotAKeystoneProject(".", nil).Print()
+		kserrors.NotAKeystoneProject(".", nil).Print()
 		os.Exit(1)
 	}
 
@@ -152,7 +155,7 @@ func Initialize() {
 
 		// If no accessible environment, then user has no access to the project
 		if len(ctx.AccessibleEnvironments) == 0 {
-			errors.ProjectDoesntExist(ctx.GetProjectName(), ctx.GetProjectID(), nil).Print()
+			kserrors.ProjectDoesntExist(ctx.GetProjectName(), ctx.GetProjectID(), nil).Print()
 			os.Exit(1)
 		}
 
@@ -179,12 +182,10 @@ func Initialize() {
 		if currentEnvironment == "" {
 			ctx.SetCurrent("dev")
 		}
-		// errors.EnvironmentDoesntExist(currentEnvironment, strings.Join(environments, ", "), nil).Print()
-		// os.Exit(1)
 	}
 
 	if checkLogin && !config.IsLoggedIn() {
-		errors.MustBeLoggedIn(nil).Print()
+		kserrors.MustBeLoggedIn(nil).Print()
 		os.Exit(1)
 	}
 
@@ -229,13 +230,110 @@ func init() {
 	noLoginCommands = []string{"login", "source", "documentation", "version"}
 }
 
-func fetch() {
-	var printer = &ui.UiPrinter{}
-	ms := messages.NewMessageService(ctx, printer)
-	ms.GetMessages()
+func fetchMessages(ms messages.MessageService) (core.ChangesByEnvironment, *kserrors.Error) {
+	if ms == nil {
+		ms = messages.NewMessageService(ctx)
+	}
+	changes := ms.GetMessages()
 
-	if err := ms.Err(); err != nil {
+	err := ms.Err()
+	if err != nil {
+		config.CheckExpiredTokenError(err)
+	}
+
+	return changes, err
+}
+
+func mustFetchMessages(ms messages.MessageService) core.ChangesByEnvironment {
+	changes, err := fetchMessages(ms)
+
+	if err != nil {
 		err.Print()
 		os.Exit(1)
 	}
+
+	return changes
+}
+
+// handleClientError handles most of the errors returned by the KeystoneClent
+// It prints the error, then exits the program when `err` is an error it can handle.
+// If the the error is too generic to be handled here, it returns without
+// printing or exiting the program, so that the caller can handle the error
+// its own way.
+func handleClientError(err error) {
+	switch {
+	case errors.Is(err, auth.ErrorUnauthorized):
+		config.Logout()
+		kserrors.InvalidConnectionToken(err).Print()
+
+		// Errors That should never happen
+	case errors.Is(err, apierrors.ErrorUnknown),
+		errors.Is(err, apierrors.ErrorFailedToGetPermission),
+		errors.Is(err, apierrors.ErrorFailedToWriteMessage),
+		errors.Is(err, apierrors.ErrorFailedToSetEnvironmentVersion),
+		errors.Is(err, apierrors.ErrorOrganizationWithoutAnAdmin):
+		kserrors.UnkownError(err).Print()
+
+		// General Errors
+	case errors.Is(err, apierrors.ErrorPermissionDenied):
+		kserrors.PermissionDenied(currentEnvironment, err)
+
+		// These should be handled by the controller/service
+	case errors.Is(err, apierrors.ErrorBadRequest),
+		errors.Is(err, apierrors.ErrorEmptyPayload),
+		errors.Is(err, apierrors.ErrorFailedToCreateResource),
+		errors.Is(err, apierrors.ErrorFailedToGetResource),
+		errors.Is(err, apierrors.ErrorFailedToUpdateResource),
+		errors.Is(err, apierrors.ErrorFailedToDeleteResource),
+		errors.Is(err, apierrors.ErrorMemberAlreadyInProject),
+		errors.Is(err, apierrors.ErrorNotAMember):
+		return
+
+		// Subscription Errors
+	case errors.Is(err, apierrors.ErrorNeedsUpgrade):
+		kserrors.FeatureRequiresToUpgrade(err).Print()
+
+	case errors.Is(err, apierrors.ErrorAlreadySubscribed):
+		kserrors.AlreadySubscribed(err).Print()
+
+	case errors.Is(err, apierrors.ErrorFailedToStartCheckout):
+		kserrors.CannotUpgrade(err).Print()
+
+	case errors.Is(err, apierrors.ErrorFailedToGetManagementLink):
+		kserrors.ManagementInaccessible(err).Print()
+
+		// Device Errors
+	case errors.Is(err, apierrors.ErrorNoDevice):
+		kserrors.DeviceNotRegistered(err).Print()
+
+	case errors.Is(err, apierrors.ErrorBadDeviceName):
+		kserrors.BadDeviceName(err).Print()
+
+		// Organization Errors
+	case errors.Is(err, apierrors.ErrorBadOrganizationName):
+		kserrors.BadOrganizationName(err).Print()
+
+	case errors.Is(err, apierrors.ErrorOrganizationNameAlreadyTaken):
+		kserrors.OrganizationNameAlreadyTaken(err).Print()
+
+	case errors.Is(err, apierrors.ErrorNotOrganizationOwner):
+		kserrors.MustOwnTheOrganization(err).Print()
+
+		// Invite Errors
+	case errors.Is(err, apierrors.ErrorFailedToCreateMailContent),
+		errors.Is(err, apierrors.ErrorFailedToSendMail):
+		kserrors.CouldntSendInvite(err).Print()
+
+		// Role Errors
+	case errors.Is(err, apierrors.ErrorFailedToSetRole):
+		kserrors.CouldntSetRole(err).Print()
+
+		// Members Errors
+	case errors.Is(err, apierrors.ErrorFailedToAddMembers):
+		kserrors.CannotAddMembers(err).Print()
+
+	default:
+		ui.PrintError(err.Error())
+	}
+	os.Exit(1)
 }

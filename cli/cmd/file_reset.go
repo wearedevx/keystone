@@ -16,11 +16,8 @@ limitations under the License.
 package cmd
 
 import (
-	"os"
 	"path"
 
-	"github.com/wearedevx/keystone/cli/internal/config"
-	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
@@ -50,16 +47,7 @@ ks file reset
 	Run: func(_ *cobra.Command, args []string) {
 		ctx := core.New(core.CTX_RESOLVE)
 
-		var printer = &ui.UiPrinter{}
-
-		ms := messages.NewMessageService(ctx, printer)
-		ms.GetMessages()
-
-		if err := ms.Err(); err != nil {
-			config.CheckExpiredTokenError(err)
-			err.Print()
-			os.Exit(1)
-		}
+		mustFetchMessages(nil)
 
 		filesToReset := args
 		if len(filesToReset) == 0 {
