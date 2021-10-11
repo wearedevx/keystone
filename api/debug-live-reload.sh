@@ -75,10 +75,22 @@ runServer
 inotifywait -e MODIFY -r -m ./ |
   while read path action file; do
     lockBuild
-      ext=${file: -3}
-      if [[ "$ext" == ".go" ]]; then
-        echo File changed: $file
+      ext="${file##*.}"
+      rerun=false
+
+      case "$ext" in
+        go) rerun=true ;;
+        yaml) rerun=true ;;
+        *) rerun=false ;;
+      esac
+
+      case "$file" in
+        generated_*) rerun=false ;;
+      esac
+
+      if $rerun; then
+        echo "File changed: $file"
         rerunServer
-      fi
+      fi 
     unlockBuild
 	done

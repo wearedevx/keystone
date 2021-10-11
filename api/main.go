@@ -1,5 +1,7 @@
 package main
 
+//go:generate go run ./generators/errors.go
+
 import (
 	"log"
 	"net/http"

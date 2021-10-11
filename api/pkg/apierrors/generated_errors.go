@@ -3,47 +3,38 @@ package apierrors
 import "errors"
 
 var (
-	// General Errors
-	ErrorUnknown                error = errors.New("unknown")
-	ErrorBadRequest             error = errors.New("bad request")
-	ErrorPermissionDenied       error = errors.New("permission denied")
-	ErrorEmptyPayload           error = errors.New("empty payload cannot be wrtten")
-	ErrorFailedToCreateResource error = errors.New("failed to create resource")
-	ErrorFailedToGetResource    error = errors.New("failed to get")
-	ErrorFailedToUpdateResource error = errors.New("failed to update")
-	ErrorFailedToDeleteResource error = errors.New("failed to delete")
-	// Subscription Errors
-	ErrorNeedsUpgrade               error = errors.New("needs upgrade")
-	ErrorAlreadySubscribed          error = errors.New("already subscribed")
-	ErrorFailedToStartCheckout      error = errors.New("failed to start checkout")
-	ErrorFailedToGetManagementLink  error = errors.New("failed to get management link")
-	ErrorFailedToUpdateSubscription error = errors.New("failed to update subscription")
-	ErrorCheckoutCompleteFailed     error = errors.New("checkout complete failed")
-	ErrorSubscriptionPaidFailed     error = errors.New("subscription paid failed")
-	ErrorSubscriptionUnpaidFailed   error = errors.New("subscription unpaid failed")
-	ErrorSubscriptionCanceledFailed error = errors.New("subscription canceled failed")
-	// Device Errors
-	ErrorNoDevice      error = errors.New("no device")
-	ErrorBadDeviceName error = errors.New("bad device name")
-	// Organization Errors
-	ErrorBadOrganizationName          error = errors.New("bad organization name")
-	ErrorOrganizationNameAlreadyTaken error = errors.New("organization name already taken")
-	ErrorNotOrganizationOwner         error = errors.New("not organization owner")
-	ErrorOrganizationWithoutAnAdmin   error = errors.New("organization without an admin")
-	// Invite Errors
-	ErrorFailedToCreateMailContent error = errors.New("failed to create mail content")
-	ErrorFailedToSendMail          error = errors.New("failed to send mail")
-	// Role Errors
-	ErrorFailedToSetRole       error = errors.New("failed to set role")
-	ErrorFailedToGetPermission error = errors.New("failed to get permission")
-	// Messages Errors
-	ErrorFailedToWriteMessage error = errors.New("failed to write message")
-	// Environment Errors
+	ErrorUnknown                       error = errors.New("unknown")
+	ErrorBadRequest                    error = errors.New("bad request")
+	ErrorPermissionDenied              error = errors.New("permission denied")
+	ErrorEmptyPayload                  error = errors.New("empty payload cannot be wrtten")
+	ErrorFailedToCreateResource        error = errors.New("failed to create resource")
+	ErrorFailedToGetResource           error = errors.New("failed to get")
+	ErrorFailedToUpdateResource        error = errors.New("failed to update")
+	ErrorFailedToDeleteResource        error = errors.New("failed to delete")
+	ErrorNeedsUpgrade                  error = errors.New("needs upgrade")
+	ErrorAlreadySubscribed             error = errors.New("already subscribed")
+	ErrorFailedToStartCheckout         error = errors.New("failed to start checkout")
+	ErrorFailedToGetManagementLink     error = errors.New("failed to get management link")
+	ErrorFailedToUpdateSubscription    error = errors.New("failed to update subscription")
+	ErrorCheckoutCompleteFailed        error = errors.New("checkout complete failed")
+	ErrorSubscriptionPaidFailed        error = errors.New("subscription paid failed")
+	ErrorSubscriptionUnpaidFailed      error = errors.New("subscription unpaid failed")
+	ErrorSubscriptionCanceledFailed    error = errors.New("subscription canceled failed")
+	ErrorNoDevice                      error = errors.New("no device")
+	ErrorBadDeviceName                 error = errors.New("bad device name")
+	ErrorBadOrganizationName           error = errors.New("bad organization name")
+	ErrorOrganizationNameAlreadyTaken  error = errors.New("organization name already taken")
+	ErrorNotOrganizationOwner          error = errors.New("not organization owner")
+	ErrorOrganizationWithoutAnAdmin    error = errors.New("organization without an admin")
+	ErrorFailedToCreateMailContent     error = errors.New("failed to create mail content")
+	ErrorFailedToSendMail              error = errors.New("failed to send mail")
+	ErrorFailedToSetRole               error = errors.New("failed to set role")
+	ErrorFailedToGetPermission         error = errors.New("failed to get permission")
+	ErrorFailedToWriteMessage          error = errors.New("failed to write message")
 	ErrorFailedToSetEnvironmentVersion error = errors.New("failed to set environment version")
-	// Members Errors
-	ErrorFailedToAddMembers     error = errors.New("failed to add members")
-	ErrorMemberAlreadyInProject error = errors.New("member already in project")
-	ErrorNotAMember             error = errors.New("not a member")
+	ErrorFailedToAddMembers            error = errors.New("failed to add members")
+	ErrorMemberAlreadyInProject        error = errors.New("member already in project")
+	ErrorNotAMember                    error = errors.New("not a member")
 )
 
 func FromString(s string) error {

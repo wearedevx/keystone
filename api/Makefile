@@ -64,9 +64,11 @@ LDFLAGS := $(DB_HOST_FLAG) \
 build:
 	mkdir ./build
 	go clean
+	go generate
 	go build -ldflags "$(LDFLAGS)" -v -o ./build/server
 
 build-debug:
+	go generate
 	go build -gcflags="all=-N -l" -ldflags="$(LDFLAGS)" -o ./server
 	chmod +x ./server
 

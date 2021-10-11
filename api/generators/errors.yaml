@@ -1,0 +1,97 @@
+errors:
+  - symbol: ErrorUnknown 
+    value: unknown
+    has_cause: true
+  - symbol: ErrorBadRequest 
+    value: bad request
+    has_cause: true
+  - symbol: ErrorPermissionDenied 
+    value: permission denied
+    has_cause: false
+  - symbol: ErrorEmptyPayload 
+    value: empty payload cannot be wrtten
+    has_cause: false
+  - symbol: ErrorFailedToCreateResource 
+    value: failed to create resource
+    has_cause: true
+  - symbol: ErrorFailedToGetResource 
+    value: failed to get
+    has_cause: true
+  - symbol: ErrorFailedToUpdateResource 
+    value: failed to update
+    has_cause: true
+  - symbol: ErrorFailedToDeleteResource 
+    value: failed to delete
+    has_cause: true
+  - symbol: ErrorNeedsUpgrade 
+    value: needs upgrade
+    has_cause: false
+  - symbol: ErrorAlreadySubscribed 
+    value: already subscribed
+    has_cause: false
+  - symbol: ErrorFailedToStartCheckout 
+    value: failed to start checkout
+    has_cause: true
+  - symbol: ErrorFailedToGetManagementLink 
+    value: failed to get management link
+    has_cause: true
+  - symbol: ErrorFailedToUpdateSubscription 
+    value: failed to update subscription
+    has_cause: true
+  - symbol: ErrorCheckoutCompleteFailed 
+    value: checkout complete failed
+    has_cause: true
+  - symbol: ErrorSubscriptionPaidFailed 
+    value: subscription paid failed
+    has_cause: true
+  - symbol: ErrorSubscriptionUnpaidFailed 
+    value: subscription unpaid failed
+    has_cause: true
+  - symbol: ErrorSubscriptionCanceledFailed 
+    value: subscription canceled failed
+    has_cause: true
+  - symbol: ErrorNoDevice 
+    value: no device
+    has_cause: false
+  - symbol: ErrorBadDeviceName 
+    value: bad device name
+    has_cause: false
+  - symbol: ErrorBadOrganizationName 
+    value: bad organization name
+    has_cause: false
+  - symbol: ErrorOrganizationNameAlreadyTaken 
+    value: organization name already taken
+    has_cause: false
+  - symbol: ErrorNotOrganizationOwner 
+    value: not organization owner
+    has_cause: false
+  - symbol: ErrorOrganizationWithoutAnAdmin 
+    value: organization without an admin
+    has_cause: true
+  - symbol: ErrorFailedToCreateMailContent 
+    value: failed to create mail content
+    has_cause: true
+  - symbol: ErrorFailedToSendMail 
+    value: failed to send mail
+    has_cause: true
+  - symbol: ErrorFailedToSetRole 
+    value: failed to set role
+    has_cause: true
+  - symbol: ErrorFailedToGetPermission 
+    value: failed to get permission
+    has_cause: true
+  - symbol: ErrorFailedToWriteMessage 
+    value: failed to write message
+    has_cause: true
+  - symbol: ErrorFailedToSetEnvironmentVersion 
+    value: failed to set environment version
+    has_cause: true
+  - symbol: ErrorFailedToAddMembers 
+    value: failed to add members
+    has_cause: true
+  - symbol: ErrorMemberAlreadyInProject 
+    value: member already in project
+    has_cause: false
+  - symbol: ErrorNotAMember 
+    value: not a member
+    has_cause: false
