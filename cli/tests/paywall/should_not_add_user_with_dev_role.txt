@@ -15,7 +15,7 @@ cmp stderr expected.txt
 -- expected.txt --
 WARNING: You are not allowed to set role other than admin for free organization
 
- ERROR  Role Not Available: 'developer'
-Available roles are: admin
+ ERROR  Cannot Add Members
 
+This happened because: permission denied
 
