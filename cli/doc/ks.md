@@ -22,11 +22,11 @@ ks <command> [sub-command] [inputs]... [flags]
 
 ### SEE ALSO
 
-* [ks backup](ks_backup.md)	 - Create a backup of your local secrets and files.
+* [ks backup](ks_backup.md)	 - Creates a backup of your local secrets and files.
 * [ks ci](ks_ci.md)	 - Manages CI services
 * [ks completion](ks_completion.md)	 - generate the autocompletion script for the specified shell
-* [ks destroy](ks_destroy.md)	 - Destroy the whole Keystone project
-* [ks device](ks_device.md)	 - List all devices linked to your account.
+* [ks destroy](ks_destroy.md)	 - Destroys the whole Keystone project
+* [ks device](ks_device.md)	 - Manages devices
 * [ks env](ks_env.md)	 - Manages environments
 * [ks file](ks_file.md)	 - Manages secret files
 * [ks init](ks_init.md)	 - Creates Keystone config files and directories
@@ -36,8 +36,8 @@ ks <command> [sub-command] [inputs]... [flags]
 * [ks logs](ks_logs.md)	 - Shows activity logs for the current project
 * [ks member](ks_member.md)	 - Manages members
 * [ks orga](ks_orga.md)	 - Manage organizations
-* [ks project](ks_project.md)	 - List project you are in
-* [ks restore](ks_restore.md)	 - Restore secrets and files from keystone created backup.
+* [ks project](ks_project.md)	 - Lists projects you are a member of
+* [ks restore](ks_restore.md)	 - Restores secrets and files from keystone created backup
 * [ks secret](ks_secret.md)	 - Manages secrets
 * [ks source](ks_source.md)	 - Echo a script to load secrets, and writes files
 * [ks version](ks_version.md)	 - Displays the current CLI version

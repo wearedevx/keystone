@@ -6,6 +6,9 @@ Removes all secrets and files from a CI service
 
 Removes all secrets and files from a CI service.
 
+This does not remove the CI service from the projcet. To do so, use:
+`ks ci rm <service-name>`
+
 ```
 ks ci clean [flags]
 ```

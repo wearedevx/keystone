@@ -1,10 +1,10 @@
 ## ks restore
 
-Restore secrets and files from keystone created backup.
+Restores secrets and files from keystone created backup
 
 ### Synopsis
 
-Restore secrets and files from keystone created backup.
+Restores secrets and files from keystone created backup.
 This will override all the data you have stored locally.
 
 ```

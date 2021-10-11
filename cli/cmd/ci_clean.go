@@ -14,7 +14,10 @@ import (
 var cleanCmd = &cobra.Command{
 	Use:   "clean",
 	Short: "Removes all secrets and files from a CI service",
-	Long:  `Removes all secrets and files from a CI service.`,
+	Long: `Removes all secrets and files from a CI service.
+
+This does not remove the CI service from the projcet. To do so, use:
+` + "`" + `ks ci rm <service-name>` + "`",
 	Example: `
 # To remove everything regarding the current environment:
 ks ci clean

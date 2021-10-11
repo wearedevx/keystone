@@ -4,11 +4,9 @@ var helpTexts map[string]string = map[string]string{
 	"InitFailed": `
 {{ ERROR }} {{ .Name | red }}
 This happened because: {{ .Cause }}
-
 `,
 	"ServiceNotAvailable": `
 {{ ERROR }} {{ .Name | red }}
-
 `,
 	"InvalidConnectionToken": `
 {{ ERROR }} {{ .Name | red }}
@@ -16,7 +14,6 @@ Your current connection token has probably expired.
 
 Try to login again:
   $ ks login
-
 `,
 	"NotAKeystoneProject": `
 {{ ERROR }} {{ .Name | red }}
@@ -26,35 +23,29 @@ Neither the current directory ({{ .Path }}), nor any of its parent,
 have a keystone.yaml file.
 If this is a new project, start with:
   $ ks init <your-project-name>
-
 `,
 	"NoWorkingDirectory": `
 {{ ERROR }} {{ .Name | red }}
 A current working directory could not be determined.
 
 This happened because: {{ .Cause }}
-
 `,
 	"UnsupportedFlag": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Flag | red }} {{- "'" | red }}
-
 `,
 	"AlreadyKeystoneProject": `
 {{ ERROR }} {{ .Name | red }}
 You are trying to create a Keystone project but there already are keystone files in your current directory.
 Please remove the .keystone directory and keystone.yaml file beforehand.
-
 `,
 	"DeviceNotRegistered": `
 {{ ERROR }} {{ .Name | red }}
 This device is not registered to your account or its access has been revoked.
 To register it, please logout, then login again.
-
 `,
 	"BadDeviceName": `
 {{ ERROR }} {{ .Name | red }}
 Device names must be alphanumeric with ., -, _
-
 `,
 	"FailedToReadKeystoneFile": `
 {{ ERROR }} {{ .Name | red }}
@@ -62,7 +53,6 @@ The keystone.yaml file exists, but it might not be readable or writable.
 Its content may also be corrupted and may not be parsable.
 
 This happened because: {{ .Cause }}
-
 `,
 	"FailedToUpdateKeystoneFile": `
 {{ ERROR }} {{ .Name | red }}
@@ -70,27 +60,28 @@ The keystone.yaml file exists, but it might not be readable or writable.
 Its content may also be corrupted and may not be parsable.
 
 This happened because: {{ .Cause }}
-
 `,
 	"FailedToUpdateDotEnv": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
-
 `,
 	"FailedToReadDotEnv": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
+`,
+	"RoleDoesNotExist": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
+Available roles are: {{ .Available }}
 
 `,
 	"ProjectDoesntExist": `
-{{ ERROR }} {{- ": " | red }} {{- .Name | red }} 
+{{ ERROR }} {{ "Project" | red }} {{ .ProjectName | red }} {{ "Does Not Exist" | red }}
 Project in your keystone.yaml does not exist or your are not part of it.
 
 If you have this configuration from a project member, ask them to add you in the keystone project.
-
 `,
 	"OrganizationNotPaid": `
-{{ ERROR }} {{- ": '" | red }} {{- .Name | red }} {{- "'" | red }}
+{{ ERROR }} {{- .Name | red }} 
 It seems like some members of the project's organization are not admin.
 Roles feature is only available for paid organization.
 
@@ -99,11 +90,9 @@ Change each member role to admin:
 
 Or, upgrade your organization plan:
   $ ks orga upgrade
-
 `,
 	"NameDoesNotMatch": `
 {{ ERROR }} {{ .Name | red }}
-
 `,
 	"CouldNotRemoveLocalFiles": `
 {{ ERROR }} {{ .Name | red }}
@@ -115,7 +104,6 @@ Check file system permissions and remove the following files manually:
   - .keystone/
 
 This happened because: {{ .Cause }}
-
 `,
 	"EnvironmentDoesntExist": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
@@ -123,49 +111,26 @@ Available environments are: {{ .Available }}
 
 To use another environment:
   $ ks env switch {{ .Environment }}
-
-`,
-	"EnvironmentAlreadyExists": `
-{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
-You tried to create an environment with the name '{{ .Environment }}',
-but your project already have one with that name.
-
-To use the '{{ .Environment }}':
-  $ ks env switch {{ .Environment }}
-
 `,
 	"FailedToSetCurrentEnvironment": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
 The file at '{{ .Path }}' could not be written.
 
 This happened because: {{ .Cause }}
-
 `,
 	"CannotReadEnvironment": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
-
 `,
 	"PermissionDenied": `
 {{ ERROR }} {{ .Name | red }} 
 You do not have the rights to change the '{{ .Environment }}' environment.
-
-`,
-	"CannotRemoveCurrentEnvironment": `
-{{ ERROR }} {{ .Name | red }}
-You are trying to remove the '{{ .Environment }}' environment,
-but it is currently in use.
-
-Change to another environment:
-  $ ks env switch <environment>
-
 `,
 	"CannotGetEnvironmentKeys": `
 {{ ERROR }} {{ .Name | red }}
 Public keys for the '{{ .Environment }}' could not be retrieved.
 
 This happened because: {{ .Cause }}
-
 `,
 	"YouHaveLocallyModifiedFiles": `
 {{ ERROR }} {{ .Name | red }}
@@ -178,7 +143,6 @@ and send them all members:
 
 If you want to discard those changes:
   $ ks file reset [filepath]...
-
 `,
 	"SecretDoesNotExist": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
@@ -188,13 +152,14 @@ To list secrets:
 
 To add a {{ .Secret }} secret to all environments:
   $ ks secret add {{ .Secret }} <secret-value>
-
 `,
 	"SecretRequired": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
 You are trying to either unset '{{ .Secret }}', or to set it to a blank value,
 but is required.
 
+If you are sure this secret can be unset or blank, you can mark as optionl with:
+  $ ks secret optional {{ .Secret }}
 `,
 	"SecretHasChanged": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
@@ -202,7 +167,6 @@ You are trying to set a value for '{{ .Secret }}', but a new value has been set 
 If you want to override their value, try again.
 
 {{ .Values }}
-
 `,
 	"RequiredSecretsAreMissing": `
 {{ ERROR }} {{ .Name | red }} 
@@ -216,7 +180,6 @@ You may set value for those secrets with:
 
 Or make them optional using:
   $ ks secret optional <SECRET_NAME>
-
 `,
 	"FileDoesNotExist": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .FileName | red }} {{- "'" | red }}
@@ -226,7 +189,6 @@ To list files:
 
 To add {{ .FileName }} to all environments:
   $ ks file add {{ .FileName }}
-
 `,
 	"RequiredFilesAreMissing": `
 {{ ERROR }} {{ .Name | red }}
@@ -240,7 +202,6 @@ You may set the content for those files with:
 
 Or make them optional using:
   $ ks file optional <FILE_PATH>
-
 `,
 	"FileNotInWorkingDirectory": `
 {{ ERROR }} {{ .Name | red }}
@@ -249,26 +210,24 @@ to the project's current working directory :
     {{ .Wd }}
 
 Only files belonging to {{ .Wd }} or its subdirectories can be added.
-
 `,
 	"EnvironmentsHaveChanged": `
 {{ ERROR }} {{ .Name | red }}
-We couldn't find data for the following environments: '{{ .EnvironmentsName }}', but a new value has been set by another member.
+We couldn't find data for the following environments: '{{ .EnvironmentsName }}',
+but a new value has been set by another member.
 Ask someone to push their environments to make new data available to you.
-
 `,
 	"FileHasChanged": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{ .FilePath | red }}
-You are trying to update the file '{{ .FilePath }}', but another member has changed its content.
+You are trying to update the file '{{ .FilePath }}',
+but another member has changed its content.
 If you want to override their changes, try again.
 
 Affected environments: {{ .AffectedEnvironments }}
-
 `,
 	"CannotAddFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
-
 `,
 	"CannotSetFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
@@ -277,19 +236,16 @@ Make sure the file exists, and has been added to the project using:
   $ ks file add {{ .Path }}
 
 This happened because: {{ .Cause }}
-
 `,
 	"CannotRemoveFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
-
 `,
 	"CannotCopyFile": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 A copy to {{ .CachePath }} could not be created at {{ .Path }}.
 
 This happened because: {{ .Cause }}
-
 `,
 	"FileNotInEnvironment": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
@@ -297,34 +253,28 @@ No version of '{{ .Path }}' was found for the '{{ .Environment }}' environment.
 
 To get the latest variables and files for '{{ .Environment }}':
   $ ks file && ks secret
-
 `,
 	"CannotCreateDirectory": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
-
 `,
 	"CannotRemoveDirectoryContents": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
-
 `,
 	"CannotSaveFiles": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .FileList | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
-
 `,
 	"CannotRemoveDirectory": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
-
 `,
 	"CopyFailed": `
 {{ ERROR }} {{ .Name | red }}
 Trying to copy '{{ .Source }}' to '{{ .Destination }}'
 
 This happened because: {{ .Cause }}
-
 `,
 	"MustBeLoggedIn": `
 {{ ERROR }} {{ .Name | red }}
@@ -332,12 +282,10 @@ You must be logged to execute this command.
 
 Please run:
   $ ks login
-
 `,
 	"CannotFindProjectID": `
 {{ ERROR }} {{ .Name | red }}
-Keystone.yaml must be malformated
-
+Keystone.yaml may be malformated
 `,
 	"UnkownError": `
 {{ ERROR }} {{ .Name | red }}
@@ -347,7 +295,6 @@ Feel free to file an issue at https://github.com/wearedevx/keystone
 Sorry for the inconvenience
 
 This happened because: {{ .Cause }}
-
 `,
 	"UsersDontExist": `
 {{ ERROR }} {{ .Name | red }}
@@ -355,90 +302,85 @@ This happened because: {{ .Cause }}
 
 You can invite those users to Keystone using
   $ ks invite <email>
-
 `,
 	"CannotAddMembers": `
 {{ ERROR }} {{ .Name | red }}
-This happened because: {{ .Cause }}
 
+This happened because: {{ .Cause }}
 `,
 	"CannotRemoveMembers": `
 {{ ERROR }} {{ .Name | red }}
-This happened because: {{ .Cause }}
 
+This happened because: {{ .Cause }}
 `,
 	"MemberHasNoAccessToEnv": `
 {{ ERROR }} {{ .Name | red }}
-{{ .Cause }}
 
+This happend because: {{ .Cause }}
 `,
 	"CouldNotDecryptMessages": `
 {{ ERROR }} {{ .Name | red }}
 {{ .Message }}
 
 This happened because: {{ .Cause }}
-
 `,
 	"CouldNotEncryptMessages": `
 {{ ERROR }} {{ .Name | red }}
-This happened because: {{ .Cause }}
 
+This happened because: {{ .Cause }}
 `,
 	"CouldNotParseMessage": `
 {{ ERROR }} {{ .Name | red }}
-This happened because: {{ .Cause }}
 
+This happened because: {{ .Cause }}
 `,
 	"PayloadErrors": `
 {{ ERROR }} {{ .Name | red }}
-This happened because: {{ .Cause }}
 
+This happened because: {{ .Cause }}
 `,
 	"InvalidFileContent": `
 {{ ERROR }} {{ .Name | red }}
 The file '{{ .Path }}' content could not be decoded from a base64 string
 
 This happened because: {{ .Cause }}
-
 `,
 	"FailedCheckingChanges": `
 {{ ERROR }} {{ .Name | red }}
 Error were encountered for file: '{{ .Path }}'
 
 This happened because: {{ .Cause }}
-
 `,
 	"FeatureRequiresToUpgrade": `
 {{ ERROR }} {{ .Name | red }}
 To take full advantage of all the features Keystone has to offer,
-such as access control and logs, you should upgrade your plan, using:
+such as roles and logs, you should upgrade your plan, using:
   $ ks orga upgrade
 `,
 	"AlreadySubscribed": `
 {{ ERROR }} {{ .Name | red }}
 You already have access to all of Keystone features!
-
 `,
 	"CannotUpgrade": `
 {{ ERROR }} {{ .Name | red }}
 Communication with the billing service failed,
 try again later.
-
 `,
 	"ManagementInaccessible": `
 {{ ERROR }} {{ .Name | red }}
 Communication with the billing service failed,
 try again later.
-
 `,
 	"OrganizationDoesNotExist": `
 {{ ERROR }} {{ .Name | red }}
+To create a new organization, use:
+  $ ks orga add <ORGANIZATION_NAME>
 
+Orgnaization names must be unique
 `,
 	"BadOrganizationName": `
 {{ ERROR }} {{ .Name | red }}
 Organization names must be alphanumeric with ., -, _
-
 `,
 	"OrganizationNameAlreadyTaken": `
 
@@ -449,7 +391,6 @@ You tried to perform an operation that requires ownership
 of the organization.
 
 You should ask the owner of said organization to perform it for you.
-
 `,
 	"YouDoNotOwnTheOrganization": `
 {{ ERROR }} {{ .Name | red }} {{ .OrganizationName | red }}
@@ -458,45 +399,39 @@ To see organization you own, use:
 
 To create a new organization, use:
   $ ks orga add {{ .OrganizationName }}
-
 `,
 	"CouldntSendInvite": `
 {{ ERROR }} {{ .Name | red }}
 
 This happened because: {{ .Cause }}
-
 `,
 	"CouldntSetRole": `
 {{ ERROR }} {{ .Name | red }}
 
+This happened because: {{ .Cause }}
 `,
 	"BackupDenied": `
 {{ ERROR }} {{ .Name | red }}
 You are not allowed to create backups.
-
 `,
 	"RestoreDenied": `
 {{ ERROR }} {{ .Name | red }}
 You are not allowed to restore backups.
-
 `,
 	"CouldNotCreateArchive": `
 {{ ERROR }} {{ .Name | red }}
 
 This happened because: {{ .Cause }}
-
 `,
 	"FailedToReadBackup": `
 {{ ERROR }} {{ .Name | red }}
 
 This happened because: {{ .Cause }}
-
 `,
 	"FailedToWriteBackup": `
 {{ ERROR }} {{ .Name | red }}
 
 This happened because: {{ .Cause }}
-
 `,
 	"CiServiceAlreadyExists": `
 {{ ERROR }} {{ .Name | red }} {{- ": " | red }} {{- .ServiceName | red }}
@@ -505,47 +440,39 @@ If you wish to modify it, try:
 
 If you wish to add a new service, pick another name, then
   $ ks ci add <other-service-name>
-
 `,
 	"NoSuchService": `
 {{ ERROR }} {{ .Name | red }} {{ .ServiceName | red }}
-
 `,
 	"CouldNotAddService": `
 {{ ERROR }} {{ .Name | red }} {{ .ServiceName | red }}
 
 This happened because: {{ .Cause }}
-
 `,
 	"CouldNotCleanService": `
 {{ ERROR }} {{ .Name | red }}
 
 This happened because: {{ .Cause }}
-
 `,
 	"CouldNotChangeService": `
 {{ ERROR }} {{ .Name | red }} {{ .ServiceName | red }}
 
 This happened because: {{ .Cause }}
-
 `,
 	"CouldNotRemoveService": `
 {{ ERROR }} {{ .Name | red }}
 
 This happened because: {{ .Cause }}
-
 `,
 	"MissingCIInformation": `
 {{ ERROR }} {{ .Name | red }}
 To edit the service, try:
   $ ks ci edit {{ .ServiceName }}
-
 `,
 	"CouldNotSendToCIService": `
 {{ ERROR }} {{ .Name | red }}
 
 This happened because: {{ .Cause }}
-
 `,
 }
 
@@ -631,10 +558,18 @@ func FailedToReadDotEnv(path string, cause error) *Error {
 	return NewError("Failed To Read .env", helpTexts["FailedToReadDotEnv"], meta, cause)
 }
 
-func ProjectDoesntExist(name string, projectid string, cause error) *Error {
+func RoleDoesNotExist(rolename string, available string, cause error) *Error {
 	meta := map[string]interface{}{
-		"Name":      string(name),
-		"ProjectId": string(projectid),
+		"RoleName":  string(rolename),
+		"Available": string(available),
+	}
+	return NewError("Role Not Available", helpTexts["RoleDoesNotExist"], meta, cause)
+}
+
+func ProjectDoesntExist(projectname string, projectid string, cause error) *Error {
+	meta := map[string]interface{}{
+		"ProjectName": string(projectname),
+		"ProjectId":   string(projectid),
 	}
 	return NewError("Project Does Not Exist", helpTexts["ProjectDoesntExist"], meta, cause)
 }
@@ -662,14 +597,7 @@ func EnvironmentDoesntExist(environment string, available string, cause error) *
 		"Environment": string(environment),
 		"Available":   string(available),
 	}
-	return NewError("Environment Doesn't Exist", helpTexts["EnvironmentDoesntExist"], meta, cause)
-}
-
-func EnvironmentAlreadyExists(environment string, cause error) *Error {
-	meta := map[string]interface{}{
-		"Environment": string(environment),
-	}
-	return NewError("Environment Already Exists", helpTexts["EnvironmentAlreadyExists"], meta, cause)
+	return NewError("Environment Does Not Exist", helpTexts["EnvironmentDoesntExist"], meta, cause)
 }
 
 func FailedToSetCurrentEnvironment(environment string, path string, cause error) *Error {
@@ -692,13 +620,6 @@ func PermissionDenied(environment string, cause error) *Error {
 		"Environment": string(environment),
 	}
 	return NewError("Permission Denied", helpTexts["PermissionDenied"], meta, cause)
-}
-
-func CannotRemoveCurrentEnvironment(environment string, cause error) *Error {
-	meta := map[string]interface{}{
-		"Environment": string(environment),
-	}
-	return NewError("Cannot Remove Current Environment", helpTexts["CannotRemoveCurrentEnvironment"], meta, cause)
 }
 
 func CannotGetEnvironmentKeys(environment string, cause error) *Error {
@@ -1047,7 +968,7 @@ func NoSuchService(servicename string, cause error) *Error {
 	meta := map[string]interface{}{
 		"ServiceName": string(servicename),
 	}
-	return NewError("No Suche Service", helpTexts["NoSuchService"], meta, cause)
+	return NewError("No Such Service", helpTexts["NoSuchService"], meta, cause)
 }
 
 func CouldNotAddService(servicename string, cause error) *Error {

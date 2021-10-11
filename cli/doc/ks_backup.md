@@ -1,10 +1,14 @@
 ## ks backup
 
-Create a backup of your local secrets and files.
+Creates a backup of your local secrets and files.
 
 ### Synopsis
 
-Create a backup of your local secrets and files.
+Creates a backup of your local secrets and files.
+
+Since we do not keep a copy of your secrets or files on our servers, 
+it can be useful to regularly back them up to a secure location
+to prevent losing them all if anything were to happen to your device.
 
 ```
 ks backup [flags]

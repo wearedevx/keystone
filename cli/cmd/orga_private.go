@@ -12,7 +12,7 @@ import (
 
 // privateCmd represents the private command
 var privateCmd = &cobra.Command{
-	Use:   "private",
+	Use:   "private <organization-name>",
 	Short: "Toggle an organization privacy",
 	Long:  `Toggle an organization privacy.`,
 	Args:  cobra.ExactArgs(1),
@@ -36,7 +36,7 @@ var privateCmd = &cobra.Command{
 		if organization.Private {
 			ui.PrintSuccess("Organization %s is now private", organization.Name)
 		} else {
-			ui.PrintSuccess("Organization %s is now not private", organization.Name)
+			ui.PrintSuccess("Organization %s is not private anymore", organization.Name)
 		}
 	},
 }

@@ -22,8 +22,12 @@ var backupName string
 // backupCmd represents the backup command
 var backupCmd = &cobra.Command{
 	Use:   "backup",
-	Short: "Create a backup of your local secrets and files.",
-	Long:  `Create a backup of your local secrets and files.`,
+	Short: "Creates a backup of your local secrets and files.",
+	Long: `Creates a backup of your local secrets and files.
+
+Since we do not keep a copy of your secrets or files on our servers, 
+it can be useful to regularly back them up to a secure location
+to prevent losing them all if anything were to happen to your device.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		if backupName == "" {

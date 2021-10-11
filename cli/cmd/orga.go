@@ -13,8 +13,8 @@ var orgaCmd = &cobra.Command{
 	Short: "Manage organizations",
 	Long: `Manages organizations.
 
-Used without arguments, displays a list of all members,
-grouped by their role.`,
+Used without arguments, displays a list of all members related to the organization
+the current project belongs to, grouped by their role.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		c, err := client.NewKeystoneClient()
 		exitIfErr(err)

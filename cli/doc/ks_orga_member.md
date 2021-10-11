@@ -1,13 +1,20 @@
 ## ks orga member
 
-List members of an organization
+Lists members of an organization
 
 ### Synopsis
 
-List members of an organization
+Lists members of an organization.
+
 
 ```
-ks orga member [flags]
+ks orga member <organization-name> [flags]
+```
+
+### Examples
+
+```
+ks orga member my_organization
 ```
 
 ### Options

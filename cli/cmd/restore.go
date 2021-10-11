@@ -20,8 +20,8 @@ import (
 // restoreCmd represents the restore command
 var restoreCmd = &cobra.Command{
 	Use:   "restore",
-	Short: "Restore secrets and files from keystone created backup.",
-	Long: `Restore secrets and files from keystone created backup.
+	Short: "Restores secrets and files from keystone created backup",
+	Long: `Restores secrets and files from keystone created backup.
 This will override all the data you have stored locally.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

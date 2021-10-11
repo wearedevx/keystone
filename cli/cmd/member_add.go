@@ -173,20 +173,6 @@ func getMemberRolesFromArgs(c client.KeystoneClient, roleName string, memberIDs 
 		}
 	}
 
-	if foundRole.ID == 0 {
-		roleNames := []string{}
-
-		for _, role := range roles {
-			roleNames = append(roleNames, role.Name)
-		}
-
-		exit(kserrors.RoleDoesNotExist(
-			roleName,
-			strings.Join(roleNames, ", "),
-			nil,
-		))
-	}
-
 	memberRoles := make(map[string]models.Role)
 
 	for _, member := range memberIDs {

@@ -93,32 +93,13 @@ func (ctx *Context) ListEnvironments() []string {
 	return envs
 }
 
-func (ctx *Context) CreateEnvironment(name string) *Context {
-	if ctx.Err() != nil {
-		return ctx
-	}
-
-	if !ctx.HasEnvironment(name) {
-		newEnvDir := ctx.CachedEnvironmentPath(name)
-		err := os.MkdirAll(newEnvDir, 0o700)
-
-		if err != nil {
-			ctx.setError(kserrors.CannotCreateDirectory(newEnvDir, err))
-		}
-	} else {
-		ctx.setError(kserrors.EnvironmentAlreadyExists(name, nil))
-	}
-
-	return ctx
-}
-
 func (ctx *Context) RemoveEnvironment(name string) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
 
 	if current := ctx.CurrentEnvironment(); current == name {
-		return ctx.setError(kserrors.CannotRemoveCurrentEnvironment(name, nil))
+		panic("cannot remove current envrionment")
 	}
 
 	if ctx.HasEnvironment(name) {

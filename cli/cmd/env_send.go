@@ -27,6 +27,9 @@ var sendCmd = &cobra.Command{
 	Use:   "send",
 	Short: "Sends all secrets and files to all members",
 	Long: `Sends all secrets and files to all members.
+
+Members will receive all secrets and files values for all the environments
+they have access to.
 `,
 	Example: `ks env send`,
 	Args:    cobra.NoArgs,

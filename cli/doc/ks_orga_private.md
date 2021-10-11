@@ -7,7 +7,7 @@ Toggle an organization privacy
 Toggle an organization privacy.
 
 ```
-ks orga private [flags]
+ks orga private <organization-name> [flags]
 ```
 
 ### Options

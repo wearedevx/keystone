@@ -11,10 +11,14 @@ var private bool
 
 // addCmd represents the add command
 var orgaAddCmd = &cobra.Command{
-	Use:   "add",
-	Short: "Create a new organization",
-	Long:  `Create a new oranization for your projects`,
-	Args:  cobra.ExactArgs(1),
+	Use:   "add <organization-name>",
+	Short: "Creates a new organization",
+	Long: `Creates a new oranization for your projects.
+Organzation names must be unique and composed of only alphanumeric characters,
+. (period), - (dash), and _ (underscore). No space are allowed
+`,
+	Example: `ks orga add my_new_organization`,
+	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		organizationName := args[0]

@@ -6,7 +6,7 @@ Configures an existing CI service integration
 
 Configures an existing CI service integration.
 
-Use this command to modify CI service specific settings
+Use this command to modify CI service specific settings,
 like API key and project name.
 
 ```

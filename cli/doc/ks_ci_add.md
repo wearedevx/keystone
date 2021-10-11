@@ -6,6 +6,10 @@ Configures a new CI service
 
 Configures a new CI service.
 
+Once you have configured a new CI service, you can send it secrets using:
+`ks ci send --env prod`
+
+
 ```
 ks ci add [flags]
 ```

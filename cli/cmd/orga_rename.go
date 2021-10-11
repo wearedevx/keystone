@@ -27,9 +27,11 @@ import (
 // renameCmd represents the rename command
 var renameCmd = &cobra.Command{
 	Use:   "rename",
-	Short: "Rename an organization",
-	Long:  `Rename an organization.`,
-	Args:  cobra.ExactArgs(2),
+	Short: "Renames an organization",
+	Long: `Renames an organization.
+`,
+	Example: "ks orga rename my_orag my_orga",
+	Args:    cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		organizationName := args[0]

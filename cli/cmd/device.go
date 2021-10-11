@@ -15,8 +15,12 @@ import (
 // deviceCmd represents the device command
 var deviceCmd = &cobra.Command{
 	Use:   "device",
-	Short: "List all devices linked to your account.",
-	Long:  `List all devices linked to your account.`,
+	Short: "Manages devices",
+	Long: `Manages devices.
+
+Used without arguments, lists devices this account has registered.
+`,
+	Example: "ks device",
 	Run: func(_ *cobra.Command, _ []string) {
 		c, kcErr := client.NewKeystoneClient()
 		exitIfErr(kcErr)
@@ -70,7 +74,7 @@ func formatDevice(device models.Device) string {
 	}
 
 	return fmt.Sprintf(
-		"  - %s, %s, created at %s\n",
+		"  - %s, %s, created on %s\n",
 		device.Name,
 		lastUsedAtString,
 		device.CreatedAt.Format("2006/01/02"),

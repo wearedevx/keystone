@@ -1,13 +1,20 @@
 ## ks orga rename
 
-Rename an organization
+Renames an organization
 
 ### Synopsis
 
-Rename an organization.
+Renames an organization.
+
 
 ```
 ks orga rename [flags]
+```
+
+### Examples
+
+```
+ks orga rename my_orag my_orga
 ```
 
 ### Options

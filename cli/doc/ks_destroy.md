@@ -1,12 +1,12 @@
 ## ks destroy
 
-Destroy the whole Keystone project
+Destroys the whole Keystone project
 
 ### Synopsis
 
-Destroy the whole Keystone project.
+Destroys the whole Keystone project.
 
-The project will be deleted, members won’t be able to send or receive
+The project will be deleted, members won’t be able to send nor receive
 updates about it. 
 
 All secrets and files managed by Keystone *WILL BE LOST*.

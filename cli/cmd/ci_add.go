@@ -26,9 +26,12 @@ import (
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
-	Use:     "add",
-	Short:   "Configures a new CI service",
-	Long:    `Configures a new CI service.`,
+	Use:   "add",
+	Short: "Configures a new CI service",
+	Long: `Configures a new CI service.
+
+Once you have configured a new CI service, you can send it secrets using:
+` + "`" + `ks ci send --env prod` + "`\n",
 	Example: `ks ci add`,
 	Run: func(_ *cobra.Command, _ []string) {
 		serviceName := prompts.StringInput(

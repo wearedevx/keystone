@@ -1,10 +1,10 @@
 ## ks project
 
-List project you are in
+Lists projects you are a member of
 
 ### Synopsis
 
-List project you are in
+Lists projects you are a member of
 
 ```
 ks project [flags]

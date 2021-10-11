@@ -16,8 +16,8 @@ import (
 // projectCmd represents the project command
 var projectCmd = &cobra.Command{
 	Use:   "project",
-	Short: "List project you are in",
-	Long:  `List project you are in`,
+	Short: "Lists projects you are a member of",
+	Long:  `Lists projects you are a member of`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		c, err := client.NewKeystoneClient()
@@ -42,7 +42,7 @@ var projectCmd = &cobra.Command{
 
 		fmt.Println()
 		for _, project := range projects {
-			fmt.Printf(" - %s, created at %s\n", project.Name, project.CreatedAt.Format("2006/01/02"))
+			fmt.Printf(" - %s, created on %s\n", project.Name, project.CreatedAt.Format("2006/01/02"))
 		}
 
 	},

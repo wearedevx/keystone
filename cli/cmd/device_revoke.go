@@ -11,8 +11,8 @@ import (
 // deviceCmd represents the device command
 var deviceRevokeCmd = &cobra.Command{
 	Use:   "revoke",
-	Short: "Revoke access to one of your device.",
-	Long:  `Revoke access to one of your device.`,
+	Short: "Revokes access to one of your devices",
+	Long:  `Revokes access to one of your devices.`,
 	Run: func(_ *cobra.Command, _ []string) {
 		c, kcErr := client.NewKeystoneClient()
 		exitIfErr(kcErr)

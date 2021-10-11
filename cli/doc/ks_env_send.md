@@ -6,6 +6,9 @@ Sends all secrets and files to all members
 
 Sends all secrets and files to all members.
 
+Members will receive all secrets and files values for all the environments
+they have access to.
+
 
 ```
 ks env send [flags]

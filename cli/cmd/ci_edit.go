@@ -14,7 +14,7 @@ var setupCmd = &cobra.Command{
 	Short: "Configures an existing CI service integration",
 	Long: `Configures an existing CI service integration.
 
-Use this command to modify CI service specific settings
+Use this command to modify CI service specific settings,
 like API key and project name.`,
 	Example: `ks ci edit
 

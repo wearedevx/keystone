@@ -120,6 +120,20 @@ errors:
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
+  # ROLES ERRORS
+  # ------------
+  - type: RoleDoesNotExist
+    name: "Role Not Available"
+    params:
+      - name: RoleName
+        type: string
+      - name: Available
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
+      Available roles are: {{ .Available }}
+
+
   # PROJECT_ERRORS
   # –––––––––––––––––
   - type: ProjectDoesntExist

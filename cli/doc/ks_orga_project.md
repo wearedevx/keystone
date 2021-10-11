@@ -1,13 +1,20 @@
 ## ks orga project
 
-Get projects from organization
+Lists projects from organization
 
 ### Synopsis
 
-Get projects from organization
+Lists projects from organization.
+
 
 ```
-ks orga project [flags]
+ks orga project <organization-name> [flags]
+```
+
+### Examples
+
+```
+ks orga project my_organization
 ```
 
 ### Options

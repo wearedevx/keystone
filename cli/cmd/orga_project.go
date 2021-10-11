@@ -16,10 +16,12 @@ import (
 
 // projectCmd represents the project command
 var orgaProjectCmd = &cobra.Command{
-	Use:   "project",
-	Short: "Get projects from organization",
-	Long:  `Get projects from organization`,
-	Args:  cobra.ExactArgs(1),
+	Use:   "project <organization-name>",
+	Short: "Lists projects from organization",
+	Long: `Lists projects from organization.
+`,
+	Example: "ks orga project my_organization",
+	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		orgaName := args[0]

@@ -1,13 +1,22 @@
 ## ks orga add
 
-Create a new organization
+Creates a new organization
 
 ### Synopsis
 
-Create a new oranization for your projects
+Creates a new oranization for your projects.
+Organzation names must be unique and composed of only alphanumeric characters,
+. (period), - (dash), and _ (underscore). No space are allowed
+
 
 ```
-ks orga add [flags]
+ks orga add <organization-name> [flags]
+```
+
+### Examples
+
+```
+ks orga add my_new_organization
 ```
 
 ### Options

@@ -29,10 +29,10 @@ import (
 // destroyCmd represents the destroy command
 var destroyCmd = &cobra.Command{
 	Use:   "destroy",
-	Short: "Destroy the whole Keystone project",
-	Long: `Destroy the whole Keystone project.
+	Short: "Destroys the whole Keystone project",
+	Long: `Destroys the whole Keystone project.
 
-The project will be deleted, members won’t be able to send or receive
+The project will be deleted, members won’t be able to send nor receive
 updates about it. 
 
 All secrets and files managed by Keystone *WILL BE LOST*.
