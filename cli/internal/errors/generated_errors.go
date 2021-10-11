@@ -41,7 +41,7 @@ This happened because: {{ .Cause }}
 `,
 	"AlreadyKeystoneProject": `
 {{ ERROR }} {{ .Name | red }}
-You are trying to create a Keystone project but there already is keystone files in your current directory.
+You are trying to create a Keystone project but there already are keystone files in your current directory.
 Please remove the .keystone directory and keystone.yaml file beforehand.
 
 `,
@@ -80,16 +80,6 @@ This happened because: {{ .Cause }}
 	"FailedToReadDotEnv": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
-
-`,
-	"FailedToReadRolesFile": `
-{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
-This happened because: {{ .Cause }}
-
-`,
-	"RoleDoesNotExist": `
-{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
-Available roles are: {{ .Available }}
 
 `,
 	"ProjectDoesntExist": `
@@ -420,9 +410,9 @@ This happened because: {{ .Cause }}
 `,
 	"FeatureRequiresToUpgrade": `
 {{ ERROR }} {{ .Name | red }}
-To upgrade your plan:
+To take full advantage of all the features Keystone has to offer,
+such as access control and logs, you should upgrade your plan, using:
   $ ks orga upgrade
-
 `,
 	"AlreadySubscribed": `
 {{ ERROR }} {{ .Name | red }}
@@ -639,21 +629,6 @@ func FailedToReadDotEnv(path string, cause error) *Error {
 		"Path": string(path),
 	}
 	return NewError("Failed To Read .env", helpTexts["FailedToReadDotEnv"], meta, cause)
-}
-
-func FailedToReadRolesFile(path string, cause error) *Error {
-	meta := map[string]interface{}{
-		"Path": string(path),
-	}
-	return NewError("Failed To Read Roles File", helpTexts["FailedToReadRolesFile"], meta, cause)
-}
-
-func RoleDoesNotExist(rolename string, available string, cause error) *Error {
-	meta := map[string]interface{}{
-		"RoleName":  string(rolename),
-		"Available": string(available),
-	}
-	return NewError("Role Not Available", helpTexts["RoleDoesNotExist"], meta, cause)
 }
 
 func ProjectDoesntExist(name string, projectid string, cause error) *Error {

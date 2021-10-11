@@ -4,20 +4,20 @@ errors:
   - type: InitFailed
     name: "Init Failed"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       This happened because: {{ .Cause }}
 
   - type: ServiceNotAvailable
     name: "Service not available"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
 
   - type: InvalidConnectionToken
     name: "Invalid Connection Token"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       Your current connection token has probably expired.
 
@@ -29,7 +29,7 @@ errors:
     params:
       - name: Path
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       It seems you are not in a keystone project.
 
@@ -41,7 +41,7 @@ errors:
   - type: NoWorkingDirectory
     name: "No Working Directory"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       A current working directory could not be determined.
 
@@ -52,21 +52,21 @@ errors:
     params:
       - name: Flag
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Flag | red }} {{- "'" | red }}
 
   - type: AlreadyKeystoneProject
     name: "Already a Keystone project"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
-      You are trying to create a Keystone project but there already is keystone files in your current directory.
+      You are trying to create a Keystone project but there already are keystone files in your current directory.
       Please remove the .keystone directory and keystone.yaml file beforehand.
 
   - type: DeviceNotRegistered
     name: "Device not registered"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       This device is not registered to your account or its access has been revoked.
       To register it, please logout, then login again.
@@ -74,7 +74,7 @@ errors:
   - type: BadDeviceName
     name: "Bad Device Name"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       Device names must be alphanumeric with ., -, _
 
@@ -83,7 +83,7 @@ errors:
   - type: FailedToReadKeystoneFile
     name: "Failed To Read Keystone File"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       The keystone.yaml file exists, but it might not be readable or writable.
       Its content may also be corrupted and may not be parsable.
@@ -93,7 +93,7 @@ errors:
   - type: FailedToUpdateKeystoneFile
     name: "Failed To Update Keystone File"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       The keystone.yaml file exists, but it might not be readable or writable.
       Its content may also be corrupted and may not be parsable.
@@ -107,7 +107,7 @@ errors:
     params:
       - name: Path
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
@@ -116,43 +116,21 @@ errors:
     params:
       - name: Path
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
-
-  # ROLES_FILE_ERRORS
-  # ––––––––––––––
-  - type: FailedToReadRolesFile
-    name: "Failed To Read Roles File"
-    params:
-      - name: Path
-        type: string
-    template: |
-      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
-      This happened because: {{ .Cause }}
-
-  - type: RoleDoesNotExist
-    name: "Role Not Available"
-    params:
-      - name: RoleName
-        type: string
-      - name: Available
-        type: string
-    template: |
-      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
-      Available roles are: {{ .Available }}
 
   # PROJECT_ERRORS
   # –––––––––––––––––
   - type: ProjectDoesntExist
     name: "Project Does Not Exist"
     params:
-      - name: Name
+      - name: ProjectName
         type: string
       - name: ProjectId
         type: string
-    template: |
-      {{ ERROR }} {{- ": " | red }} {{- .Name | red }} 
+    template: |-
+      {{ ERROR }} {{ "Project" | red }} {{ .ProjectName | red }} {{ "Does Not Exist" | red }}
       Project in your keystone.yaml does not exist or your are not part of it.
 
       If you have this configuration from a project member, ask them to add you in the keystone project.
@@ -160,8 +138,8 @@ errors:
   - type: OrganizationNotPaid
     name: "Organization Not Paid"
     params: []
-    template: |
-      {{ ERROR }} {{- ": '" | red }} {{- .Name | red }} {{- "'" | red }}
+    template: |-
+      {{ ERROR }} {{- .Name | red }} 
       It seems like some members of the project's organization are not admin.
       Roles feature is only available for paid organization.
       
@@ -174,13 +152,13 @@ errors:
   - type: NameDoesNotMatch
     name: "Name Does Not Match"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
 
   - type: CouldNotRemoveLocalFiles
     name: "Could Not Remove Local Files"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       The project has been destroyed on our servers,
       but some locale files could not be removed.
@@ -194,30 +172,17 @@ errors:
   # ENVIRONMENT_ERRORS
   # –––––––––––––––––
   - type: EnvironmentDoesntExist
-    name: "Environment Doesn't Exist"
+    name: "Environment Does Not Exist"
     params:
       - name: Environment
         type: string
       - name: Available
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
       Available environments are: {{ .Available }}
 
       To use another environment:
-        $ ks env switch {{ .Environment }}
-
-  - type: EnvironmentAlreadyExists
-    name: "Environment Already Exists"
-    params:
-      - name: Environment
-        type: string
-    template: |
-      {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
-      You tried to create an environment with the name '{{ .Environment }}',
-      but your project already have one with that name.
-
-      To use the '{{ .Environment }}':
         $ ks env switch {{ .Environment }}
 
   - type: FailedToSetCurrentEnvironment
@@ -227,7 +192,7 @@ errors:
         type: string
       - name: Path
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Environment | red }} {{- "'" | red }}
       The file at '{{ .Path }}' could not be written.
 
@@ -238,7 +203,7 @@ errors:
     params:
       - name: Path
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
@@ -247,29 +212,16 @@ errors:
     params:
       - name: Environment
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} 
       You do not have the rights to change the '{{ .Environment }}' environment.
-
-  - type: CannotRemoveCurrentEnvironment
-    name: "Cannot Remove Current Environment"
-    params:
-      - name: Environment
-        type: string
-    template: |
-      {{ ERROR }} {{ .Name | red }}
-      You are trying to remove the '{{ .Environment }}' environment,
-      but it is currently in use.
-
-      Change to another environment:
-        $ ks env switch <environment>
 
   - type: CannotGetEnvironmentKeys
     name: "Cannot Get Environment Puplic Keys"
     params:
       - name: Environment
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       Public keys for the '{{ .Environment }}' could not be retrieved.
 
@@ -282,7 +234,7 @@ errors:
         type: string
       - name: Files
         type: "[]string"
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       {{ range $file := .Files }}  - {{ $file }}
       {{ end }}
@@ -301,7 +253,7 @@ errors:
     params:
       - name: Secret
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
 
       To list secrets:
@@ -315,10 +267,13 @@ errors:
     params:
       - name: Secret
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
       You are trying to either unset '{{ .Secret }}', or to set it to a blank value,
       but is required.
+
+      If you are sure this secret can be unset or blank, you can mark as optionl with:
+        $ ks secret optional {{ .Secret }}
 
   - type: SecretHasChanged
     name: "Secret has changed"
@@ -327,7 +282,7 @@ errors:
         type: string
       - name: Values
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
       You are trying to set a value for '{{ .Secret }}', but a new value has been set by another member.
       If you want to override their value, try again.
@@ -341,7 +296,7 @@ errors:
         type: "[]string"
       - name: EnvironmentName
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} 
       You are trying to send the environment '{{ .EnvironmentName }}' to a CI/CD service, but some required secrets are missing their value:
       {{ range $secretName := .MissingSecrets }}
@@ -359,7 +314,7 @@ errors:
     params:
       - name: FileName
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .FileName | red }} {{- "'" | red }}
 
       To list files:
@@ -375,7 +330,7 @@ errors:
         type: "[]string"
       - name: EnvironmentName
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       You are trying to send the environment '{{ .EnvironmentName }}' to a CI/CD service, but some required files are missing or empty:
       {{ range $filePath := .MissingFiles }}
@@ -395,7 +350,7 @@ errors:
         type: "string"
       - name: Wd
         type: "string"
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       The file you are trying to add ({{ .FilePath }}) does not belong
       to the project's current working directory :
@@ -408,9 +363,10 @@ errors:
     params:
       - name: EnvironmentsName
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
-      We couldn't find data for the following environments: '{{ .EnvironmentsName }}', but a new value has been set by another member.
+      We couldn't find data for the following environments: '{{ .EnvironmentsName }}',
+      but a new value has been set by another member.
       Ask someone to push their environments to make new data available to you.
 
   - type: FileHasChanged
@@ -420,9 +376,10 @@ errors:
         type: string
       - name: AffectedEnvironments
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{ .FilePath | red }}
-      You are trying to update the file '{{ .FilePath }}', but another member has changed its content.
+      You are trying to update the file '{{ .FilePath }}',
+      but another member has changed its content.
       If you want to override their changes, try again.
 
       Affected environments: {{ .AffectedEnvironments }}
@@ -434,7 +391,7 @@ errors:
     params:
       - name: Path
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
@@ -443,7 +400,7 @@ errors:
     params:
       - name: Path
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       You tried to set the content of '{{ .Path }}', but it could not be read or found.
       Make sure the file exists, and has been added to the project using:
@@ -456,7 +413,7 @@ errors:
     params:
       - name: Path
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
@@ -467,7 +424,7 @@ errors:
         type: string
       - name: CachePath
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       A copy to {{ .CachePath }} could not be created at {{ .Path }}.
 
@@ -480,7 +437,7 @@ errors:
         type: string
       - name: Environment
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       No version of '{{ .Path }}' was found for the '{{ .Environment }}' environment.
 
@@ -494,7 +451,7 @@ errors:
     params:
       - name: Path
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
@@ -503,7 +460,7 @@ errors:
     params:
       - name: Path
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
@@ -512,7 +469,7 @@ errors:
     params:
       - name: FileList
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .FileList | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
@@ -521,7 +478,7 @@ errors:
     params:
       - name: Path
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
       This happened because: {{ .Cause }}
 
@@ -532,7 +489,7 @@ errors:
         type: string
       - name: Destination
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       Trying to copy '{{ .Source }}' to '{{ .Destination }}'
 
@@ -540,7 +497,7 @@ errors:
 
   - type: MustBeLoggedIn
     name: "You must be logged in"
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       You must be logged to execute this command.
 
@@ -550,14 +507,14 @@ errors:
   - type: CannotFindProjectID
     name: "Cannot find project ID in config file"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
-      Keystone.yaml must be malformated
+      Keystone.yaml may be malformated
 
   - type: UnkownError
     name: "Unkown Error"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       Ouch! We didn't think this could happen.
 
@@ -573,7 +530,7 @@ errors:
     params:
       - name: Message
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       {{ .Message }}
 
@@ -583,23 +540,26 @@ errors:
   - type: CannotAddMembers
     name: "Cannot Add Members"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
+
       This happened because: {{ .Cause }}
 
   - type: CannotRemoveMembers
     name: "Cannot Remove Members"
     param: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
+
       This happened because: {{ .Cause }}
 
   - type: MemberHasNoAccessToEnv
     name: "Member has no access to environment"
     param: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
-      {{ .Cause }}
+
+      This happend because: {{ .Cause }}
 
   # DECRYPTION ERRORS
   # -----------------
@@ -608,7 +568,7 @@ errors:
     params:
       - name: Message
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       {{ .Message }}
 
@@ -619,8 +579,9 @@ errors:
   - type: CouldNotEncryptMessages
     name: "Could not encrypt messages"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
+
       This happened because: {{ .Cause }}
 
   # MESSAGES ERRORS
@@ -628,15 +589,17 @@ errors:
   - type: CouldNotParseMessage
     name: "Could not parse message"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
+
       This happened because: {{ .Cause }}
 
   - type: PayloadErrors
     name: "Errors occured while preparing the payload"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
+
       This happened because: {{ .Cause }}
 
   - type: InvalidFileContent
@@ -644,7 +607,7 @@ errors:
     params:
       - name: Path
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       The file '{{ .Path }}' content could not be decoded from a base64 string
 
@@ -655,7 +618,7 @@ errors:
     params:
       - name: Path
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       Error were encountered for file: '{{ .Path }}'
 
@@ -666,22 +629,23 @@ errors:
   - type: FeatureRequiresToUpgrade
     name: "This Feature Requires to Upgrade"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
-      To upgrade your plan:
+      To take full advantage of all the features Keystone has to offer,
+      such as roles and logs, you should upgrade your plan, using:
         $ ks orga upgrade
 
   - type: AlreadySubscribed
     name: "The Organization Has Already Been Upgraded"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       You already have access to all of Keystone features!
 
   - type: CannotUpgrade
     name: "Cannot Upgrade"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       Communication with the billing service failed,
       try again later.
@@ -689,7 +653,7 @@ errors:
   - type: ManagementInaccessible
     name: "Management Inaccessible"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       Communication with the billing service failed,
       try again later.
@@ -699,27 +663,31 @@ errors:
   - type: OrganizationDoesNotExist
     name: "Organizaiton Does Not Exist"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
+      To create a new organization, use:
+        $ ks orga add <ORGANIZATION_NAME>
+      
+      Orgnaization names must be unique
 
   - type: BadOrganizationName
     name: "Bad Organization Name"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       Organization names must be alphanumeric with ., -, _
 
   - type: OrganizationNameAlreadyTaken
     name: "Organization Name Already Taken"
     params: []
-    templape: |
+    templape: |-
       {{ ERROR }} {{ .Name | red }}
       Pick another one.
 
   - type: MustOwnTheOrganization
     name: "You Must Own the Organization"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       You tried to perform an operation that requires ownership
       of the organization.
@@ -731,7 +699,7 @@ errors:
     params: 
       - name: OrganizationName
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{ .OrganizationName | red }}
       To see organization you own, use:
         $ ks orga
@@ -744,7 +712,7 @@ errors:
   - type: CouldntSendInvite
     name: "Couldn't Send Invite"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
 
       This happened because: {{ .Cause }}
@@ -754,29 +722,31 @@ errors:
   - type: CouldntSetRole
     name: "Couldn't Set Role"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
+      
+      This happened because: {{ .Cause }}
 
   # BACKUP ERRORS
   # ---------------
   - type: BackupDenied
     name: "Permission Denied"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       You are not allowed to create backups.
 
   - type: RestoreDenied
     name: "Permission Denied"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       You are not allowed to restore backups.
 
   - type: CouldNotCreateArchive
     name: "Could Not Create Archive"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
 
       This happened because: {{ .Cause }}
@@ -784,7 +754,7 @@ errors:
   - type: FailedToReadBackup
     name: "Failed To Read Backup"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
 
       This happened because: {{ .Cause }}
@@ -792,7 +762,7 @@ errors:
   - type: FailedToWriteBackup
     name: "Failed To Write Backup"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
 
       This happened because: {{ .Cause }}
@@ -804,7 +774,7 @@ errors:
     params: 
       - name: ServiceName
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": " | red }} {{- .ServiceName | red }}
       If you wish to modify it, try:
         $ ks ci edit {{ .ServiceName }}
@@ -813,11 +783,11 @@ errors:
         $ ks ci add <other-service-name>
 
   - type: NoSuchService
-    name: "No Suche Service"
+    name: "No Such Service"
     params:
       - name: "ServiceName"
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{ .ServiceName | red }}
 
   - type: CouldNotAddService
@@ -825,7 +795,7 @@ errors:
     params:
       - name: ServiceName
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{ .ServiceName | red }}
 
       This happened because: {{ .Cause }}
@@ -833,7 +803,7 @@ errors:
   - type: CouldNotCleanService
     name: "Could Not Clean Service"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
 
       This happened because: {{ .Cause }}
@@ -843,7 +813,7 @@ errors:
     params:
       - name: "ServiceName"
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{ .ServiceName | red }}
 
       This happened because: {{ .Cause }}
@@ -851,7 +821,7 @@ errors:
   - type: CouldNotRemoveService
     name: "Could Not Remove Service"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
 
       This happened because: {{ .Cause }}
@@ -861,7 +831,7 @@ errors:
     params: 
       - name: "ServiceName"
         type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
       To edit the service, try:
         $ ks ci edit {{ .ServiceName }}
@@ -869,7 +839,7 @@ errors:
   - type: CouldNotSendToCIService 
     name: "Could Not Send to CI Service"
     params: []
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }}
 
       This happened because: {{ .Cause }}
