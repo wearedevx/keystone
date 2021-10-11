@@ -10,4 +10,3 @@ cmp stderr file_not_added_str_expected.txt
  ERROR  Cannot Remove File: 'nofile.txt'
 This happened because: file not found
 
-

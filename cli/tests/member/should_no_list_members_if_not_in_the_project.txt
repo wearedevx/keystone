@@ -17,4 +17,4 @@ ks login -s --with=github
 # list members of project
 ! ks member
 
-stderr ' ERROR : Project Does Not Exist'
+stderr ' ERROR  Project  Does Not Exist'
