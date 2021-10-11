@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/pkg/client"
@@ -19,10 +17,7 @@ Used without arguments, displays a list of all members,
 grouped by their role.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		c, err := client.NewKeystoneClient()
-		if err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+		exitIfErr(err)
 
 		organizations, _ := c.Organizations().GetAll()
 

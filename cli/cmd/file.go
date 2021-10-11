@@ -2,13 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/config"
-	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -107,21 +104,13 @@ $ ks file -qf available
 `,
 	Args: cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
-		var err *errors.Error
-
 		ctx.MustHaveEnvironment(currentEnvironment)
-
-		if _, err := fetchMessages(nil); err != nil {
-			config.CheckExpiredTokenError(err)
-
-			ui.PrintStdErr(
-				"WARNING: Could not get messages (%s)",
-				err.Error(),
-			)
-		}
+		shouldFetchMessages(nil)
 
 		files := ctx.ListFiles()
 		filesFromCache := ctx.ListFilesFromCache()
+		exitIfErr(ctx.Err())
+
 		linesFromCache := fromCacheToLines(ctx, filesFromCache, files)
 
 		lines := make([]fileLine, len(files))
@@ -133,10 +122,7 @@ $ ks file -qf available
 
 		lines = filterLines(lines, fileDisplayFilter)
 
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+		exitIfErr(ctx.Err())
 
 		if len(lines) == 0 {
 			if !quietOutput {
@@ -146,7 +132,7 @@ To add files to secret files:
   $ ks file add <path-to-secret-file>
 `)
 			}
-			os.Exit(0)
+			exit(nil)
 		}
 
 		if quietOutput {

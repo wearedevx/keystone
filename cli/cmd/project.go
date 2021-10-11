@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
@@ -20,27 +19,25 @@ var projectCmd = &cobra.Command{
 	Short: "List project you are in",
 	Long:  `List project you are in`,
 	Run: func(cmd *cobra.Command, args []string) {
-		c, kcErr := client.NewKeystoneClient()
-
-		if kcErr != nil {
-			fmt.Println(kcErr)
-			os.Exit(1)
-		}
+		var err error
+		c, err := client.NewKeystoneClient()
+		exitIfErr(err)
 
 		kf := keystonefile.KeystoneFile{}
-		kf.Load(ctx.Wd)
+		exitIfErr(kf.Load(ctx.Wd).Err())
 
 		projects, err := c.Project("").GetAll()
 
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
 				config.Logout()
-				kserrors.InvalidConnectionToken(err).Print()
+				err = kserrors.InvalidConnectionToken(err)
 			} else {
-				kserrors.UnkownError(err).Print()
+				err = kserrors.UnkownError(err)
 			}
-			os.Exit(1)
+			exit(err)
 		}
+
 		ui.Print("You are part of %d project(s):", len(projects))
 
 		fmt.Println()

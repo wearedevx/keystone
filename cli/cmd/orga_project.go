@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -20,23 +19,15 @@ var orgaProjectCmd = &cobra.Command{
 	Use:   "project",
 	Short: "Get projects from organization",
 	Long:  `Get projects from organization`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
-		argc := len(args)
-		if argc == 0 || argc > 1 {
-			ui.PrintError(fmt.Sprintf("invalid number of arguments. Expected 1, got %d", argc))
-			os.Exit(1)
-		}
+		var err error
 		orgaName := args[0]
-		c, kcErr := client.NewKeystoneClient()
-
-		if kcErr != nil {
-			fmt.Println(kcErr)
-			os.Exit(1)
-		}
+		c, err := client.NewKeystoneClient()
+		exitIfErr(err)
 
 		kf := keystonefile.KeystoneFile{}
-		kf.Load(ctx.Wd)
+		exitIfErr(kf.Load(ctx.Wd).Err())
 
 		organizations, err := c.Organizations().GetAll()
 		orga := models.Organization{}
@@ -48,8 +39,7 @@ var orgaProjectCmd = &cobra.Command{
 		}
 
 		if orga.ID == 0 {
-			ui.PrintError("Organization does not exist")
-			os.Exit(1)
+			exit(kserrors.OrganizationDoesNotExist(nil))
 		}
 
 		projects, err := c.Organizations().GetProjects(orga)
@@ -57,12 +47,13 @@ var orgaProjectCmd = &cobra.Command{
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
 				config.Logout()
-				kserrors.InvalidConnectionToken(err).Print()
+				err = kserrors.InvalidConnectionToken(err)
 			} else {
-				kserrors.UnkownError(err).Print()
+				err = kserrors.UnkownError(err)
 			}
-			os.Exit(1)
+			exit(err)
 		}
+
 		ui.Print("You have access to %d project(s) in this organization :", len(projects))
 
 		fmt.Println()

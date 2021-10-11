@@ -72,16 +72,13 @@ ks member set-role sandra@github`,
 		return nil
 	},
 	Run: func(_ *cobra.Command, _ []string) {
+		var err error
+
 		// Auth check
-		c, kcErr := client.NewKeystoneClient()
+		c, err := client.NewKeystoneClient()
+		exitIfErr(err)
 		sp := spinner.Spinner(" ")
 		sp.Start()
-
-		if kcErr != nil {
-			sp.Stop()
-			kcErr.Print()
-			os.Exit(1)
-		}
 
 		projectID := ctx.GetProjectID()
 		// Ensure member exists
@@ -89,30 +86,22 @@ ks member set-role sandra@github`,
 		switch {
 		case errors.Is(err, auth.ErrorUnauthorized):
 			config.Logout()
-			kserrors.InvalidConnectionToken(err).Print()
-			os.Exit(1)
+			exit(kserrors.InvalidConnectionToken(err))
 
 		case err != nil || r.Error != "":
-			kserrors.UsersDontExist(r.Error, err).Print()
-			os.Exit(1)
+			exit(kserrors.UsersDontExist(r.Error, err))
 		}
 
 		// Get all roles, te make sure the role exists
 		// And to be able to list them in the prompt
 		roles, err := c.Roles().GetAll(ctx.GetProjectID())
-		if err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		exitIfErr(err)
 
 		// If user didnot provide a role,
 		// prompt it
 		if roleName == "" {
 			r, err := prompts.PromptRole(memberId, roles)
-			if err != nil {
-				ui.PrintError(err.Error())
-				os.Exit(1)
-			}
+			exitIfErr(err)
 
 			roleName = r.Name
 		}
@@ -126,19 +115,18 @@ ks member set-role sandra@github`,
 		// If the role exsists, do the work
 		if _, ok := getRoleWithName(roleName, roles); ok {
 			err = c.Project(projectID).SetMemberRole(memberId, roleName)
-
-			if err != nil {
-				ui.PrintError(err.Error())
-				os.Exit(1)
-			}
+			exitIfErr(err)
 		} else {
 			roleNames := make([]string, len(roles))
 			for i, r := range roles {
 				roleNames[i] = r.Name
 			}
 
-			kserrors.RoleDoesNotExist(roleName, strings.Join(roleNames, ", "), nil).Print()
-			os.Exit(1)
+			exit(kserrors.RoleDoesNotExist(
+				roleName,
+				strings.Join(roleNames, ", "),
+				nil,
+			))
 		}
 
 		ui.Print(ui.RenderTemplate("set role ok", `

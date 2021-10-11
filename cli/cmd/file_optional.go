@@ -32,21 +32,15 @@ When a file is marked as optional, its absence or emptiness won’t cause
 `,
 	Example: `ks file optional ./config.json`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var err *kserrors.Error
-
 		fileName := args[0]
 
 		if !ctx.HasFile(fileName) {
-			kserrors.FileDoesNotExist(fileName, nil).Print()
+			exit(kserrors.FileDoesNotExist(fileName, nil))
 			return
 		}
 
 		ctx.MarkFileRequired(fileName, false)
-
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			return
-		}
+		exitIfErr(ctx.Err())
 
 		template := `File {{ .FilePath }} is now optional.`
 

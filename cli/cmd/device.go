@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
@@ -20,10 +19,7 @@ var deviceCmd = &cobra.Command{
 	Long:  `List all devices linked to your account.`,
 	Run: func(_ *cobra.Command, _ []string) {
 		c, kcErr := client.NewKeystoneClient()
-		if kcErr != nil {
-			fmt.Println(kcErr)
-			os.Exit(1)
-		}
+		exitIfErr(kcErr)
 
 		kf := keystonefile.KeystoneFile{}
 		kf.Load(ctx.Wd)
@@ -31,6 +27,7 @@ var deviceCmd = &cobra.Command{
 		devices, err := c.Devices().GetAll()
 		if err != nil {
 			handleClientError(err)
+			exit(err)
 		}
 
 		printDeviceList(devices)

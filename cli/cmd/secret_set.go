@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -41,27 +40,20 @@ ks --env staging PORT 4545
 `,
 	Args: cobra.ExactArgs(2),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *kserrors.Error
-
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		secretName := args[0]
 		secretValue := args[1]
 
 		if !ctx.HasSecret(secretName) {
-			kserrors.SecretDoesNotExist(secretName, nil).Print()
-			return
+			exit(kserrors.SecretDoesNotExist(secretName, nil))
 		}
 
 		ms := messages.NewMessageService(ctx)
 		mustFetchMessages(ms)
 
 		ctx.SetSecret(currentEnvironment, secretName, secretValue)
-
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			return
-		}
+		exitIfErr(ctx.Err())
 
 		localEnvironment := ctx.LoadEnvironmentsFile().GetByName(currentEnvironment)
 		environment := []models.Environment{{
@@ -70,10 +62,9 @@ ks --env staging PORT 4545
 			EnvironmentID: localEnvironment.EnvironmentID,
 		}}
 
-		if err := ms.SendEnvironments(environment).Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+		exitIfErr(
+			ms.SendEnvironments(environment).Err(),
+		)
 
 		ui.PrintSuccess(fmt.Sprintf("Secret '%s' updated for the '%s' environment", secretName, currentEnvironment))
 	},

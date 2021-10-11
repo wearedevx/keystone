@@ -17,12 +17,22 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/ui"
 )
+
+func pathList(files []keystonefile.FileKey) []string {
+	r := make([]string, len(files))
+
+	for index, file := range files {
+		r[index] = file.Path
+	}
+
+	return r
+}
 
 // switchCmd represents the switch command
 var switchCmd = &cobra.Command{
@@ -36,41 +46,29 @@ from <environment>.
 Valid values for environment are: "dev", "staging", and "prod"`,
 	Example: `ks env switch prod`,
 	Args:    cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
 
 		fetchMessages(nil)
 
 		locallyModified := ctx.LocallyModifiedFiles(currentEnvironment)
 		if len(locallyModified) != 0 {
-			ui.Print(ui.RenderTemplate("local changes", `
-{{ ERROR }} {{ "You have locally modified files:" | red }}
-{{ range $file := .Files }}  - {{ $file.Path }}
-{{ end }}
-
-If you want to make those changes permanent for the '{{ .Environment }}'
-and send them all members:
-  $ ks file set <filepath>
-
-If you want to discard those changes:
-  $ ks file reset [filepath]...
-`, map[string]interface{}{
-				"Environment": currentEnvironment,
-				"Files":       locallyModified,
-			}))
-
-			os.Exit(1)
+			exit(
+				kserrors.YouHaveLocallyModifiedFiles(
+					currentEnvironment,
+					pathList(locallyModified),
+					nil,
+				),
+			)
 		}
 
 		// Set the current environment
 		envName := args[0]
-		if err = ctx.
+		err = ctx.
 			MustHaveAccessToEnvironment(envName).
 			SetCurrent(envName).
-			Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+			Err()
+		exitIfErr(err)
 
 		ui.Print(ui.RenderTemplate("using env", `
 {{ OK }} {{ .Message | bright_green }}

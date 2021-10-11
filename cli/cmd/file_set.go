@@ -45,8 +45,9 @@ The local version of the file will be used.
 # Change the content of ./config.php for the 'staging' environment:
 ks --env staging file set ./config.php
 `,
+	Args: cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *kserrors.Error
+		var err error
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 		ctx.MustHaveAccessToEnvironment(currentEnvironment)
@@ -54,33 +55,29 @@ ks --env staging file set ./config.php
 		filePath := args[0]
 
 		if !utils.FileExists(path.Join(ctx.Wd, filePath)) {
-			err = kserrors.CannotSetFile(filePath, errors.New("file not found"))
-			err.Print()
-
-			return
+			exit(kserrors.
+				CannotSetFile(filePath, errors.New("file not found")))
 		}
 
 		if !ctx.HasFile(filePath) {
-			kserrors.
-				CannotSetFile(filePath, errors.New("file not added to project")).Print()
-
-			os.Exit(1)
+			exit(kserrors.
+				CannotSetFile(
+					filePath,
+					errors.New("file not added to project"),
+				))
 		}
 
-		content, erro := ctx.GetLocalFileContents(filePath)
-		if erro != nil {
-			if erro.Error() != "No contents" {
-				err = kserrors.CannotSetFile(filePath, erro)
-				err.Print()
-
-				os.Exit(1)
+		content, err := ctx.GetLocalFileContents(filePath)
+		if err != nil {
+			if err.Error() != "No contents" {
+				exit(kserrors.CannotSetFile(filePath, err))
 			}
 		}
 
 		ms := messages.NewMessageService(ctx)
 		changes := mustFetchMessages(ms)
 
-		if err = ctx.
+		err = ctx.
 			CompareNewFileWhithChanges(filePath, changes).
 			SetFile(filePath, content).
 			// Local files should be kept during a file set
@@ -89,15 +86,11 @@ ks --env staging file set ./config.php
 				currentEnvironment,
 				core.CTX_KEEP_LOCAL_FILES,
 			).
-			Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+			Err()
+		exitIfErr(err)
 
-		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+		err = ms.SendEnvironments(ctx.AccessibleEnvironments).Err()
+		exitIfErr(err)
 
 		ui.Print(ui.RenderTemplate("file set success", `
 {{ OK }} {{ .Title | green }}

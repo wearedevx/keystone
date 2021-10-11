@@ -21,7 +21,6 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 )
 
@@ -33,25 +32,17 @@ var secretsCmd = &cobra.Command{
 
 Used without arguments, displays a table of secrets.`,
 	Run: func(_ *cobra.Command, _ []string) {
-		var err *errors.Error
-
 		ctx.MustHaveEnvironment(currentEnvironment)
 		environments := ctx.ListEnvironments()
 
-		_, err = fetchMessages(nil)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "WARNING: Could not get messages (%s)", err.Error())
-		}
+		shouldFetchMessages(nil)
 
 		secrets := ctx.ListSecrets()
 		secretsFromCache := ctx.ListSecretsFromCache()
 		secretsFromCache = filterSecretsFromCache(secretsFromCache, secrets)
 		secrets = append(secrets, secretsFromCache...)
 
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			return
-		}
+		exitIfErr(ctx.Err())
 
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)

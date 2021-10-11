@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -16,34 +15,24 @@ var privateCmd = &cobra.Command{
 	Use:   "private",
 	Short: "Toggle an organization privacy",
 	Long:  `Toggle an organization privacy.`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		argc := len(args)
-		if argc != 1 {
-			ui.PrintError(fmt.Sprintf("invalid number of arguments. Expected 1, got %d", argc))
-			os.Exit(1)
-		}
-
+		var err error
 		organizationName := args[0]
 
 		sp := spinner.Spinner(" ")
 		sp.Start()
 
 		c, err := client.NewKeystoneClient()
-		if err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+		exitIfErr(err)
 
 		foundOrga := getUserOwnedOrganization(c, organizationName)
 
 		foundOrga.Private = !foundOrga.Private
 
-		organization, updateErr := c.Organizations().UpdateOrganization(foundOrga)
+		organization, err := c.Organizations().UpdateOrganization(foundOrga)
+		exitIfErr(err)
 
-		if updateErr != nil {
-			ui.PrintError(updateErr.Error())
-			os.Exit(1)
-		}
 		if organization.Private {
 			ui.PrintSuccess("Organization %s is now private", organization.Name)
 		} else {

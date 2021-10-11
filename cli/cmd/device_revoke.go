@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/client"
@@ -18,23 +15,24 @@ var deviceRevokeCmd = &cobra.Command{
 	Long:  `Revoke access to one of your device.`,
 	Run: func(_ *cobra.Command, _ []string) {
 		c, kcErr := client.NewKeystoneClient()
-		if kcErr != nil {
-			fmt.Println(kcErr)
-			os.Exit(1)
-		}
+		exitIfErr(kcErr)
 
 		devices, err := c.Devices().GetAll()
 		if err != nil {
 			handleClientError(err)
+			exit(err)
+
 		}
 
 		device := prompts.SelectDevice(devices)
 
 		kf := keystonefile.KeystoneFile{}
 		kf.Load(ctx.Wd)
+		exitIfErr(kf.Err())
 
 		if err = c.Devices().Revoke(device.UID); err != nil {
 			handleClientError(err)
+			exit(err)
 		}
 
 		ui.PrintSuccess("Device has been revoked and will no longer be updated with new secrets.")

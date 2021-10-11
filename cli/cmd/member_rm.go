@@ -18,7 +18,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
 	"regexp"
 
 	"github.com/spf13/cobra"
@@ -58,14 +57,10 @@ of the secrets and files.
 		return nil
 	},
 	Run: func(_ *cobra.Command, args []string) {
-		// Auth check
+		var err error
+		c, err := client.NewKeystoneClient()
+		exitIfErr(err)
 
-		c, kcErr := client.NewKeystoneClient()
-
-		if kcErr != nil {
-			kcErr.Print()
-			os.Exit(1)
-		}
 		projectID := ctx.GetProjectID()
 
 		sp := spinner.Spinner(" Checking users exist...")
@@ -76,17 +71,15 @@ of the secrets and files.
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
 				config.Logout()
-				kserrors.InvalidConnectionToken(err).Print()
+				err = kserrors.InvalidConnectionToken(err)
 			} else {
-				kserrors.UnkownError(err).Print()
+				err = kserrors.UnkownError(err)
 			}
-			os.Exit(1)
+			exit(err)
 		}
 
 		if r.Error != "" {
-			kserrors.UsersDontExist(r.Error, nil).Print()
-
-			os.Exit(1)
+			exit(kserrors.UsersDontExist(r.Error, nil))
 		}
 
 		membersToRevoke := make([]string, 0)
@@ -104,7 +97,7 @@ of the secrets and files.
 		}
 
 		if len(membersToRevoke) == 0 {
-			os.Exit(0)
+			exit(nil)
 		}
 
 		sp = spinner.Spinner(" Removing members...")
@@ -113,8 +106,7 @@ of the secrets and files.
 		sp.Stop()
 
 		if err != nil {
-			kserrors.CannotRemoveMembers(err).Print()
-			os.Exit(1)
+			exit(kserrors.CannotRemoveMembers(err))
 		}
 
 		ui.Print(ui.RenderTemplate("removed members", `

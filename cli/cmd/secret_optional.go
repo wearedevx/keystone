@@ -33,21 +33,14 @@ When a file is marked as optional, its absence or emptiness won’t cause
 	Example: "ks secret optional PORT",
 	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *kserrors.Error
-
 		secretName := args[0]
 
 		if !ctx.HasSecret(secretName) {
-			kserrors.SecretDoesNotExist(secretName, nil).Print()
-			return
+			exit(kserrors.SecretDoesNotExist(secretName, nil))
 		}
 
 		ctx.MarkSecretRequired(secretName, false)
-
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			return
-		}
+		exitIfErr(ctx.Err())
 
 		template := `Secret {{ .SecertName }} is now optional.`
 

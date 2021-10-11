@@ -1,7 +1,7 @@
 # Init with name
 ks init test-env  -o $USER_ID
 
-ks file rm --skip nofile.txt
+! ks file rm --skip nofile.txt
 
 cmp stderr file_not_added_str_expected.txt 
 

@@ -17,8 +17,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
-	"os"
 	"sort"
 
 	"github.com/spf13/cobra"
@@ -42,27 +40,23 @@ var memberCmd = &cobra.Command{
 Used without arguments, displays a list of all members,
 grouped by their role.`,
 	Run: func(_ *cobra.Command, _ []string) {
-
 		c, kcErr := client.NewKeystoneClient()
-
-		if kcErr != nil {
-			fmt.Println(kcErr)
-			os.Exit(1)
-		}
+		exitIfErr(kcErr)
 
 		kf := keystonefile.KeystoneFile{}
-		kf.Load(ctx.Wd)
+		exitIfErr(kf.Load(ctx.Wd).Err())
 
 		members, err := c.Project(kf.ProjectId).GetAllMembers()
 
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
 				config.Logout()
-				kserrors.InvalidConnectionToken(err).Print()
+				err = kserrors.InvalidConnectionToken(err)
 			} else {
-				kserrors.UnkownError(err).Print()
+				err = kserrors.UnkownError(err)
 			}
-			os.Exit(1)
+
+			exit(err)
 		}
 
 		grouped := groupMembersByRole(members)
@@ -134,8 +128,9 @@ func isProjectOrganizationPaid(c client.KeystoneClient) bool {
 	organization, err := c.Project(projectID).GetProjectsOrganization()
 
 	if err != nil {
-		ui.PrintError(err.Error())
-		os.Exit(1)
+		handleClientError(err)
+		exit(err)
 	}
+
 	return organization.Paid
 }

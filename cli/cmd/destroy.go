@@ -17,14 +17,11 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
@@ -46,12 +43,9 @@ This is irreversible.
 	Example: "ks destroy",
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
-		ctx := core.New(core.CTX_RESOLVE)
 		c, kcErr := client.NewKeystoneClient()
-		if kcErr != nil {
-			fmt.Println(kcErr)
-			os.Exit(1)
-		}
+		exitIfErr(kcErr)
+
 		projectId := ctx.GetProjectID()
 		projectService := c.Project(projectId)
 
@@ -75,20 +69,16 @@ This is permanent, and cannot be undone.
 
 		// expect result to be the project name
 		if projectName != result {
-			kserrors.NameDoesNotMatch(nil).Print()
-			os.Exit(1)
-			return
+			exit(kserrors.NameDoesNotMatch(nil))
 		}
 
 		if err = projectService.Destroy(); err != nil {
 			handleClientError(err)
-			ui.PrintError(err.Error())
-			os.Exit(1)
+			exit(err) // if handle hasn't
 		}
 
 		if err = ctx.Destroy(); err != nil {
-			kserrors.CouldNotRemoveLocalFiles(err).Print()
-			os.Exit(1)
+			exit(kserrors.CouldNotRemoveLocalFiles(err))
 		}
 
 		ui.Print(ui.RenderTemplate("deletion ok",
@@ -105,8 +95,7 @@ You may need to remove entries from your .gitignore file`,
 func mustBeAdmin(projectService *client.Project) {
 	members, err := projectService.GetAllMembers()
 	if err != nil {
-		kserrors.UnkownError(err).Print()
-		os.Exit(1)
+		exit(kserrors.UnkownError(err))
 	}
 
 	account, _ := config.GetCurrentAccount()
@@ -119,8 +108,8 @@ func mustBeAdmin(projectService *client.Project) {
 		}
 	}
 
-	kserrors.UnkownError(errors.New("Not allowed")).Print()
-	os.Exit(1)
+	// TODO: proper error
+	exit(kserrors.UnkownError(errors.New("Not allowed")))
 }
 
 func init() {

@@ -87,15 +87,12 @@ ks member add -r developer -u john.doe@gitlab -u danny54@gitlab
 ks member add --from-file team.yaml
 `,
 	Run: func(_ *cobra.Command, _ []string) {
+		var err error
 		// Auth check
 		projectID := ctx.GetProjectID()
 
-		c, kcErr := client.NewKeystoneClient()
-
-		if kcErr != nil {
-			kcErr.Print()
-			os.Exit(1)
-		}
+		c, err := client.NewKeystoneClient()
+		exitIfErr(err)
 
 		var memberRoles map[string]models.Role
 
@@ -111,18 +108,18 @@ ks member add --from-file team.yaml
 		sp := spinner.Spinner(" ")
 		sp.Start()
 
-		err := c.Project(projectID).AddMembers(memberRoles)
+		err = c.Project(projectID).AddMembers(memberRoles)
 		sp.Stop()
 
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
 				config.Logout()
-				kserrors.InvalidConnectionToken(err).Print()
+				err = kserrors.InvalidConnectionToken(err)
 			} else {
-				kserrors.CannotAddMembers(err).Print()
+				err = kserrors.CannotAddMembers(err)
 			}
 
-			os.Exit(1)
+			exit(err)
 		}
 
 		ui.Print(ui.RenderTemplate("added members", `
@@ -136,21 +133,17 @@ To send secrets and files to new member, use "member add" command.
 }
 
 func getMemberRolesFromFile(c client.KeystoneClient, filepath string) map[string]models.Role {
+	var err error
 	memberRoleNames := make(map[string]string)
 
 	/* #nosec
 	 * the file is going to be parsed, not executed in anyway
 	 */
 	dat, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		ui.PrintError(err.Error())
-		os.Exit(1)
-	}
+	exitIfErr(err)
 
-	if err = yaml.Unmarshal(dat, &memberRoleNames); err != nil {
-		ui.PrintError(err.Error())
-		os.Exit(1)
-	}
+	err = yaml.Unmarshal(dat, &memberRoleNames)
+	exitIfErr(err)
 
 	memberIDs := make([]string, 0)
 	for m := range memberRoleNames {
@@ -187,8 +180,11 @@ func getMemberRolesFromArgs(c client.KeystoneClient, roleName string, memberIDs 
 			roleNames = append(roleNames, role.Name)
 		}
 
-		kserrors.RoleDoesNotExist(roleName, strings.Join(roleNames, ", "), nil).Print()
-		os.Exit(1)
+		exit(kserrors.RoleDoesNotExist(
+			roleName,
+			strings.Join(roleNames, ", "),
+			nil,
+		))
 	}
 
 	memberRoles := make(map[string]models.Role)
@@ -210,11 +206,7 @@ func getMemberRolesFromPrompt(c client.KeystoneClient, memberIDs []string) map[s
 
 	for _, memberId := range memberIDs {
 		role, err := prompts.PromptRole(memberId, roles)
-
-		if err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		exitIfErr(err)
 
 		memberRole[memberId] = role
 	}
@@ -226,23 +218,18 @@ func mustMembersExist(c client.KeystoneClient, memberIDs []string) {
 	r, err := c.Users().CheckUsersExist(memberIDs)
 	if err != nil {
 		// The HTTP request must have failed
-		kserrors.UnkownError(err).Print()
-		os.Exit(1)
+		exit(kserrors.UnkownError(err))
 	}
 
 	if r.Error != "" {
-		kserrors.UsersDontExist(r.Error, nil).Print()
-		os.Exit(1)
+		exit(kserrors.UsersDontExist(r.Error, nil))
 	}
 }
 
 func mustGetRoles(c client.KeystoneClient) []models.Role {
 	projectID := ctx.GetProjectID()
 	roles, err := c.Roles().GetAll(projectID)
-	if err != nil {
-		ui.PrintError(err.Error())
-		os.Exit(1)
-	}
+	exitIfErr(err)
 
 	return roles
 }
@@ -267,8 +254,13 @@ func mapRoleNamesToRoles(memberRoleNames map[string]string, roles []models.Role)
 				roleNames = append(roleNames, role.Name)
 			}
 
-			kserrors.RoleDoesNotExist(roleName, strings.Join(roleNames, ", "), nil).Print()
-			os.Exit(1)
+			exit(
+				kserrors.RoleDoesNotExist(
+					roleName,
+					strings.Join(roleNames, ", "),
+					nil,
+				),
+			)
 		}
 
 		memberRoles[member] = *foundRole

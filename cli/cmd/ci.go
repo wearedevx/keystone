@@ -37,7 +37,7 @@ Used without arguments, lists CI services this project has been setup with.
 
 		services, err := ci.ListCiServices(ctx)
 		if err != nil {
-			kserrors.UnkownError(err).Print()
+			exit(kserrors.UnkownError(err))
 		}
 
 		if len(services) != 0 {

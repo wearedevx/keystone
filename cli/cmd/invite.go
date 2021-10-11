@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 
@@ -32,40 +31,26 @@ var inviteCmd = &cobra.Command{
 	Use:   "invite <email address>",
 	Short: "Sends an invitation to join Keystone",
 	Long:  `Sends an invitation to join Keystone.`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
-		argc := len(args)
-
-		if argc == 0 || argc > 1 {
-			ui.PrintError("invalid number of arguments. Expected 1 got %d", argc)
-			os.Exit(1)
-		}
 		email := args[0]
 
 		if !emailRegex.Match([]byte(email)) {
-			ui.PrintError("invalid email address: %s", email)
-			os.Exit(1)
+			exit(fmt.Errorf("invalid email address: %s", email))
 		}
+
 		c, kcErr := client.NewKeystoneClient()
+		exitIfErr(kcErr)
 
 		sp := spinner.Spinner("Inviting user")
 		sp.Start()
 
-		if kcErr != nil {
-			sp.Stop()
-			kcErr.Print()
-			os.Exit(1)
-		}
-
 		projectName := ctx.GetProjectName()
 
 		result, err := c.Users().InviteUser(email, projectName)
-
-		if err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		exitIfErr(err)
 
 		if len(result.UserUIDs) > 0 {
 

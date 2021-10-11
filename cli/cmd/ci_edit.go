@@ -1,13 +1,10 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -25,8 +22,6 @@ like API key and project name.`,
 ks ci edit my-gitub-ci-service`,
 	Args: cobra.MaximumNArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		ctx := core.New(core.CTX_RESOLVE)
-
 		var serviceName string
 		var ciService ci.CiService
 		var found bool
@@ -40,17 +35,15 @@ ks ci edit my-gitub-ci-service`,
 
 		if !found {
 			ciService, err = SelectCiService(ctx)
-
 			if err != nil {
-				kserrors.CouldNotChangeService(serviceName, err).Print()
-				os.Exit(1)
+				exit(kserrors.CouldNotChangeService(serviceName, err))
 			}
 		}
 
 		if err = ciService.Setup().Error(); err != nil {
-			kserrors.CouldNotChangeService(serviceName, err).Print()
-			os.Exit(1)
+			exit(kserrors.CouldNotChangeService(serviceName, err))
 		}
+
 		ui.PrintSuccess("CI service setup successfully")
 	},
 }

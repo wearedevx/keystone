@@ -26,14 +26,12 @@ This will override all the data you have stored locally.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(ctx.AccessibleEnvironments) < 3 {
-			kserrors.RestoreDenied(nil)
-			os.Exit(1)
+			exit(kserrors.RestoreDenied(nil))
 		}
 
 		backupfile := args[0]
 		if !utils.FileExists(backupfile) {
-			ui.PrintError(fmt.Sprintf("File does not exist : %s", backupfile))
-			os.Exit(1)
+			exit(kserrors.FileDoesNotExist(backupfile, nil))
 		}
 
 		if password == "" {
@@ -46,57 +44,42 @@ This will override all the data you have stored locally.`,
 This will override the changes you and other members made since the backup.
 It will update other members secrets and files.`, map[string]string{}))
 			if !prompts.Confirm("Continue") {
-				os.Exit(0)
+				exit(nil)
 			}
 		}
 
-		if err := os.RemoveAll(ctx.DotKeystonePath()); err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		exitIfErr(os.RemoveAll(ctx.DotKeystonePath()))
 
 		/* #nosec */
 		contents, err := ioutil.ReadFile(backupfile)
+		exitIfErr(err)
 
-		if err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
 		decrypted := decryptBackup(contents, password)
-
 		decryptedPath := fmt.Sprintf("decrypted.tar.gz")
 
-		if err := ioutil.WriteFile(decryptedPath, decrypted, 0600); err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		exitIfErr(
+			ioutil.WriteFile(decryptedPath, decrypted, 0600),
+		)
 
-		if err := archive.UnGzip(decryptedPath, ctx.Wd); err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		exitIfErr(
+			archive.UnGzip(decryptedPath, ctx.Wd),
+		)
 
-		if err := archive.Untar(path.Join(ctx.Wd, ".keystone.tar"), "."); err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		exitIfErr(
+			archive.Untar(path.Join(ctx.Wd, ".keystone.tar"), "."),
+		)
 
 		// Remove temp files
-		if err := os.Remove(decryptedPath); err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
-		if err := os.Remove(path.Join(ctx.Wd, ".keystone.tar")); err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		exitIfErr(
+			os.Remove(decryptedPath),
+		)
+		exitIfErr(
+			os.Remove(path.Join(ctx.Wd, ".keystone.tar")),
+		)
 
 		ms := messages.NewMessageService(ctx)
-		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-			return
-		}
+		err = ms.SendEnvironments(ctx.AccessibleEnvironments).Err()
+		exitIfErr(err)
 
 		ui.PrintSuccess("Backup restored: all your files and secrets have been replaced by the backup. They also have been sent to all members.")
 	},

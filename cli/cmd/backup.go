@@ -25,6 +25,7 @@ var backupCmd = &cobra.Command{
 	Short: "Create a backup of your local secrets and files.",
 	Long:  `Create a backup of your local secrets and files.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		var err error
 		if backupName == "" {
 			backupName = path.Join(
 				ctx.Wd,
@@ -38,36 +39,33 @@ var backupCmd = &cobra.Command{
 		}
 
 		if len(ctx.AccessibleEnvironments) < 3 {
-			kserrors.BackupDenied(nil)
-			os.Exit(1)
+			exit(kserrors.BackupDenied(nil))
 		}
 		if password == "" {
 			password = prompts.StringInput("Password to encrypt backup", "")
 		}
 
-		if err := archive.Tar(ctx.DotKeystonePath(), ctx.Wd); err != nil {
-			kserrors.CouldNotCreateArchive(err).Print()
-			os.Exit(1)
+		if err = archive.Tar(ctx.DotKeystonePath(), ctx.Wd); err != nil {
+			err = kserrors.CouldNotCreateArchive(err)
 		}
+		exitIfErr(err)
 
-		if err := archive.Gzip(path.Join(ctx.Wd, ".keystone.tar"), ctx.Wd); err != nil {
-			kserrors.CouldNotCreateArchive(err).Print()
-			os.Exit(1)
+		if err = archive.Gzip(path.Join(ctx.Wd, ".keystone.tar"), ctx.Wd); err != nil {
+			err = kserrors.CouldNotCreateArchive(err)
 		}
+		exitIfErr(err)
 
-		if err := os.Rename(path.Join(ctx.Wd, ".keystone.tar.gz"), backupName); err != nil {
-			kserrors.CouldNotCreateArchive(err).Print()
-			os.Exit(1)
+		if err = os.Rename(path.Join(ctx.Wd, ".keystone.tar.gz"), backupName); err != nil {
+			err = kserrors.CouldNotCreateArchive(err)
 		}
+		exitIfErr(err)
 
 		/* #nosec
 		 * It is unlikely that BACKUP_NAME is uncontrolled
 		 */
 		contents, err := ioutil.ReadFile(backupName)
-
 		if err != nil {
-			kserrors.FailedToReadBackup(err).Print()
-			os.Exit(1)
+			exit(kserrors.FailedToReadBackup(err))
 		}
 		encrypted := encryptBackup(contents, password)
 
@@ -75,8 +73,7 @@ var backupCmd = &cobra.Command{
 		 * It is unlikely that BACKUP_NAME is uncontrolled
 		 */
 		if err := ioutil.WriteFile(backupName, encrypted, 0600); err != nil {
-			kserrors.FailedToWriteBackup(err).Print()
-			os.Exit(1)
+			exit(kserrors.FailedToWriteBackup(err))
 		}
 
 		ui.PrintSuccess("Backup created : %s", backupName)
@@ -93,15 +90,10 @@ func encryptBackup(backup []byte, password string) []byte {
 	data := base64.StdEncoding.EncodeToString(backup)
 
 	scell, err := cell.SealWithPassphrase(password)
-	if err != nil {
-		ui.PrintError(err.Error())
-		os.Exit(1)
-	}
+	exitIfErr(err)
+
 	encrypted, err := scell.Encrypt([]byte(data), nil)
-	if err != nil {
-		ui.PrintError(err.Error())
-		os.Exit(1)
-	}
+	exitIfErr(err)
 
 	return encrypted
 }

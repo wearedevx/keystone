@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
@@ -45,14 +44,13 @@ Files can be used again using "file add" command.
 	Example: `ks file rm config/old-test-config.php`,
 	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *errors.Error
+		var err error
 
 		filePath := args[0]
 
 		if !utils.FileExists(filePath) {
-			err = errors.CannotRemoveFile(filePath, fmt.Errorf("file not found"))
-			err.Print()
-			return
+			exit(errors.
+				CannotRemoveFile(filePath, fmt.Errorf("file not found")))
 		}
 
 		if promptYesNo(filePath) {
@@ -60,16 +58,11 @@ Files can be used again using "file add" command.
 			mustFetchMessages(ms)
 
 			ctx.RemoveFile(filePath, forcePrompts, purgeFile, ctx.AccessibleEnvironments)
-			if err = ctx.Err(); err != nil {
-				err.Print()
-				return
-			}
+			exitIfErr(err)
 
 			if purgeFile {
-				if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
-					err.Print()
-					os.Exit(1)
-				}
+				err = ms.SendEnvironments(ctx.AccessibleEnvironments).Err()
+				exitIfErr(err)
 			} else {
 				ui.Print("The file is kept in your keystone project for all the environments, in case you need it again.")
 				ui.Print("If you want to remove it from your device, use --purge")

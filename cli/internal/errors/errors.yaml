@@ -191,7 +191,7 @@ errors:
 
       This happened because: {{ .Cause }}
 
-  # ENVIRNMENT_ERRORS
+  # ENVIRONMENT_ERRORS
   # –––––––––––––––––
   - type: EnvironmentDoesntExist
     name: "Environment Doesn't Exist"
@@ -274,6 +274,25 @@ errors:
       Public keys for the '{{ .Environment }}' could not be retrieved.
 
       This happened because: {{ .Cause }}
+
+  - type: YouHaveLocallyModifiedFiles
+    name: "You Have Locally Modified Files"
+    params:
+      - name: Environment
+        type: string
+      - name: Files
+        type: "[]string"
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+      {{ range $file := .Files }}  - {{ $file }}
+      {{ end }}
+
+      If you want to make those changes permanent for the '{{ .Environment }}'
+      and send them all members:
+        $ ks file set <filepath>
+
+      If you want to discard those changes:
+        $ ks file reset [filepath]...
 
   # SECRETS_ERRORS
   # ––––––––––––––
@@ -677,6 +696,12 @@ errors:
 
   # ORGANIZATION ERRORS
   # ---------------
+  - type: OrganizationDoesNotExist
+    name: "Organizaiton Does Not Exist"
+    params: []
+    template: |
+      {{ ERROR }} {{ .Name | red }}
+
   - type: BadOrganizationName
     name: "Bad Organization Name"
     params: []
@@ -700,6 +725,19 @@ errors:
       of the organization.
       
       You should ask the owner of said organization to perform it for you.
+
+  - type: YouDoNotOwnTheOrganization
+    name: "You Do Not Own An Organization Named"
+    params: 
+      - name: OrganizationName
+        type: string
+    template: |
+      {{ ERROR }} {{ .Name | red }} {{ .OrganizationName | red }}
+      To see organization you own, use:
+        $ ks orga
+
+      To create a new organization, use:
+        $ ks orga add {{ .OrganizationName }}
 
   # INVITATION ERRORS
   # ---------------

@@ -33,22 +33,16 @@ If they don’t, ` + "`" + `ks source` + "`" + ` will exit with a non-zero exit 
 Additionally, ` + "`" + `ks ci send` + "`" + ` will fail if a required file is empty or missing.
 `,
 	Example: "ks file require ./config.json",
+	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *kserrors.Error
-
 		fileName := args[0]
 
 		if !ctx.HasFile(fileName) {
-			kserrors.FileDoesNotExist(fileName, nil).Print()
-			return
+			exit(kserrors.FileDoesNotExist(fileName, nil))
 		}
 
 		ctx.MarkFileRequired(fileName, true)
-
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			return
-		}
+		exitIfErr(ctx.Err())
 
 		template := `File {{ .FilePath }} is now required.
 If you have setup a CI service, don’t forget to run:

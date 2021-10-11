@@ -16,8 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
@@ -37,33 +35,27 @@ Removes the given secret from all environments.
 	Example: "ks rm PORT",
 	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *kserrors.Error
 		secretName := args[0]
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		if !ctx.HasSecret(secretName) && !purgeSecret {
-			kserrors.SecretDoesNotExist(secretName, nil).Print()
-			return
+			exit(kserrors.SecretDoesNotExist(secretName, nil))
 		}
 
 		ms := messages.NewMessageService(ctx)
 		changes := mustFetchMessages(ms)
 
-		if err = ctx.
+		ctx.
 			CompareRemovedSecretWithChanges(secretName, changes).
-			RemoveSecret(secretName, purgeSecret).
-			Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-			return
-		}
+			RemoveSecret(secretName, purgeSecret)
+
+		exitIfErr(ctx.Err())
 
 		if purgeSecret {
-			if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
-				err.Print()
-				os.Exit(1)
-			}
+			exitIfErr(
+				ms.SendEnvironments(ctx.AccessibleEnvironments).Err(),
+			)
 		}
 
 		ui.PrintSuccess("Variable '%s' removed", secretName)

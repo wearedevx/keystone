@@ -177,6 +177,19 @@ Public keys for the '{{ .Environment }}' could not be retrieved.
 This happened because: {{ .Cause }}
 
 `,
+	"YouHaveLocallyModifiedFiles": `
+{{ ERROR }} {{ .Name | red }}
+{{ range $file := .Files }}  - {{ $file }}
+{{ end }}
+
+If you want to make those changes permanent for the '{{ .Environment }}'
+and send them all members:
+  $ ks file set <filepath>
+
+If you want to discard those changes:
+  $ ks file reset [filepath]...
+
+`,
 	"SecretDoesNotExist": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Secret | red }} {{- "'" | red }}
 
@@ -428,6 +441,10 @@ Communication with the billing service failed,
 try again later.
 
 `,
+	"OrganizationDoesNotExist": `
+{{ ERROR }} {{ .Name | red }}
+
+`,
 	"BadOrganizationName": `
 {{ ERROR }} {{ .Name | red }}
 Organization names must be alphanumeric with ., -, _
@@ -442,6 +459,15 @@ You tried to perform an operation that requires ownership
 of the organization.
 
 You should ask the owner of said organization to perform it for you.
+
+`,
+	"YouDoNotOwnTheOrganization": `
+{{ ERROR }} {{ .Name | red }} {{ .OrganizationName | red }}
+To see organization you own, use:
+  $ ks orga
+
+To create a new organization, use:
+  $ ks orga add {{ .OrganizationName }}
 
 `,
 	"CouldntSendInvite": `
@@ -707,6 +733,14 @@ func CannotGetEnvironmentKeys(environment string, cause error) *Error {
 	return NewError("Cannot Get Environment Puplic Keys", helpTexts["CannotGetEnvironmentKeys"], meta, cause)
 }
 
+func YouHaveLocallyModifiedFiles(environment string, files []string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Environment": string(environment),
+		"Files":       []string(files),
+	}
+	return NewError("You Have Locally Modified Files", helpTexts["YouHaveLocallyModifiedFiles"], meta, cause)
+}
+
 func SecretDoesNotExist(secret string, cause error) *Error {
 	meta := map[string]interface{}{
 		"Secret": string(secret),
@@ -954,6 +988,12 @@ func ManagementInaccessible(cause error) *Error {
 	return NewError("Management Inaccessible", helpTexts["ManagementInaccessible"], meta, cause)
 }
 
+func OrganizationDoesNotExist(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Organizaiton Does Not Exist", helpTexts["OrganizationDoesNotExist"], meta, cause)
+}
+
 func BadOrganizationName(cause error) *Error {
 	meta := map[string]interface{}{}
 
@@ -970,6 +1010,13 @@ func MustOwnTheOrganization(cause error) *Error {
 	meta := map[string]interface{}{}
 
 	return NewError("You Must Own the Organization", helpTexts["MustOwnTheOrganization"], meta, cause)
+}
+
+func YouDoNotOwnTheOrganization(organizationname string, cause error) *Error {
+	meta := map[string]interface{}{
+		"OrganizationName": string(organizationname),
+	}
+	return NewError("You Do Not Own An Organization Named", helpTexts["YouDoNotOwnTheOrganization"], meta, cause)
 }
 
 func CouldntSendInvite(cause error) *Error {

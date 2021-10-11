@@ -48,6 +48,7 @@ var doctype string
 var destination string
 
 // init initializes the package
+
 func init() {
 	genCmd := newGenDocCommand(RootCmd)
 

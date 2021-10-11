@@ -50,45 +50,36 @@ ks ci send --env prod
 			environment.Name,
 		)
 		if !prompts.Confirm("Continue") {
-			os.Exit(0)
+			exit(nil)
 		}
 
 		message, err := ctx.PrepareMessagePayload(environment)
 
 		if err != nil {
-			kserrors.PayloadErrors(err).Print()
-			os.Exit(1)
+			exit(kserrors.PayloadErrors(err))
 		}
 
 		ciServices, err := ci.ListCiServices(ctx)
-		if err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		exitIfErr(err)
 
 		for _, serviceDef := range ciServices {
 			ciService, err := ci.GetCiService(serviceDef.Name, ctx, client.ApiURL)
-
-			if err != nil {
-				ui.PrintError(err.Error())
-				os.Exit(1)
-			}
+			exitIfErr(err)
 
 			if err = ciService.CheckSetup().Error(); err != nil {
 				if err.Error() == "Missing CI information" {
-					kserrors.MissingCIInformation(serviceName, nil)
-				} else {
-					ui.PrintError(err.Error())
+					err = kserrors.MissingCIInformation(serviceName, nil)
 				}
-				os.Exit(1)
+
+				exit(err)
 			}
 
 			if err = ciService.
 				PushSecret(message, currentEnvironment).
 				Error(); err != nil {
-				kserrors.CouldNotSendToCIService(err)
-				os.Exit(1)
+				err = kserrors.CouldNotSendToCIService(err)
 			}
+			exitIfErr(err)
 
 			ciService.PrintSuccess(currentEnvironment)
 		}

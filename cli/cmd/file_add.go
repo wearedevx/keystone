@@ -58,15 +58,12 @@ ks file add ./certs/my-website.cert
 ks file add -s ./credentials.json`,
 	Args: cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *kserrors.Error
+		var err error
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		filePath, ferr := cleanPathArgument(args[0], ctx.Wd)
-		if ferr != nil {
-			ui.PrintError(ferr.Error())
-			os.Exit(1)
-		}
+		filePath, err := cleanPathArgument(args[0], ctx.Wd)
+		exitIfErr(err)
 
 		environments := ctx.AccessibleEnvironments
 		environmentFileMap := map[string][]byte{}
@@ -76,22 +73,18 @@ ks file add -s ./credentials.json`,
 			absPath := filepath.Join(ctx.Wd, filePath)
 
 			if !utils.FileExists(absPath) {
-				err = kserrors.CannotAddFile(filePath, errors.New("file not found"))
-				err.Print()
-
-				os.Exit(1)
+				exit(
+					kserrors.
+						CannotAddFile(filePath, errors.New("file not found")),
+				)
 			}
 
 			/* #nosec
 			 * Contents are read and copied, not ever run
 			 */
-			currentContent, erro := ioutil.ReadFile(absPath)
-
-			if erro != nil {
-				err = kserrors.CannotAddFile(filePath, erro)
-				err.Print()
-
-				os.Exit(1)
+			currentContent, err := ioutil.ReadFile(absPath)
+			if err != nil {
+				exit(kserrors.CannotAddFile(filePath, err))
 			}
 
 			environmentFileMap[currentEnvironment] = currentContent
@@ -112,43 +105,29 @@ ks file add -s ./credentials.json`,
 			ms := messages.NewMessageService(ctx)
 			changes := mustFetchMessages(ms)
 
-			if err = ctx.
-				CompareNewFileWhithChanges(filePath, changes).
-				Err(); err != nil {
-				err.Print()
-				os.Exit(1)
-			}
+			exitIfErr(
+				ctx.CompareNewFileWhithChanges(filePath, changes).Err(),
+			)
 
 			file := keystonefile.FileKey{
 				Path:   filePath,
 				Strict: addOptional,
 			}
 
-			if ctx.AddFile(file, environmentFileMap).Err(); err != nil {
-				err.Print()
-				os.Exit(1)
-			}
+			exitIfErr(ctx.AddFile(file, environmentFileMap).Err())
 
-			err_ := gitignorehelper.GitIgnore(ctx.Wd, filePath)
-			if err_ != nil {
-				ui.PrintError(err_.Error())
-				os.Exit(1)
-			}
+			err = gitignorehelper.GitIgnore(ctx.Wd, filePath)
+			exitIfErr(err)
 
-			if err = ctx.
-				FilesUseEnvironment(
+			exitIfErr(
+				ctx.FilesUseEnvironment(
 					currentEnvironment,
 					currentEnvironment,
 					core.CTX_KEEP_LOCAL_FILES,
-				).Err(); err != nil {
-				err.Print()
-				os.Exit(1)
-			}
+				).Err(),
+			)
 
-			if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
-				err.Print()
-				os.Exit(1)
-			}
+			exitIfErr(ms.SendEnvironments(ctx.AccessibleEnvironments).Err())
 		} else {
 			// just add file to keystone.yaml and keep old content
 
@@ -156,9 +135,13 @@ ks file add -s ./credentials.json`,
 				Path:   filePath,
 				Strict: addOptional,
 			}
-			if err := new(keystonefile.KeystoneFile).Load(ctx.Wd).AddFile(file).Save().Err(); err != nil {
-				kserrors.FailedToUpdateKeystoneFile(err).Print()
-				os.Exit(1)
+
+			if err := new(keystonefile.KeystoneFile).
+				Load(ctx.Wd).
+				AddFile(file).
+				Save().
+				Err(); err != nil {
+				exit(kserrors.FailedToUpdateKeystoneFile(err))
 			}
 		}
 

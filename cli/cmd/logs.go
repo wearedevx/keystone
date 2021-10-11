@@ -17,11 +17,9 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -46,17 +44,13 @@ This functionnality requires a paid plan:
 # The last time a user sent secrets or files on the prod environment
 ks log -a WriteMessages -l 1 -e prod`,
 	Run: func(_ *cobra.Command, _ []string) {
-		var kerr *kserrors.Error
+		var err error
 
 		kf := keystonefile.KeystoneFile{}
 		kf.Load(ctx.Wd)
 
-		ks, kerr := client.NewKeystoneClient()
-
-		if kerr != nil {
-			kerr.Print()
-			os.Exit(1)
-		}
+		ks, err := client.NewKeystoneClient()
+		exitIfErr(err)
 
 		options := models.NewGetLogsOption().
 			SetActions(logFilterAction).
@@ -65,11 +59,9 @@ ks log -a WriteMessages -l 1 -e prod`,
 			SetLimit(logLimit)
 
 		allTheLogs, err := ks.Project(kf.ProjectId).GetLogs(options)
-
 		if err != nil {
-			// TODO: have better error messages
-			ui.PrintError(err.Error())
-			os.Exit(1)
+			handleClientError(err)
+			exit(err)
 		}
 
 		printAllTheLogs(allTheLogs)
@@ -79,7 +71,7 @@ ks log -a WriteMessages -l 1 -e prod`,
 func printAllTheLogs(logs []models.ActivityLogLite) {
 	if len(logs) == 0 {
 		ui.PrintStdErr("No logs to display")
-		os.Exit(0)
+		exit(nil)
 	}
 
 	for _, log := range logs {

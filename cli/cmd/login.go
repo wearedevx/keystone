@@ -43,7 +43,7 @@ func ShowAlreadyLoggedInAndExit(account models.User) {
 	}
 
 	ui.Print(ui.RenderTemplate("already logged in", `You are already logged in as {{ . }}`, username))
-	os.Exit(0)
+	exit(nil)
 }
 
 func LogIntoExisitingAccount(accountIndex int, currentAccount models.User, c auth.AuthService) {
@@ -53,10 +53,7 @@ func LogIntoExisitingAccount(accountIndex int, currentAccount models.User, c aut
 	// publicKey := []byte(currentAccount["public_key"])
 	_, jwtToken, err := c.Finish(publicKey, config.GetDeviceName(), config.GetDeviceUID())
 
-	if err != nil {
-		ui.PrintError(err.Error())
-		os.Exit(1)
-	}
+	exitIfErr(err)
 
 	config.SetAuthToken(jwtToken)
 	config.Write()
@@ -64,25 +61,17 @@ func LogIntoExisitingAccount(accountIndex int, currentAccount models.User, c aut
 	ui.Print(ui.RenderTemplate("login ok", `
 {{ OK }} {{ . | bright_green }}
 `, fmt.Sprintf("Welcome back, %s", currentAccount.Username)))
-	os.Exit(0)
+	exit(nil)
 }
 
 func CreateAccountAndLogin(c auth.AuthService) {
 	keyPair, err := keys.New(keys.TypeEC)
-
-	if err != nil {
-		ui.PrintError(err.Error())
-		os.Exit(1)
-	}
+	exitIfErr(err)
 
 	// Transfer credentials to the server
 	// Create (or get) the user info
 	user, jwtToken, err := c.Finish(keyPair.Public.Value, config.GetDeviceName(), config.GetDeviceUID())
-
-	if err != nil {
-		ui.PrintError(err.Error())
-		os.Exit(1)
-	}
+	exitIfErr(err)
 
 	// Save the user info in the local config
 	accountIndex := config.AddAccount(
@@ -186,19 +175,11 @@ ks login ––with=github`,
 		}
 
 		c, err := SelectAuthService(ctx)
-
-		if err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		exitIfErr(err)
 
 		// Get OAuth connect url
 		url, err := c.Start()
-
-		if err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		exitIfErr(err)
 
 		ui.Print(ui.RenderTemplate("login visit", `Visit the URL below to login with your {{ .Service }} account:
 
@@ -218,11 +199,7 @@ Waiting for you to login with your {{ .Service }} Account...`, struct {
 		// Blocking call
 		err = c.WaitForExternalLogin()
 		sp.Stop()
-
-		if err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		exitIfErr(err)
 
 		deviceName := selectDeviceName()
 		viper.Set("device", deviceName)

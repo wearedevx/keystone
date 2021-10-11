@@ -16,12 +16,9 @@ limitations under the License.
 package cmd
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
@@ -42,8 +39,6 @@ ks ci rm my-github-ci-service
 `,
 	Args: cobra.MaximumNArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		ctx := core.New(core.CTX_RESOLVE)
-
 		var serviceName string
 
 		if len(args) == 1 {
@@ -57,8 +52,7 @@ ks ci rm my-github-ci-service
 
 		s, ok := ci.FindCiServiceWithName(ctx, serviceName)
 		if !ok {
-			kserrors.NoSuchService(serviceName, nil).Print()
-			os.Exit(1)
+			exit(kserrors.NoSuchService(serviceName, nil))
 		}
 
 		ui.Print(ui.RenderTemplate("careful rm ci", `
@@ -69,8 +63,7 @@ This cannot be undone.`,
 
 		if prompts.Confirm("Continue") {
 			if err := ci.RemoveCiService(ctx, s.Name); err != nil {
-				kserrors.CouldNotRemoveService(err).Print()
-				os.Exit(1)
+				exit(kserrors.CouldNotRemoveService(err))
 			}
 		}
 

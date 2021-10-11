@@ -16,11 +16,9 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -31,13 +29,9 @@ var renameCmd = &cobra.Command{
 	Use:   "rename",
 	Short: "Rename an organization",
 	Long:  `Rename an organization.`,
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		argc := len(args)
-		if argc != 2 {
-			ui.PrintError(fmt.Sprintf("invalid number of arguments. Expected 2, got %d", argc))
-			os.Exit(1)
-		}
-
+		var err error
 		organizationName := args[0]
 		newName := args[1]
 
@@ -45,12 +39,13 @@ var renameCmd = &cobra.Command{
 		sp.Start()
 
 		c, err := client.NewKeystoneClient()
-		if err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+		exitIfErr(err)
 
-		organizations, _ := c.Organizations().GetAll()
+		organizations, err := c.Organizations().GetAll()
+		if err != nil {
+			handleClientError(err)
+			exit(err)
+		}
 
 		foundOrga := models.Organization{}
 
@@ -61,19 +56,14 @@ var renameCmd = &cobra.Command{
 		}
 
 		if foundOrga.ID == 0 {
-			ui.PrintError("You don't own an organization named %s", organizationName)
-			ui.Print("To see organizations you own, use : $ ks orga")
-			os.Exit(1)
+			exit(kserrors.YouDoNotOwnTheOrganization(organizationName, nil))
 		}
 
 		foundOrga.Name = newName
 
-		organization, updateErr := c.Organizations().UpdateOrganization(foundOrga)
+		organization, err := c.Organizations().UpdateOrganization(foundOrga)
+		exitIfErr(err)
 
-		if updateErr != nil {
-			ui.PrintError(updateErr.Error())
-			os.Exit(1)
-		}
 		ui.PrintSuccess("Organization %s has been updated to %s", organizationName, organization.Name)
 	},
 }

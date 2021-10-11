@@ -37,13 +37,10 @@ Additionally, ` + "`" + `ks ci send` + "`" + ` will fail if a required secrets a
 	Example: "ks secret require PORT",
 	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *kserrors.Error
-
 		secretName := args[0]
 
 		if !ctx.HasSecret(secretName) {
-			kserrors.SecretDoesNotExist(secretName, nil).Print()
-			return
+			exit(kserrors.SecretDoesNotExist(secretName, nil))
 		}
 
 		// Check for blank values in environments
@@ -66,10 +63,7 @@ Additionally, ` + "`" + `ks ci send` + "`" + ` will fail if a required secrets a
 		// All is OK, set is as optional
 		ctx.MarkSecretRequired(secretName, true)
 
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			return
-		}
+		exitIfErr(ctx.Err())
 
 		template := `Secret {{ .SecretName }} is now required.
 If you have setup a CI service, don’t forget to run:

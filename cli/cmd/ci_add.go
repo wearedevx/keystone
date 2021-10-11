@@ -16,13 +16,10 @@ limitations under the License.
 package cmd
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
@@ -34,33 +31,26 @@ var addCmd = &cobra.Command{
 	Long:    `Configures a new CI service.`,
 	Example: `ks ci add`,
 	Run: func(_ *cobra.Command, _ []string) {
-		ctx := core.New(core.CTX_RESOLVE)
-
 		serviceName := prompts.StringInput(
 			"Enter a name for your integration",
 			"",
 		)
 
 		if _, nameExists := ci.FindCiServiceWithName(ctx, serviceName); nameExists {
-			kserrors.CiServiceAlreadyExists(serviceName, nil).Print()
-			os.Exit(1)
+			exit(kserrors.CiServiceAlreadyExists(serviceName, nil))
 		}
 
 		ciService, err := ci.PickCiService(serviceName, ctx, client.ApiURL)
-
 		if err != nil {
-			kserrors.CouldNotAddService(serviceName, err)
-			os.Exit(1)
+			exit(kserrors.CouldNotAddService(serviceName, err))
 		}
 
 		if err = ciService.Setup().Error(); err != nil {
-			kserrors.CouldNotAddService(serviceName, err)
-			os.Exit(1)
+			exit(kserrors.CouldNotAddService(serviceName, err))
 		}
 
 		if err = ci.AddCiService(ctx, ciService); err != nil {
-			kserrors.CouldNotAddService(serviceName, err)
-			os.Exit(1)
+			exit(kserrors.CouldNotAddService(serviceName, err))
 		}
 
 		ui.PrintSuccess("CI service added successfully")

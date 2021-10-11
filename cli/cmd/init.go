@@ -43,22 +43,15 @@ Created files and directories:
 		return nil
 	},
 	Run: func(_ *cobra.Command, args []string) {
-		var err *kserrors.Error
+		var err error
 		projectName = strings.Join(args, " ")
 
 		// Retrieve working directry
-		currentfolder, osError := os.Getwd()
+		currentfolder, err := os.Getwd()
 		ctx := core.New(core.CTX_INIT)
 
-		if osError != nil {
-			err = kserrors.NewError(
-				"OS Error",
-				"Error when retrieving working directory",
-				map[string]interface{}{},
-				osError,
-			)
-			err.Print()
-			os.Exit(1)
+		if err != nil {
+			exit(kserrors.NoWorkingDirectory(err))
 		}
 
 		var ksfile *keystonefile.KeystoneFile
@@ -72,7 +65,7 @@ Created files and directories:
 				// check if .keystone directory too
 				if DirExists(path.Join(ctx.Wd, ".keystone")) {
 					kserrors.AlreadyKeystoneProject(errors.New("")).Print()
-					os.Exit(0)
+					exit(nil)
 				}
 			}
 		} else {
@@ -83,36 +76,32 @@ Created files and directories:
 		}
 
 		var project models.Project
-		var initErr error
 		c, err := client.NewKeystoneClient()
-		if err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+		// fmt.Printf("err: %+v %+v\n", err == nil, err)
+		exitIfErr(err)
 
 		// Ask for project name if keystone file doesn't exist.
 		if ksfile.ProjectId == "" {
-			initErr = createProject(c, &project, ksfile)
+			err = createProject(c, &project, ksfile)
 		} else {
-			initErr = getProject(c, &project, ksfile)
+			err = getProject(c, &project, ksfile)
 		}
 
-		if initErr != nil {
-			if errors.Is(initErr, auth.ErrorUnauthorized) {
+		if err != nil {
+			if errors.Is(err, auth.ErrorUnauthorized) {
 				config.Logout()
-				kserrors.InvalidConnectionToken(initErr).Print()
+				err = kserrors.InvalidConnectionToken(err)
 			} else {
-				ui.PrintError(initErr.Error())
+				ui.PrintError(err.Error())
 			}
 
-			os.Exit(1)
+			exit(err)
 		}
 
 		// Setup the local files
-		if err = ctx.Init(project).Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+		exitIfErr(
+			ctx.Init(project).Err(),
+		)
 
 		ui.Print(ui.RenderTemplate("Init Success", `
 {{ .Message | box | bright_green | indent 2 }}

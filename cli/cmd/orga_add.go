@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
@@ -18,23 +16,17 @@ var orgaAddCmd = &cobra.Command{
 	Long:  `Create a new oranization for your projects`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		var err error
 		organizationName := args[0]
 
 		sp := spinner.Spinner(" ")
 		sp.Start()
 
 		c, err := client.NewKeystoneClient()
-		if err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+		exitIfErr(err)
 
-		organization, createErr := c.Organizations().CreateOrganization(organizationName, private)
-
-		if createErr != nil {
-			ui.PrintError(createErr.Error())
-			os.Exit(1)
-		}
+		organization, err := c.Organizations().CreateOrganization(organizationName, private)
+		exitIfErr(err)
 
 		ui.PrintSuccess("Organization %s has been created", organization.Name)
 	},

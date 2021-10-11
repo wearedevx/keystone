@@ -71,11 +71,7 @@ var listEnv = func(ctx *core.Context, _ *errors.Error) {
 	}
 
 	environments := ctx.ListEnvironments()
-
-	if err := ctx.Err(); err != nil {
-		err.Print()
-		return
-	}
+	exitIfErr(ctx.Err())
 
 	template := `{{ range  .Environments }}
 {{ if eq . $.Current }} {{ "*" | blue }} {{ . | yellow }} {{ else }}   {{ . }} {{ end }} {{ end }}`

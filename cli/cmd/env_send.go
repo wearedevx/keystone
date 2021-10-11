@@ -16,8 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kerrors "github.com/wearedevx/keystone/cli/internal/errors"
@@ -51,11 +49,8 @@ var sendCmd = &cobra.Command{
 
 		ms := messages.NewMessageService(ctx)
 
-		if err = ms.SendEnvironments(environments).Err(); err != nil {
-			err.Print()
-
-			os.Exit(1)
-		}
+		err = ms.SendEnvironments(environments).Err()
+		exitIfErr(err)
 	},
 }
 

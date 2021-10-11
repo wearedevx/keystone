@@ -16,10 +16,7 @@ limitations under the License.
 package cmd
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
-	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -34,22 +31,17 @@ Gives you a link to update your payment method or cancel your plan.
 	Args: cobra.MaximumNArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var organizationName string
-		var kerr *kserrors.Error
+		var err error
 
-		kc, kerr := client.NewKeystoneClient()
-		if kerr != nil {
-			kerr.Print()
-			os.Exit(1)
-		}
+		kc, err := client.NewKeystoneClient()
+		exitIfErr(err)
+
 		o := kc.Organizations()
 
 		organizationName = mustGetOrganizationName(o, args)
 
 		url, err := o.GetManagementUrl(organizationName)
-		if err != nil {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
+		exitIfErr(err)
 
 		ui.Print(
 			ui.RenderTemplate(

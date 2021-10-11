@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
@@ -36,44 +35,31 @@ The secret must not be required.`,
 	Example: "ks unset PORT",
 	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *kserrors.Error
-
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		secretName := args[0]
 
 		if !ctx.HasSecret(secretName) {
-			kserrors.SecretDoesNotExist(secretName, nil).Print()
-			return
+			exit(kserrors.SecretDoesNotExist(secretName, nil))
 		}
 
 		if ctx.SecretIsRequired(secretName) {
-			kserrors.SecretRequired(secretName, nil).Print()
-			return
+			exit(kserrors.SecretRequired(secretName, nil))
 		}
 
 		ms := messages.NewMessageService(ctx)
 		changes := mustFetchMessages(ms)
 
-		if err = ctx.
-			CompareRemovedSecretWithChanges(secretName, changes).
-			UnsetSecret(currentEnvironment, secretName).
-			Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-			return
-		}
+		exitIfErr(
+			ctx.
+				CompareRemovedSecretWithChanges(secretName, changes).
+				UnsetSecret(currentEnvironment, secretName).
+				Err(),
+		)
 
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			return
-		}
-
-		if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-			return
-		}
+		exitIfErr(
+			ms.SendEnvironments(ctx.AccessibleEnvironments).Err(),
+		)
 
 		ui.PrintSuccess(fmt.Sprintf("Secret '%s' updated for the '%s' environment", secretName, currentEnvironment))
 	},

@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
@@ -37,8 +36,7 @@ to add members to projects.`,
 		currentAccount, index := config.GetCurrentAccount()
 
 		if index < 0 {
-			kserrors.MustBeLoggedIn(nil).Print()
-			os.Exit(1)
+			exit(kserrors.MustBeLoggedIn(nil))
 		}
 
 		fmt.Println(currentAccount.UserID)

@@ -23,26 +23,25 @@ ks ci clean
 ks ci clean --env prod
 `,
 	Run: func(_ *cobra.Command, _ []string) {
+		var err error
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		ciService, err := SelectCiService(ctx)
-
 		if err != nil {
-			kserrors.CouldNotCleanService(err)
-			os.Exit(1)
+			exit(kserrors.CouldNotCleanService(err))
 		}
 
-		ciService.CleanSecret(currentEnvironment)
-
-		if ciService.Error() != nil {
+		if err = ciService.
+			CleanSecret(currentEnvironment).
+			Error(); err != nil {
 			if strings.Contains(ciService.Error().Error(), "404") == true {
 				ui.PrintSuccess(fmt.Sprintf("No secret found for environment %s in CI service", currentEnvironment))
 				os.Exit(0)
 			}
 
-			kserrors.CouldNotCleanService(ciService.Error())
-			os.Exit(1)
+			exit(kserrors.CouldNotCleanService(err))
 		}
+
 		ui.PrintSuccess(fmt.Sprintf("Secrets successfully removed from CI service, environment %s.", currentEnvironment))
 	},
 }

@@ -23,7 +23,6 @@ import (
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/pkg/core"
 )
 
 var fileResetYes bool
@@ -45,8 +44,6 @@ ks file reset ./config.js
 ks file reset
 `,
 	Run: func(_ *cobra.Command, args []string) {
-		ctx := core.New(core.CTX_RESOLVE)
-
 		mustFetchMessages(nil)
 
 		filesToReset := args
@@ -79,9 +76,7 @@ The content of the files you are resetting will be replaced by their cached cont
 				filePath := path.Join(ctx.Wd, file)
 
 				err := utils.CopyFile(cachedFilePath, filePath)
-				if err != nil {
-					ui.PrintError(err.Error())
-				}
+				exitIfErr(err)
 			}
 		}
 	},

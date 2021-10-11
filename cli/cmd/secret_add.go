@@ -57,7 +57,8 @@ ks secret add PORT 3000
 ks secret add PORT`,
 	Args: cobra.RangeArgs(1, 2),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *kserrors.Error
+		var err error
+
 		secretName := args[0]
 		secretValue := ""
 
@@ -65,12 +66,8 @@ ks secret add PORT`,
 			secretValue = args[1]
 		}
 
-		checkSecretErr := utils.CheckSecretContent(secretName)
-
-		if checkSecretErr != nil {
-			ui.PrintError(checkSecretErr.Error())
-			os.Exit(1)
-		}
+		err = utils.CheckSecretContent(secretName)
+		exitIfErr(err)
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
@@ -83,13 +80,13 @@ ks secret add PORT`,
 
 		if !useCache {
 			es := environments.NewEnvironmentService(ctx)
+			exitIfErr(es.Err())
 
-			if err = es.Err(); err != nil {
-				err.Print()
-				os.Exit(1)
-			}
-
-			environmentValueMap := setValuesForEnvironments(secretName, secretValue, ctx.AccessibleEnvironments)
+			environmentValueMap := setValuesForEnvironments(
+				secretName,
+				secretValue,
+				ctx.AccessibleEnvironments,
+			)
 
 			ms := messages.NewMessageService(ctx)
 			changes := mustFetchMessages(ms)
@@ -99,36 +96,29 @@ ks secret add PORT`,
 				flag = core.S_OPTIONAL
 			}
 
-			if err = ctx.
+			exitIfErr(ctx.
 				CompareNewSecretWithChanges(
 					secretName,
 					environmentValueMap,
 					changes,
 				).
 				AddSecret(secretName, environmentValueMap, flag).
-				Err(); err != nil {
-				err.Print()
-				os.Exit(1)
-				return
-			}
+				Err())
 
-			if err := ms.SendEnvironments(ctx.AccessibleEnvironments).Err(); err != nil {
-				err.Print()
-				os.Exit(1)
-				return
-			}
+			exitIfErr(ms.SendEnvironments(ctx.AccessibleEnvironments).Err())
 		} else {
 			var ksfile keystonefile.KeystoneFile
 			// Add new env key to keystone.yaml
-			if err := ksfile.
+			err = ksfile.
 				Load(ctx.Wd).
 				SetEnv(secretName, true).
 				Save().
-				Err(); err != nil {
-				kserrors.FailedToUpdateKeystoneFile(err).Print()
-				os.Exit(1)
+				Err()
+			if err != nil {
+				err = kserrors.FailedToUpdateKeystoneFile(err)
 			}
-			os.Exit(0)
+
+			exit(err)
 		}
 
 		ui.PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(ctx.AccessibleEnvironments))

@@ -120,9 +120,8 @@ func Initialize() {
 		}
 	}
 
-	if ctx.Err() != nil && checkProject {
-		ctx.Err().Print()
-		os.Exit(1)
+	if checkProject {
+		exitIfErr(ctx.Err())
 	}
 
 	isKeystoneFile := keystonefile.ExistsKeystoneFile(ctx.Wd)
@@ -135,28 +134,25 @@ func Initialize() {
 	}
 
 	if checkProject && !isKeystoneFile {
-		kserrors.NotAKeystoneProject(".", nil).Print()
-		os.Exit(1)
+		exit(kserrors.NotAKeystoneProject(".", nil))
 	}
 
 	if checkProject && config.IsLoggedIn() {
 		es := environments.NewEnvironmentService(ctx)
-		if err := es.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+		exitIfErr(es.Err())
 
 		ctx.AccessibleEnvironments = es.GetAccessibleEnvironments()
-
-		if err := ctx.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
+		exitIfErr(ctx.Err())
 
 		// If no accessible environment, then user has no access to the project
 		if len(ctx.AccessibleEnvironments) == 0 {
-			kserrors.ProjectDoesntExist(ctx.GetProjectName(), ctx.GetProjectID(), nil).Print()
-			os.Exit(1)
+			exit(
+				kserrors.ProjectDoesntExist(
+					ctx.GetProjectName(),
+					ctx.GetProjectID(),
+					nil,
+				),
+			)
 		}
 
 		if isKeystoneFile {
@@ -185,8 +181,7 @@ func Initialize() {
 	}
 
 	if checkLogin && !config.IsLoggedIn() {
-		kserrors.MustBeLoggedIn(nil).Print()
-		os.Exit(1)
+		exit(kserrors.MustBeLoggedIn(nil))
 	}
 
 }
@@ -247,9 +242,19 @@ func fetchMessages(ms messages.MessageService) (core.ChangesByEnvironment, *kser
 func mustFetchMessages(ms messages.MessageService) core.ChangesByEnvironment {
 	changes, err := fetchMessages(ms)
 
+	exitIfErr(err)
+
+	return changes
+}
+
+func shouldFetchMessages(ms messages.MessageService) core.ChangesByEnvironment {
+	changes, err := fetchMessages(ms)
+
 	if err != nil {
-		err.Print()
-		os.Exit(1)
+		ui.PrintStdErr(
+			"WARNING: Could not get messages (%s)",
+			err.Error(),
+		)
 	}
 
 	return changes
@@ -336,4 +341,44 @@ func handleClientError(err error) {
 		ui.PrintError(err.Error())
 	}
 	os.Exit(1)
+}
+
+func exit(err error) {
+	if err == nil {
+		os.Exit(0)
+		return
+	}
+
+	printError(err)
+
+	os.Exit(1)
+}
+
+func printError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if kserrors.IsKsError(err) {
+		kserr := kserrors.AsKsError(err)
+		if kserr == nil {
+			return false
+		}
+		kserr.Print()
+	} else {
+		ui.PrintError(err.Error())
+	}
+
+	return true
+}
+
+func exitIfErr(err error) {
+	if err == nil {
+		return
+	}
+	if err != nil {
+		if printError(err) {
+			os.Exit(1)
+		}
+	}
 }

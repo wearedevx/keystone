@@ -60,3 +60,18 @@ func (e *Error) Print() {
 func (e *Error) Error() string {
 	return ui.RenderTemplate(e.name, e.help, e.meta)
 }
+
+func IsKsError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	kserrorPtrType := fmt.Sprintf("%T", &Error{})
+	errType := fmt.Sprintf("%T", err)
+
+	return kserrorPtrType == errType
+}
+
+func AsKsError(err error) *Error {
+	return (err).(*Error)
+}

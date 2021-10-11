@@ -21,7 +21,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
-	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 
 	"github.com/wearedevx/keystone/cli/internal/utils"
@@ -51,18 +50,11 @@ other_value
 ` + "```" + `
 `,
 	Run: func(_ *cobra.Command, _ []string) {
-		var err *kserrors.Error
-
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		if config.IsLoggedIn() {
 			ms := messages.NewEchoMessageService(ctx)
-			if _, err := fetchMessages(ms); err != nil {
-				ui.PrintStdErr(
-					"WARNING: Could not get messages (%s)",
-					err.Error(),
-				)
-			}
+			shouldFetchMessages(ms)
 		}
 
 		env := ctx.ListSecrets()
@@ -71,26 +63,23 @@ other_value
 			currentEnvironment,
 			core.CTX_KEEP_LOCAL_FILES,
 		)
+		exitIfErr(ctx.Err())
 
 		mustNotHaveAnyRequiredThingMissing(ctx)
-
-		if err = ctx.Err(); err != nil {
-			err.Print()
-			os.Exit(1)
-		}
 
 		for _, secretInfo := range env {
 			value := secretInfo.Values[core.EnvironmentName(currentEnvironment)]
 
-			checkErr := utils.CheckSecretContent(secretInfo.Name)
-			if checkErr != nil {
-				ui.Print(`echo %s`, checkErr.Error())
-				os.Exit(1)
-			}
+			exitIfErr(
+				utils.CheckSecretContent(secretInfo.Name),
+			)
+
 			if secretInfo.Required && value == "" {
-				ui.Print("echo \"Error: secret '%s' is required, but value is missing\"", secretInfo.Name)
 				// make the eval crash in such situation
-				os.Exit(1)
+				exit(fmt.Errorf(
+					"secret '%s' is required, but value is missing",
+					secretInfo.Name,
+				))
 			}
 
 			escapedValue := utils.DoubleQuoteEscape(string(value))
