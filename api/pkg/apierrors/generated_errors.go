@@ -1,6 +1,9 @@
 package apierrors
 
-import "errors"
+import (
+	"errors"
+	"strings"
+)
 
 var (
 	ErrorUnknown                       error = errors.New("unknown")
@@ -38,6 +41,8 @@ var (
 )
 
 func FromString(s string) error {
+	s = strings.TrimSpace(s)
+
 	switch s {
 	case ErrorUnknown.Error():
 		return ErrorUnknown
