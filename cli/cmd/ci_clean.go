@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -28,7 +29,11 @@ ks ci clean --env prod
 
 		ciService, err := SelectCiService(ctx)
 		if err != nil {
-			exit(kserrors.CouldNotCleanService(err))
+			if errors.Is(err, ci.ErrorNoCIServices) {
+				exit(kserrors.NoCIServices(nil))
+			} else {
+				exit(kserrors.CouldNotCleanService(err))
+			}
 		}
 
 		if err = ciService.
@@ -36,7 +41,7 @@ ks ci clean --env prod
 			Error(); err != nil {
 			if strings.Contains(ciService.Error().Error(), "404") == true {
 				ui.PrintSuccess(fmt.Sprintf("No secret found for environment %s in CI service", currentEnvironment))
-				os.Exit(0)
+				exit(nil)
 			}
 
 			exit(kserrors.CouldNotCleanService(err))

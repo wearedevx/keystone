@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
@@ -36,7 +38,11 @@ ks ci edit my-gitub-ci-service`,
 		if !found {
 			ciService, err = SelectCiService(ctx)
 			if err != nil {
-				exit(kserrors.CouldNotChangeService(serviceName, err))
+				if errors.Is(err, ci.ErrorNoCIServices) {
+					exit(kserrors.NoCIServices(nil))
+				} else {
+					exit(kserrors.CouldNotChangeService(serviceName, err))
+				}
 			}
 		}
 

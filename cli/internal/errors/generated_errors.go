@@ -498,6 +498,13 @@ This happened because: {{ .Cause }}
 This happened because: {{ .Cause }}
 
 `,
+	"NoCIServices": `
+{{ ERROR }} {{ .Name | red }}
+You haven't configured any CI services yet.
+
+To add a new service, try:
+  $ ks ci add
+`,
 	"CiServiceAlreadyExists": `
 {{ ERROR }} {{ .Name | red }} {{- ": " | red }} {{- .ServiceName | red }}
 If you wish to modify it, try:
@@ -1034,6 +1041,12 @@ func FailedToWriteBackup(cause error) *Error {
 	meta := map[string]interface{}{}
 
 	return NewError("Failed To Write Backup", helpTexts["FailedToWriteBackup"], meta, cause)
+}
+
+func NoCIServices(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("No CI Services", helpTexts["NoCIServices"], meta, cause)
 }
 
 func CiServiceAlreadyExists(servicename string, cause error) *Error {

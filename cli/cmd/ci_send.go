@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -67,7 +66,7 @@ ks ci send --env prod
 			exitIfErr(err)
 
 			if err = ciService.CheckSetup().Error(); err != nil {
-				if err.Error() == "Missing CI information" {
+				if errors.Is(err, ci.ErrorMissinCiInformation) {
 					err = kserrors.MissingCIInformation(serviceName, nil)
 				}
 
@@ -101,7 +100,7 @@ func SelectCiService(ctx *core.Context) (ci.CiService, error) {
 	}
 
 	if len(services) == 0 {
-		return nil, errors.New("You haven’t set up any CI service yet")
+		return nil, ci.ErrorNoCIServices
 	}
 
 	items := make([]string, len(services), len(services))
@@ -126,9 +125,9 @@ func mustNotHaveMissingSecrets(environment models.Environment) {
 	)
 
 	if hasMissing {
-		error := kserrors.RequiredSecretsAreMissing(missing, environment.Name, nil)
-		error.Print()
-		os.Exit(1)
+		exit(
+			kserrors.RequiredSecretsAreMissing(missing, environment.Name, nil),
+		)
 	}
 }
 
@@ -138,8 +137,8 @@ func mustNotHaveMissingFiles(environment models.Environment) {
 	)
 
 	if hasMissing {
-		error := kserrors.RequiredFilesAreMissing(missing, environment.Name, nil)
-		error.Print()
-		os.Exit(1)
+		exit(
+			kserrors.RequiredFilesAreMissing(missing, environment.Name, nil),
+		)
 	}
 }
