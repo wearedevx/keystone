@@ -783,6 +783,16 @@ errors:
 
   # CI ERRORS
   # ---------------
+  - type: NoCIServices
+    name: "No CI Services"
+    params: []
+    template: |-
+      {{ ERROR }} {{ .Name | red }}
+      You haven't configured any CI services yet.
+
+      To add a new service, try:
+        $ ks ci add
+
   - type: CiServiceAlreadyExists
     name: "A CI Service Already Exists"
     params: 

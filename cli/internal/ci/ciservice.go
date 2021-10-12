@@ -19,6 +19,14 @@ const (
 
 var availableServices map[CiServiceType]string
 
+var (
+	ErrorMissinCiInformation error = errors.New("missing CI information")
+	ErrorNoCIServiceWithName       = errors.New("no ci service with that name")
+	ErrorUnknownServiceType        = errors.New("unknown service type")
+	ErrorInvalidServiceType        = errors.New("invalid service type")
+	ErrorNoCIServices              = errors.New("no ci services")
+)
+
 type CiService interface {
 	Name() string
 	Type() CiServiceType
@@ -60,8 +68,7 @@ func GetCiService(serviceName string, ctx *core.Context, apiUrl string) (CiServi
 	}
 
 	if !found {
-		err := errors.New("No CI service with that name")
-		return nil, err
+		return nil, ErrorNoCIServiceWithName
 	}
 
 	switch CiServiceType(service.Type) {
@@ -69,7 +76,11 @@ func GetCiService(serviceName string, ctx *core.Context, apiUrl string) (CiServi
 		c = GitHubCi(ctx, serviceName, apiUrl)
 
 	default:
-		err = fmt.Errorf("Unknown service type %s", service.Type)
+		err = fmt.Errorf(
+			"No service type %s: %w",
+			service.Type,
+			ErrorUnknownServiceType,
+		)
 	}
 
 	return c, err
@@ -100,7 +111,7 @@ func PickCiService(name string, ctx *core.Context, apiUrl string) (CiService, er
 	case GithubCI:
 		return GitHubCi(ctx, name, apiUrl), nil
 	default:
-		return nil, errors.New("Invalid service type")
+		return nil, ErrorInvalidServiceType
 	}
 
 }

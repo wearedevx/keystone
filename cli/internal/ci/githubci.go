@@ -36,6 +36,12 @@ type gitHubCiService struct {
 	client       *github.Client
 }
 
+var (
+	ErrorGithubCIPermissionDenied error = errors.New("You don't have rights to send secrets to the repo. Please ensure your personal access token has access to \"repo\" scope.")
+	ErrorGithubCINoSuchRepository       = errors.New("You are trying to send secret to a repository that doesn't exist. Please make sure repo's name and owner is correct.")
+	ErrorGithubCITooLarge               = errors.New("Secrets and files are too large to send to CI")
+)
+
 func GitHubCi(ctx *core.Context, name string, apiUrl string) CiService {
 	kf := keystonefile.KeystoneFile{}
 	kf.Load(ctx.Wd)
@@ -84,7 +90,7 @@ func (g *gitHubCiService) CheckSetup() CiService {
 	if len(g.servicesKeys["Owner"]) == 0 ||
 		len(g.servicesKeys["Project"]) == 0 ||
 		len(g.getApiKey()) == 0 {
-		g.err = errors.New("Missing CI information")
+		g.err = ErrorMissinCiInformation
 	}
 
 	return g
@@ -114,13 +120,13 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment 
 
 	if resp.StatusCode == 403 {
 		// TODO: print porper error
-		g.err = errors.New("You don't have rights to send secrets to the repo. Please ensure your personal access token has access to \"repo\" scope.")
+		g.err = ErrorGithubCIPermissionDenied
 		return g
 	}
 
 	if resp.StatusCode == 404 {
 		// TODO: print proper error
-		g.err = errors.New("You are trying to send secret to a repository that doesn't exist. Please make sure repo's name and owner is correct.")
+		g.err = ErrorGithubCINoSuchRepository
 		return g
 	}
 
@@ -166,7 +172,7 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment 
 		)
 
 		if resp.StatusCode == 401 {
-			g.err = errors.New("You don't have rights to send secrets to the repo. Please ensure your personal access token has access to \"repo\" scope.")
+			g.err = ErrorGithubCIPermissionDenied
 			continue
 		}
 
@@ -345,7 +351,7 @@ func (g *gitHubCiService) sliceMessageInParts(message string) ([]string, error) 
 
 	// 64Kb is maximum size for a slot in github
 	if slotSize*(4/3) > 64000 { // base64 encoding make 4 bytes out of 3
-		err = errors.New("Secrets and files are too large to send to CI")
+		err = ErrorGithubCITooLarge
 	}
 
 	slots[0] = message[0:slotSize]
