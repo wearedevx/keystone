@@ -79,6 +79,7 @@ jobs:
             --build-arg REDIS_INDEX=${{ env.REDIS_INDEX }} \
             --build-arg STRIPE_KEY=${{ env.STRIPE_KEY }} \
             --build-arg STRIPE_WEBHOOK_SECRET=${{ env.STRIPE_WEBHOOK_SECRET }} \
+            --build-arg STRIPE_PRICE=${{ env.STRIPE_PRICE }} \
             ./api/
 
           docker push ${{ env.GCR_IMAGE }}
