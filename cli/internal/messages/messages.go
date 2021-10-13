@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/crypto"
@@ -287,8 +288,8 @@ func (s *messageService) sendMessageAndUpdateEnvironment(messagesToWrite models.
 		if errors.Is(err, auth.ErrorUnauthorized) {
 			s.err = kserrors.InvalidConnectionToken(err)
 			return s
-		} else if strings.Contains(err.Error(), "not paid") {
-			s.err = kserrors.OrganizationNotPaid(err)
+		} else if errors.Is(err, apierrors.ErrorNeedsUpgrade) {
+			s.err = kserrors.FeatureRequiresToUpgrade(err)
 		} else {
 			s.err = kserrors.UnkownError(err)
 			return s

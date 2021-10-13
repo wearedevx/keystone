@@ -281,7 +281,7 @@ func handleClientError(err error) {
 
 		// General Errors
 	case errors.Is(err, apierrors.ErrorPermissionDenied):
-		kserrors.PermissionDenied(currentEnvironment, err)
+		kserrors.PermissionDenied(currentEnvironment, err).Print()
 
 		// These should be handled by the controller/service
 	case errors.Is(err, apierrors.ErrorBadRequest),

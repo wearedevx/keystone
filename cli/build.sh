@@ -25,3 +25,5 @@ LDFLAGS="$API_FLAG \
   $GITLAB_CLIENT_SECRET_FLAG"
 
 go build -ldflags "$LDFLAGS" -o ks
+
+echo "Build done"
