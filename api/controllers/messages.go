@@ -148,7 +148,7 @@ func WriteMessages(
 		Action: "WriteMessages",
 	}
 	senderDevice := models.Device{}
-	var isInABadState bool
+	var has bool
 
 	payload := &models.MessagesToWritePayload{}
 	if err = payload.Deserialize(body); err != nil {
@@ -186,7 +186,7 @@ func WriteMessages(
 
 		// If organization has not paid and there is no admin in the project,
 		// messages cannot be written
-		isInABadState, err = rights.
+		has, err = rights.
 			HasOrganizationNotPaidAndHasNonAdmin(Repo, environment.Project)
 
 		if err != nil {
@@ -196,7 +196,7 @@ func WriteMessages(
 			goto done
 		}
 
-		if isInABadState {
+		if has {
 			status = http.StatusForbidden
 			err = apierrors.ErrorNeedsUpgrade()
 

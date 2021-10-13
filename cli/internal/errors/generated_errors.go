@@ -81,11 +81,14 @@ Project in your keystone.yaml does not exist or your are not part of it.
 If you have this configuration from a project member, ask them to add you in the keystone project.
 `,
 	"OrganizationNotPaid": `
-{{ ERROR }} {{- .Name | red }} 
-It seems like some members of the project's organization are not admin.
-Roles feature is only available for paid organization.
+{{ ERROR }} {{ .Name | red }} 
+The project belongs to an organization on a free plan
+and some members of the project are not admin.
+Roles feature is only available for paid organizations,
+this prevents you from sharing secrets with each other.
 
-Change each member role to admin:
+To unlock the situation, you can set the role to admin
+for each member of the project:
   $ ks member set-role <member id>
 
 Or, upgrade your organization plan:
@@ -584,7 +587,7 @@ func ProjectDoesntExist(projectname string, projectid string, cause error) *Erro
 func OrganizationNotPaid(cause error) *Error {
 	meta := map[string]interface{}{}
 
-	return NewError("Organization Not Paid", helpTexts["OrganizationNotPaid"], meta, cause)
+	return NewError("Upgrade to a Paid Plan Is Required", helpTexts["OrganizationNotPaid"], meta, cause)
 }
 
 func NameDoesNotMatch(cause error) *Error {

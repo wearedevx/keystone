@@ -175,6 +175,7 @@ func IsUserOwnerOfOrga(Repo repo.IRepo, userID uint, project Project) (bool, err
 	return false, nil
 }
 
+//
 func HasOrganizationNotPaidAndHasNonAdmin(Repo repo.IRepo, project Project) (has bool, err error) {
 	var isPaid bool
 
@@ -190,14 +191,12 @@ func HasOrganizationNotPaidAndHasNonAdmin(Repo repo.IRepo, project Project) (has
 	}
 
 	if !isPaid {
-		hasAdmin := false
 		for _, member := range members {
-			if member.Role.Name == "admin" {
-				hasAdmin = true
+			if member.Role.Name != "admin" {
+				has = true
+				break
 			}
 		}
-
-		has = !hasAdmin
 	}
 
 done:

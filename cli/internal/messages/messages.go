@@ -289,7 +289,7 @@ func (s *messageService) sendMessageAndUpdateEnvironment(messagesToWrite models.
 			s.err = kserrors.InvalidConnectionToken(err)
 			return s
 		} else if errors.Is(err, apierrors.ErrorNeedsUpgrade) {
-			s.err = kserrors.FeatureRequiresToUpgrade(err)
+			s.err = kserrors.OrganizationNotPaid(err)
 		} else {
 			s.err = kserrors.UnkownError(err)
 			return s
