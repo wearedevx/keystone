@@ -32,7 +32,7 @@ func PostSubscription(
 
 	p := payment.NewStripePayment()
 
-	organizationName := params.Get("organizationID").(string)
+	organizationName := params.Get("organizationName").(string)
 	organization := models.Organization{
 		Name: organizationName,
 	}
@@ -161,7 +161,7 @@ func GetCheckoutCancel(
 ) {
 	status := http.StatusOK
 	sessionID := r.URL.Query().Get("session_id")
-	msg := "You cancelled your subscriptio"
+	msg := "You cancelled your subscription"
 
 	err := repo.Transaction(func(Repo repo.IRepo) error {
 		var cs models.CheckoutSession
