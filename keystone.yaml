@@ -31,10 +31,11 @@ env:
   strict: true
 - key: STRIPE_WEBHOOK_SECRET
   strict: true
+- key: STRIPE_PRICE
+  strict: true
 files:
 - path: api/keystone-server-credentials.json
   strict: false
-  fromcache: false
 options:
   strict: false
 ci_services:

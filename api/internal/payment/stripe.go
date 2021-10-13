@@ -33,7 +33,6 @@ var (
 
 func init() {
 	stripe.Key = stripeKey
-	stripeSubscriptionPrice = "price_1JcAYwHJIcXvsTNiofdvI5VQ"
 }
 
 type stripePayment struct {
