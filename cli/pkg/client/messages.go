@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -44,7 +43,6 @@ func (client *Messages) SendMessages(messages models.MessagesToWritePayload) (mo
 	var result models.GetEnvironmentsResponse
 
 	err := client.r.post("/messages", messages, &result, nil)
-	fmt.Printf("err: %+v\n", err)
 
 	return result, err
 }
