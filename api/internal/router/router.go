@@ -64,6 +64,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		token := r.Header.Get("authorization")
 
 		userID, deviceUID, err := VerifyToken(token)
+		fmt.Printf("deviceUID: %+v\n", deviceUID)
 
 		if err != nil {
 			// JWT verificatin failed

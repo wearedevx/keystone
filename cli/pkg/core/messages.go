@@ -37,21 +37,22 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 
 	for environmentName, environment := range MessageByEnvironments.Environments {
 		var PayloadContent = models.MessagePayload{}
-
 		localSecrets := make([]models.SecretVal, 0)
+
 		for _, localSecret := range ctx.ListSecretsFromCache() {
 			localSecrets = append(localSecrets, models.SecretVal{
 				Label: localSecret.Name,
 				Value: string(localSecret.Values[EnvironmentName(environmentName)]),
 			})
 		}
+
 		if len(environment.Message.Payload) == 0 {
 			continue
 		}
+
 		if err := json.Unmarshal(environment.Message.Payload, &PayloadContent); err != nil {
 			ctx.err = kserrors.CouldNotParseMessage(err)
 			return changes
-
 		}
 
 		environmentChanges := make([]Change, 0)
@@ -67,7 +68,6 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 				ctx.err = kserrors.CannotRemoveDirectoryContents(filePath, err)
 				return changes
 			}
-
 		}
 
 		err := ctx.saveFilesChanges(fileChanges, environmentName)
