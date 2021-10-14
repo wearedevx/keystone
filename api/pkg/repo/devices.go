@@ -75,7 +75,7 @@ func (r *Repo) UpdateDeviceLastUsedAt(deviceUID string) IRepo {
 	return r
 }
 
-func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
+func (r *Repo) RevokeDevice(userID uint, deviceUID string) IRepo {
 	if r.Err() != nil {
 		return r
 	}
@@ -84,7 +84,7 @@ func (r *Repo) RevokeDevice(userID uint, deviceName string) IRepo {
 	r.err = r.GetDb().
 		Joins("left join user_devices on user_devices.device_id = devices.id").
 		Joins("left join users on users.id = user_devices.user_id").
-		Where("users.id = ? and devices.uid = ?", userID, deviceName).
+		Where("users.id = ? and devices.uid = ?", userID, deviceUID).
 		First(&device).
 		Error
 
