@@ -80,6 +80,7 @@ jobs:
             --build-arg STRIPE_KEY=${{ env.STRIPE_KEY }} \
             --build-arg STRIPE_WEBHOOK_SECRET=${{ env.STRIPE_WEBHOOK_SECRET }} \
             --build-arg STRIPE_PRICE=${{ env.STRIPE_PRICE }} \
+            --build-arg X_KS_TTL=${{ secrets.X_KS_TTL }} \
             ./api/
 
           docker push ${{ env.GCR_IMAGE }}
