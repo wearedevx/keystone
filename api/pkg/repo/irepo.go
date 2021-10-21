@@ -33,6 +33,7 @@ type IRepo interface {
 	GetEnvironmentsByProjectUUID(projectUUID string, foundEnvironments *[]models.Environment) IRepo
 	GetInvitableRoles(models.Role, *[]models.Role) IRepo
 	GetLoginRequest(string) (models.LoginRequest, bool)
+	GetMessage(message *models.Message) IRepo
 	GetMessagesForUserOnEnvironment(device models.Device, environment models.Environment, message *models.Message) IRepo
 	GetOrCreateEnvironment(*models.Environment) IRepo
 	GetOrCreateEnvironmentType(*models.EnvironmentType) IRepo

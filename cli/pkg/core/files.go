@@ -401,9 +401,15 @@ func (ctx *Context) FilesUseEnvironment(
 				return ctx.setError(kserrors.CannotCopyFile(file.Path, cachedFilePath, err))
 			}
 
-			if err := utils.CopyFile(cachedFilePath, localPath); err != nil {
-				fmt.Printf("err: %+v\n", err)
-				return ctx.setError(kserrors.CannotCopyFile(file.Path, cachedFilePath, err))
+			if FileExists(cachedFilePath) {
+				if err := utils.CopyFile(cachedFilePath, localPath); err != nil {
+					return ctx.setError(kserrors.CannotCopyFile(file.Path, cachedFilePath, err))
+
+				}
+			} else {
+				if err := utils.CreateFileIfNotExists(localPath, ""); err != nil {
+					return ctx.setError(kserrors.CannotCopyFile(file.Path, cachedFilePath, err))
+				}
 			}
 		}
 		gitignorehelper.GitIgnore(ctx.Wd, file.Path)
