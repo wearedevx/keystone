@@ -90,7 +90,7 @@ func (repo *Repo) DeleteExpiredMessages() IRepo {
 	// Per project message deletion
 	// NOTE: DELETE FROM ... USING ... is Postgres specific
 	repo.err = repo.GetDb().
-		Raw(
+		Exec(
 			`DELETE
 FROM messages m
 WHERE 
