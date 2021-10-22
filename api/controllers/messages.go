@@ -293,12 +293,14 @@ func WriteMessages(
 			break
 		}
 
-		Repo.
+		if err = Repo.
 			MessageService().
 			WriteMessageWithUuid(
 				messageToWrite.Uuid,
 				clientMessage.Payload,
-			)
+			); err != nil {
+			err = apierrors.ErrorFailedToWriteMessage(err)
+		}
 
 		if clientMessage.UpdateEnvironmentVersion {
 			// Change environment version id.
