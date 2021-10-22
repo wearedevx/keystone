@@ -26,7 +26,6 @@ func (r *Repo) GetUser(user *User) IRepo {
 func (r *Repo) findDeletedDevice(
 	device *models.Device,
 ) (err error) {
-	fmt.Printf("device: %+v\n", device)
 	if r.Err() != nil {
 		return r.Err()
 	}
@@ -48,7 +47,6 @@ func (r *Repo) undeleteOrCreateDevices(
 	}
 
 	for _, userDevice := range user.Devices {
-		fmt.Printf("userDevice: %+v\n", userDevice.UID)
 		if err := r.findDeletedDevice(&userDevice); err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				if err := r.AddNewDevice(

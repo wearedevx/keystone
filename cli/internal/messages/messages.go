@@ -96,14 +96,16 @@ func (s *messageService) DeleteMessages(messagesIds []uint) MessageService {
 	}
 
 	for _, id := range messagesIds {
-		_, err := s.client.Messages().DeleteMessage(id)
-		if err != nil {
-			if errors.Is(err, auth.ErrorUnauthorized) {
-				s.err = kserrors.InvalidConnectionToken(err)
-			} else {
-				s.err = kserrors.UnkownError(err)
+		if id > 0 {
+			_, err := s.client.Messages().DeleteMessage(id)
+			if err != nil {
+				if errors.Is(err, auth.ErrorUnauthorized) {
+					s.err = kserrors.InvalidConnectionToken(err)
+				} else {
+					s.err = kserrors.UnkownError(err)
+				}
+				break
 			}
-			break
 		}
 	}
 

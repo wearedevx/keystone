@@ -2,6 +2,7 @@ package repo
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -148,29 +149,28 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 		return r
 	}
 
-	var projects_list []string
-	var adminEmail string
-	r.GetAdminsFromUserProjects(userID, userName, projects_list, &adminEmail)
-
-	if r.err != nil {
+	var adminProjectsMap map[string][]string
+	if err := r.GetAdminsFromUserProjects(userID, &adminProjectsMap).Err(); err != nil {
 		return r
 	}
 
-	// Send mail to admins of user projects
-	e, err := emailer.NewDeviceAdminMail(userName, projects_list, device.Name)
+	for adminEmail, projectList := range adminProjectsMap {
+		// Send mail to admins of user projects
+		e, err := emailer.NewDeviceAdminMail(userName, projectList, device.Name)
+		if err != nil {
+			r.err = err
+			return r
+		}
 
-	if err != nil {
-		r.err = err
-		return r
-	}
-
-	if err = e.Send([]string{adminEmail}); err != nil {
-		r.err = err
-		return r
+		if err = e.Send([]string{adminEmail}); err != nil {
+			fmt.Printf("Add New Device Admin Mail err: %+v\n", err)
+			r.err = err
+			return r
+		}
 	}
 
 	// Send mail to user
-	e, err = emailer.NewDeviceMail(device.Name, userName)
+	e, err := emailer.NewDeviceMail(device.Name, userName)
 
 	if err != nil {
 		r.err = err
@@ -179,6 +179,7 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 
 	if userEmail != "" {
 		if err = e.Send([]string{userEmail}); err != nil {
+			fmt.Printf("Add New Device User Mail err: %+v\n", err)
 			r.err = err
 			return r
 		}

@@ -87,7 +87,6 @@ func Transaction(fn func(IRepo) error) error {
 }
 
 func init() {
-	// dbFilePath := path.Join(os.TempDir(), "keystone_gorm-"+uuid.NewV4().String()+".db")
 	dbFilePath := path.Join(os.TempDir(), "keystone_gorm.db")
 
 	var err error

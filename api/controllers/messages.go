@@ -451,6 +451,7 @@ func AlertMessagesWillExpire(w http.ResponseWriter, r *http.Request, _ httproute
 			if err != nil {
 				errors = append(errors, err)
 			} else if err = email.Send([]string{groupedMessagesUser.Recipient.Email}); err != nil {
+				fmt.Printf("Message will expire mail err: %+v\n", err)
 				errors = append(errors, err)
 			}
 		}
