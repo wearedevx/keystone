@@ -32,29 +32,39 @@ type ChangesByEnvironment struct {
 	Environments map[string][]Change
 }
 
+/// Writes the contents of messages in the project's cache
+/// It will replace secrets value with the new ones,
+/// add new secrets and their values
+/// remove secrets that have been removed by other user
 func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnvironmentResponse) ChangesByEnvironment {
 	changes := ChangesByEnvironment{Environments: make(map[string][]Change)}
+	cachedLocalSecrets := ctx.ListSecretsFromCache()
 
 	for environmentName, environment := range MessageByEnvironments.Environments {
+		// ——— Preparation work ———
 		var PayloadContent = models.MessagePayload{}
-		localSecrets := make([]models.SecretVal, 0)
 
-		for _, localSecret := range ctx.ListSecretsFromCache() {
+		// Skip the environment if there is no payload for it
+		if len(environment.Message.Payload) == 0 {
+			continue
+		}
+
+		// We need the local values for every secret for `environment`
+		localSecrets := make([]models.SecretVal, 0)
+		for _, localSecret := range cachedLocalSecrets {
 			localSecrets = append(localSecrets, models.SecretVal{
 				Label: localSecret.Name,
 				Value: string(localSecret.Values[EnvironmentName(environmentName)]),
 			})
 		}
 
-		if len(environment.Message.Payload) == 0 {
-			continue
-		}
-
+		// Parse the decrypted message payload
 		if err := json.Unmarshal(environment.Message.Payload, &PayloadContent); err != nil {
 			ctx.err = kserrors.CouldNotParseMessage(err)
 			return changes
 		}
 
+		// ——— Handle files ———
 		environmentChanges := make([]Change, 0)
 		fileChanges := ctx.getFilesChanges(PayloadContent.Files, environmentName)
 
@@ -75,6 +85,8 @@ func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnviro
 			ctx.err = kserrors.CannotSaveFiles(err.Error(), err)
 			return changes
 		}
+
+		// ——— Handle secrets ———
 
 		secretChanges := GetSecretsChanges(localSecrets, PayloadContent.Secrets)
 		// NOTE: if there are changes, the .env file gets rewritten, therefore
