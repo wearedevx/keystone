@@ -70,7 +70,7 @@ func formatDevice(device models.Device) string {
 	if device.LastUsedAt.IsZero() {
 		lastUsedAtString = "never used"
 	} else {
-		lastUsedAtString = fmt.Sprintf("last used on %s", device.CreatedAt.Format("2006/01/02"))
+		lastUsedAtString = fmt.Sprintf("last used on %s", device.LastUsedAt.Format("2006/01/02"))
 	}
 
 	return fmt.Sprintf(

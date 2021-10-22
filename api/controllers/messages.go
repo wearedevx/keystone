@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -121,9 +122,23 @@ func GetMessagesFromProjectByUser(
 				GetMessageByUuid(curr.Message.Uuid)
 
 			if err != nil {
-				// response.Error = err
-				// status = http.StatusNotFound
-				// goto done
+				fmt.Printf(
+					"Error getting message payload from redis: %+v\n",
+					err,
+				)
+				// If there is no matching message, the database entry
+				// should be deleted
+				if err = Repo.
+					DeleteMessage(
+						curr.Message.ID,
+						curr.Message.RecipientID,
+					).
+					Err(); err != nil {
+					fmt.Printf(
+						"Error deleting message without a payload: %+v\n",
+						err,
+					)
+				}
 			} else {
 				result.Environments[environment.Name] = curr
 			}
@@ -278,12 +293,14 @@ func WriteMessages(
 			break
 		}
 
-		Repo.
+		if err = Repo.
 			MessageService().
 			WriteMessageWithUuid(
 				messageToWrite.Uuid,
 				clientMessage.Payload,
-			)
+			); err != nil {
+			err = apierrors.ErrorFailedToWriteMessage(err)
+		}
 
 		if clientMessage.UpdateEnvironmentVersion {
 			// Change environment version id.
@@ -312,6 +329,7 @@ done:
 func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
 	status = http.StatusNoContent
 	response := &GenericResponse{}
+	var message models.Message
 	response.Success = true
 	log := models.ActivityLog{
 		UserID: &user.ID,
@@ -320,7 +338,7 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 
 	var messageID = params.Get("messageID").(string)
 
-	id, err := strconv.Atoi(messageID)
+	id, err := strconv.ParseUint(messageID, 10, 64)
 
 	if err != nil {
 		response.Success = false
@@ -330,11 +348,24 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 		goto done
 	}
 
+	message.ID = uint(id)
+
 	if err = Repo.
+		GetMessage(&message).
 		DeleteMessage(uint(id), user.ID).Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusNotFound
+			goto done
+		}
 		response.Error = err
 		response.Success = false
 		err = apierrors.ErrorFailedToDeleteResource(err)
+	}
+
+	if err = Repo.
+		MessageService().
+		DeleteMessageWithUuid(message.Uuid); err != nil {
+		fmt.Printf("Error deleting message on redis: %+v\n", err)
 	}
 
 done:

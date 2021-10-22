@@ -1,7 +1,6 @@
 package repo
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 
@@ -15,7 +14,66 @@ func (r *Repo) GetUser(user *User) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().Preload("Devices").Where("user_id = ?", user.UserID).First(user).Error
+	r.err = r.GetDb().
+		Preload("Devices").
+		Where("user_id = ?", user.UserID).
+		First(user).
+		Error
+
+	return r
+}
+
+func (r *Repo) findDeletedDevice(
+	device *models.Device,
+) (err error) {
+	fmt.Printf("device: %+v\n", device)
+	if r.Err() != nil {
+		return r.Err()
+	}
+
+	err = r.GetDb().
+		Unscoped().
+		Where("uid = ?", device.UID).
+		First(&device).
+		Error
+
+	return err
+}
+
+func (r *Repo) undeleteOrCreateDevices(
+	user *User,
+) *Repo {
+	if r.err != nil {
+		return r
+	}
+
+	for _, userDevice := range user.Devices {
+		fmt.Printf("userDevice: %+v\n", userDevice.UID)
+		if err := r.findDeletedDevice(&userDevice); err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				if err := r.AddNewDevice(
+					userDevice,
+					user.ID,
+					user.UserID,
+					user.Email,
+				).Err(); err != nil {
+					r.err = err
+					return r
+				}
+			} else {
+				r.err = err
+				break
+			}
+		} else {
+			fmt.Printf("userDevice: %+v\n", userDevice)
+			userDevice.DeletedAt = gorm.DeletedAt{}
+			r.err = db.Save(&userDevice).Error
+		}
+
+		if r.err != nil {
+			return r
+		}
+	}
 
 	return r
 }
@@ -41,39 +99,27 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 		Error
 
 	if r.err == nil {
-		for _, device := range user.Devices {
-			found := false
-			for _, fdevice := range foundUser.Devices {
-				if fdevice.UID == device.UID {
-					found = true
-					fdevice.DeletedAt = gorm.DeletedAt{}
-					if !bytes.Equal(device.PublicKey, fdevice.PublicKey) {
-						fdevice.PublicKey = device.PublicKey
-					}
-					db.Save(&fdevice)
-				}
-			}
-			if !found {
-				userID := foundUser.ID
-				if err := r.AddNewDevice(device, userID, foundUser.UserID, foundUser.Email).Err(); err != nil {
-					r.err = err
-					return r
-				}
-			}
-		}
+		// Undelete devices using data coming from the CLI
+		// NOTE: Should we not update foundUser Device array here?
+		r.undeleteOrCreateDevices(user)
 
 		*user = foundUser
 	} else if errors.Is(r.err, gorm.ErrRecordNotFound) {
 		user.UserID = user.Username + "@" + string(user.AccountType)
 
-		// Devices
 		r.err = db.Omit("Devices").Create(&user).Error
 		if r.err != nil {
 			return r
 		}
 
+		// Devices
 		for _, device := range user.Devices {
-			if err := r.AddNewDevice(device, user.ID, user.UserID, user.Email).Err(); err != nil {
+			if err := r.AddNewDevice(
+				device,
+				user.ID,
+				user.UserID,
+				user.Email).
+				Err(); err != nil {
 				r.err = err
 				return r
 			}

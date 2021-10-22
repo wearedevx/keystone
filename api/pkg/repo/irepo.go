@@ -33,6 +33,7 @@ type IRepo interface {
 	GetEnvironmentsByProjectUUID(projectUUID string, foundEnvironments *[]models.Environment) IRepo
 	GetInvitableRoles(models.Role, *[]models.Role) IRepo
 	GetLoginRequest(string) (models.LoginRequest, bool)
+	GetMessage(message *models.Message) IRepo
 	GetMessagesForUserOnEnvironment(device models.Device, environment models.Environment, message *models.Message) IRepo
 	GetOrCreateEnvironment(*models.Environment) IRepo
 	GetOrCreateEnvironmentType(*models.EnvironmentType) IRepo
@@ -72,7 +73,7 @@ type IRepo interface {
 	GetDevice(device *models.Device) IRepo
 	GetDeviceByUserID(userID uint, device *models.Device) IRepo
 	UpdateDeviceLastUsedAt(deviceUID string) IRepo
-	RevokeDevice(userID uint, deviceName string) IRepo
+	RevokeDevice(userID uint, deviceUID string) IRepo
 	GetAdminsFromUserProjects(userID uint, userName string, projects_list []string, adminEmail *string) IRepo
 	CreateOrganization(orga *models.Organization) IRepo
 	UpdateOrganization(orga *models.Organization) IRepo

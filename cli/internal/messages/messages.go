@@ -166,6 +166,13 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 				return kserrors.CouldNotDecryptMessages(fmt.Sprintf("Failed to get the public key for user %s", msg.Sender.UserID), e)
 			}
 
+			if len(upks.PublicKeys) == 0 {
+				return kserrors.CouldNotDecryptMessages(
+					fmt.Sprintf("User %s has no public keys", msg.Sender.UserID),
+					nil,
+				)
+			}
+
 			var udevice models.Device
 			for _, device := range upks.PublicKeys {
 				if device.ID == msg.SenderDeviceID {

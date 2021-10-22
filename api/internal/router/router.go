@@ -64,6 +64,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		token := r.Header.Get("authorization")
 
 		userID, deviceUID, err := VerifyToken(token)
+		fmt.Printf("deviceUID: %+v\n", deviceUID)
 
 		if err != nil {
 			// JWT verificatin failed
@@ -135,7 +136,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 				dw.Header().Add("Content-Length", strconv.Itoa(out.Len()))
 
 				if _, err := dw.Write(out.Bytes()); err != nil {
-					fmt.Printf("err: %+v\n", err)
+					fmt.Printf("response err: %+v\n", err)
 				}
 			}
 
@@ -152,7 +153,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 
 			if toLog != nil {
 				if err := alogger.Save(toLog).Err(); err != nil {
-					fmt.Printf("err: %+v\n", err)
+					fmt.Printf("activity log err: %+v\n", err)
 				}
 			}
 

@@ -24,12 +24,16 @@ func (m *MessageService) GetMessageByUuid(uuid string) ([]byte, error) {
 		return nil, m.redis.Err()
 	}
 
-	m.redis.Delete(uuid)
-
 	return []byte(value), nil
 }
 
 func (m *MessageService) WriteMessageWithUuid(uuid string, value []byte) error {
 	m.redis.Write(uuid, string(value))
+	return m.redis.Err()
+}
+
+func (m *MessageService) DeleteMessageWithUuid(uuid string) error {
+	m.redis.Delete(uuid)
+
 	return m.redis.Err()
 }

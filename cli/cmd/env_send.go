@@ -20,6 +20,7 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kerrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // sendCmd represents the send command
@@ -54,6 +55,14 @@ they have access to.
 
 		err = ms.SendEnvironments(environments).Err()
 		exitIfErr(err)
+
+		ui.Print(
+			ui.RenderTemplate(
+				"send success",
+				`{{ OK }} {{ "Environments sent successfully to members" | green }}`,
+				nil,
+			),
+		)
 	},
 }
 

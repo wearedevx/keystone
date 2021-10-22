@@ -132,7 +132,12 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		return
 	}
 
-	user.Devices = []models.Device{{PublicKey: payload.PublicKey, Name: payload.Device, UID: payload.DeviceUID}}
+	user.Devices = []models.Device{{
+		PublicKey: payload.PublicKey,
+		Name:      payload.Device,
+		UID:       payload.DeviceUID,
+	}}
+
 	if len(payload.PublicKey) == 0 {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
@@ -161,6 +166,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 		log.User = user
 		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID)
+		fmt.Printf("payload.DeviceUID: %+v\n", payload.DeviceUID)
 
 		if err != nil {
 			msg = "Internal Server Error"
