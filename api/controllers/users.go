@@ -166,7 +166,6 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 		log.User = user
 		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID)
-		fmt.Printf("payload.DeviceUID: %+v\n", payload.DeviceUID)
 
 		if err != nil {
 			msg = "Internal Server Error"

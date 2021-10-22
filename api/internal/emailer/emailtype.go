@@ -27,8 +27,24 @@ func (e *Email) toMandrill() *mandrill.Message {
 	return m
 }
 
+func filterOutEmptyMails(recipients []string) []string {
+	r := make([]string, 0)
+
+	for _, email := range recipients {
+		if len(email) > 0 {
+			r = append(r, email)
+		}
+	}
+
+	return r
+}
+
 func (e *Email) Send(recipients []string) (err error) {
-	e.To = recipients
+	e.To = filterOutEmptyMails(recipients)
+
+	if len(e.To) == 0 {
+		return EmailErrorNoRecipient
+	}
 
 	return send(e)
 }

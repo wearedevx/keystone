@@ -74,7 +74,7 @@ type IRepo interface {
 	GetDeviceByUserID(userID uint, device *models.Device) IRepo
 	UpdateDeviceLastUsedAt(deviceUID string) IRepo
 	RevokeDevice(userID uint, deviceUID string) IRepo
-	GetAdminsFromUserProjects(userID uint, userName string, projects_list []string, adminEmail *string) IRepo
+	GetAdminsFromUserProjects(userID uint, adminProjectsMap *map[string][]string) IRepo
 	CreateOrganization(orga *models.Organization) IRepo
 	UpdateOrganization(orga *models.Organization) IRepo
 	OrganizationSetCustomer(organization *models.Organization, customer string) IRepo
