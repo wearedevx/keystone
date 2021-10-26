@@ -97,6 +97,10 @@ func Extract(archivepath, wd, target string) (err error) {
 	return err
 }
 
+// Decrypts and extracts an archive using a passphrase.
+// `archivepath` is the path to the encrypted archive,
+// `target` is the directory where the archive will be extracted, and
+// `passphrase` is the passphrase used to decrypt.
 func ExtractWithPassphrase(archivepath, target, passphrase string) (err error) {
 	temporaryDir, err := os.MkdirTemp("", "ks-archive-*")
 	if err != nil {

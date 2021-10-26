@@ -51,7 +51,7 @@ It will update other members secrets and files.`, map[string]string{}))
 
 		exitIfErr(
 			archive.ExtractWithPassphrase(
-				backupFile,
+				backupfile,
 				extractTarget,
 				password,
 			),
