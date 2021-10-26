@@ -364,5 +364,6 @@ func (g *gitHubCiService) sliceMessageInParts(message string) ([]string, error) 
 }
 
 func (g *gitHubCiService) PrintSuccess(environment string) {
-	ui.PrintSuccess(fmt.Sprintf("Secrets successfully sent to CI service, environment %s. See https://github.com/wearedevx/keystone-action to use them.", environment))
+	ui.PrintSuccess(fmt.Sprintf(`Secrets successfully sent to %s CI service, environment %s.
+See https://github.com/wearedevx/keystone-action to use them.`, g.name, environment))
 }
