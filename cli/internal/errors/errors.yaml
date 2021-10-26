@@ -601,6 +601,14 @@ errors:
 
       This happened because: {{ .Cause }}
 
+  - type: EncryptionFailed
+    name: "Encryption Failed"
+    params: []
+    template: |-
+      {{ ERROR }} {{ .Name | red }}
+
+      This happened because: {{ .Cause }}
+
   # MESSAGES ERRORS
   # ---------------
   - type: CouldNotParseMessage
