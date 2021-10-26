@@ -5,12 +5,14 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/wearedevx/keystone/cli/internal/crypto"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 )
 
@@ -31,6 +33,13 @@ func GetBackupPath(wd, projectName, backupName string) string {
 	return backupName
 }
 
+<<<<<<< HEAD
+=======
+// Creates a .tar.gz archive.
+// `source` is a path to a directory to archive.
+// `wd` is a path to a working directory, used to store the temporary `.tar` file.
+// `target` is a path to the target `.tar.gz` file
+>>>>>>> refactor/restore-in-archive
 func Archive(source, wd, target string) (err error) {
 	if err = Tar(source, wd); err != nil {
 		return err
@@ -47,6 +56,81 @@ func Archive(source, wd, target string) (err error) {
 	return nil
 }
 
+<<<<<<< HEAD
+=======
+// Creates a `.tar.gz` archive of the `source` directory,
+// into the `traget` file, and encrypts it using `passphrase`
+func ArchiveWithPassphrase(source, target, passphrase string) (err error) {
+	tempdir, err := os.MkdirTemp("", "ks-archive-*")
+	if err != nil {
+		return err
+	}
+
+	if err = Archive(source, tempdir, target); err != nil {
+		return err
+	}
+
+	encrypted, err := crypto.EncryptFile(target, passphrase)
+	if err != nil {
+		return err
+	}
+
+	if err = ioutil.WriteFile(target, encrypted, 0644); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Extracts the .tar.gz file at `archivepath` into the `target` directory
+// uing `wd` as temporary directory to hold the `.tar` file
+func Extract(archivepath, wd, target string) (err error) {
+	err = UnGzip(archivepath, wd)
+	if err != nil {
+		return err
+	}
+
+	temporaryArchivePath := path.Join(wd, ".keystone.tar")
+
+	err = Untar(temporaryArchivePath, target)
+	if err != nil {
+		return err
+	}
+
+	err = os.Remove(temporaryArchivePath)
+
+	return err
+}
+
+// Decrypts and extracts an archive using a passphrase.
+// `archivepath` is the path to the encrypted archive,
+// `target` is the directory where the archive will be extracted, and
+// `passphrase` is the passphrase used to decrypt.
+func ExtractWithPassphrase(archivepath, target, passphrase string) (err error) {
+	temporaryDir, err := os.MkdirTemp("", "ks-archive-*")
+	if err != nil {
+		return err
+	}
+
+	temporaryFile := path.Join(temporaryDir, "decrypted.tar.gz")
+
+	if err = crypto.
+		DecryptFile(archivepath, temporaryFile, passphrase); err != nil {
+		return err
+	}
+
+	if err = Extract(temporaryFile, temporaryDir, target); err != nil {
+		return err
+	}
+
+	if err = os.RemoveAll(temporaryDir); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+>>>>>>> refactor/restore-in-archive
 // Tar creates a tar archive
 // source is a path to a directory to archive
 // target is a path to a directory to write the archive to.

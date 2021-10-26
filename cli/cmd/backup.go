@@ -2,12 +2,10 @@ package cmd
 
 import (
 	"encoding/base64"
-	"io/ioutil"
 
 	"github.com/cossacklabs/themis/gothemis/cell"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/archive"
-	"github.com/wearedevx/keystone/cli/internal/crypto"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
@@ -42,28 +40,14 @@ to prevent losing them all if anything were to happen to your device.`,
 			password = prompts.StringInput("Password to encrypt backup", "")
 		}
 
-		if err = archive.Archive(
+		if err = archive.ArchiveWithPassphrase(
 			ctx.DotKeystonePath(),
-			ctx.Wd,
 			backupName,
+			password,
 		); err != nil {
-			err = kserrors.CouldNotCreateArchive(err)
-		}
-		exitIfErr(err)
-
-		/* #nosec
-		 * It is unlikely that BACKUP_NAME is uncontrolled
-		 */
-		encrypted, err := crypto.EncryptFile(backupName, password)
-		if err != nil {
-			exit(kserrors.EncryptionFailed(err))
-		}
-
-		/* #nosec
-		 * It is unlikely that BACKUP_NAME is uncontrolled
-		 */
-		if err := ioutil.WriteFile(backupName, encrypted, 0600); err != nil {
-			exit(kserrors.FailedToWriteBackup(err))
+			exit(
+				kserrors.CouldNotCreateArchive(err),
+			)
 		}
 
 		ui.PrintSuccess("Backup created : %s", backupName)
