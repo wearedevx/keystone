@@ -10,8 +10,11 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
+// Prompts to select a role for a user
+// `memberId` is a `username@service` userID
+// `roles` is a list of roles to select from
+// Returns the selected role
 func PromptRole(memberId string, roles []models.Role) (models.Role, error) {
-
 	templates := &promptui.SelectTemplates{
 		Label: "Role for {{ . }}?",
 		Active: fmt.Sprintf(
@@ -50,69 +53,7 @@ func PromptRole(memberId string, roles []models.Role) (models.Role, error) {
 	return roles[index], err
 }
 
-func Confirm(message string) bool {
-	p := promptui.Prompt{
-		Label:     message,
-		IsConfirm: true,
-	}
-
-	answer, err := p.Run()
-
-	if err != nil {
-		if err.Error() != "^C" && err.Error() != "" {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
-	} else if strings.ToLower(answer) == "y" {
-		return true
-	}
-
-	return false
-}
-
-func StringInputWithValidation(message string, defaultValue string, validation promptui.ValidateFunc) string {
-	p := promptui.Prompt{
-		Label:    message,
-		Default:  defaultValue,
-		Validate: validation,
-	}
-
-	answer, err := p.Run()
-
-	if err != nil {
-		if err.Error() != "^C" && err.Error() != "" {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
-
-	return strings.Trim(answer, " ")
-}
-func StringInput(message string, defaultValue string) string {
-	p := promptui.Prompt{
-		Label:   message,
-		Default: defaultValue,
-	}
-
-	answer, err := p.Run()
-
-	if err != nil {
-		if err.Error() != "^C" && err.Error() != "" {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
-
-	return strings.Trim(answer, " ")
-}
-
-type SelectCIServiceItem struct {
-	Name string
-	Type string
-}
-
+// Asks the user to select from a list of devices
 func SelectDevice(devices []models.Device) models.Device {
 	items := make([]map[string]string, 0)
 
@@ -121,6 +62,7 @@ func SelectDevice(devices []models.Device) models.Device {
 		newItem["Name"] = device.Name
 		newItem["UID"] = device.UID
 		newItem["CreatedAt"] = device.CreatedAt.Format("2006/01/02")
+
 		if device.LastUsedAt.IsZero() {
 			newItem["LastUsedAtString"] = "never used"
 		} else {
@@ -147,11 +89,13 @@ func SelectDevice(devices []models.Device) models.Device {
 	}
 
 	index, _, err := prompt.Run()
+
 	if err != nil {
 		if err.Error() != "^C" {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
+
 		os.Exit(0)
 	}
 
@@ -161,6 +105,14 @@ func SelectDevice(devices []models.Device) models.Device {
 
 	return devices[index]
 }
+
+// Items for SelectCIService prompt
+type SelectCIServiceItem struct {
+	Name string
+	Type string
+}
+
+// Asks the user to select from a list of CI services
 func SelectCIService(items []SelectCIServiceItem) SelectCIServiceItem {
 	prompt := promptui.Select{
 		Label: "Select a CI service",
@@ -190,25 +142,7 @@ func SelectCIService(items []SelectCIServiceItem) SelectCIServiceItem {
 	return items[index]
 }
 
-func Select(message string, items []string) (index int, selected string) {
-	prompt := promptui.Select{
-		Label: message,
-		Items: items,
-	}
-
-	index, selected, err := prompt.Run()
-
-	if err != nil {
-		if err.Error() != "^C" {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
-
-	return index, selected
-}
-
+// Asks the usre to select from a list of organizations
 func OrganizationsSelect(organizations []models.Organization) models.Organization {
 	templates := &promptui.SelectTemplates{
 		Active: fmt.Sprintf(
@@ -248,4 +182,22 @@ func OrganizationsSelect(organizations []models.Organization) models.Organizatio
 		os.Exit(0)
 	}
 	return organizations[i]
+}
+
+func PasswordToEncrypt() string {
+	return StringInput("Password to encrypt backup", "")
+}
+
+func PasswordToDecrypt() string {
+	return StringInput("Password to decrypt backup", "")
+}
+
+func ConfirmDotKeystonDirRemoval() {
+	ui.Print(ui.RenderTemplate("confirm files rm",
+		`{{ CAREFUL }} You are about to remove the content of .keystone/ which contain all your local secrets and files.
+This will override the changes you and other members made since the backup.
+It will update other members secrets and files.`, map[string]string{}))
+	if !Confirm("Continue") {
+		os.Exit(0)
+	}
 }

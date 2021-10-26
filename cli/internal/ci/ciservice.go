@@ -38,11 +38,6 @@ type CiService interface {
 	CheckSetup() CiService
 	Error() error
 	PrintSuccess(string)
-	// // Finish(pkey []byte) (models.User, string, error)
-	// GetKeys() ServicesKeys
-	// SetKeys(ServicesKeys) error
-	// GetApiKey() ApiKey
-	// SetApiKey(ApiKey)
 }
 
 func init() {

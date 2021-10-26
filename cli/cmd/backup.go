@@ -37,7 +37,7 @@ to prevent losing them all if anything were to happen to your device.`,
 		)
 
 		if password == "" {
-			password = prompts.StringInput("Password to encrypt backup", "")
+			password = prompts.PasswordToEncrypt()
 		}
 
 		if err = archive.ArchiveWithPassphrase(
