@@ -178,6 +178,7 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	}
 
 	env.Setenv("USER_ID", user.UserID)
+	fmt.Printf("user.UserID: %+v\n", user.UserID)
 
 	token, err := jwt.MakeToken(user, deviceUID)
 	configDir := getConfigDir(env)

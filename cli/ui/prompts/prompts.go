@@ -158,6 +158,7 @@ func SelectDevice(devices []models.Device) models.Device {
 	if !Confirm(fmt.Sprintf("Sure you want to revoke %s", devices[index].Name)) {
 		os.Exit(0)
 	}
+
 	return devices[index]
 }
 func SelectCIService(items []SelectCIServiceItem) SelectCIServiceItem {

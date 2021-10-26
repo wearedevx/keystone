@@ -6,11 +6,46 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/wearedevx/keystone/cli/internal/utils"
 )
+
+// GetBackupPath returns the path to file the backup archive will be written to
+func GetBackupPath(wd, projectName, backupName string) string {
+	if backupName == "" {
+		backupName = path.Join(
+			wd,
+			fmt.Sprintf(`keystone-backup-%s-%d.tar.gz`, projectName, time.Now().Unix()),
+		)
+	} else {
+		backupName = path.Join(
+			wd,
+			fmt.Sprintf(`%s.tar.gz`, backupName),
+		)
+	}
+
+	return backupName
+}
+
+func Archive(source, wd, target string) (err error) {
+	if err = Tar(source, wd); err != nil {
+		return err
+	}
+
+	if err = Gzip(path.Join(wd, ".keystone.tar"), wd); err != nil {
+		return err
+	}
+
+	if err = os.Rename(path.Join(wd, ".keystone.tar.gz"), target); err != nil {
+		return err
+	}
+
+	return nil
+}
 
 // Tar creates a tar archive
 // source is a path to a directory to archive

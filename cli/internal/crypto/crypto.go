@@ -1,6 +1,11 @@
 package crypto
 
 import (
+	"encoding/base64"
+	"fmt"
+	"io/ioutil"
+
+	"github.com/cossacklabs/themis/gothemis/cell"
 	"github.com/cossacklabs/themis/gothemis/errors"
 	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/cossacklabs/themis/gothemis/message"
@@ -36,4 +41,25 @@ func DecryptMessage(recipientPrivateKey []byte, senderPublicKey []byte, msg []by
 	}
 
 	return p, nil
+}
+
+func EncryptFile(filepath, passphrase string) (encrypted []byte, err error) {
+	contents, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		return encrypted, fmt.Errorf("cannot read %s: %w", filepath, err)
+	}
+
+	data := base64.StdEncoding.EncodeToString(contents)
+
+	scell, err := cell.SealWithPassphrase(passphrase)
+	if err != nil {
+		return encrypted, err
+	}
+
+	encrypted, err = scell.Encrypt([]byte(data), nil)
+	if err != nil {
+		return encrypted, err
+	}
+
+	return encrypted, nil
 }

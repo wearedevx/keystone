@@ -281,6 +281,7 @@ func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole, curr
 			}
 
 			if err = e.Send([]string{userEmail}); err != nil {
+				fmt.Printf("Project Add Member err: %+v\n", err)
 				r.err = err
 				return r
 			}

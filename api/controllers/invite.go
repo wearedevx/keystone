@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -46,6 +47,7 @@ func PostInvite(
 			}
 
 			if err = e.Send([]string{targetEmail}); err != nil {
+				fmt.Printf("Invite Mail err: %+v\n", err)
 				status = http.StatusInternalServerError
 				err = apierrors.ErrorFailedToSendMail(err)
 				goto done

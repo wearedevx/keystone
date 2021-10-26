@@ -47,6 +47,19 @@ func (repo *Repo) GetMessagesForUserOnEnvironment(publicKey models.Device, envir
 	return repo
 }
 
+func (repo *Repo) GetMessage(message *models.Message) IRepo {
+	if repo.err != nil {
+		return repo
+	}
+
+	repo.err = repo.GetDb().
+		Where(message).
+		First(message).
+		Error
+
+	return repo
+}
+
 func (repo *Repo) WriteMessage(user models.User, message models.Message) IRepo {
 	if repo.err != nil {
 		return repo
@@ -63,10 +76,7 @@ func (repo *Repo) DeleteMessage(messageID uint, userID uint) IRepo {
 	}
 
 	repo.err = repo.GetDb().
-		Model(&models.Message{}).
-		Where("recipient_id = ?", userID).
-		Where("id = ?", messageID).
-		Delete(messageID).Error
+		Delete(&models.Message{}, messageID).Error
 
 	return repo
 }

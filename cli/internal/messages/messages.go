@@ -96,14 +96,16 @@ func (s *messageService) DeleteMessages(messagesIds []uint) MessageService {
 	}
 
 	for _, id := range messagesIds {
-		_, err := s.client.Messages().DeleteMessage(id)
-		if err != nil {
-			if errors.Is(err, auth.ErrorUnauthorized) {
-				s.err = kserrors.InvalidConnectionToken(err)
-			} else {
-				s.err = kserrors.UnkownError(err)
+		if id > 0 {
+			_, err := s.client.Messages().DeleteMessage(id)
+			if err != nil {
+				if errors.Is(err, auth.ErrorUnauthorized) {
+					s.err = kserrors.InvalidConnectionToken(err)
+				} else {
+					s.err = kserrors.UnkownError(err)
+				}
+				break
 			}
-			break
 		}
 	}
 
@@ -164,6 +166,13 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 			upks, e := s.client.Users().GetUserPublicKey(msg.Sender.UserID)
 			if e != nil {
 				return kserrors.CouldNotDecryptMessages(fmt.Sprintf("Failed to get the public key for user %s", msg.Sender.UserID), e)
+			}
+
+			if len(upks.PublicKeys) == 0 {
+				return kserrors.CouldNotDecryptMessages(
+					fmt.Sprintf("User %s has no public keys", msg.Sender.UserID),
+					nil,
+				)
 			}
 
 			var udevice models.Device

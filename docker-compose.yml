@@ -3,7 +3,6 @@ version: "3.8"
 services:
   db:
     image: postgres
-    restart: always
     environment:
       POSTGRES_PASSWORD: ks
       POSTGRES_USER: ks
@@ -13,7 +12,6 @@ services:
 
   adminer:
     image: adminer
-    restart: always
     ports:
       - 8080:8080
 

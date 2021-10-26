@@ -69,11 +69,6 @@ This happened because: {{ .Cause }}
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
 `,
-	"RoleDoesNotExist": `
-{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
-Available roles are: {{ .Available }}
-
-`,
 	"ProjectDoesntExist": `
 {{ ERROR }} {{ "Project" | red }} {{ .ProjectName | red }} {{ "Does Not Exist" | red }}
 Project in your keystone.yaml does not exist or your are not part of it.
@@ -332,6 +327,11 @@ This happened because: {{ .Cause }}
 
 This happened because: {{ .Cause }}
 `,
+	"EncryptionFailed": `
+{{ ERROR }} {{ .Name | red }}
+
+This happened because: {{ .Cause }}
+`,
 	"CouldNotParseMessage": `
 {{ ERROR }} {{ .Name | red }}
 
@@ -566,14 +566,6 @@ func FailedToReadDotEnv(path string, cause error) *Error {
 		"Path": string(path),
 	}
 	return NewError("Failed To Read .env", helpTexts["FailedToReadDotEnv"], meta, cause)
-}
-
-func RoleDoesNotExist(rolename string, available string, cause error) *Error {
-	meta := map[string]interface{}{
-		"RoleName":  string(rolename),
-		"Available": string(available),
-	}
-	return NewError("Role Not Available", helpTexts["RoleDoesNotExist"], meta, cause)
 }
 
 func ProjectDoesntExist(projectname string, projectid string, cause error) *Error {
@@ -842,6 +834,12 @@ func CouldNotEncryptMessages(cause error) *Error {
 	meta := map[string]interface{}{}
 
 	return NewError("Could not encrypt messages", helpTexts["CouldNotEncryptMessages"], meta, cause)
+}
+
+func EncryptionFailed(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Encryption Failed", helpTexts["EncryptionFailed"], meta, cause)
 }
 
 func CouldNotParseMessage(cause error) *Error {
