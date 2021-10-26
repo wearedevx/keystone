@@ -2,10 +2,7 @@ package cmd
 
 import (
 	"encoding/base64"
-	"fmt"
-	"io/ioutil"
 	"os"
-	"path"
 
 	"github.com/cossacklabs/themis/gothemis/cell"
 	"github.com/spf13/cobra"
@@ -38,6 +35,8 @@ This will override all the data you have stored locally.`,
 			password = prompts.StringInput("Password to decrypt backup", "")
 		}
 
+		extractTarget := ctx.Wd
+
 		if !skipPrompts {
 			ui.Print(ui.RenderTemplate("confirm files rm",
 				`{{ CAREFUL }} You are about to remove the content of .keystone/ which contain all your local secrets and files.
@@ -50,36 +49,18 @@ It will update other members secrets and files.`, map[string]string{}))
 
 		exitIfErr(os.RemoveAll(ctx.DotKeystonePath()))
 
-		/* #nosec */
-		contents, err := ioutil.ReadFile(backupfile)
-		exitIfErr(err)
-
-		decrypted := decryptBackup(contents, password)
-		decryptedPath := fmt.Sprintf("decrypted.tar.gz")
-
 		exitIfErr(
-			ioutil.WriteFile(decryptedPath, decrypted, 0600),
-		)
-
-		exitIfErr(
-			archive.UnGzip(decryptedPath, ctx.Wd),
-		)
-
-		exitIfErr(
-			archive.Untar(path.Join(ctx.Wd, ".keystone.tar"), "."),
-		)
-
-		// Remove temp files
-		exitIfErr(
-			os.Remove(decryptedPath),
-		)
-		exitIfErr(
-			os.Remove(path.Join(ctx.Wd, ".keystone.tar")),
+			archive.ExtractWithPassphrase(
+				backupfile,
+				extractTarget,
+				password,
+			),
 		)
 
 		ms := messages.NewMessageService(ctx)
-		err = ms.SendEnvironments(ctx.AccessibleEnvironments).Err()
-		exitIfErr(err)
+		exitIfErr(
+			ms.SendEnvironments(ctx.AccessibleEnvironments).Err(),
+		)
 
 		ui.PrintSuccess("Backup restored: all your files and secrets have been replaced by the backup. They also have been sent to all members.")
 	},
