@@ -17,6 +17,8 @@ const (
 	GithubCI CiServiceType = "github-ci"
 )
 
+// A map of available service types and their display name.
+// Typically used for UI selection
 var availableServices map[CiServiceType]string
 
 var (
@@ -81,6 +83,8 @@ func GetCiService(serviceName string, ctx *core.Context, apiUrl string) (CiServi
 	return c, err
 }
 
+// Asks the user to pick a type of CI service among the available ones
+// It returns a `CiService` instance ready to be setup, and an error
 func PickCiService(name string, ctx *core.Context, apiUrl string) (CiService, error) {
 	var err error
 	if err != nil {
@@ -108,9 +112,42 @@ func PickCiService(name string, ctx *core.Context, apiUrl string) (CiService, er
 	default:
 		return nil, ErrorInvalidServiceType
 	}
-
 }
 
+// Asks the user the select a CI Service Configuration
+func SelectCiServiceConfiguration(
+	serviceName string,
+	ctx *core.Context,
+	apiUrl string,
+) (CiService, error) {
+	var err error
+
+	services, err := ListCiServices(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(services) == 0 {
+		return nil, ErrorNoCIServices
+	}
+
+	items := make([]string, len(services), len(services))
+
+	for idx, service := range services {
+		items[idx] = service.Name
+	}
+
+	if serviceName == "" {
+		_, serviceName = prompts.Select(
+			"Select a CI service configuration",
+			items,
+		)
+	}
+
+	return GetCiService(serviceName, ctx, apiUrl)
+}
+
+// ListCiServices returns the list of configured CI services
 func ListCiServices(ctx *core.Context) (_ []keystonefile.CiService, err error) {
 	if ctx.Err() != nil {
 		return []keystonefile.CiService{}, nil
@@ -126,6 +163,8 @@ func ListCiServices(ctx *core.Context) (_ []keystonefile.CiService, err error) {
 	return ksfile.CiServices, nil
 }
 
+// FindCiServiceWithName returns the CI service configuration
+// matching `name`
 func FindCiServiceWithName(ctx *core.Context, name string) (service keystonefile.CiService, found bool) {
 	if ctx.Err() != nil {
 		return service, false
@@ -147,6 +186,7 @@ func FindCiServiceWithName(ctx *core.Context, name string) (service keystonefile
 	return service, found
 }
 
+// AddCiService adds a CI service configuration to the keystone file
 func AddCiService(ctx *core.Context, service CiService) (err error) {
 	if ctx.Err() != nil {
 		return nil
@@ -167,6 +207,8 @@ func AddCiService(ctx *core.Context, service CiService) (err error) {
 	return nil
 }
 
+// RemoveCiService remove the CI service configuration matching `serviceName`
+// from the keystone file.
 func RemoveCiService(ctx *core.Context, serviceName string) (err error) {
 	if ctx.Err() != nil {
 		return nil

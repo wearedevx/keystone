@@ -10,6 +10,8 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
+// ———— MEMBERS PROMTS ———— //
+
 // Prompts to select a role for a user
 // `memberId` is a `username@service` userID
 // `roles` is a list of roles to select from
@@ -52,6 +54,8 @@ func PromptRole(memberId string, roles []models.Role) (models.Role, error) {
 
 	return roles[index], err
 }
+
+// ———— DEVICE PROMPTS ———— //
 
 // Asks the user to select from a list of devices
 func SelectDevice(devices []models.Device) models.Device {
@@ -106,6 +110,41 @@ func SelectDevice(devices []models.Device) models.Device {
 	return devices[index]
 }
 
+// ———— CI SERVICE PROMPTS ———— //
+
+func ServiceIntegrationName() string {
+	return StringInput(
+		"Enter a name for your integration",
+		"",
+	)
+}
+
+func ServiceConfigurationToRemove() string {
+	return StringInput(
+		"Enter the service name to remove",
+		"",
+	)
+}
+
+func ConfirmCiConfigurationRemoval(serviceName string) bool {
+	ui.Print(ui.RenderTemplate("careful rm ci", `
+{{ CAREFUL }} You are about to remove the {{ . }} CI service.
+
+This cannot be undone.`,
+		serviceName))
+
+	return Confirm("Continue")
+}
+
+func ConfirmSendEnvironmentToCiService(environmentName string) bool {
+	ui.Print(
+		"You are about to send the '%s' environment to your CI services.",
+		environmentName,
+	)
+
+	return Confirm("Continue")
+}
+
 // Items for SelectCIService prompt
 type SelectCIServiceItem struct {
 	Name string
@@ -141,6 +180,8 @@ func SelectCIService(items []SelectCIServiceItem) SelectCIServiceItem {
 
 	return items[index]
 }
+
+// ———— ORGANIZATION PROMPTS ————— //
 
 // Asks the usre to select from a list of organizations
 func OrganizationsSelect(organizations []models.Organization) models.Organization {
@@ -183,6 +224,8 @@ func OrganizationsSelect(organizations []models.Organization) models.Organizatio
 	}
 	return organizations[i]
 }
+
+// ———— BACKUP/RESTORE PROMPTS ————— //
 
 func PasswordToEncrypt() string {
 	return StringInput("Password to encrypt backup", "")

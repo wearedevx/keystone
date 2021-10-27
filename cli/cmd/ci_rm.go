@@ -41,27 +41,14 @@ ks ci rm my-github-ci-service
 	Run: func(_ *cobra.Command, args []string) {
 		var serviceName string
 
-		if len(args) == 1 {
-			serviceName = args[0]
-		} else {
-			serviceName = prompts.StringInput(
-				"Enter the service name to remove",
-				"",
-			)
-		}
+		serviceName = getServiceNameToRemove(args)
 
 		s, ok := ci.FindCiServiceWithName(ctx, serviceName)
 		if !ok {
 			exit(kserrors.NoSuchService(serviceName, nil))
 		}
 
-		ui.Print(ui.RenderTemplate("careful rm ci", `
-{{ CAREFUL }} You are about to remove the {{ .Name }} CI service.
-
-This cannot be undone.`,
-			s))
-
-		if prompts.Confirm("Continue") {
+		if prompts.ConfirmCiConfigurationRemoval(s.Name) {
 			if err := ci.RemoveCiService(ctx, s.Name); err != nil {
 				exit(kserrors.CouldNotRemoveService(err))
 			}
@@ -69,6 +56,16 @@ This cannot be undone.`,
 
 		ui.PrintSuccess("CI service '%s' successfully removed", s.Name)
 	},
+}
+
+func getServiceNameToRemove(args []string) (serviceName string) {
+	if len(args) == 1 {
+		serviceName = args[0]
+	} else {
+		serviceName = prompts.ServiceConfigurationToRemove()
+	}
+
+	return serviceName
 }
 
 func init() {

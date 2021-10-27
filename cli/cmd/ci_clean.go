@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -30,7 +31,12 @@ ks ci clean --env prod
 		var err error
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		ciService, err := SelectCiService(ctx)
+		ciService, err := ci.SelectCiServiceConfiguration(
+			"",
+			ctx,
+			client.ApiURL,
+		)
+
 		if err != nil {
 			if errors.Is(err, ci.ErrorNoCIServices) {
 				exit(kserrors.NoCIServices(nil))

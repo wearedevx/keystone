@@ -36,7 +36,11 @@ ks ci edit my-gitub-ci-service`,
 		}
 
 		if !found {
-			ciService, err = SelectCiService(ctx)
+			ciService, err = ci.SelectCiServiceConfiguration(
+				serviceName,
+				ctx,
+				client.ApiURL,
+			)
 			if err != nil {
 				if errors.Is(err, ci.ErrorNoCIServices) {
 					exit(kserrors.NoCIServices(nil))

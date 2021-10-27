@@ -33,11 +33,9 @@ var addCmd = &cobra.Command{
 Once you have configured a new CI service, you can send it secrets using:
 ` + "`" + `ks ci send --env prod` + "`\n",
 	Example: `ks ci add`,
+	Args:    cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
-		serviceName := prompts.StringInput(
-			"Enter a name for your integration",
-			"",
-		)
+		serviceName := prompts.ServiceIntegrationName()
 
 		if _, nameExists := ci.FindCiServiceWithName(ctx, serviceName); nameExists {
 			exit(kserrors.CiServiceAlreadyExists(serviceName, nil))
