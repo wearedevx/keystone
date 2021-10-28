@@ -68,7 +68,7 @@ ks file add -s ./credentials.json`,
 		environments := ctx.AccessibleEnvironments
 		environmentFileMap := map[string][]byte{}
 
-		useOldFile := checkFileAlreadyInCache(filePath)
+		useOldFile := askToOverrideFilesInCache(filePath)
 		if !useOldFile {
 			absPath := filepath.Join(ctx.Wd, filePath)
 
@@ -196,7 +196,8 @@ func askContentOfFile(
 	}
 }
 
-func checkFileAlreadyInCache(fileName string) bool {
+// TODO: Move this to the ui package
+func askToOverrideFilesInCache(fileName string) bool {
 	files := ctx.ListFilesFromCache()
 	var found keystonefile.FileKey
 	for _, file := range files {
@@ -222,7 +223,7 @@ func checkFileAlreadyInCache(fileName string) bool {
 		override := false
 
 		if !skipPrompts {
-			override = prompts.Confirm("Do you want to override the contents")
+			override = prompts.ConfirmOverrideFileContents()
 		}
 
 		return !override
@@ -230,6 +231,7 @@ func checkFileAlreadyInCache(fileName string) bool {
 	return false
 }
 
+// TODO: move this to utils file
 func cleanPathArgument(
 	filePathArg string,
 	wd string,

@@ -85,13 +85,7 @@ of the secrets and files.
 		membersToRevoke := make([]string, 0)
 
 		for _, memberId := range args {
-			revoke := true
-
-			if !forceYes {
-				revoke = prompts.Confirm("Revoke access to " + memberId)
-			}
-
-			if revoke {
+			if prompts.ConfirmRevokeAccessToMember(memberId, forceYes) {
 				membersToRevoke = append(membersToRevoke, memberId)
 			}
 		}

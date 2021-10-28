@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -107,26 +106,22 @@ ks member set-role sandra@github`,
 		}
 
 		if len(roles) == 1 && roleName != "admin" {
+			// TODO: have a proper error
 			ui.PrintError("You are not allowed to set role other than admin for free organization")
 			ui.Print("To learn more: https://keystone.sh")
 			os.Exit(1)
 		}
 
-		// If the role exsists, do the work
+		// If the role exists, do the work
 		if _, ok := getRoleWithName(roleName, roles); ok {
 			err = c.Project(projectID).SetMemberRole(memberId, roleName)
 			exitIfErr(err)
 		} else {
-			roleNames := make([]string, len(roles))
-			for i, r := range roles {
-				roleNames[i] = r.Name
-			}
-
-			exit(kserrors.RoleDoesNotExist(
-				roleName,
-				strings.Join(roleNames, ", "),
-				nil,
-			))
+			exit(
+				kserrors.UnkownError(
+					fmt.Errorf("Role '%s' does not exist", roleName),
+				),
+			)
 		}
 
 		ui.Print(ui.RenderTemplate("set role ok", `
@@ -136,6 +131,8 @@ ks member set-role sandra@github`,
 	},
 }
 
+// TODO: this should probably be inside the SetMemberRole function,
+// or at least declared alongside it and called from there instead
 func getRoleWithName(roleName string, roles []models.Role) (models.Role, bool) {
 	found := false
 	var role models.Role

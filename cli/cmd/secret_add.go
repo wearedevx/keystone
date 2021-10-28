@@ -58,6 +58,7 @@ ks secret add PORT`,
 	Args: cobra.RangeArgs(1, 2),
 	Run: func(_ *cobra.Command, args []string) {
 		var err error
+		var useCache bool
 
 		secretName := args[0]
 		secretValue := ""
@@ -71,11 +72,8 @@ ks secret add PORT`,
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		inCache := checkSecretAlreadyInCache(secretName)
-		useCache := inCache
-
-		if inCache {
-			useCache = !askToOverride()
+		if checkSecretAlreadyInCache(secretName) {
+			useCache = !prompts.ConfirmOverrideSecretValue(skipPrompts)
 		}
 
 		if !useCache {

@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -234,17 +233,9 @@ func mapRoleNamesToRoles(memberRoleNames map[string]string, roles []models.Role)
 		}
 
 		if foundRole == nil {
-			roleNames := []string{}
-
-			for _, role := range roles {
-				roleNames = append(roleNames, role.Name)
-			}
-
 			exit(
-				kserrors.RoleDoesNotExist(
-					roleName,
-					strings.Join(roleNames, ", "),
-					nil,
+				kserrors.UnkownError(
+					fmt.Errorf("Role %s does not exist", roleName),
 				),
 			)
 		}

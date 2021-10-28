@@ -64,7 +64,8 @@ type EnvListViewModel struct {
 
 // Prints an environment list
 // The current environment is marked with an asterisk
-var listEnv = func(ctx *core.Context, _ *errors.Error) {
+// TODO: move this to the ui package
+func listEnv(ctx *core.Context, _ *errors.Error) {
 	if quietOutput {
 		ui.Print(currentEnvironment)
 		return

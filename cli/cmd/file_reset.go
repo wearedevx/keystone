@@ -53,19 +53,7 @@ ks file reset
 			}
 		}
 
-		ui.Print(ui.RenderTemplate(
-			"careful reset",
-			`{{ CAREFUL }} {{ "Local changes will be lost" | yellow }}
-The content of the files you are resetting will be replaced by their cached content.`,
-			nil,
-		))
-
-		doIt := fileResetYes
-		if !fileResetYes {
-			doIt = prompts.Confirm("Continue")
-		}
-
-		if doIt {
+		if prompts.ConfirmFileReset(fileResetYes) {
 			for _, file := range filesToReset {
 				if !ctx.HasFile(file) {
 					ui.Print("File '" + file + "' is not managed by Keystone, ignoring")

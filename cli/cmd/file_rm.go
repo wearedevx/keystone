@@ -53,7 +53,11 @@ Files can be used again using "file add" command.
 				CannotRemoveFile(filePath, fmt.Errorf("file not found")))
 		}
 
-		if promptYesNo(filePath) {
+		if prompts.ConfirmFileRemove(
+			filePath,
+			ctx.CurrentEnvironment(),
+			skipPrompts || !purgeFile,
+		) {
 			ms := messages.NewMessageService(ctx)
 			mustFetchMessages(ms)
 
@@ -93,24 +97,4 @@ func init() {
 		false,
 		"purge file content from all environments",
 	)
-}
-
-func promptYesNo(filePath string) bool {
-	if skipPrompts {
-		return true
-	}
-	if !purgeFile {
-		return true
-	}
-
-	ui.Print(ui.RenderTemplate("confirm files rm",
-		`{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
-Its current content will be kept locally.
-Its content for other environments will be lost, it will no longer be gitignored.
-This is permanent, and cannot be undone.`, map[string]string{
-			"Path":        filePath,
-			"Environment": ctx.CurrentEnvironment(),
-		}))
-
-	return prompts.Confirm("Continue")
 }

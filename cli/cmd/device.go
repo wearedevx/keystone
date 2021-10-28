@@ -34,11 +34,13 @@ Used without arguments, lists devices this account has registered.
 			exit(err)
 		}
 
+		// TODO: move this to the ui package
 		printDeviceList(devices)
 
 	},
 }
 
+// TODO: move this to the ui package
 func printDeviceList(devices []models.Device) {
 	devStrings := []string{}
 

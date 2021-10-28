@@ -77,7 +77,6 @@ Created files and directories:
 
 		var project models.Project
 		c, err := client.NewKeystoneClient()
-		// fmt.Printf("err: %+v %+v\n", err == nil, err)
 		exitIfErr(err)
 
 		// Ask for project name if keystone file doesn't exist.

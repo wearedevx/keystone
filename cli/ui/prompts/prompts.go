@@ -1,8 +1,10 @@
 package prompts
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -11,6 +13,18 @@ import (
 )
 
 // ———— MEMBERS PROMTS ———— //
+
+// ConfirmRevokeAccessToMember asks the user to confirm they
+// want to revoke the access to the given member,
+// unless `forceYes` is true, in which case it returns true without
+// asking the user.
+func ConfirmRevokeAccessToMember(memberId string, forceYes bool) bool {
+	if forceYes {
+		return true
+	}
+
+	return Confirm("Revoke access to " + memberId)
+}
 
 // Prompts to select a role for a user
 // `memberId` is a `username@service` userID
@@ -110,6 +124,40 @@ func SelectDevice(devices []models.Device) models.Device {
 	return devices[index]
 }
 
+// DeviceName asks the user to enter a device name.
+// If there is no existing name, it will use the device hostname as default
+func DeviceName(existingName string, forceDefault bool) string {
+	if existingName == "" {
+		var defaultName string
+
+		if hostname, err := os.Hostname(); err == nil {
+			defaultName = hostname
+		}
+
+		if forceDefault {
+			return defaultName
+		}
+
+		validate := func(input string) error {
+			matched, err := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, input)
+			if !matched {
+				return errors.New("Incorrect device name. Device name must be alphanumeric with ., -, _")
+			}
+			return err
+		}
+
+		deviceName := StringInputWithValidation(
+			"Enter the name you want this device to have",
+			defaultName,
+			validate,
+		)
+
+		return deviceName
+	}
+
+	return existingName
+}
+
 // ———— CI SERVICE PROMPTS ———— //
 
 func ServiceIntegrationName() string {
@@ -181,6 +229,27 @@ func SelectCIService(items []SelectCIServiceItem) SelectCIServiceItem {
 	return items[index]
 }
 
+// ———— PROJECT PROMPTS ———— //
+
+func ConfirmProjectDestruction(projectName string) bool {
+	ui.Print(ui.RenderTemplate("confirm project destroy",
+		`{{ CAREFUL }} You are about to destroy the {{ .Project }} project.
+Secrets and files managed by Keystone WILL BE LOST. Make sure you have backups.
+
+Members of the project will no longer be able to get the latest updates,
+or share secrets between them.
+
+This is permanent, and cannot be undone.
+`, map[string]string{
+			"Project": projectName,
+		}))
+
+	result := StringInput("Type the project name to confirm its destruction", "")
+
+	// expect result to be the project name
+	return projectName == result
+}
+
 // ———— ORGANIZATION PROMPTS ————— //
 
 // Asks the usre to select from a list of organizations
@@ -235,12 +304,58 @@ func PasswordToDecrypt() string {
 	return StringInput("Password to decrypt backup", "")
 }
 
-func ConfirmDotKeystonDirRemoval() {
+func ConfirmDotKeystonDirRemoval() bool {
 	ui.Print(ui.RenderTemplate("confirm files rm",
 		`{{ CAREFUL }} You are about to remove the content of .keystone/ which contain all your local secrets and files.
 This will override the changes you and other members made since the backup.
 It will update other members secrets and files.`, map[string]string{}))
-	if !Confirm("Continue") {
-		os.Exit(0)
+	return Confirm("Continue")
+}
+
+// ——— FILES PROMPTS ———— //
+
+func ConfirmOverrideFileContents() bool {
+	return Confirm("Do you want to overrid the contents")
+}
+
+func ConfirmFileReset(forceYes bool) bool {
+	ui.Print(ui.RenderTemplate(
+		"careful reset",
+		`{{ CAREFUL }} {{ "Local changes will be lost" | yellow }}
+The content of the files you are resetting will be replaced by their cached content.`,
+		nil,
+	))
+
+	if forceYes {
+		return true
 	}
+
+	return Confirm("Continue")
+}
+
+func ConfirmFileRemove(filePath, environmentName string, forceYes bool) bool {
+	if forceYes {
+		return true
+	}
+
+	ui.Print(ui.RenderTemplate("confirm files rm",
+		`{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
+Its current content will be kept locally.
+Its content for other environments will be lost, it will no longer be gitignored.
+This is permanent, and cannot be undone.`, map[string]string{
+			"Path":        filePath,
+			"Environment": environmentName,
+		}))
+
+	return Confirm("Continue")
+}
+
+// ——— SECRETS PROMPTS ——— //
+
+func ConfirmOverrideSecretValue(forceYes bool) bool {
+	if forceYes {
+		return true
+	}
+
+	return Confirm("Do you want to overrid the value")
 }

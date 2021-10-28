@@ -18,6 +18,7 @@ var projectCmd = &cobra.Command{
 	Use:   "project",
 	Short: "Lists projects you are a member of",
 	Long:  `Lists projects you are a member of`,
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		c, err := client.NewKeystoneClient()

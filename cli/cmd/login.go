@@ -203,7 +203,8 @@ Waiting for you to login with your {{ .Service }} Account...`, struct {
 		sp.Stop()
 		exitIfErr(err)
 
-		deviceName := selectDeviceName()
+		existingName := config.GetDeviceName()
+		deviceName := prompts.DeviceName(existingName, skipPrompts)
 		viper.Set("device", deviceName)
 
 		currentAccount, accountIndex = config.FindAccount(c)

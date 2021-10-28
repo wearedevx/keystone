@@ -8,11 +8,11 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/wearedevx/keystone/api/internal/activitylog"
 	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	log "github.com/wearedevx/keystone/api/internal/utils/cloudlogger"
+	. "github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/jwt"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -153,7 +153,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		}
 
 		if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
-			if strings.Contains(err.Error(), "Incorrect device name") {
+			if errors.Is(err, ErrorBadDeviceName) {
 				msg = err.Error()
 				status = http.StatusConflict
 			} else {
@@ -166,7 +166,6 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 		log.User = user
 		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID)
-		fmt.Printf("payload.DeviceUID: %+v\n", payload.DeviceUID)
 
 		if err != nil {
 			msg = "Internal Server Error"

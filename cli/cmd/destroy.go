@@ -53,22 +53,7 @@ This is irreversible.
 
 		projectName := ctx.GetProjectName()
 
-		ui.Print(ui.RenderTemplate("confirm project destroy",
-			`{{ CAREFUL }} You are about to destroy the {{ .Project }} project.
-Secrets and files managed by Keystone WILL BE LOST. Make sure you have backups.
-
-Members of the project will no longer be able to get the latest updates,
-or share secrets between them.
-
-This is permanent, and cannot be undone.
-`, map[string]string{
-				"Project": projectName,
-			}))
-
-		result := prompts.StringInput("Type the project name to confirm its destruction", "")
-
-		// expect result to be the project name
-		if projectName != result {
+		if !prompts.ConfirmProjectDestruction(projectName) {
 			exit(kserrors.NameDoesNotMatch(nil))
 		}
 
