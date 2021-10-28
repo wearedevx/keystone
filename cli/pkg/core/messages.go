@@ -21,31 +21,105 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
+type ChangeType string
+
+const (
+	ChangeTypeSecretAdd    ChangeType = "secret"
+	ChangeTypeSecretChange            = "change"
+	ChangeTypeSecretDelete            = "delete"
+	ChangeTypeFile                    = "file"
+	// This one happens when environment version changed
+	// but there is no messages along with it
+	ChangeTypeVersion = "version"
+)
+
 type Change struct {
 	Name string
 	From string
 	To   string
-	Type string // secret || file
+	Type ChangeType
+}
+
+func (c Change) IsSecretAdd() bool {
+	return c.Type == ChangeTypeSecretAdd
+}
+
+func (c Change) IsSecretChange() bool {
+	return c.Type == ChangeTypeSecretChange
+}
+
+func (c Change) IsSecretDelete() bool {
+	return c.Type == ChangeTypeSecretDelete
+}
+
+func (c Change) IsFile() bool {
+	return c.Type == ChangeTypeFile
+}
+
+type Changes []Change
+
+func (changes Changes) IsSingleVersionChange() bool {
+	if len(changes) == 1 {
+		return changes[0].Type == ChangeTypeVersion
+	}
+
+	return false
+}
+
+func (changes Changes) IsEmpty() bool {
+	return len(changes) == 0
 }
 
 type ChangesByEnvironment struct {
-	Environments map[string][]Change
+	Environments map[string]Changes
+}
+
+/// Returns a list of all environments that have a different
+/// VersionID but no payload for the user.
+func (ce ChangesByEnvironment) ChangedEnvironmentsWithoutPayload() []string {
+	result := make([]string, 0)
+
+	for environmentName, changesList := range ce.Environments {
+		if changesList.IsSingleVersionChange() {
+			result = append(result, environmentName)
+		}
+	}
+
+	return result
 }
 
 /// Writes the contents of messages in the project's cache
 /// It will replace secrets value with the new ones,
 /// add new secrets and their values
 /// remove secrets that have been removed by other user
-func (ctx *Context) SaveMessages(MessageByEnvironments models.GetMessageByEnvironmentResponse) ChangesByEnvironment {
-	changes := ChangesByEnvironment{Environments: make(map[string][]Change)}
+func (ctx *Context) SaveMessages(
+	MessageByEnvironments models.GetMessageByEnvironmentResponse,
+) ChangesByEnvironment {
+	changes := ChangesByEnvironment{Environments: make(map[string]Changes)}
 	cachedLocalSecrets := ctx.ListSecretsFromCache()
 
 	for environmentName, environment := range MessageByEnvironments.Environments {
 		// ——— Preparation work ———
 		var PayloadContent = models.MessagePayload{}
 
-		// Skip the environment if there is no payload for it
+		// If the payload is empty, and the enviroment version has changed,
+		// signal the version change.
 		if len(environment.Message.Payload) == 0 {
+			// If the message is empty, but the versionID has changed,
+			//
+			environmentChanged := ctx.EnvironmentVersionHasChanged(
+				environment.Environment.Name,
+				environment.Environment.VersionID,
+			)
+
+			if environmentChanged {
+				changes.Environments[environmentName] = []Change{
+					{
+						Type: ChangeTypeVersion,
+					},
+				}
+			}
+
 			continue
 		}
 
@@ -145,7 +219,7 @@ func GetSecretsChanges(localSecrets []models.SecretVal, newSecrets []models.Secr
 						Name: secret.Label,
 						From: localSecret.Value,
 						To:   secret.Value,
-						Type: "secret",
+						Type: ChangeTypeSecretChange,
 					})
 				}
 			}
@@ -154,9 +228,8 @@ func GetSecretsChanges(localSecrets []models.SecretVal, newSecrets []models.Secr
 		if !found {
 			changes = append(changes, Change{
 				Name: secret.Label,
-				From: "",
 				To:   secret.Value,
-				Type: "secret",
+				Type: ChangeTypeSecretAdd,
 			})
 
 		}
@@ -175,8 +248,7 @@ func GetSecretsChanges(localSecrets []models.SecretVal, newSecrets []models.Secr
 			changes = append(changes, Change{
 				Name: localSecret.Label,
 				From: localSecret.Value,
-				To:   "",
-				Type: "secret",
+				Type: ChangeTypeSecretDelete,
 			})
 
 		}
@@ -239,7 +311,7 @@ func (ctx *Context) getFilesChanges(files []models.File, environmentName string)
 
 		if fileHasChanges {
 			changes = append(changes, Change{
-				Type: "file",
+				Type: ChangeTypeFile,
 				Name: file.Path,
 				To:   string(fileContent),
 			})

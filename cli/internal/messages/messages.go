@@ -3,7 +3,6 @@ package messages
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/apierrors"
@@ -41,14 +40,13 @@ func NewMessageService(ctx *core.Context) (service MessageService) {
 	return newMessageService(ctx, &ui.UiPrinter{})
 }
 
-func newMessageService(ctx *core.Context, Printer ui.Printer) (service MessageService) {
+func newMessageService(ctx *core.Context, _ ui.Printer) (service MessageService) {
 	client, ksErr := client.NewKeystoneClient()
 
 	service = &messageService{
-		err:     ksErr,
-		ctx:     ctx,
-		client:  client,
-		printer: Printer,
+		err:    ksErr,
+		ctx:    ctx,
+		client: client,
 	}
 
 	return service
@@ -81,7 +79,13 @@ func (s *messageService) GetMessages() core.ChangesByEnvironment {
 		return core.ChangesByEnvironment{}
 	}
 
-	s.printChanges(changes, messagesByEnvironment)
+	environmentsNeedingASend := changes.ChangedEnvironmentsWithoutPayload()
+	if len(environmentsNeedingASend) > 0 {
+		s.err = kserrors.EnvironmentsHaveChanged(
+			strings.Join(environmentsNeedingASend, ", "),
+			nil,
+		)
+	}
 
 	messagesIds := getMessagesIds(messagesByEnvironment)
 	s.DeleteMessages(messagesIds)
@@ -138,6 +142,8 @@ func (s *messageService) fetchNewMessages(result *models.GetMessageByEnvironment
 	projectID := s.ctx.GetProjectID()
 	*result, err = s.client.Messages().GetMessages(projectID)
 
+	sp.Stop()
+
 	if err != nil {
 		if errors.Is(err, auth.ErrorUnauthorized) {
 			s.err = kserrors.InvalidConnectionToken(err)
@@ -145,8 +151,6 @@ func (s *messageService) fetchNewMessages(result *models.GetMessageByEnvironment
 
 		return
 	}
-
-	sp.Stop()
 
 	s.err = s.decryptMessages(result)
 }
@@ -196,66 +200,7 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 	return nil
 }
 
-// printChanges displays changes for environments to the user
-func (s *messageService) printChanges(changes core.ChangesByEnvironment, messagesByEnvironments models.GetMessageByEnvironmentResponse) {
-	changedEnvironments := make([]string, 0)
-
-	var envList []string = []string{"dev", "staging", "prod"}
-
-	for _, environmentName := range envList {
-		environment, ok := messagesByEnvironments.Environments[environmentName]
-		if !ok {
-			continue
-		}
-
-		messageID := environment.Message.ID
-
-		if messageID != 0 {
-			// IF changes detected
-			if len(changes.Environments[environmentName]) > 0 {
-				s.printer.PrintStdErr("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
-
-				for _, change := range changes.Environments[environmentName] {
-					// No previous cotent => secret is new
-					if len(change.From) == 0 {
-						s.printer.PrintStdErr(ui.RenderTemplate("secret added", ` {{ "++" | green }} {{ .Secret }} : {{ .To }}`, map[string]string{
-							"Secret": change.Name,
-							"From":   change.From,
-							"To":     change.To,
-						}))
-					} else if len(change.To) == 0 {
-						s.printer.PrintStdErr(ui.RenderTemplate("secret deleted", ` {{ "--" | red }} {{ .Secret }} deleted.`, map[string]string{
-							"Secret": change.Name,
-						}))
-					} else {
-						s.printer.PrintStdErr("   " + change.Name + " : " + change.From + " ↦ " + change.To)
-					}
-
-				}
-			} else {
-				s.printer.PrintStdErr("Environment " + environmentName + " up to date ✔")
-			}
-
-			if err := s.ctx.Err(); err != nil {
-				s.err = err
-				return
-			}
-		} else {
-			environmentChanged := s.ctx.EnvironmentVersionHasChanged(environmentName, environment.Environment.VersionID)
-
-			if environmentChanged {
-				s.printer.PrintStdErr("Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯")
-				changedEnvironments = append(changedEnvironments, environmentName)
-			} else {
-				s.printer.PrintStdErr("Environment " + environmentName + " up to date ✔")
-			}
-		}
-	}
-
-	if len(changedEnvironments) > 0 {
-		s.err = kserrors.EnvironmentsHaveChanged(strings.Join(changedEnvironments, ", "), nil)
-	}
-}
+var envList []string = []string{"dev", "staging", "prod"}
 
 // SendEnvironments sends environments to all members of the project
 // The API providing the public keys, it should handle reading rights for

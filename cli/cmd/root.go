@@ -18,6 +18,7 @@ package cmd
 import (
 	"errors"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -45,6 +46,12 @@ var skipPrompts bool
 var ctx *core.Context
 
 var CWD string
+
+var envList = []string{
+	"dev",
+	"staging",
+	"prod",
+}
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
@@ -236,6 +243,10 @@ func fetchMessages(ms messages.MessageService) (core.ChangesByEnvironment, *kser
 		config.CheckExpiredTokenError(err)
 	}
 
+	if err == nil {
+		printChanges(changes)
+	}
+
 	return changes, err
 }
 
@@ -253,7 +264,7 @@ func shouldFetchMessages(ms messages.MessageService) core.ChangesByEnvironment {
 	if err != nil {
 		ui.PrintStdErr(
 			"WARNING: Could not get messages (%s)",
-			err.Error(),
+			err.Name(),
 		)
 	}
 
@@ -380,5 +391,54 @@ func exitIfErr(err error) {
 		if printError(err) {
 			os.Exit(1)
 		}
+	}
+}
+
+// TODO: move to the ui package
+// TODO: should handle a `quiet` setting ?
+// printChanges displays changes for environments to the user
+func printChanges(
+	changes core.ChangesByEnvironment,
+	// messagesByEnvironments models.GetMessageByEnvironmentResponse,
+) {
+	changedEnvironments := make([]string, 0)
+
+	for _, environmentName := range envList {
+		changesList, ok := changes.Environments[environmentName]
+		if !ok {
+			continue
+		}
+
+		if changesList.IsSingleVersionChange() {
+			ui.PrintStdErr("Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯")
+			changedEnvironments = append(changedEnvironments, environmentName)
+			continue
+		}
+
+		if !changesList.IsEmpty() {
+			ui.PrintStdErr("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
+
+			for _, change := range changesList {
+				// No previous cotent => secret is new
+				switch {
+				case change.IsSecretAdd():
+					ui.PrintStdErr(ui.RenderTemplate("secret added", ` {{ "++" | green }} {{ .Secret }} : {{ .To }}`, map[string]string{
+						"Secret": change.Name,
+						"From":   change.From,
+						"To":     change.To,
+					}))
+
+				case change.IsSecretDelete():
+					ui.PrintStdErr(ui.RenderTemplate("secret deleted", ` {{ "--" | red }} {{ .Secret }} deleted.`, map[string]string{
+						"Secret": change.Name,
+					}))
+
+				case change.IsSecretChange():
+					ui.PrintStdErr("   " + change.Name + " : " + change.From + " ↦ " + change.To)
+				}
+			}
+		}
+
+		ui.PrintStdErr("Environment " + environmentName + " up to date ✔")
 	}
 }
