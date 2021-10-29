@@ -35,7 +35,7 @@ Used without arguments, displays a table of secrets.`,
 		ctx.MustHaveEnvironment(currentEnvironment)
 		environments := ctx.ListEnvironments()
 
-		shouldFetchMessages(nil)
+		shouldFetchMessages()
 
 		secrets := ctx.ListSecrets()
 		secretsFromCache := ctx.ListSecretsFromCache()
@@ -109,21 +109,29 @@ func init() {
 	// secretsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func filterSecretsFromCache(secretsFromCache []core.Secret, secrets []core.Secret) []core.Secret {
+// Returns an array of secrets that are in the first list, an not in the second
+func filterSecretsFromCache(
+	secretsFromCache []core.Secret,
+	secrets []core.Secret,
+) []core.Secret {
 	secretsFromCacheToDisplay := make([]core.Secret, 0)
 
 	for _, secretFromCache := range secretsFromCache {
 		found := false
+
 		for _, secret := range secrets {
 			if secret.Name == secretFromCache.Name {
 				found = true
 			}
 		}
+
 		if !found {
 			secretFromCache.FromCache = true
-			secretsFromCacheToDisplay = append(secretsFromCacheToDisplay, secretFromCache)
+			secretsFromCacheToDisplay = append(
+				secretsFromCacheToDisplay,
+				secretFromCache,
+			)
 		}
-
 	}
 	return secretsFromCacheToDisplay
 }

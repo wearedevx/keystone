@@ -25,7 +25,6 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
-	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -72,7 +71,13 @@ ks secret add PORT`,
 
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		if checkSecretAlreadyInCache(secretName) {
+		if yes, values := checkSecretAlreadyInCache(secretName); yes {
+			// TODO: that printing part should be in the ui packag
+			ui.Print(`The secret already exist. Values are:`)
+			for env, value := range values {
+				ui.Print(`%s: %s`, env, value)
+			}
+
 			useCache = !prompts.ConfirmOverrideSecretValue(skipPrompts)
 		}
 
@@ -86,8 +91,7 @@ ks secret add PORT`,
 				ctx.AccessibleEnvironments,
 			)
 
-			ms := messages.NewMessageService(ctx)
-			changes := mustFetchMessages(ms)
+			changes, messageService := mustFetchMessages()
 			flag := core.S_REQUIRED
 
 			if addOptional {
@@ -103,7 +107,9 @@ ks secret add PORT`,
 				AddSecret(secretName, environmentValueMap, flag).
 				Err())
 
-			exitIfErr(ms.SendEnvironments(ctx.AccessibleEnvironments).Err())
+			exitIfErr(messageService.
+				SendEnvironments(ctx.AccessibleEnvironments).
+				Err())
 		} else {
 			var ksfile keystonefile.KeystoneFile
 			// Add new env key to keystone.yaml
@@ -181,7 +187,6 @@ Enter a values for {{ . }}:`, secretName))
 				}
 
 				environmentValueMap[environment.Name] = strings.Trim(string(stringResult), " ")
-
 			} else {
 				environmentValueMap[environment.Name] = prompts.StringInput(
 					environment.Name,
@@ -200,9 +205,11 @@ Enter a values for {{ . }}:`, secretName))
 	return environmentValueMap
 }
 
-func checkSecretAlreadyInCache(secretName string) (inCache bool) {
-	secrets := ctx.ListSecretsFromCache()
+// TODO: should be a core function
+func checkSecretAlreadyInCache(secretName string) (inCache bool, _ map[core.EnvironmentName]core.SecretValue) {
 	var found core.Secret
+	values := make(map[core.EnvironmentName]core.SecretValue)
+	secrets := ctx.ListSecretsFromCache()
 
 	for _, secret := range secrets {
 		if secret.Name == secretName {
@@ -213,19 +220,8 @@ func checkSecretAlreadyInCache(secretName string) (inCache bool) {
 	inCache = !reflect.ValueOf(found).IsZero()
 
 	if inCache {
-		ui.Print(`The secret already exist. Values are:`)
-		for env, value := range found.Values {
-			ui.Print(`%s: %s`, env, value)
-		}
+		values = found.Values
 	}
 
-	return inCache
-}
-
-func askToOverride() (doOverride bool) {
-	if !skipPrompts {
-		return prompts.Confirm("Do you want to override the values")
-	}
-
-	return false
+	return inCache, values
 }

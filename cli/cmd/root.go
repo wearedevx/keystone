@@ -16,22 +16,18 @@ limitations under the License.
 package cmd
 
 import (
-	"errors"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
-	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/ui"
 
-	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 )
 
@@ -80,16 +76,6 @@ func Execute() int {
 var noEnvironmentCommands []string
 var noProjectCommands []string
 var noLoginCommands []string
-
-func isIn(haystack []string, needle string) bool {
-	for _, hay := range haystack {
-		if hay == needle {
-			return true
-		}
-	}
-
-	return false
-}
 
 func findCurrentCommand(args []string) string {
 	for _, candidate := range args[1:] {
@@ -230,168 +216,6 @@ func init() {
 	noProjectCommands = noEnvironmentCommands
 
 	noLoginCommands = []string{"login", "source", "documentation", "version"}
-}
-
-func fetchMessages(ms messages.MessageService) (core.ChangesByEnvironment, *kserrors.Error) {
-	if ms == nil {
-		ms = messages.NewMessageService(ctx)
-	}
-	changes := ms.GetMessages()
-
-	err := ms.Err()
-	if err != nil {
-		config.CheckExpiredTokenError(err)
-	}
-
-	if err == nil {
-		printChanges(changes)
-	}
-
-	return changes, err
-}
-
-func mustFetchMessages(ms messages.MessageService) core.ChangesByEnvironment {
-	changes, err := fetchMessages(ms)
-
-	exitIfErr(err)
-
-	return changes
-}
-
-func shouldFetchMessages(ms messages.MessageService) core.ChangesByEnvironment {
-	changes, err := fetchMessages(ms)
-
-	if err != nil {
-		ui.PrintStdErr(
-			"WARNING: Could not get messages (%s)",
-			err.Name(),
-		)
-	}
-
-	return changes
-}
-
-// handleClientError handles most of the errors returned by the KeystoneClent
-// It prints the error, then exits the program when `err` is an error it can handle.
-// If the the error is too generic to be handled here, it returns without
-// printing or exiting the program, so that the caller can handle the error
-// its own way.
-func handleClientError(err error) {
-	switch {
-	case errors.Is(err, auth.ErrorUnauthorized):
-		config.Logout()
-		kserrors.InvalidConnectionToken(err).Print()
-
-		// Errors That should never happen
-	case errors.Is(err, apierrors.ErrorUnknown),
-		errors.Is(err, apierrors.ErrorFailedToGetPermission),
-		errors.Is(err, apierrors.ErrorFailedToWriteMessage),
-		errors.Is(err, apierrors.ErrorFailedToSetEnvironmentVersion),
-		errors.Is(err, apierrors.ErrorOrganizationWithoutAnAdmin):
-		kserrors.UnkownError(err).Print()
-
-		// General Errors
-	case errors.Is(err, apierrors.ErrorPermissionDenied):
-		kserrors.PermissionDenied(currentEnvironment, err).Print()
-
-		// These should be handled by the controller/service
-	case errors.Is(err, apierrors.ErrorBadRequest),
-		errors.Is(err, apierrors.ErrorEmptyPayload),
-		errors.Is(err, apierrors.ErrorFailedToCreateResource),
-		errors.Is(err, apierrors.ErrorFailedToGetResource),
-		errors.Is(err, apierrors.ErrorFailedToUpdateResource),
-		errors.Is(err, apierrors.ErrorFailedToDeleteResource),
-		errors.Is(err, apierrors.ErrorMemberAlreadyInProject),
-		errors.Is(err, apierrors.ErrorNotAMember):
-		return
-
-		// Subscription Errors
-	case errors.Is(err, apierrors.ErrorNeedsUpgrade):
-		kserrors.FeatureRequiresToUpgrade(err).Print()
-
-	case errors.Is(err, apierrors.ErrorAlreadySubscribed):
-		kserrors.AlreadySubscribed(err).Print()
-
-	case errors.Is(err, apierrors.ErrorFailedToStartCheckout):
-		kserrors.CannotUpgrade(err).Print()
-
-	case errors.Is(err, apierrors.ErrorFailedToGetManagementLink):
-		kserrors.ManagementInaccessible(err).Print()
-
-		// Device Errors
-	case errors.Is(err, apierrors.ErrorNoDevice):
-		kserrors.DeviceNotRegistered(err).Print()
-
-	case errors.Is(err, apierrors.ErrorBadDeviceName):
-		kserrors.BadDeviceName(err).Print()
-
-		// Organization Errors
-	case errors.Is(err, apierrors.ErrorBadOrganizationName):
-		kserrors.BadOrganizationName(err).Print()
-
-	case errors.Is(err, apierrors.ErrorOrganizationNameAlreadyTaken):
-		kserrors.OrganizationNameAlreadyTaken(err).Print()
-
-	case errors.Is(err, apierrors.ErrorNotOrganizationOwner):
-		kserrors.MustOwnTheOrganization(err).Print()
-
-		// Invite Errors
-	case errors.Is(err, apierrors.ErrorFailedToCreateMailContent),
-		errors.Is(err, apierrors.ErrorFailedToSendMail):
-		kserrors.CouldntSendInvite(err).Print()
-
-		// Role Errors
-	case errors.Is(err, apierrors.ErrorFailedToSetRole):
-		kserrors.CouldntSetRole(err).Print()
-
-		// Members Errors
-	case errors.Is(err, apierrors.ErrorFailedToAddMembers):
-		kserrors.CannotAddMembers(err).Print()
-
-	default:
-		ui.PrintError(err.Error())
-	}
-	os.Exit(1)
-}
-
-func exit(err error) {
-	if err == nil {
-		os.Exit(0)
-		return
-	}
-
-	printError(err)
-
-	os.Exit(1)
-}
-
-func printError(err error) bool {
-	if err == nil {
-		return false
-	}
-
-	if kserrors.IsKsError(err) {
-		kserr := kserrors.AsKsError(err)
-		if kserr == nil {
-			return false
-		}
-		kserr.Print()
-	} else {
-		ui.PrintError(err.Error())
-	}
-
-	return true
-}
-
-func exitIfErr(err error) {
-	if err == nil {
-		return
-	}
-	if err != nil {
-		if printError(err) {
-			os.Exit(1)
-		}
-	}
 }
 
 // TODO: move to the ui package

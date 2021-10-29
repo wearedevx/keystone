@@ -43,5 +43,4 @@ var deviceRevokeCmd = &cobra.Command{
 
 func init() {
 	deviceCmd.AddCommand(deviceRevokeCmd)
-
 }

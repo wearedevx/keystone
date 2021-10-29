@@ -21,7 +21,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -49,8 +48,7 @@ ks --env staging PORT 4545
 			exit(kserrors.SecretDoesNotExist(secretName, nil))
 		}
 
-		ms := messages.NewMessageService(ctx)
-		mustFetchMessages(ms)
+		_, messageService := mustFetchMessages()
 
 		ctx.SetSecret(currentEnvironment, secretName, secretValue)
 		exitIfErr(ctx.Err())
@@ -63,7 +61,7 @@ ks --env staging PORT 4545
 		}}
 
 		exitIfErr(
-			ms.SendEnvironments(environment).Err(),
+			messageService.SendEnvironments(environment).Err(),
 		)
 
 		ui.PrintSuccess(fmt.Sprintf("Secret '%s' updated for the '%s' environment", secretName, currentEnvironment))

@@ -22,7 +22,6 @@ import (
 
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -71,8 +70,7 @@ ks --env staging file set ./config.php
 			}
 		}
 
-		ms := messages.NewMessageService(ctx)
-		changes := mustFetchMessages(ms)
+		changes, messageService := mustFetchMessages()
 
 		err = ctx.
 			CompareNewFileWhithChanges(filePath, changes).
@@ -86,7 +84,7 @@ ks --env staging file set ./config.php
 			Err()
 		exitIfErr(err)
 
-		err = ms.SendEnvironments(ctx.AccessibleEnvironments).Err()
+		err = messageService.SendEnvironments(ctx.AccessibleEnvironments).Err()
 		exitIfErr(err)
 
 		ui.Print(ui.RenderTemplate("file set success", `

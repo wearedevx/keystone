@@ -17,11 +17,9 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
-	"github.com/wearedevx/keystone/cli/internal/messages"
 
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
@@ -53,17 +51,18 @@ other_value
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		if config.IsLoggedIn() {
-			ms := messages.NewEchoMessageService(ctx)
-			shouldFetchMessages(ms)
+			shouldFetchMessages()
 		}
 
 		env := ctx.ListSecrets()
-		ctx.FilesUseEnvironment(
-			currentEnvironment,
-			currentEnvironment,
-			core.CTX_KEEP_LOCAL_FILES,
-		)
-		exitIfErr(ctx.Err())
+
+		exitIfErr(ctx.
+			FilesUseEnvironment(
+				currentEnvironment,
+				currentEnvironment,
+				core.CTX_KEEP_LOCAL_FILES,
+			).
+			Err())
 
 		mustNotHaveAnyRequiredThingMissing(ctx)
 
@@ -102,24 +101,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// sourceCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-func mustNotHaveAnyRequiredThingMissing(ctx *core.Context) {
-	missingSecrets, hasMisssingSecrets := ctx.
-		MissingSecretsForEnvironment(currentEnvironment)
-
-	for _, ms := range missingSecrets {
-		fmt.Fprintf(os.Stderr, "Required Secret is missing: %s\n", ms)
-	}
-
-	missingFiles, hasMissingFiles := ctx.
-		MissingFilesForEnvironment(currentEnvironment)
-
-	for _, mf := range missingFiles {
-		fmt.Fprintf(os.Stderr, "Required file is missing or empty: %s\n", mf)
-	}
-
-	if hasMissingFiles || hasMisssingSecrets {
-		os.Exit(1)
-	}
 }

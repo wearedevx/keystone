@@ -49,7 +49,7 @@ Valid values for environment are: "dev", "staging", and "prod"`,
 	Run: func(_ *cobra.Command, args []string) {
 		var err *kserrors.Error
 
-		fetchMessages(nil)
+		fetchMessages()
 
 		locallyModified := ctx.LocallyModifiedFiles(currentEnvironment)
 		if len(locallyModified) != 0 {

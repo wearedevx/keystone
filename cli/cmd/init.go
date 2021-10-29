@@ -121,6 +121,7 @@ If you need help with anything:
 	},
 }
 
+// TODO: these belong to a ProjectService package, see internal/messages
 func createProject(
 	c client.KeystoneClient,
 	project *models.Project,

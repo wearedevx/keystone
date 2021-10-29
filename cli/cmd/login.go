@@ -17,10 +17,7 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"os"
-	"regexp"
 
 	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/spf13/cobra"
@@ -36,6 +33,7 @@ import (
 
 var serviceName string
 
+// TODO: move to ui package, and separate the exit part
 func ShowAlreadyLoggedInAndExit(account models.User) {
 	username := account.Username
 	if username == "" {
@@ -46,6 +44,7 @@ func ShowAlreadyLoggedInAndExit(account models.User) {
 	exit(nil)
 }
 
+// TODO: move to an internal package
 func LogIntoExisitingAccount(accountIndex int, currentAccount models.User, c auth.AuthService) {
 	config.SetCurrentAccount(accountIndex)
 
@@ -60,12 +59,14 @@ func LogIntoExisitingAccount(accountIndex int, currentAccount models.User, c aut
 	config.SetAuthToken(jwtToken)
 	config.Write()
 
+	// TODO: move to a ui package
 	ui.Print(ui.RenderTemplate("login ok", `
 {{ OK }} {{ . | bright_green }}
 `, fmt.Sprintf("Welcome back, %s", currentAccount.Username)))
 	exit(nil)
 }
 
+// TODO: move to an internal package
 func CreateAccountAndLogin(c auth.AuthService) {
 	keyPair, err := keys.New(keys.TypeEC)
 	exitIfErr(err)
@@ -94,6 +95,7 @@ func CreateAccountAndLogin(c auth.AuthService) {
 	config.SetAuthToken(jwtToken)
 	config.Write()
 
+	// TODO: move to a ui package
 	ui.Print(ui.RenderTemplate("login success", `
 {{ OK }} {{ . | bright_green }}
 
@@ -108,37 +110,7 @@ To invite collaborators:
 `, "Thank you for using Keystone!"))
 }
 
-func selectDeviceName() string {
-	existingName := config.GetDeviceName()
-
-	if existingName == "" {
-		defaultName := ""
-		if hostname, err := os.Hostname(); err == nil {
-			defaultName = hostname
-		}
-		if skipPrompts {
-			return defaultName
-		}
-
-		validate := func(input string) error {
-			matched, err := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, input)
-			if !matched {
-				return errors.New("Incorrect device name. Device name must be alphanumeric with ., -, _")
-			}
-			return err
-		}
-
-		deviceName := prompts.StringInputWithValidation(
-			"Enter the name you want this device to have",
-			defaultName,
-			validate,
-		)
-		return deviceName
-	}
-
-	return existingName
-}
-
+// TODO: move to ui/prompts
 func SelectAuthService(ctx context.Context) (auth.AuthService, error) {
 	if serviceName == "" {
 		_, serviceName = prompts.Select(

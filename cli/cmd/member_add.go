@@ -181,6 +181,7 @@ func getMemberRolesFromArgs(c client.KeystoneClient, roleName string, memberIDs 
 	return memberRoles
 }
 
+// TODO: to ui package
 func getMemberRolesFromPrompt(c client.KeystoneClient, memberIDs []string) map[string]models.Role {
 	mustMembersExist(c, memberIDs)
 	roles := mustGetRoles(c)
@@ -199,26 +200,7 @@ func getMemberRolesFromPrompt(c client.KeystoneClient, memberIDs []string) map[s
 	return memberRole
 }
 
-func mustMembersExist(c client.KeystoneClient, memberIDs []string) {
-	r, err := c.Users().CheckUsersExist(memberIDs)
-	if err != nil {
-		// The HTTP request must have failed
-		exit(kserrors.UnkownError(err))
-	}
-
-	if r.Error != "" {
-		exit(kserrors.UsersDontExist(r.Error, nil))
-	}
-}
-
-func mustGetRoles(c client.KeystoneClient) []models.Role {
-	projectID := ctx.GetProjectID()
-	roles, err := c.Roles().GetAll(projectID)
-	exitIfErr(err)
-
-	return roles
-}
-
+// TODO: to ui package
 func mapRoleNamesToRoles(memberRoleNames map[string]string, roles []models.Role) map[string]models.Role {
 	memberRoles := make(map[string]models.Role)
 
@@ -246,6 +228,7 @@ func mapRoleNamesToRoles(memberRoleNames map[string]string, roles []models.Role)
 	return memberRoles
 }
 
+// TODO: to ui package
 func warningFreeOrga(roles []models.Role) {
 	if len(roles) == 1 {
 		fmt.Fprintln(os.Stderr, "WARNING: You are not allowed to set role other than admin for free organization")

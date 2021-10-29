@@ -18,10 +18,9 @@ import (
 )
 
 type messageService struct {
-	err     *kserrors.Error
-	ctx     *core.Context
-	client  client.KeystoneClient
-	printer ui.Printer
+	err    *kserrors.Error
+	ctx    *core.Context
+	client client.KeystoneClient
 }
 
 type MessageService interface {
@@ -32,15 +31,7 @@ type MessageService interface {
 	DeleteMessages(messagesIds []uint) MessageService
 }
 
-func NewEchoMessageService(ctx *core.Context) (service MessageService) {
-	return newMessageService(ctx, &ui.EchoPrinter{})
-}
-
 func NewMessageService(ctx *core.Context) (service MessageService) {
-	return newMessageService(ctx, &ui.UiPrinter{})
-}
-
-func newMessageService(ctx *core.Context, _ ui.Printer) (service MessageService) {
 	client, ksErr := client.NewKeystoneClient()
 
 	service = &messageService{

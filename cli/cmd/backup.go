@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"encoding/base64"
-
-	"github.com/cossacklabs/themis/gothemis/cell"
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/archive"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
@@ -58,16 +55,4 @@ func init() {
 	RootCmd.AddCommand(backupCmd)
 	backupCmd.Flags().StringVarP(&password, "password", "p", "", "password to encrypt backup with")
 	backupCmd.Flags().StringVarP(&backupName, "name", "n", "", "name of the backup file")
-}
-
-func encryptBackup(backup []byte, password string) []byte {
-	data := base64.StdEncoding.EncodeToString(backup)
-
-	scell, err := cell.SealWithPassphrase(password)
-	exitIfErr(err)
-
-	encrypted, err := scell.Encrypt([]byte(data), nil)
-	exitIfErr(err)
-
-	return encrypted
 }

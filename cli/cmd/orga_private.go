@@ -45,6 +45,7 @@ func init() {
 	orgaCmd.AddCommand(privateCmd)
 }
 
+// TODO: This should be an API thing
 func getUserOwnedOrganization(c client.KeystoneClient, organizationName string) models.Organization {
 	organizations, _ := c.Organizations().GetAll()
 
@@ -57,6 +58,7 @@ func getUserOwnedOrganization(c client.KeystoneClient, organizationName string) 
 	}
 
 	if foundOrga.ID == 0 {
+		// TODO: This needs to be a proper error
 		ui.PrintError("You don't own an organization named %s", organizationName)
 		ui.Print("To see organizations you own, use : $ ks orga")
 		os.Exit(1)

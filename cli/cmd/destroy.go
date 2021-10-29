@@ -16,10 +16,7 @@ limitations under the License.
 package cmd
 
 import (
-	"errors"
-
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -75,26 +72,6 @@ You may need to remove entries from your .gitignore file`,
 			},
 		))
 	},
-}
-
-func mustBeAdmin(projectService *client.Project) {
-	members, err := projectService.GetAllMembers()
-	if err != nil {
-		exit(kserrors.UnkownError(err))
-	}
-
-	account, _ := config.GetCurrentAccount()
-
-	for _, member := range members {
-		if member.User.UserID == account.UserID {
-			if member.Role.Name == "admin" {
-				return
-			}
-		}
-	}
-
-	// TODO: proper error
-	exit(kserrors.UnkownError(errors.New("Not allowed")))
 }
 
 func init() {

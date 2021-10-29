@@ -105,7 +105,7 @@ $ ks file -qf available
 	Args: cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
 		ctx.MustHaveEnvironment(currentEnvironment)
-		shouldFetchMessages(nil)
+		shouldFetchMessages()
 
 		files := ctx.ListFiles()
 		filesFromCache := ctx.ListFilesFromCache()

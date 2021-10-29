@@ -22,7 +22,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"strings"
 
 	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
@@ -30,7 +29,6 @@ import (
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
-	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
@@ -102,8 +100,7 @@ ks file add -s ./credentials.json`,
 				}
 			}
 
-			ms := messages.NewMessageService(ctx)
-			changes := mustFetchMessages(ms)
+			changes, messageService := mustFetchMessages()
 
 			exitIfErr(
 				ctx.CompareNewFileWhithChanges(filePath, changes).Err(),
@@ -127,7 +124,9 @@ ks file add -s ./credentials.json`,
 				).Err(),
 			)
 
-			exitIfErr(ms.SendEnvironments(ctx.AccessibleEnvironments).Err())
+			exitIfErr(
+				messageService.SendEnvironments(ctx.AccessibleEnvironments).Err(),
+			)
 		} else {
 			// just add file to keystone.yaml and keep old content
 
@@ -159,6 +158,7 @@ func init() {
 	filesCmd.AddCommand(filesAddCmd)
 }
 
+// TODO: determine which package this actually belongs to and move it there
 func askContentOfFile(
 	environments []models.Environment,
 	filePath string,
@@ -229,22 +229,4 @@ func askToOverrideFilesInCache(fileName string) bool {
 		return !override
 	}
 	return false
-}
-
-// TODO: move this to utils file
-func cleanPathArgument(
-	filePathArg string,
-	wd string,
-) (filePath string, err error) {
-	filePathInCwd := filepath.Join(CWD, filePathArg)
-	filePathClean := filepath.Clean(filePathInCwd)
-
-	if !strings.HasPrefix(filePathClean, wd) {
-		return "", fmt.Errorf("File %s not in project", filePath)
-	}
-
-	filePath = strings.TrimPrefix(filePathClean, ctx.Wd)
-	filePath = strings.TrimPrefix(filePath, "/")
-
-	return filePath, nil
 }

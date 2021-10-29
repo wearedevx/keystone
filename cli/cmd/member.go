@@ -78,6 +78,7 @@ func getSortedRoles(m map[models.Role][]models.ProjectMember) []models.Role {
 	return s.Sort()
 }
 
+// TODO: move the two following methodes to the ui packag
 func groupMembersByRole(pmembers []models.ProjectMember) map[models.Role][]models.ProjectMember {
 	result := make(map[models.Role][]models.ProjectMember)
 

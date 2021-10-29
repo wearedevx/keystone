@@ -44,7 +44,7 @@ ks file reset ./config.js
 ks file reset
 `,
 	Run: func(_ *cobra.Command, args []string) {
-		mustFetchMessages(nil)
+		mustFetchMessages()
 
 		filesToReset := args
 		if len(filesToReset) == 0 {

@@ -31,7 +31,7 @@ ks ci send --env prod
 		var environment models.Environment
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		fetchMessages(nil)
+		fetchMessages()
 
 		for _, accessibleEnvironment := range ctx.AccessibleEnvironments {
 			if accessibleEnvironment.Name == currentEnvironment {
@@ -83,29 +83,4 @@ func init() {
 	ciCmd.AddCommand(ciSendCmd)
 
 	ciSendCmd.Flags().StringVar(&serviceName, "with", "", "Ci service name.")
-}
-
-// TODO: move these in a utils file ?
-func mustNotHaveMissingSecrets(environment models.Environment) {
-	missing, hasMissing := ctx.MissingSecretsForEnvironment(
-		environment.Name,
-	)
-
-	if hasMissing {
-		exit(
-			kserrors.RequiredSecretsAreMissing(missing, environment.Name, nil),
-		)
-	}
-}
-
-func mustNotHaveMissingFiles(environment models.Environment) {
-	missing, hasMissing := ctx.MissingFilesForEnvironment(
-		environment.Name,
-	)
-
-	if hasMissing {
-		exit(
-			kserrors.RequiredFilesAreMissing(missing, environment.Name, nil),
-		)
-	}
 }

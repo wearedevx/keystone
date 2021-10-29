@@ -20,7 +20,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
@@ -44,8 +43,6 @@ Files can be used again using "file add" command.
 	Example: `ks file rm config/old-test-config.php`,
 	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var err error
-
 		filePath := args[0]
 
 		if !utils.FileExists(filePath) {
@@ -58,15 +55,21 @@ Files can be used again using "file add" command.
 			ctx.CurrentEnvironment(),
 			skipPrompts || !purgeFile,
 		) {
-			ms := messages.NewMessageService(ctx)
-			mustFetchMessages(ms)
+			_, messageService := mustFetchMessages()
 
-			ctx.RemoveFile(filePath, forcePrompts, purgeFile, ctx.AccessibleEnvironments)
-			exitIfErr(err)
+			exitIfErr(ctx.
+				RemoveFile(
+					filePath,
+					forcePrompts,
+					purgeFile,
+					ctx.AccessibleEnvironments,
+				).
+				Err())
 
 			if purgeFile {
-				err = ms.SendEnvironments(ctx.AccessibleEnvironments).Err()
-				exitIfErr(err)
+				exitIfErr(messageService.
+					SendEnvironments(ctx.AccessibleEnvironments).
+					Err())
 			} else {
 				ui.Print("The file is kept in your keystone project for all the environments, in case you need it again.")
 				ui.Print("If you want to remove it from your device, use --purge")

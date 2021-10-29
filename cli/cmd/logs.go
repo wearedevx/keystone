@@ -68,6 +68,7 @@ ks log -a WriteMessages -l 1 -e prod`,
 	},
 }
 
+// TODO: the four followin methods should be moved to the ui packag
 func printAllTheLogs(logs []models.ActivityLogLite) {
 	if len(logs) == 0 {
 		ui.PrintStdErr("No logs to display")
