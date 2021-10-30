@@ -8,7 +8,8 @@ ks file rm --skip test.txt
 stderr 'Environment dev up to date ✔'
 stderr 'Environment staging up to date ✔'
 stderr 'Environment prod up to date ✔'
-stdout 'The file is kept in your keystone project for all the environments, in case you need it again.'
+stdout 'The file is kept in your keystone project for all the environments,'
+stdout 'in case you need it again.'
 stdout 'If you want to remove it from your device, use --purge'
 
 exists test.txt

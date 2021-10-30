@@ -17,14 +17,13 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"path"
 
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // setCmd represents the set command
@@ -87,11 +86,7 @@ ks --env staging file set ./config.php
 		err = messageService.SendEnvironments(ctx.AccessibleEnvironments).Err()
 		exitIfErr(err)
 
-		ui.Print(ui.RenderTemplate("file set success", `
-{{ OK }} {{ .Title | green }}
-`, map[string]string{
-			"Title": fmt.Sprintf("Modified '%s'", filePath),
-		}))
+		display.FileSetSuccess(filePath)
 	},
 }
 

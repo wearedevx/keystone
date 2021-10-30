@@ -28,6 +28,70 @@ const (
 	F_OPTIONAL
 )
 
+type FileDescriptor struct {
+	Required  bool
+	Available bool
+	Modified  bool
+	Path      string
+}
+
+func (ctx *Context) fileKeyToFileDescriptor(
+	file FileKey,
+	environmentName string,
+	asAvailable bool,
+) FileDescriptor {
+	return FileDescriptor{
+		Path:      file.Path,
+		Required:  file.Strict,
+		Modified:  ctx.IsFileModified(file.Path, environmentName),
+		Available: asAvailable,
+	}
+}
+
+/// Returns a list of display friendly FileDescriptors,
+/// for every file that exist in the project, both in the `keystone.yaml` file
+/// and the `.keystone` cache folder.
+func (ctx *Context) ListAllFiles(environmentName string) []FileDescriptor {
+	result := make([]FileDescriptor, 0)
+
+	if ctx.err != nil {
+		return result
+	}
+
+	filesInKeystoneFile := ctx.ListFiles()
+	filesInCache := ctx.ListFilesFromCache()
+
+	for _, file := range filesInKeystoneFile {
+		result = append(
+			result,
+			ctx.fileKeyToFileDescriptor(file, environmentName, false),
+		)
+	}
+
+	for _, cachedFile := range filesInCache {
+		used := false
+
+		for _, file := range filesInKeystoneFile {
+			fileAbs := filepath.Clean(filepath.Join(ctx.Wd, file.Path))
+			cacheFileAbs := filepath.Clean(filepath.Join(ctx.Wd, cachedFile.Path))
+
+			if fileAbs == cacheFileAbs {
+				used = true
+				break
+			}
+		}
+
+		if !used {
+			result = append(
+				result,
+				ctx.fileKeyToFileDescriptor(cachedFile, environmentName, true),
+			)
+		}
+	}
+
+	return result
+}
+
 func (ctx *Context) ListFiles() []FileKey {
 	if ctx.Err() != nil {
 		return make([]FileKey, 0)

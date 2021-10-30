@@ -16,11 +16,8 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
-
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // envCmd represents the env command
@@ -44,43 +41,17 @@ $ ks env staging
 `,
 	Args: cobra.NoArgs,
 	Run: func(_ *cobra.Command, args []string) {
-		var err *errors.Error
-
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		// If no argument is given show a list of environments
-		if len(args) == 0 {
-			listEnv(ctx, err)
-			return
+		if quietOutput {
+			display.Environment(currentEnvironment)
+		} else {
+			environments := ctx.ListEnvironments()
+			exitIfErr(ctx.Err())
+
+			display.EnvironmentList(environments, currentEnvironment)
 		}
-
 	},
-}
-
-type EnvListViewModel struct {
-	Current      string
-	Environments []string
-}
-
-// Prints an environment list
-// The current environment is marked with an asterisk
-// TODO: move this to the ui package
-func listEnv(ctx *core.Context, _ *errors.Error) {
-	if quietOutput {
-		ui.Print(currentEnvironment)
-		return
-	}
-
-	environments := ctx.ListEnvironments()
-	exitIfErr(ctx.Err())
-
-	template := `{{ range  .Environments }}
-{{ if eq . $.Current }} {{ "*" | blue }} {{ . | yellow }} {{ else }}   {{ . }} {{ end }} {{ end }}`
-
-	ui.Print(ui.RenderTemplate("list env", template, EnvListViewModel{
-		Current:      currentEnvironment,
-		Environments: environments,
-	}))
 }
 
 func init() {

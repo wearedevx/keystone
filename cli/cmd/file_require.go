@@ -18,7 +18,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // requireCmd represents the require command
@@ -41,17 +41,11 @@ Additionally, ` + "`" + `ks ci send` + "`" + ` will fail if a required file is e
 			exit(kserrors.FileDoesNotExist(fileName, nil))
 		}
 
-		ctx.MarkFileRequired(fileName, true)
-		exitIfErr(ctx.Err())
+		exitIfErr(
+			ctx.MarkFileRequired(fileName, true).Err(),
+		)
 
-		template := `File {{ .FilePath }} is now required.
-If you have setup a CI service, don’t forget to run:
-  $ ks ci send
-		`
-
-		ui.Print(ui.RenderTemplate("set file required", template, struct{ FilePath string }{
-			FilePath: fileName,
-		}))
+		display.FileIsNowRequired(fileName)
 	},
 }
 

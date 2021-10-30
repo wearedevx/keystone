@@ -8,6 +8,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -73,8 +74,7 @@ ks ci send --env prod
 			}
 			exitIfErr(err)
 
-			// TODO: Printing should be done by the ui, or ui/prompts packages
-			ciService.PrintSuccess(currentEnvironment)
+			display.CiSecretSent(ciService.Name(), currentEnvironment)
 		}
 	},
 }

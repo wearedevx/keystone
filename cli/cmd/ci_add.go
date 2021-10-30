@@ -20,7 +20,6 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -54,7 +53,7 @@ Once you have configured a new CI service, you can send it secrets using:
 			exit(kserrors.CouldNotAddService(serviceName, err))
 		}
 
-		ui.PrintSuccess("CI service added successfully")
+		display.CiAdded()
 	},
 }
 

@@ -22,11 +22,12 @@ const (
 var availableServices map[CiServiceType]string
 
 var (
-	ErrorMissinCiInformation error = errors.New("missing CI information")
-	ErrorNoCIServiceWithName       = errors.New("no ci service with that name")
-	ErrorUnknownServiceType        = errors.New("unknown service type")
-	ErrorInvalidServiceType        = errors.New("invalid service type")
-	ErrorNoCIServices              = errors.New("no ci services")
+	ErrorMissinCiInformation     error = errors.New("missing CI information")
+	ErrorNoCIServiceWithName           = errors.New("no ci service with that name")
+	ErrorUnknownServiceType            = errors.New("unknown service type")
+	ErrorInvalidServiceType            = errors.New("invalid service type")
+	ErrorNoCIServices                  = errors.New("no ci services")
+	ErrorNoSecretsForEnvironment       = errors.New("no secrets for environment")
 )
 
 type CiService interface {
@@ -39,7 +40,6 @@ type CiService interface {
 	CleanSecret(environment string) CiService
 	CheckSetup() CiService
 	Error() error
-	PrintSuccess(string)
 }
 
 func init() {

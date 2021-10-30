@@ -19,7 +19,7 @@ import (
 	"path"
 
 	"github.com/wearedevx/keystone/cli/internal/utils"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 
 	"github.com/spf13/cobra"
@@ -56,11 +56,14 @@ ks file reset
 		if prompts.ConfirmFileReset(fileResetYes) {
 			for _, file := range filesToReset {
 				if !ctx.HasFile(file) {
-					ui.Print("File '" + file + "' is not managed by Keystone, ignoring")
+					display.FileNotManaged(file)
 					continue
 				}
 
-				cachedFilePath := path.Join(ctx.CachedEnvironmentFilesPath(currentEnvironment), file)
+				cachedFilePath := path.Join(
+					ctx.CachedEnvironmentFilesPath(currentEnvironment),
+					file,
+				)
 				filePath := path.Join(ctx.Wd, file)
 
 				err := utils.CopyFile(cachedFilePath, filePath)

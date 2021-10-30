@@ -16,12 +16,10 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 func pathList(files []keystonefile.FileKey) []string {
@@ -47,8 +45,6 @@ Valid values for environment are: "dev", "staging", and "prod"`,
 	Example: `ks env switch prod`,
 	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var err *kserrors.Error
-
 		fetchMessages()
 
 		locallyModified := ctx.LocallyModifiedFiles(currentEnvironment)
@@ -63,22 +59,13 @@ Valid values for environment are: "dev", "staging", and "prod"`,
 		}
 
 		// Set the current environment
-		envName := args[0]
-		err = ctx.
-			MustHaveAccessToEnvironment(envName).
-			SetCurrent(envName).
-			Err()
-		exitIfErr(err)
+		environmentName := args[0]
+		exitIfErr(ctx.
+			MustHaveAccessToEnvironment(environmentName).
+			SetCurrent(environmentName).
+			Err())
 
-		ui.Print(ui.RenderTemplate("using env", `
-{{ OK }} {{ .Message | bright_green }}
-
-To load its variables:
-  $ eval "$(ks source)"
-`, map[string]string{
-			"Message": fmt.Sprintf("Using the '%s' environment", envName),
-			"EnvName": envName,
-		}))
+		display.EnvironmentUsing(environmentName)
 	},
 }
 

@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -63,14 +63,7 @@ This is irreversible.
 			exit(kserrors.CouldNotRemoveLocalFiles(err))
 		}
 
-		ui.Print(ui.RenderTemplate("deletion ok",
-			`{{ OK }} The project {{ .Project }} has successfully been destroyed.
-Secrets and files are no longer accessible.
-You may need to remove entries from your .gitignore file`,
-			map[string]string{
-				"Project": projectName,
-			},
-		))
+		display.DeletionSuccess(projectName)
 	},
 }
 

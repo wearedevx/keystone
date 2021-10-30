@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -31,7 +30,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -67,6 +66,7 @@ ks file add -s ./credentials.json`,
 		environmentFileMap := map[string][]byte{}
 
 		useOldFile := askToOverrideFilesInCache(filePath)
+
 		if !useOldFile {
 			absPath := filepath.Join(ctx.Wd, filePath)
 
@@ -144,13 +144,7 @@ ks file add -s ./credentials.json`,
 			}
 		}
 
-		ui.Print(ui.RenderTemplate("file add success", `
-{{ OK }} {{ .Title | green }}
-The file has been added to {{ .NumberEnvironments }} environment(s).
-It has also been gitignored.`, map[string]string{
-			"Title":              fmt.Sprintf("Added '%s'", filePath),
-			"NumberEnvironments": fmt.Sprintf("%d", len(environments)),
-		}))
+		display.FileAddSuccess(filePath, len(environments))
 	},
 }
 
@@ -169,11 +163,11 @@ func askContentOfFile(
 
 	for _, environment := range environments {
 		if environment.Name != currentEnvironment {
-			ui.Print(fmt.Sprintf("Enter content for file `%s` for the '%s' environment (Press any key to continue)", filePath, environment.Name))
+			display.FileAskForFileContentForEnvironment(filePath, environment.Name)
+
 			_, _, err := keyboard.GetSingleKey()
 			if err != nil {
-				errmsg := fmt.Sprintf("Failed to read user input (%s)", err.Error())
-				println(errmsg)
+				display.FileFailUserInput(err)
 				os.Exit(1)
 				return
 			}
@@ -185,8 +179,7 @@ func askContentOfFile(
 			)
 
 			if err != nil {
-				errmsg := fmt.Sprintf("Failed to get content from editor (%s)", err.Error())
-				println(errmsg)
+				display.FileFailedGetContentFromEditor(err)
 				os.Exit(1)
 				return
 			}
@@ -196,7 +189,7 @@ func askContentOfFile(
 	}
 }
 
-// TODO: Move this to the ui package
+// TODO: determine which package this actually belongs to and move it there
 func askToOverrideFilesInCache(fileName string) bool {
 	files := ctx.ListFilesFromCache()
 	var found keystonefile.FileKey
@@ -206,19 +199,11 @@ func askToOverrideFilesInCache(fileName string) bool {
 		}
 	}
 	if !reflect.ValueOf(found).IsZero() {
-		ui.Print(`The file already exist but is not used.`)
-		for _, env := range ctx.AccessibleEnvironments {
-			content, err := ctx.GetFileContents(fileName, env.Name)
-
-			ui.Print("\n")
-			ui.Print("------------------" + env.Name + "------------------")
-			ui.Print("\n")
-			if err != nil {
-				ui.Print("File not found for this environment")
-			}
-
-			ui.Print(string(content))
-		}
+		display.FileContentsForEnvironments(
+			fileName,
+			ctx.AccessibleEnvironments,
+			ctx.GetFileContents,
+		)
 
 		override := false
 

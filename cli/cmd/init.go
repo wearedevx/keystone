@@ -16,6 +16,7 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 
 	"github.com/spf13/cobra"
@@ -102,22 +103,7 @@ Created files and directories:
 			ctx.Init(project).Err(),
 		)
 
-		ui.Print(ui.RenderTemplate("Init Success", `
-{{ .Message | box | bright_green | indent 2 }}
-
-{{ .Text | bright_black | indent 2 }}`, map[string]string{
-			"Message": "All done!",
-			"Text": `You can start adding environment variable with:
-  $ ks secret add VARIABLE value
-
-Load them with:
-  $ eval $(ks source)
-
-If you need help with anything:
-  $ ks help [command]
-
-`,
-		}))
+		display.ProjectInitSuccess()
 	},
 }
 
@@ -184,6 +170,7 @@ func getProject(
 func addOrganizationToProject(c client.KeystoneClient, project *models.Project) uint {
 	organizations, err := c.Organizations().GetAll()
 	if err != nil {
+		// TODO: there should be proper error here
 		ui.PrintError("Error getting organizations: ", err.Error())
 		os.Exit(1)
 	}
@@ -199,6 +186,7 @@ func addOrganizationToProject(c client.KeystoneClient, project *models.Project) 
 			}
 		}
 		if orga.ID == 0 {
+			// TODO: there should be proper error here
 			ui.PrintError("Organization does not exist")
 			os.Exit(1)
 		}
@@ -210,5 +198,11 @@ func addOrganizationToProject(c client.KeystoneClient, project *models.Project) 
 func init() {
 	RootCmd.AddCommand(initCmd)
 
-	initCmd.Flags().StringVarP(&organizationName, "orga", "o", "", "identity provider. Either github or gitlab")
+	initCmd.Flags().StringVarP(
+		&organizationName,
+		"orga",
+		"o",
+		"",
+		"identity provider. Either github or gitlab",
+	)
 }

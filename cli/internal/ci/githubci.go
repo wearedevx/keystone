@@ -200,7 +200,11 @@ func (g *gitHubCiService) CleanSecret(environment string) CiService {
 	)
 
 	if err != nil {
-		g.err = err
+		if strings.Contains(err.Error(), "404") {
+			g.err = ErrorNoSecretsForEnvironment
+		} else {
+			g.err = err
+		}
 	}
 
 	return g
@@ -361,9 +365,4 @@ func (g *gitHubCiService) sliceMessageInParts(message string) ([]string, error) 
 	slots[4] = message[slotSize*4 : slotSize*5]
 
 	return slots, err
-}
-
-func (g *gitHubCiService) PrintSuccess(environment string) {
-	ui.PrintSuccess(fmt.Sprintf(`Secrets successfully sent to %s CI service, environment %s.
-See https://github.com/wearedevx/keystone-action to use them.`, g.name, environment))
 }

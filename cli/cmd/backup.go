@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/archive"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -47,7 +47,7 @@ to prevent losing them all if anything were to happen to your device.`,
 			)
 		}
 
-		ui.PrintSuccess("Backup created : %s", backupName)
+		display.BackupCreated(backupName)
 	},
 }
 

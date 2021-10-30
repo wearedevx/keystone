@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -54,7 +54,7 @@ ks ci rm my-github-ci-service
 			}
 		}
 
-		ui.PrintSuccess("CI service '%s' successfully removed", s.Name)
+		display.CiServiceRemoved(s.Name)
 	},
 }
 

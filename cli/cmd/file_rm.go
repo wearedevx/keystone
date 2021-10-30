@@ -21,7 +21,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/utils"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -71,12 +71,10 @@ Files can be used again using "file add" command.
 					SendEnvironments(ctx.AccessibleEnvironments).
 					Err())
 			} else {
-				ui.Print("The file is kept in your keystone project for all the environments, in case you need it again.")
-				ui.Print("If you want to remove it from your device, use --purge")
-
+				display.FileKept()
 			}
 
-			ui.PrintSuccess("%s has been removed from the secret files.", filePath)
+			display.FileRemovedSuccess(filePath)
 		}
 
 	},
