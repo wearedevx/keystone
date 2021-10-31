@@ -54,7 +54,6 @@ Gives you a link to update your payment method or cancel your plan.
 				},
 			),
 		)
-
 	},
 }
 

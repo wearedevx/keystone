@@ -13,13 +13,13 @@ import (
 )
 
 func GetOrganizations(
-	params router.Params,
+	_ router.Params,
 	_ io.ReadCloser,
 	Repo repo.IRepo,
 	user models.User,
 ) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
-	var result = models.GetOrganizationsResponse{
+	result := models.GetOrganizationsResponse{
 		Organizations: []models.Organization{},
 	}
 
@@ -41,7 +41,7 @@ func GetOrganizations(
 }
 
 func PostOrganization(
-	params router.Params,
+	_ router.Params,
 	body io.ReadCloser,
 	Repo repo.IRepo,
 	user models.User,
@@ -81,7 +81,7 @@ done:
 }
 
 func UpdateOrganization(
-	params router.Params,
+	_ router.Params,
 	body io.ReadCloser,
 	Repo repo.IRepo,
 	user models.User,
@@ -132,7 +132,7 @@ done:
 
 func GetOrganizationProjects(
 	params router.Params,
-	body io.ReadCloser,
+	_ io.ReadCloser,
 	Repo repo.IRepo,
 	user models.User,
 ) (_ router.Serde, status int, err error) {
@@ -142,9 +142,9 @@ func GetOrganizationProjects(
 		UserID: &user.ID,
 	}
 
-	var orgaID = params.Get("orgaID").(string)
+	orgaID := params.Get("orgaID").(string)
 
-	var result = models.GetProjectsResponse{
+	result := models.GetProjectsResponse{
 		Projects: []models.Project{},
 	}
 
@@ -192,16 +192,21 @@ done:
 	return &result, status, log.SetError(err)
 }
 
-func GetOrganizationMembers(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func GetOrganizationMembers(
+	params router.Params,
+	_ io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 
 	log := models.ActivityLog{
 		UserID: &user.ID,
 	}
 
-	var orgaID = params.Get("orgaID").(string)
+	orgaID := params.Get("orgaID").(string)
 
-	var result = models.GetMembersResponse{
+	result := models.GetMembersResponse{
 		Members: []models.ProjectMember{},
 	}
 

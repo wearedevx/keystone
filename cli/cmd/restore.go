@@ -19,7 +19,7 @@ var restoreCmd = &cobra.Command{
 	Long: `Restores secrets and files from keystone created backup.
 This will override all the data you have stored locally.`,
 	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if len(ctx.AccessibleEnvironments) < 3 {
 			exit(kserrors.RestoreDenied(nil))
 		}

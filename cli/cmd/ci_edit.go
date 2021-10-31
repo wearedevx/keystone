@@ -60,5 +60,4 @@ ks ci edit my-gitub-ci-service`,
 
 func init() {
 	ciCmd.AddCommand(setupCmd)
-
 }

@@ -25,10 +25,12 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
-var logFilterAction string
-var logFilterEnvironment string
-var logFilterUser string
-var logLimit uint64
+var (
+	logFilterAction      string
+	logFilterEnvironment string
+	logFilterUser        string
+	logLimit             uint64
+)
 
 // logsCmd represents the logs command
 var logsCmd = &cobra.Command{
@@ -121,10 +123,13 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// logsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	logsCmd.Flags().StringVarP(&logFilterAction, "action", "a", "", "Comma separated list of actions to display")
-	logsCmd.Flags().StringVarP(&logFilterEnvironment, "environment", "e", "", "Comma separated list of environments to display")
-	logsCmd.Flags().StringVarP(&logFilterUser, "user", "u", "", "Comma separated list of users to display")
+	logsCmd.Flags().
+		StringVarP(&logFilterAction, "action", "a", "", "Comma separated list of actions to display")
+	logsCmd.Flags().
+		StringVarP(&logFilterEnvironment, "environment", "e", "", "Comma separated list of environments to display")
+	logsCmd.Flags().
+		StringVarP(&logFilterUser, "user", "u", "", "Comma separated list of users to display")
 
-	logsCmd.Flags().Uint64VarP(&logLimit, "limit", "l", 200, "Maximum number of logs to display")
-
+	logsCmd.Flags().
+		Uint64VarP(&logLimit, "limit", "l", 200, "Maximum number of logs to display")
 }

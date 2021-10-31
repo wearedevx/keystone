@@ -13,12 +13,15 @@ import (
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	. "github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui"
 )
 
 var configFilePath string
 
-func castAccount(rawAccount map[interface{}]interface{}, account *map[string]string) {
+func castAccount(
+	rawAccount map[interface{}]interface{},
+	account *map[string]string,
+) {
 	*account = make(map[string]string)
 
 	for k, v := range rawAccount {
@@ -32,7 +35,7 @@ func Write() {
 	utils.CreateFileIfNotExists(configFilePath, "")
 
 	if err := viper.WriteConfigAs(configFilePath); err != nil {
-		Print(RenderTemplate("config write error", `
+		ui.Print(ui.RenderTemplate("config write error", `
 {{ ERROR }} {{ . | red }}
 
 You have been successfully logged in, but the configuration file could not be written
@@ -58,7 +61,8 @@ func GetAllAccounts() []map[string]string {
 	rawAccounts := viper.Get("accounts")
 	ty := reflect.TypeOf(rawAccounts).String()
 
-	if ty == "[]interface {}" {
+	switch ty {
+	case "[]interface {}":
 		a := rawAccounts.([]interface{})
 		accounts := make([]map[string]string, len(a))
 
@@ -68,7 +72,8 @@ func GetAllAccounts() []map[string]string {
 		}
 
 		return accounts
-	} else if ty == "[]map[string]string" {
+
+	case "[]map[string]string":
 		accounts := rawAccounts.([]map[string]string)
 
 		return accounts
@@ -87,7 +92,8 @@ func GetCurrentAccount() (user models.User, index int) {
 	accounts := GetAllAccounts()
 
 	if viper.IsSet("current") {
-		if index = viper.Get("current").(int); index >= 0 && index < len(accounts) {
+		if index = viper.Get("current").(int); index >= 0 &&
+			index < len(accounts) {
 			user = userFromAccount(accounts[index])
 		}
 	}
@@ -97,7 +103,10 @@ func GetCurrentAccount() (user models.User, index int) {
 
 func userFromAccount(account map[string]string) (user models.User) {
 	devices := make([]models.Device, 0)
-	devices = append(devices, models.Device{PublicKey: []byte(account["public_keys"])})
+	devices = append(
+		devices,
+		models.Device{PublicKey: []byte(account["public_keys"])},
+	)
 	user.AccountType = models.AccountType(account["account_type"])
 	user.Email = account["email"]
 	user.ExtID = account["ext_id"]
@@ -198,12 +207,11 @@ func createFileIfNotExist(filePath string) {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		// path/to/whatever does not exist
 
-		if err := os.MkdirAll(filepath.Dir(filePath), 0700); err != nil {
+		if err := os.MkdirAll(filepath.Dir(filePath), 0o700); err != nil {
 			fmt.Printf("Unable to write file: %v", err)
 		}
 
-		err := ioutil.WriteFile(filePath, []byte(""), 0600)
-
+		err := ioutil.WriteFile(filePath, []byte(""), 0o600)
 		if err != nil {
 			fmt.Printf("Unable to write file: %v", err)
 		}

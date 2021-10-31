@@ -25,8 +25,10 @@ import (
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
-var forcePrompts bool
-var purgeFile bool
+var (
+	forcePrompts bool
+	purgeFile    bool
+)
 
 // filesRmCmd represents the rm command
 var filesRmCmd = &cobra.Command{
@@ -76,7 +78,6 @@ Files can be used again using "file add" command.
 
 			display.FileRemovedSuccess(filePath)
 		}
-
 	},
 }
 

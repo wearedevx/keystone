@@ -20,7 +20,7 @@ var backupCmd = &cobra.Command{
 Since we do not keep a copy of your secrets or files on our servers, 
 it can be useful to regularly back them up to a secure location
 to prevent losing them all if anything were to happen to your device.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		var err error
 
 		if len(ctx.AccessibleEnvironments) < 3 {

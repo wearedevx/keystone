@@ -56,7 +56,11 @@ ks ci send --env prod
 		exitIfErr(err)
 
 		for _, serviceDef := range ciServices {
-			ciService, err := ci.GetCiService(serviceDef.Name, ctx, client.ApiURL)
+			ciService, err := ci.GetCiService(
+				serviceDef.Name,
+				ctx,
+				client.ApiURL,
+			)
 			exitIfErr(err)
 
 			if err = ciService.CheckSetup().Error(); err != nil {

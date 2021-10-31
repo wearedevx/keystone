@@ -42,12 +42,12 @@ func CreateFileIfNotExists(filePath string, defaultContent string) error {
 	if !FileExists(filePath) {
 		dir := filepath.Dir(filePath)
 
-		if err := os.MkdirAll(dir, 0700); err != nil {
-			return fmt.Errorf("Could not create directory `%s` (%w)", dir, err)
+		if err := os.MkdirAll(dir, 0o700); err != nil {
+			return fmt.Errorf("could not create directory `%s` (%w)", dir, err)
 		}
 
-		if err := ioutil.WriteFile(filePath, []byte(defaultContent), 0600); err != nil {
-			return fmt.Errorf("Could not create `%s` (%w)", filePath, err)
+		if err := ioutil.WriteFile(filePath, []byte(defaultContent), 0o600); err != nil {
+			return fmt.Errorf("could not create `%s` (%w)", filePath, err)
 		}
 	}
 
@@ -56,10 +56,9 @@ func CreateFileIfNotExists(filePath string, defaultContent string) error {
 
 // Creates a directory at dirPath if does not exist
 func CreateDirIfNotExist(dirPath string) error {
-
 	if !DirExists(dirPath) {
-		if err := os.MkdirAll(dirPath, 0700); err != nil {
-			return fmt.Errorf("Could not create `%s/` (%w)", dirPath, err)
+		if err := os.MkdirAll(dirPath, 0o700); err != nil {
+			return fmt.Errorf("could not create `%s/` (%w)", dirPath, err)
 		}
 	}
 
@@ -153,7 +152,9 @@ func CheckSecretContent(name string) error {
 	match := sampleRegex.Match([]byte(name))
 
 	if !match {
-		return errors.New("Secret " + name + " not allowed. Secret name must be capital snakecase.")
+		return errors.New(
+			"Secret " + name + " not allowed. Secret name must be capital snakecase.",
+		)
 	}
 	return nil
 }
@@ -169,7 +170,7 @@ func DoubleQuoteEscape(line string) string {
 		if c == '\r' {
 			toReplace = `\r`
 		}
-		line = strings.Replace(line, string(c), toReplace, -1)
+		line = strings.ReplaceAll(line, string(c), toReplace)
 	}
 	return line
 }

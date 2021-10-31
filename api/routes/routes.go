@@ -23,16 +23,40 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.DELETE("/projects/:projectID/", AuthedHandler(DeleteProject))
 	router.GET("/projects", AuthedHandler(GetProjects))
 
-	router.GET("/projects/:projectID/members", AuthedHandler(GetProjectsMembers))
-	router.POST("/projects/:projectID/members", AuthedHandler(PostProjectsMembers))
-	router.DELETE("/projects/:projectID/members", AuthedHandler(DeleteProjectsMembers))
-	router.PUT("/projects/:projectID/members/role", AuthedHandler(PutMembersSetRole))
-	router.GET("/projects/:projectID/environments", AuthedHandler(GetAccessibleEnvironments))
-	router.GET("/projects/:projectID/organization", AuthedHandler(GetProjectsOrganization))
+	router.GET(
+		"/projects/:projectID/members",
+		AuthedHandler(GetProjectsMembers),
+	)
+	router.POST(
+		"/projects/:projectID/members",
+		AuthedHandler(PostProjectsMembers),
+	)
+	router.DELETE(
+		"/projects/:projectID/members",
+		AuthedHandler(DeleteProjectsMembers),
+	)
+	router.PUT(
+		"/projects/:projectID/members/role",
+		AuthedHandler(PutMembersSetRole),
+	)
+	router.GET(
+		"/projects/:projectID/environments",
+		AuthedHandler(GetAccessibleEnvironments),
+	)
+	router.GET(
+		"/projects/:projectID/organization",
+		AuthedHandler(GetProjectsOrganization),
+	)
 
-	router.POST("/projects/:projectID/activity-logs", AuthedHandler(GetActivityLogs))
+	router.POST(
+		"/projects/:projectID/activity-logs",
+		AuthedHandler(GetActivityLogs),
+	)
 
-	router.GET("/environments/:envID/public-keys", AuthedHandler(GetEnvironmentPublicKeys))
+	router.GET(
+		"/environments/:envID/public-keys",
+		AuthedHandler(GetEnvironmentPublicKeys),
+	)
 	router.DELETE("/messages-expired", DeleteExpiredMessages)
 	router.GET("/messages-will-expire", AlertMessagesWillExpire)
 	router.POST("/messages", AuthedHandler(WriteMessages))
@@ -51,20 +75,38 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.GET("/users/:userID/key", AuthedHandler(GetUserKeys))
 	router.POST("/users/invite", AuthedHandler(PostInvite))
 
-	router.GET("/projects/:projectID/messages/:device", AuthedHandler(GetMessagesFromProjectByUser))
+	router.GET(
+		"/projects/:projectID/messages/:device",
+		AuthedHandler(GetMessagesFromProjectByUser),
+	)
 
 	router.DELETE("/messages/:messageID", AuthedHandler(DeleteMessage))
 
 	router.GET("/organizations", AuthedHandler(GetOrganizations))
 	router.POST("/organizations", AuthedHandler(PostOrganization))
 	router.PUT("/organizations", AuthedHandler(UpdateOrganization))
-	router.GET("/organizations/:orgaID/projects", AuthedHandler(GetOrganizationProjects))
-	router.GET("/organizations/:orgaID/members", AuthedHandler(GetOrganizationMembers))
+	router.GET(
+		"/organizations/:orgaID/projects",
+		AuthedHandler(GetOrganizationProjects),
+	)
+	router.GET(
+		"/organizations/:orgaID/members",
+		AuthedHandler(GetOrganizationMembers),
+	)
 
 	// Payment Routes
-	router.POST("/organization/:organizationName/upgrade", AuthedHandler(PostSubscription))
-	router.POST("/organization/:organizationName/manage", AuthedHandler(ManageSubscription))
-	router.GET("/checkout/:sessionID/status", AuthedHandler(GetPollSubscriptionSuccess))
+	router.POST(
+		"/organization/:organizationName/upgrade",
+		AuthedHandler(PostSubscription),
+	)
+	router.POST(
+		"/organization/:organizationName/manage",
+		AuthedHandler(ManageSubscription),
+	)
+	router.GET(
+		"/checkout/:sessionID/status",
+		AuthedHandler(GetPollSubscriptionSuccess),
+	)
 
 	router.GET("/checkout-success", GetCheckoutSuccess)
 	router.GET("/checkout-cancel", GetCheckoutCancel)

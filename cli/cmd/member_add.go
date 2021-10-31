@@ -33,9 +33,11 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var membersFile string
-var oneRole string
-var manyMembers []string
+var (
+	membersFile string
+	oneRole     string
+	manyMembers []string
+)
 
 type Flow int
 
@@ -54,7 +56,8 @@ var memberAddCmd = &cobra.Command{
 		// r := regexp.MustCompile(`[\w-_.]+@(gitlab|github)`)
 		flow = PromptFlow
 
-		if len(args) == 0 && membersFile == "" && oneRole == "" && len(manyMembers) == 0 {
+		if len(args) == 0 && membersFile == "" && oneRole == "" &&
+			len(manyMembers) == 0 {
 			return fmt.Errorf("missing arguments")
 		}
 
@@ -126,12 +129,14 @@ ks member add --from-file team.yaml
 
 To send secrets and files to new member, use "member add" command.
   $ ks member send-env --all-env <member-id>
-`, struct {
-		}{}))
+`, struct{}{}))
 	},
 }
 
-func getMemberRolesFromFile(c client.KeystoneClient, filepath string) map[string]models.Role {
+func getMemberRolesFromFile(
+	c client.KeystoneClient,
+	filepath string,
+) map[string]models.Role {
 	var err error
 	memberRoleNames := make(map[string]string)
 
@@ -159,7 +164,11 @@ func getMemberRolesFromFile(c client.KeystoneClient, filepath string) map[string
 	return memberRoles
 }
 
-func getMemberRolesFromArgs(c client.KeystoneClient, roleName string, memberIDs []string) map[string]models.Role {
+func getMemberRolesFromArgs(
+	c client.KeystoneClient,
+	roleName string,
+	memberIDs []string,
+) map[string]models.Role {
 	mustMembersExist(c, memberIDs)
 	roles := mustGetRoles(c)
 	foundRole := &models.Role{}
@@ -182,7 +191,10 @@ func getMemberRolesFromArgs(c client.KeystoneClient, roleName string, memberIDs 
 }
 
 // TODO: to ui package
-func getMemberRolesFromPrompt(c client.KeystoneClient, memberIDs []string) map[string]models.Role {
+func getMemberRolesFromPrompt(
+	c client.KeystoneClient,
+	memberIDs []string,
+) map[string]models.Role {
 	mustMembersExist(c, memberIDs)
 	roles := mustGetRoles(c)
 
@@ -201,7 +213,10 @@ func getMemberRolesFromPrompt(c client.KeystoneClient, memberIDs []string) map[s
 }
 
 // TODO: to ui package
-func mapRoleNamesToRoles(memberRoleNames map[string]string, roles []models.Role) map[string]models.Role {
+func mapRoleNamesToRoles(
+	memberRoleNames map[string]string,
+	roles []models.Role,
+) map[string]models.Role {
 	memberRoles := make(map[string]models.Role)
 
 	for member, roleName := range memberRoleNames {
@@ -217,7 +232,7 @@ func mapRoleNamesToRoles(memberRoleNames map[string]string, roles []models.Role)
 		if foundRole == nil {
 			exit(
 				kserrors.UnkownError(
-					fmt.Errorf("Role %s does not exist", roleName),
+					fmt.Errorf("role %s does not exist", roleName),
 				),
 			)
 		}
@@ -231,7 +246,10 @@ func mapRoleNamesToRoles(memberRoleNames map[string]string, roles []models.Role)
 // TODO: to ui package
 func warningFreeOrga(roles []models.Role) {
 	if len(roles) == 1 {
-		fmt.Fprintln(os.Stderr, "WARNING: You are not allowed to set role other than admin for free organization")
+		fmt.Fprintln(
+			os.Stderr,
+			"WARNING: You are not allowed to set role other than admin for free organization",
+		)
 		ui.Print("To learn more: https://keystone.sh")
 		ui.Print("")
 	}
@@ -240,8 +258,11 @@ func warningFreeOrga(roles []models.Role) {
 func init() {
 	memberCmd.AddCommand(memberAddCmd)
 
-	memberAddCmd.Flags().StringVar(&membersFile, "from-file", "", "yaml file to import a known list of members")
+	memberAddCmd.Flags().
+		StringVar(&membersFile, "from-file", "", "yaml file to import a known list of members")
 
-	memberAddCmd.Flags().StringVarP(&oneRole, "role", "r", "", "role to set users, when not using the prompt")
-	memberAddCmd.Flags().StringSliceVarP(&manyMembers, "user", "u", []string{}, "user to add, when not using the prompt")
+	memberAddCmd.Flags().
+		StringVarP(&oneRole, "role", "r", "", "role to set users, when not using the prompt")
+	memberAddCmd.Flags().
+		StringSliceVarP(&manyMembers, "user", "u", []string{}, "user to add, when not using the prompt")
 }

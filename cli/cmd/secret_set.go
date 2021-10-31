@@ -53,7 +53,8 @@ ks --env staging PORT 4545
 		ctx.SetSecret(currentEnvironment, secretName, secretValue)
 		exitIfErr(ctx.Err())
 
-		localEnvironment := ctx.LoadEnvironmentsFile().GetByName(currentEnvironment)
+		localEnvironment := ctx.LoadEnvironmentsFile().
+			GetByName(currentEnvironment)
 		environment := []models.Environment{{
 			Name:          localEnvironment.Name,
 			VersionID:     localEnvironment.VersionID,
@@ -64,7 +65,13 @@ ks --env staging PORT 4545
 			messageService.SendEnvironments(environment).Err(),
 		)
 
-		ui.PrintSuccess(fmt.Sprintf("Secret '%s' updated for the '%s' environment", secretName, currentEnvironment))
+		ui.PrintSuccess(
+			fmt.Sprintf(
+				"Secret '%s' updated for the '%s' environment",
+				secretName,
+				currentEnvironment,
+			),
+		)
 	},
 }
 

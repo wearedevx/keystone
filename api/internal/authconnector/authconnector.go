@@ -18,7 +18,9 @@ type AuthConnector interface {
 
 // Factory method returning the appropriate
 // AuthConnector for the given accontType
-func GetConnectoForAccountType(accountType models.AccountType) (AuthConnector, error) {
+func GetConnectoForAccountType(
+	accountType models.AccountType,
+) (AuthConnector, error) {
 	switch accountType {
 	case models.GitHubAccountType:
 		return new(githubAuthConnector), nil
@@ -27,6 +29,6 @@ func GetConnectoForAccountType(accountType models.AccountType) (AuthConnector, e
 		return new(gitlabAuthConnector), nil
 
 	default:
-		return nil, fmt.Errorf("No connector for account type %s", accountType)
+		return nil, fmt.Errorf("no connector for account type %s", accountType)
 	}
 }

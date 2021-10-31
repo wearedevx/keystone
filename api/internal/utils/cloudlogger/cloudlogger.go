@@ -51,8 +51,9 @@ func (e LogEntry) String() string {
 	if e.Severity == "" {
 		e.Severity = "INFO"
 	}
-	out, err := json.Marshal(e)
-	if err != nil {
-	}
+	out, _ := json.Marshal(e)
+	// if err != nil {
+	// }
+
 	return string(out)
 }

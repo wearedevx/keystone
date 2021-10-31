@@ -35,5 +35,4 @@ Used without arguments, lists devices this account has registered.
 
 func init() {
 	RootCmd.AddCommand(deviceCmd)
-
 }

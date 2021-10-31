@@ -6,8 +6,8 @@ import (
 	"os"
 	"path"
 
-	. "github.com/wearedevx/keystone/api/pkg/models"
-	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -49,8 +49,7 @@ func keystoneFilePath(wd string) string {
 	return path.Join(wd, "keystone.yaml")
 }
 
-func NewKeystoneFile(wd string, project Project) *KeystoneFile {
-
+func NewKeystoneFile(wd string, project models.Project) *KeystoneFile {
 	return &KeystoneFile{
 		path:        keystoneFilePath(wd),
 		err:         nil,
@@ -66,7 +65,7 @@ func NewKeystoneFile(wd string, project Project) *KeystoneFile {
 
 // Checks if current execution context contains a keystone.yaml
 func ExistsKeystoneFile(wd string) bool {
-	return FileExists(keystoneFilePath(wd))
+	return utils.FileExists(keystoneFilePath(wd))
 }
 
 // Loads a Keystone from disk
@@ -76,7 +75,6 @@ func (file *KeystoneFile) Load(wd string) *KeystoneFile {
 	 */
 	bytes, err := ioutil.ReadFile(keystoneFilePath(wd))
 	// file := newKeystoneFile(context)
-
 	if err != nil {
 		file.err = err
 	}
@@ -104,9 +102,8 @@ func (file *KeystoneFile) toYaml() []byte {
 	}
 
 	bytes, err := yaml.Marshal(file)
-
 	if err != nil {
-		file.err = fmt.Errorf("Could not serialize keystone file (%w)", err)
+		file.err = fmt.Errorf("could not serialize keystone file (%w)", err)
 	}
 
 	return bytes
@@ -123,13 +120,12 @@ func (file *KeystoneFile) Save() *KeystoneFile {
 	if file.Err() == nil {
 		yamlBytes := file.toYaml()
 
-		if err := ioutil.WriteFile(file.path, yamlBytes, 0600); err != nil {
-			file.err = fmt.Errorf("Could not write `keystone.yaml` (%w)", err)
+		if err := ioutil.WriteFile(file.path, yamlBytes, 0o600); err != nil {
+			file.err = fmt.Errorf("could not write `keystone.yaml` (%w)", err)
 		}
 	}
 
 	return file
-
 }
 
 // Removes the keystone file from disk
@@ -139,7 +135,7 @@ func (file *KeystoneFile) Remove() *KeystoneFile {
 	}
 
 	if err := os.Remove(file.path); err != nil {
-		file.err = fmt.Errorf("Could not remove `keystone.yaml` (%w)", err)
+		file.err = fmt.Errorf("could not remove `keystone.yaml` (%w)", err)
 	}
 
 	return file
@@ -226,7 +222,10 @@ func (file *KeystoneFile) RemoveFile(filepath string) *KeystoneFile {
 	return file
 }
 
-func (file *KeystoneFile) SetFileRequired(filepath string, required bool) *KeystoneFile {
+func (file *KeystoneFile) SetFileRequired(
+	filepath string,
+	required bool,
+) *KeystoneFile {
 	if file.Err() != nil {
 		return file
 	}

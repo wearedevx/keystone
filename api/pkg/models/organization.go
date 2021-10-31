@@ -10,8 +10,8 @@ import (
 )
 
 type Organization struct {
-	ID             uint      `json:"id" gorm:"primaryKey"`
-	Name           string    `json:"name" gorm:"unique"`
+	ID             uint      `json:"id"              gorm:"primaryKey"`
+	Name           string    `json:"name"            gorm:"unique"`
 	Paid           bool      `json:"paid"`
 	Private        bool      `json:"private"`
 	CustomerID     string    `json:"customer_id"`

@@ -16,7 +16,12 @@ type Error struct {
 	meta  map[string]interface{}
 }
 
-func NewError(name string, help string, meta map[string]interface{}, cause error) *Error {
+func NewError(
+	name string,
+	help string,
+	meta map[string]interface{},
+	cause error,
+) *Error {
 	err := new(Error)
 
 	err.name = name

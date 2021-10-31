@@ -83,7 +83,13 @@ It has also been gitignored.`, map[string]string{
 }
 
 func FileAskForFileContentForEnvironment(filePath, environmentName string) {
-	ui.Print(fmt.Sprintf("Enter content for file `%s` for the '%s' environment (Press any key to continue)", filePath, environmentName))
+	ui.Print(
+		fmt.Sprintf(
+			"Enter content for file `%s` for the '%s' environment (Press any key to continue)",
+			filePath,
+			environmentName,
+		),
+	)
 }
 
 func FileFailUserInput(err error) {
@@ -223,7 +229,7 @@ func filterLines(files []core.FileDescriptor, filter string) (filtered []line) {
 		}
 
 	default:
-		panic(fmt.Errorf("Unknown filter: %s", filter))
+		panic(fmt.Errorf("unknown filter: %s", filter))
 	}
 
 	return filtered

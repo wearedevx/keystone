@@ -38,7 +38,7 @@ It is highly recommended that you backup everything up beforehand.
 This is irreversible.
 `,
 	Example: "ks destroy",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		var err error
 		c, kcErr := client.NewKeystoneClient()
 		exitIfErr(kcErr)

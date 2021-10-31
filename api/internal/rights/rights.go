@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
@@ -16,19 +16,24 @@ const (
 	Invite UserRight = "invite"
 )
 
-func DoesUserHaveRightsOnEnvironment(Repo repo.IRepo, userID uint, projectID uint, environment *Environment, right string) (bool, error) {
-	projectMember := ProjectMember{
+func DoesUserHaveRightsOnEnvironment(
+	Repo repo.IRepo,
+	userID uint,
+	projectID uint,
+	environment *models.Environment,
+	right string,
+) (bool, error) {
+	projectMember := models.ProjectMember{
 		UserID:    userID,
 		ProjectID: projectID,
 	}
 
 	err := Repo.GetProjectMember(&projectMember).Err()
-
 	if err != nil {
 		return false, err
 	}
 
-	rolesEnvironmentType := RolesEnvironmentType{
+	rolesEnvironmentType := models.RolesEnvironmentType{
 		EnvironmentTypeID: environment.EnvironmentTypeID,
 		RoleID:            projectMember.RoleID,
 	}
@@ -53,20 +58,57 @@ func DoesUserHaveRightsOnEnvironment(Repo repo.IRepo, userID uint, projectID uin
 	case Write:
 		return rolesEnvironmentType.Write, nil
 	default:
-		return false, fmt.Errorf("unknown role %v on env %v", projectMember.Role, environment)
+		return false, fmt.Errorf(
+			"unknown role %v on env %v",
+			projectMember.Role,
+			environment,
+		)
 	}
 }
 
-func CanUserReadEnvironment(Repo repo.IRepo, userID uint, projectID uint, environment *Environment) (bool, error) {
-	return DoesUserHaveRightsOnEnvironment(Repo, userID, projectID, environment, "read")
+func CanUserReadEnvironment(
+	Repo repo.IRepo,
+	userID uint,
+	projectID uint,
+	environment *models.Environment,
+) (bool, error) {
+	return DoesUserHaveRightsOnEnvironment(
+		Repo,
+		userID,
+		projectID,
+		environment,
+		"read",
+	)
 }
 
-func CanUserWriteOnEnvironment(Repo repo.IRepo, userID uint, projectID uint, environment *Environment) (bool, error) {
-	return DoesUserHaveRightsOnEnvironment(Repo, userID, projectID, environment, "write")
+func CanUserWriteOnEnvironment(
+	Repo repo.IRepo,
+	userID uint,
+	projectID uint,
+	environment *models.Environment,
+) (bool, error) {
+	return DoesUserHaveRightsOnEnvironment(
+		Repo,
+		userID,
+		projectID,
+		environment,
+		"write",
+	)
 }
 
-func CanUserInviteOnEnvironment(Repo repo.IRepo, userID uint, projectID uint, environment *Environment) (bool, error) {
-	return DoesUserHaveRightsOnEnvironment(Repo, userID, projectID, environment, "invite")
+func CanUserInviteOnEnvironment(
+	Repo repo.IRepo,
+	userID uint,
+	projectID uint,
+	environment *models.Environment,
+) (bool, error) {
+	return DoesUserHaveRightsOnEnvironment(
+		Repo,
+		userID,
+		projectID,
+		environment,
+		"invite",
+	)
 }
 
 // devops can invite on:
@@ -74,9 +116,13 @@ func CanUserInviteOnEnvironment(Repo repo.IRepo, userID uint, projectID uint, en
 
 // CanRoleAddRole tells if a user with a given role can add or set users
 // with an other role
-func CanRoleAddRole(Repo repo.IRepo, role Role, roleToInvite Role) (can bool, err error) {
+func CanRoleAddRole(
+	Repo repo.IRepo,
+	role models.Role,
+	roleToInvite models.Role,
+) (can bool, err error) {
 	if role.CanAddMember {
-		roles := make([]Role, 0)
+		roles := make([]models.Role, 0)
 
 		if role.ID == roleToInvite.ID {
 			return true, nil
@@ -104,12 +150,18 @@ func CanRoleAddRole(Repo repo.IRepo, role Role, roleToInvite Role) (can bool, er
 // - `users`’s role has `CanAddMembers` set to `true`,
 // - `users`’s role is a parent of `other`’s role.
 // - users`’s role is a parent of the target `role`
-func CanUserSetMemberRole(Repo repo.IRepo, user User, other User, role Role, project Project) (can bool, err error) {
-	myMember := ProjectMember{
+func CanUserSetMemberRole(
+	Repo repo.IRepo,
+	user models.User,
+	other models.User,
+	role models.Role,
+	project models.Project,
+) (can bool, err error) {
+	myMember := models.ProjectMember{
 		UserID:    user.ID,
 		ProjectID: project.ID,
 	}
-	otherMember := ProjectMember{
+	otherMember := models.ProjectMember{
 		UserID:    other.ID,
 		ProjectID: project.ID,
 	}
@@ -121,11 +173,23 @@ func CanUserSetMemberRole(Repo repo.IRepo, user User, other User, role Role, pro
 		return false, err
 	}
 
-	canChangeOther, canChangeOtherErr := CanRoleAddRole(Repo, myMember.Role, otherMember.Role)
-	canSetTargetRole, canSetTargetRoleErr := CanRoleAddRole(Repo, myMember.Role, role)
+	canChangeOther, canChangeOtherErr := CanRoleAddRole(
+		Repo,
+		myMember.Role,
+		otherMember.Role,
+	)
+	canSetTargetRole, canSetTargetRoleErr := CanRoleAddRole(
+		Repo,
+		myMember.Role,
+		role,
+	)
 
 	// Owner of organization cannot have its role changed
-	isMemberOwnerOfOrga, isMemberOwnerOfOrgaErr := IsUserOwnerOfOrga(Repo, other.ID, project)
+	isMemberOwnerOfOrga, isMemberOwnerOfOrgaErr := IsUserOwnerOfOrga(
+		Repo,
+		other.ID,
+		project,
+	)
 
 	if canChangeOtherErr != nil {
 		return false, canChangeOtherErr
@@ -144,8 +208,13 @@ func CanUserSetMemberRole(Repo repo.IRepo, user User, other User, role Role, pro
 
 // CanUserAddMemberWithRole checks if a given user can add members of
 // a given role on the project
-func CanUserAddMemberWithRole(Repo repo.IRepo, user User, role Role, project Project) (can bool, err error) {
-	member := ProjectMember{
+func CanUserAddMemberWithRole(
+	Repo repo.IRepo,
+	user models.User,
+	role models.Role,
+	project models.Project,
+) (can bool, err error) {
+	member := models.ProjectMember{
 		UserID:    user.ID,
 		ProjectID: project.ID,
 	}
@@ -163,8 +232,12 @@ func CanUserAddMemberWithRole(Repo repo.IRepo, user User, role Role, project Pro
 	return can, nil
 }
 
-func IsUserOwnerOfOrga(Repo repo.IRepo, userID uint, project Project) (bool, error) {
-	orga := Organization{}
+func IsUserOwnerOfOrga(
+	Repo repo.IRepo,
+	userID uint,
+	project models.Project,
+) (bool, error) {
+	orga := models.Organization{}
 	if err := Repo.GetProjectsOrganization(project.UUID, &orga).Err(); err != nil {
 		return false, err
 	}
@@ -176,10 +249,13 @@ func IsUserOwnerOfOrga(Repo repo.IRepo, userID uint, project Project) (bool, err
 }
 
 //
-func HasOrganizationNotPaidAndHasNonAdmin(Repo repo.IRepo, project Project) (has bool, err error) {
+func HasOrganizationNotPaidAndHasNonAdmin(
+	Repo repo.IRepo,
+	project models.Project,
+) (has bool, err error) {
 	var isPaid bool
 
-	members := make([]ProjectMember, 0)
+	members := make([]models.ProjectMember, 0)
 	isPaid, err = Repo.IsProjectOrganizationPaid(project.UUID)
 	if err != nil {
 		goto done

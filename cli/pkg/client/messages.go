@@ -16,9 +16,13 @@ type GenericResponse struct {
 	Error   string `json:"error"`
 }
 
-func (client *Messages) GetMessages(projectID string) (models.GetMessageByEnvironmentResponse, error) {
+// GetMessages method gets all messages for the users device, regarding
+// the current project
+func (client *Messages) GetMessages(
+	projectID string,
+) (models.GetMessageByEnvironmentResponse, error) {
 	var err error
-	var result = models.GetMessageByEnvironmentResponse{
+	result := models.GetMessageByEnvironmentResponse{
 		Environments: map[string]models.GetMessageResponse{},
 	}
 	device := config.GetDeviceUID()
@@ -27,19 +31,23 @@ func (client *Messages) GetMessages(projectID string) (models.GetMessageByEnviro
 	return result, err
 }
 
+// DeleteMessage method deletes the message
 func (client *Messages) DeleteMessage(messageID uint) (GenericResponse, error) {
 	var err error
 
 	var result GenericResponse
 
-	var stringMessageID = strconv.FormatUint(uint64(messageID), 10)
+	stringMessageID := strconv.FormatUint(uint64(messageID), 10)
 
 	err = client.r.del("/messages/"+stringMessageID, nil, &result, nil)
 
 	return result, err
 }
 
-func (client *Messages) SendMessages(messages models.MessagesToWritePayload) (models.GetEnvironmentsResponse, error) {
+// SendMessages method sends messages to members of the project
+func (client *Messages) SendMessages(
+	messages models.MessagesToWritePayload,
+) (models.GetEnvironmentsResponse, error) {
 	var result models.GetEnvironmentsResponse
 
 	err := client.r.post("/messages", messages, &result, nil)

@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 
-	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (repo *Repo) GetProjectMember(projectMember *ProjectMember) IRepo {
+func (repo *Repo) GetProjectMember(projectMember *models.ProjectMember) IRepo {
 	if repo.Err() != nil {
 		return repo
 	}
@@ -21,7 +21,10 @@ func (repo *Repo) GetProjectMember(projectMember *ProjectMember) IRepo {
 	return repo
 }
 
-func (repo *Repo) ListProjectMembers(userIDList []string, projectMember *[]ProjectMember) IRepo {
+func (repo *Repo) ListProjectMembers(
+	userIDList []string,
+	projectMember *[]models.ProjectMember,
+) IRepo {
 	if repo.Err() != nil {
 		return repo
 	}
@@ -36,7 +39,10 @@ func (repo *Repo) ListProjectMembers(userIDList []string, projectMember *[]Proje
 	return repo
 }
 
-func (repo *Repo) CreateProjectMember(projectMember *ProjectMember, role *Role) IRepo {
+func (repo *Repo) CreateProjectMember(
+	projectMember *models.ProjectMember,
+	role *models.Role,
+) IRepo {
 	if repo != nil {
 		return repo
 	}
@@ -55,7 +61,10 @@ func prettyPrint(i interface{}) string {
 	return string(s)
 }
 
-func (repo *Repo) GetOrCreateProjectMember(projectMember *ProjectMember, roleName string) IRepo {
+func (repo *Repo) GetOrCreateProjectMember(
+	projectMember *models.ProjectMember,
+	roleName string,
+) IRepo {
 	if repo.Err() != nil {
 		return repo
 	}
@@ -72,7 +81,7 @@ func (repo *Repo) GetOrCreateProjectMember(projectMember *ProjectMember, roleNam
 			// reset error to not block
 			// the creation operation
 			repo.err = nil
-			role := Role{Name: roleName}
+			role := models.Role{Name: roleName}
 
 			repo.GetRole(&role).
 				CreateProjectMember(projectMember, &role)
@@ -82,14 +91,14 @@ func (repo *Repo) GetOrCreateProjectMember(projectMember *ProjectMember, roleNam
 	return repo
 }
 
-func (repo *Repo) DeleteAllProjectMembers(project *Project) IRepo {
+func (repo *Repo) DeleteAllProjectMembers(project *models.Project) IRepo {
 	if repo.Err() != nil {
 		return repo
 	}
 
 	repo.err = repo.
 		GetDb().
-		Delete(ProjectMember{}, "project_id = ?", project.ID).
+		Delete(models.ProjectMember{}, "project_id = ?", project.ID).
 		Error
 
 	return repo

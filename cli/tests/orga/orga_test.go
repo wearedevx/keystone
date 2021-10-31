@@ -19,6 +19,7 @@ func setupFunc(env *testscript.Env) error {
 	utils.CreateAndLogUser(env)
 	return nil
 }
+
 func TestCommands(t *testing.T) {
 	utils.WaitAPIStart()
 

@@ -40,7 +40,7 @@ $ ks env staging
 ` + "```" + `
 `,
 	Args: cobra.NoArgs,
-	Run: func(_ *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		if quietOutput {

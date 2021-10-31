@@ -2,20 +2,20 @@ package tests
 
 import (
 	uuid "github.com/satori/go.uuid"
-	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
 func SeedTestData() {
 	Repo := new(repo.Repo)
 
-	devEnvironmentType := EnvironmentType{Name: "dev"}
-	stagingEnvironmentType := EnvironmentType{Name: "staging"}
-	prodEnvironmentType := EnvironmentType{Name: "prod"}
+	devEnvironmentType := models.EnvironmentType{Name: "dev"}
+	stagingEnvironmentType := models.EnvironmentType{Name: "staging"}
+	prodEnvironmentType := models.EnvironmentType{Name: "prod"}
 
-	devRole := Role{Name: "dev"}
-	devopsRole := Role{Name: "devops"}
-	adminRole := Role{Name: "admin"}
+	devRole := models.Role{Name: "dev"}
+	devopsRole := models.Role{Name: "devops"}
+	adminRole := models.Role{Name: "admin"}
 
 	Repo.
 		// EnvTypes
@@ -29,19 +29,19 @@ func SeedTestData() {
 		GetOrCreateRole(&adminRole).
 
 		// DEV
-		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+		GetOrCreateRoleEnvType(&models.RolesEnvironmentType{
 			Role:            devRole,
 			EnvironmentType: devEnvironmentType,
 			Read:            true,
 			Write:           true,
 		}).
-		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+		GetOrCreateRoleEnvType(&models.RolesEnvironmentType{
 			Role:            devRole,
 			EnvironmentType: stagingEnvironmentType,
 			Read:            false,
 			Write:           false,
 		}).
-		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+		GetOrCreateRoleEnvType(&models.RolesEnvironmentType{
 			Role:            devRole,
 			EnvironmentType: prodEnvironmentType,
 			Read:            false,
@@ -49,19 +49,19 @@ func SeedTestData() {
 		}).
 
 		// Staging
-		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+		GetOrCreateRoleEnvType(&models.RolesEnvironmentType{
 			Role:            devopsRole,
 			EnvironmentType: devEnvironmentType,
 			Read:            true,
 			Write:           true,
 		}).
-		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+		GetOrCreateRoleEnvType(&models.RolesEnvironmentType{
 			Role:            devopsRole,
 			EnvironmentType: stagingEnvironmentType,
 			Read:            true,
 			Write:           true,
 		}).
-		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+		GetOrCreateRoleEnvType(&models.RolesEnvironmentType{
 			Role:            devopsRole,
 			EnvironmentType: prodEnvironmentType,
 			Read:            false,
@@ -69,26 +69,26 @@ func SeedTestData() {
 		}).
 
 		// ADMIN
-		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+		GetOrCreateRoleEnvType(&models.RolesEnvironmentType{
 			Role:            adminRole,
 			EnvironmentType: devEnvironmentType,
 			Read:            true,
 			Write:           true,
 		}).
-		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+		GetOrCreateRoleEnvType(&models.RolesEnvironmentType{
 			Role:            adminRole,
 			EnvironmentType: stagingEnvironmentType,
 			Read:            true,
 			Write:           true,
 		}).
-		GetOrCreateRoleEnvType(&RolesEnvironmentType{
+		GetOrCreateRoleEnvType(&models.RolesEnvironmentType{
 			Role:            adminRole,
 			EnvironmentType: prodEnvironmentType,
 			Read:            true,
 			Write:           true,
 		})
 
-	var userProjectOwner *User = &User{
+	var userProjectOwner *models.User = &User{
 		ExtID:       "my iowner ext id",
 		AccountType: "github",
 		Username:    "Username owner " + uuid.NewV4().String(),
@@ -96,7 +96,7 @@ func SeedTestData() {
 		Email:       "test+owner@example.com",
 	}
 
-	var devUser *User = &User{
+	var devUser *models.User = &User{
 		ExtID:       "my ext id",
 		AccountType: "github",
 		Username:    "Username dev " + uuid.NewV4().String(),
@@ -107,18 +107,18 @@ func SeedTestData() {
 	Repo.GetOrCreateUser(userProjectOwner)
 	Repo.GetOrCreateUser(devUser)
 
-	var project *Project = &Project{
+	var project *models.Project = &Project{
 		Name: "project name",
 		User: *userProjectOwner,
 	}
 
-	environmentType := EnvironmentType{Name: "dev"}
+	environmentType := models.EnvironmentType{Name: "dev"}
 
 	Repo.
 		GetOrCreateProject(project).
 		GetOrCreateEnvironmentType(&environmentType)
 
-	environment := Environment{
+	environment := models.Environment{
 		Name:              environmentType.Name,
 		ProjectID:         project.ID,
 		EnvironmentTypeID: environmentType.ID,
@@ -126,7 +126,7 @@ func SeedTestData() {
 
 	Repo.GetOrCreateEnvironment(&environment)
 
-	projectMember := ProjectMember{
+	projectMember := models.ProjectMember{
 		ProjectID: project.ID,
 		UserID:    devUser.ID,
 	}

@@ -92,7 +92,6 @@ func mustFetchMessages() (core.ChangesByEnvironment, messages.MessageService) {
 /// Prints a warnning on error
 func shouldFetchMessages() (core.ChangesByEnvironment, messages.MessageService) {
 	changes, ms, err := fetchMessages()
-
 	if err != nil {
 		ui.PrintStdErr(
 			"WARNING: Could not get messages (%s)",
@@ -252,7 +251,7 @@ func mustBeAdmin(projectService *client.Project) {
 	}
 
 	// TODO: proper error
-	exit(kserrors.UnkownError(errors.New("Not allowed")))
+	exit(kserrors.UnkownError(errors.New("not allowed")))
 }
 
 // Removes the project directory path form `filePathArg`,
@@ -265,7 +264,7 @@ func cleanPathArgument(
 	filePathClean := filepath.Clean(filePathInCwd)
 
 	if !strings.HasPrefix(filePathClean, wd) {
-		return "", fmt.Errorf("File %s not in project", filePath)
+		return "", fmt.Errorf("file %s not in project", filePath)
 	}
 
 	filePath = strings.TrimPrefix(filePathClean, ctx.Wd)

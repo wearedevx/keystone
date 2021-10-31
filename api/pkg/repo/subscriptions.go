@@ -15,7 +15,10 @@ func (r *Repo) CreateCheckoutSession(cs *models.CheckoutSession) IRepo {
 	return r
 }
 
-func (r *Repo) GetCheckoutSession(sessionID string, cs *models.CheckoutSession) IRepo {
+func (r *Repo) GetCheckoutSession(
+	sessionID string,
+	cs *models.CheckoutSession,
+) IRepo {
 	if r.Err() != nil {
 		return r
 	}

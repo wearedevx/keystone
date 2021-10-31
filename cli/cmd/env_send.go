@@ -33,7 +33,7 @@ they have access to.
 `,
 	Example: `ks env send`,
 	Args:    cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		environments := ctx.AccessibleEnvironments

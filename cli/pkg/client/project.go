@@ -11,7 +11,10 @@ type Project struct {
 	r  requester
 }
 
-func (p *Project) Init(name string, organizationID uint) (models.Project, error) {
+func (p *Project) Init(
+	name string,
+	organizationID uint,
+) (models.Project, error) {
 	var project models.Project
 
 	payload := models.Project{
@@ -44,7 +47,10 @@ func (p *Project) AddMembers(memberRoles map[string]models.Role) error {
 	}
 
 	for memberID, role := range memberRoles {
-		payload.Members = append(payload.Members, models.MemberRole{MemberID: memberID, RoleID: role.ID})
+		payload.Members = append(
+			payload.Members,
+			models.MemberRole{MemberID: memberID, RoleID: role.ID},
+		)
 	}
 
 	err = p.r.post("/projects/"+p.id+"/members", payload, &result, nil)
@@ -129,7 +135,9 @@ func (p *Project) GetAll() ([]models.Project, error) {
 	return result.Projects, err
 }
 
-func (p *Project) GetLogs(options *models.GetLogsOptions) ([]models.ActivityLogLite, error) {
+func (p *Project) GetLogs(
+	options *models.GetLogsOptions,
+) ([]models.ActivityLogLite, error) {
 	var err error
 	var result models.GetActivityLogResponse
 

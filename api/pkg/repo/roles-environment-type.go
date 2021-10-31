@@ -1,10 +1,12 @@
 package repo
 
 import (
-	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (repo *Repo) CreateRoleEnvironmentType(rolesEnvironmentType *RolesEnvironmentType) IRepo {
+func (repo *Repo) CreateRoleEnvironmentType(
+	rolesEnvironmentType *models.RolesEnvironmentType,
+) IRepo {
 	if repo.err != nil {
 		return repo
 	}
@@ -14,7 +16,9 @@ func (repo *Repo) CreateRoleEnvironmentType(rolesEnvironmentType *RolesEnvironme
 	return repo
 }
 
-func (repo *Repo) GetOrCreateRoleEnvType(rolesEnvironmentType *RolesEnvironmentType) IRepo {
+func (repo *Repo) GetOrCreateRoleEnvType(
+	rolesEnvironmentType *models.RolesEnvironmentType,
+) IRepo {
 	if repo.err != nil {
 		return repo
 	}
@@ -27,7 +31,9 @@ func (repo *Repo) GetOrCreateRoleEnvType(rolesEnvironmentType *RolesEnvironmentT
 	return repo
 }
 
-func (repo *Repo) GetRolesEnvironmentType(rolesEnvironmentType *RolesEnvironmentType) IRepo {
+func (repo *Repo) GetRolesEnvironmentType(
+	rolesEnvironmentType *models.RolesEnvironmentType,
+) IRepo {
 	if repo.err != nil {
 		return repo
 	}

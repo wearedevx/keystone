@@ -7,10 +7,10 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 
-	. "github.com/wearedevx/keystone/cli/internal/envfile"
-	. "github.com/wearedevx/keystone/cli/internal/environmentsfile"
+	"github.com/wearedevx/keystone/cli/internal/envfile"
+	"github.com/wearedevx/keystone/cli/internal/environmentsfile"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 )
 
 func (ctx *Context) CurrentEnvironment() string {
@@ -18,13 +18,15 @@ func (ctx *Context) CurrentEnvironment() string {
 		return ""
 	}
 
-	environmentsfile := &EnvironmentsFile{
+	environmentsfile := &environmentsfile.EnvironmentsFile{
 		Current: "dev",
 	}
 	environmentsfile.Load(ctx.dotKeystonePath())
 
 	if err := environmentsfile.Err(); err != nil {
-		ctx.setError(kserrors.CannotReadEnvironment(ctx.environmentFilePath(), err))
+		ctx.setError(
+			kserrors.CannotReadEnvironment(ctx.environmentFilePath(), err),
+		)
 	}
 
 	return environmentsfile.Current
@@ -53,8 +55,7 @@ func (ctx *Context) mustEnvironmentNameBeValid(name string) {
 	}
 }
 
-// ListEnvironments lists all environmnts
-// present on disk
+//
 func (ctx *Context) ListEnvironments() []string {
 	if ctx.Err() != nil {
 		return []string{}
@@ -63,7 +64,6 @@ func (ctx *Context) ListEnvironments() []string {
 
 	cacheDir := ctx.cacheDirPath()
 	contents, err := ioutil.ReadDir(cacheDir)
-
 	if err != nil {
 		ctx.setError(kserrors.UnkownError(err))
 		return envs
@@ -105,7 +105,6 @@ func (ctx *Context) RemoveEnvironment(name string) *Context {
 	if ctx.HasEnvironment(name) {
 		envDir := ctx.CachedEnvironmentPath(name)
 		err := os.RemoveAll(envDir)
-
 		if err != nil {
 			return ctx.setError(kserrors.CannotRemoveDirectory(envDir, err))
 		}
@@ -125,22 +124,33 @@ func (ctx *Context) SetCurrent(name string) *Context {
 		dotEnvFilePath := ctx.CachedEnvironmentDotEnvPath(name)
 		currentDotEnvFilePath := ctx.CachedDotEnvPath()
 
-		err := CopyFile(dotEnvFilePath, currentDotEnvFilePath)
-
+		err := utils.CopyFile(dotEnvFilePath, currentDotEnvFilePath)
 		if err != nil {
-			return ctx.setError(kserrors.CopyFailed(dotEnvFilePath, currentDotEnvFilePath, err))
+			return ctx.setError(
+				kserrors.CopyFailed(dotEnvFilePath, currentDotEnvFilePath, err),
+			)
 		}
 
-		environmentsfile := &EnvironmentsFile{}
+		environmentsfile := &environmentsfile.EnvironmentsFile{}
 		if err := environmentsfile.Load(ctx.dotKeystonePath()).SetCurrent(name).Save().Err(); err != nil {
 			ctx.setError(kserrors.FailedToUpdateKeystoneFile(err))
 		}
 
 		if err != nil {
-			return ctx.setError(kserrors.FailedToSetCurrentEnvironment(name, ctx.environmentFilePath(), err))
+			return ctx.setError(
+				kserrors.FailedToSetCurrentEnvironment(
+					name,
+					ctx.environmentFilePath(),
+					err,
+				),
+			)
 		}
 
-		ctx.FilesUseEnvironment(ctx.CurrentEnvironment(), name, CTX_OVERWRITE_LOCAL_FILES)
+		ctx.FilesUseEnvironment(
+			ctx.CurrentEnvironment(),
+			name,
+			CTX_OVERWRITE_LOCAL_FILES,
+		)
 
 	} else {
 		return ctx.setError(kserrors.EnvironmentDoesntExist(name, strings.Join(ctx.ListEnvironments(), ", "), nil))
@@ -149,7 +159,10 @@ func (ctx *Context) SetCurrent(name string) *Context {
 	return ctx
 }
 
-func (ctx *Context) SetAllSecrets(name string, secrets map[string]string) *Context {
+func (ctx *Context) SetAllSecrets(
+	name string,
+	secrets map[string]string,
+) *Context {
 	if ctx.Err() != nil {
 		return ctx
 	}
@@ -157,7 +170,7 @@ func (ctx *Context) SetAllSecrets(name string, secrets map[string]string) *Conte
 	if ctx.HasEnvironment(name) {
 		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(name)
 
-		if err := new(EnvFile).Load(dotEnvPath, nil).SetData(secrets).Dump().Err(); err != nil {
+		if err := new(envfile.EnvFile).Load(dotEnvPath, nil).SetData(secrets).Dump().Err(); err != nil {
 			return ctx.setError(kserrors.FailedToUpdateDotEnv(dotEnvPath, err))
 		}
 
@@ -178,7 +191,7 @@ func (ctx *Context) GetAllSecrets(envName string) map[string]string {
 	if ctx.HasEnvironment(envName) {
 		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(envName)
 
-		envFile := new(EnvFile).Load(dotEnvPath, nil)
+		envFile := new(envfile.EnvFile).Load(dotEnvPath, nil)
 
 		if err := envFile.Err(); err != nil {
 			ctx.setError(kserrors.FailedToReadDotEnv(dotEnvPath, err))
@@ -198,17 +211,20 @@ func (ctx *Context) HasEnvironment(name string) bool {
 		return false
 	}
 
-	return DirExists(ctx.CachedEnvironmentPath(name))
+	return utils.DirExists(ctx.CachedEnvironmentPath(name))
 }
 
 func (ctx *Context) MustHaveEnvironment(name string) {
 	if !ctx.HasEnvironment(name) {
-		kserrors.EnvironmentDoesntExist(name, strings.Join(ctx.ListEnvironments(), ", "), nil).Print()
+		kserrors.EnvironmentDoesntExist(name, strings.Join(ctx.ListEnvironments(), ", "), nil).
+			Print()
 		os.Exit(1)
 	}
 }
 
-func (ctx *Context) MustHaveAccessToEnvironment(environmentName string) *Context {
+func (ctx *Context) MustHaveAccessToEnvironment(
+	environmentName string,
+) *Context {
 	for _, accessible := range ctx.AccessibleEnvironments {
 		if accessible.Name == environmentName {
 			return ctx
@@ -222,7 +238,7 @@ func (ctx *Context) MustHaveAccessToEnvironment(environmentName string) *Context
 }
 
 func (ctx *Context) UpdateEnvironment(environment models.Environment) *Context {
-	environmentFile := new(EnvironmentsFile)
+	environmentFile := new(environmentsfile.EnvironmentsFile)
 
 	if err := environmentFile.
 		Load(ctx.dotKeystonePath()).
@@ -233,10 +249,12 @@ func (ctx *Context) UpdateEnvironment(environment models.Environment) *Context {
 	}
 
 	return ctx
-
 }
 
-func (ctx *Context) SetEnvironmentVersion(name string, version_id string) string {
+func (ctx *Context) SetEnvironmentVersion(
+	name string,
+	version_id string,
+) string {
 	environments := ctx.EnvironmentsFromConfig()
 
 	for _, e := range environments {
@@ -274,25 +292,35 @@ func (ctx *Context) EnvironmentID() string {
 	return ctx.getCurrentEnvironmentId()
 }
 
-func (ctx *Context) EnvironmentsFromConfig() []Env {
-	environmentsfile := new(EnvironmentsFile).Load(ctx.dotKeystonePath())
+func (ctx *Context) EnvironmentsFromConfig() []environmentsfile.Env {
+	environmentsfile := new(
+		environmentsfile.EnvironmentsFile,
+	).Load(ctx.dotKeystonePath())
 	return environmentsfile.Environments
 }
 
-func (ctx *Context) EnvironmentVersionHasChanged(name string, environmentVersion string) bool {
+func (ctx *Context) EnvironmentVersionHasChanged(
+	name string,
+	environmentVersion string,
+) bool {
 	currentVersion := ctx.EnvironmentVersionByName(name)
 	return currentVersion != environmentVersion
 }
 
-func (ctx *Context) LoadEnvironmentsFile() *EnvironmentsFile {
-	return new(EnvironmentsFile).Load(ctx.dotKeystonePath())
+func (ctx *Context) LoadEnvironmentsFile() *environmentsfile.EnvironmentsFile {
+	return new(environmentsfile.EnvironmentsFile).Load(ctx.dotKeystonePath())
 }
 
-func (ctx *Context) RemoveForbiddenEnvironments(accessibleEnvironments []models.Environment) {
+func (ctx *Context) RemoveForbiddenEnvironments(
+	accessibleEnvironments []models.Environment,
+) {
 	accessibleEnvironmentsNames := make([]string, 0)
 
 	for _, accessibleEnvironment := range accessibleEnvironments {
-		accessibleEnvironmentsNames = append(accessibleEnvironmentsNames, accessibleEnvironment.Name)
+		accessibleEnvironmentsNames = append(
+			accessibleEnvironmentsNames,
+			accessibleEnvironment.Name,
+		)
 	}
 
 	for _, localEnvironment := range ctx.ListEnvironments() {
@@ -300,7 +328,5 @@ func (ctx *Context) RemoveForbiddenEnvironments(accessibleEnvironments []models.
 		if !Contains(accessibleEnvironmentsNames, localEnvironment) {
 			ctx.RemoveEnvironment(localEnvironment)
 		}
-
 	}
-
 }

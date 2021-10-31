@@ -16,7 +16,7 @@ var privateCmd = &cobra.Command{
 	Short: "Toggle an organization privacy",
 	Long:  `Toggle an organization privacy.`,
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err error
 		organizationName := args[0]
 
@@ -46,7 +46,10 @@ func init() {
 }
 
 // TODO: This should be an API thing
-func getUserOwnedOrganization(c client.KeystoneClient, organizationName string) models.Organization {
+func getUserOwnedOrganization(
+	c client.KeystoneClient,
+	organizationName string,
+) models.Organization {
 	organizations, _ := c.Organizations().GetAll()
 
 	foundOrga := models.Organization{}
@@ -59,7 +62,10 @@ func getUserOwnedOrganization(c client.KeystoneClient, organizationName string) 
 
 	if foundOrga.ID == 0 {
 		// TODO: This needs to be a proper error
-		ui.PrintError("You don't own an organization named %s", organizationName)
+		ui.PrintError(
+			"You don't own an organization named %s",
+			organizationName,
+		)
 		ui.Print("To see organizations you own, use : $ ks orga")
 		os.Exit(1)
 	}

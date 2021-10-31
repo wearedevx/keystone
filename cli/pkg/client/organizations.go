@@ -20,7 +20,10 @@ func (c *Organizations) GetAll() ([]models.Organization, error) {
 	return result.Organizations, err
 }
 
-func (c *Organizations) CreateOrganization(organizationName string, private bool) (models.Organization, error) {
+func (c *Organizations) CreateOrganization(
+	organizationName string,
+	private bool,
+) (models.Organization, error) {
 	var err error
 	var result models.Organization
 	payload := models.Organization{Name: organizationName, Private: private}
@@ -30,7 +33,9 @@ func (c *Organizations) CreateOrganization(organizationName string, private bool
 	return result, err
 }
 
-func (c *Organizations) UpdateOrganization(organization models.Organization) (models.Organization, error) {
+func (c *Organizations) UpdateOrganization(
+	organization models.Organization,
+) (models.Organization, error) {
 	var err error
 	var result models.Organization
 

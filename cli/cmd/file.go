@@ -75,5 +75,12 @@ func init() {
 	// is called directly, e.g.:
 	// filesCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	filesCmd.Flags().StringVarP(&fileDisplayFilter, "filter", "f", display.FileFilterAll, "Files to display")
+	filesCmd.Flags().
+		StringVarP(
+			&fileDisplayFilter,
+			"filter",
+			"f",
+			display.FileFilterAll,
+			"Files to display",
+		)
 }

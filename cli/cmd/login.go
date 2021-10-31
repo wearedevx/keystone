@@ -40,12 +40,22 @@ func ShowAlreadyLoggedInAndExit(account models.User) {
 		username = account.Email
 	}
 
-	ui.Print(ui.RenderTemplate("already logged in", `You are already logged in as {{ . }}`, username))
+	ui.Print(
+		ui.RenderTemplate(
+			"already logged in",
+			`You are already logged in as {{ . }}`,
+			username,
+		),
+	)
 	exit(nil)
 }
 
 // TODO: move to an internal package
-func LogIntoExisitingAccount(accountIndex int, currentAccount models.User, c auth.AuthService) {
+func LogIntoExisitingAccount(
+	accountIndex int,
+	currentAccount models.User,
+	c auth.AuthService,
+) {
 	config.SetCurrentAccount(accountIndex)
 
 	publicKey, _ := config.GetUserPublicKey()
@@ -73,7 +83,11 @@ func CreateAccountAndLogin(c auth.AuthService) {
 
 	// Transfer credentials to the server
 	// Create (or get) the user info
-	user, jwtToken, err := c.Finish(keyPair.Public.Value, config.GetDeviceName(), config.GetDeviceUID())
+	user, jwtToken, err := c.Finish(
+		keyPair.Public.Value,
+		config.GetDeviceName(),
+		config.GetDeviceUID(),
+	)
 	exitIfErr(err)
 
 	// Save the user info in the local config
@@ -155,17 +169,23 @@ ks login ––with=github`,
 		url, err := c.Start()
 		exitIfErr(err)
 
-		ui.Print(ui.RenderTemplate("login visit", `Visit the URL below to login with your {{ .Service }} account:
+		ui.Print(
+			ui.RenderTemplate(
+				"login visit",
+				`Visit the URL below to login with your {{ .Service }} account:
 
 {{ .Url | indent 8 }}
 
-Waiting for you to login with your {{ .Service }} Account...`, struct {
-			Service string
-			Url     string
-		}{
-			Service: c.Name(),
-			Url:     url,
-		}))
+Waiting for you to login with your {{ .Service }} Account...`,
+				struct {
+					Service string
+					Url     string
+				}{
+					Service: c.Name(),
+					Url:     url,
+				},
+			),
+		)
 
 		sp := spinner.Spinner(" ")
 		sp.Start()
@@ -204,5 +224,6 @@ func init() {
 	// is called directly, e.g.:
 	// loginCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	loginCmd.Flags().StringVar(&serviceName, "with", "", "identity provider. Either github or gitlab")
+	loginCmd.Flags().
+		StringVar(&serviceName, "with", "", "identity provider. Either github or gitlab")
 }

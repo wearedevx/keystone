@@ -7,15 +7,17 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
-type CustomerID string
-type SubscriptionID string
+type (
+	CustomerID     string
+	SubscriptionID string
+)
 
 type SubscriptionStatus string
 
 const (
 	SubscriptionStatusUnpaid   SubscriptionStatus = "unpaid"
-	SubscriptionStatusPaid                        = "paid"
-	SubscriptionStatusCanceled                    = "canceled"
+	SubscriptionStatusPaid     SubscriptionStatus = "paid"
+	SubscriptionStatusCanceled SubscriptionStatus = "canceled"
 )
 
 type Subscription struct {
@@ -33,7 +35,10 @@ type Payment interface {
 	// unique users associated with the organization
 	// that subscription is for
 	// returns a session id, a url for the user proceed, and an error
-	StartCheckout(organization *models.Organization, seats int64) (string, string, string, error)
+	StartCheckout(
+		organization *models.Organization,
+		seats int64,
+	) (string, string, string, error)
 	GetManagementLink(organization *models.Organization) (string, error)
 	// For webhooks, returns a unified event from a request
 	HandleEvent(r *http.Request) (Event, error)
@@ -49,10 +54,10 @@ type EventType string
 
 const (
 	EventNothing              EventType = "nothing"
-	EventCheckoutComplete               = "checkout.complete"
-	EventSubscriptionPaid               = "subscription.paid"
-	EventSubscriptionUnpaid             = "subscription.unpaid"
-	EventSubscriptionCanceled           = "subscription.canceled"
+	EventCheckoutComplete     EventType = "checkout.complete"
+	EventSubscriptionPaid     EventType = "subscription.paid"
+	EventSubscriptionUnpaid   EventType = "subscription.unpaid"
+	EventSubscriptionCanceled EventType = "subscription.canceled"
 )
 
 type Event struct {

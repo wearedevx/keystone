@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	. "github.com/logrusorgru/aurora/v3"
+	aurora "github.com/logrusorgru/aurora/v3"
 )
 
 type Printer interface {
@@ -21,7 +21,7 @@ func (ep *EchoPrinter) Print(messageString string, args ...interface{}) {
 
 	formatted := messageString
 	if len(args) > 0 {
-		formatted = Sprintf(messageString, args...)
+		formatted = aurora.Sprintf(messageString, args...)
 	}
 
 	fmt.Println(formatted)
@@ -32,7 +32,7 @@ func (ep *EchoPrinter) PrintStdErr(messageString string, args ...interface{}) {
 
 	formatted := messageString
 	if len(args) > 0 {
-		formatted = Sprintf(messageString, args...)
+		formatted = aurora.Sprintf(messageString, args...)
 	}
 
 	fmt.Println(formatted)
@@ -41,7 +41,7 @@ func (ep *EchoPrinter) PrintStdErr(messageString string, args ...interface{}) {
 func (up *UiPrinter) Print(messageString string, args ...interface{}) {
 	formatted := messageString
 	if len(args) > 0 {
-		formatted = Sprintf(messageString, args...)
+		formatted = aurora.Sprintf(messageString, args...)
 	}
 
 	fmt.Println(formatted)
@@ -50,7 +50,7 @@ func (up *UiPrinter) Print(messageString string, args ...interface{}) {
 func (up *UiPrinter) PrintStdErr(messageString string, args ...interface{}) {
 	formatted := messageString
 	if len(args) > 0 {
-		formatted = Sprintf(messageString, args...)
+		formatted = aurora.Sprintf(messageString, args...)
 	}
 
 	fmt.Fprintln(os.Stderr, formatted)
@@ -60,7 +60,7 @@ func PrintError(messageString string, args ...interface{}) {
 
 	formatted := messageString
 	if len(args) > 0 {
-		formatted = Sprintf(messageString, args...)
+		formatted = aurora.Sprintf(messageString, args...)
 	}
 
 	displayable := RenderTemplate("Error", `
@@ -76,7 +76,7 @@ func PrintSuccess(messageString string, args ...interface{}) {
 
 	formatted := messageString
 	if len(args) > 0 {
-		formatted = Sprintf(messageString, args...)
+		formatted = aurora.Sprintf(messageString, args...)
 	}
 
 	displayable := RenderTemplate("Success", `
@@ -91,18 +91,18 @@ func PrintSuccess(messageString string, args ...interface{}) {
 func PrintBox(messageString string, args ...interface{}) {
 	formatted := messageString
 	if len(args) > 0 {
-		formatted = Sprintf(messageString, args...)
+		formatted = aurora.Sprintf(messageString, args...)
 	}
 
-	fmt.Println(Green(Box(formatted)))
+	fmt.Println(aurora.Green(Box(formatted)))
 }
 
 func PrintDim(messageString string, args ...interface{}) {
-	colored := Gray(11, messageString)
+	colored := aurora.Gray(11, messageString)
 
 	formatted := colored.String()
 	if len(args) > 0 {
-		formatted = Sprintf(colored, args...)
+		formatted = aurora.Sprintf(colored, args...)
 	}
 
 	fmt.Println(formatted)
@@ -111,7 +111,7 @@ func PrintDim(messageString string, args ...interface{}) {
 func PrintStdErr(messageString string, args ...interface{}) {
 	formatted := messageString
 	if len(args) > 0 {
-		formatted = Sprintf(messageString, args...)
+		formatted = aurora.Sprintf(messageString, args...)
 	}
 
 	fmt.Fprintln(os.Stderr, formatted)
@@ -120,7 +120,7 @@ func PrintStdErr(messageString string, args ...interface{}) {
 func Print(messageString string, args ...interface{}) {
 	formatted := messageString
 	if len(args) > 0 {
-		formatted = Sprintf(messageString, args...)
+		formatted = aurora.Sprintf(messageString, args...)
 	}
 
 	fmt.Println(formatted)

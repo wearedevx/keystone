@@ -5,11 +5,10 @@ import (
 	"fmt"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	. "github.com/wearedevx/keystone/api/pkg/models"
 	"gorm.io/gorm"
 )
 
-func (r *Repo) GetUser(user *User) IRepo {
+func (r *Repo) GetUser(user *models.User) IRepo {
 	if r.Err() != nil {
 		return r
 	}
@@ -40,7 +39,7 @@ func (r *Repo) findDeletedDevice(
 }
 
 func (r *Repo) undeleteOrCreateDevices(
-	user *User,
+	user *models.User,
 ) *Repo {
 	if r.err != nil {
 		return r
@@ -76,14 +75,14 @@ func (r *Repo) undeleteOrCreateDevices(
 	return r
 }
 
-func (r *Repo) GetOrCreateUser(user *User) IRepo {
+func (r *Repo) GetOrCreateUser(user *models.User) IRepo {
 	if r.Err() != nil {
 		return r
 	}
 
 	db := r.GetDb()
 
-	foundUser := User{
+	foundUser := models.User{
 		AccountType: user.AccountType,
 		Username:    user.Username,
 		UserID:      fmt.Sprintf("%s@%s", user.Username, user.AccountType),
@@ -143,12 +142,16 @@ func (r *Repo) GetOrCreateUser(user *User) IRepo {
 // From a slice of userIDs (<username>@<service>)
 // fetchs the users.
 // Returns the found users and a list of not found userIDs
-func (r *Repo) FindUsers(userIDs []string, users *map[string]User, notFounds *[]string) IRepo {
+func (r *Repo) FindUsers(
+	userIDs []string,
+	users *map[string]models.User,
+	notFounds *[]string,
+) IRepo {
 	if r.err != nil {
 		return r
 	}
 
-	userSlice := make([]User, 0)
+	userSlice := make([]models.User, 0)
 
 	db := r.GetDb()
 
@@ -177,7 +180,7 @@ func (r *Repo) FindUsers(userIDs []string, users *map[string]User, notFounds *[]
 	return r
 }
 
-func (r *Repo) GetUserByEmail(email string, users *[]User) IRepo {
+func (r *Repo) GetUserByEmail(email string, users *[]models.User) IRepo {
 	if r.Err() != nil {
 		return r
 	}

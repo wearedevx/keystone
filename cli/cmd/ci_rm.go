@@ -39,9 +39,7 @@ ks ci rm my-github-ci-service
 `,
 	Args: cobra.MaximumNArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var serviceName string
-
-		serviceName = getServiceNameToRemove(args)
+		serviceName := getServiceNameToRemove(args)
 
 		s, ok := ci.FindCiServiceWithName(ctx, serviceName)
 		if !ok {

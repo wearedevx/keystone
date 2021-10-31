@@ -31,13 +31,17 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/core"
 )
 
-var ksauthURL string //= "http://localhost:9000"
-var ksapiURL string  //= "http://localhost:9001"
+var (
+	ksauthURL string //= "http://localhost:9000"
+	ksapiURL  string //= "http://localhost:9001"
+)
 
-var cfgFile string = ""
-var currentEnvironment string
-var quietOutput bool
-var skipPrompts bool
+var (
+	cfgFile            string = ""
+	currentEnvironment string
+	quietOutput        bool
+	skipPrompts        bool
+)
 
 var ctx *core.Context
 
@@ -56,7 +60,7 @@ var RootCmd = &cobra.Command{
 	Long:  `A safe system for developers to store, share and use secrets.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		if err := cmd.Usage(); err != nil {
 			ui.PrintError(err.Error())
 		}
@@ -73,9 +77,11 @@ func Execute() int {
 	return 0
 }
 
-var noEnvironmentCommands []string
-var noProjectCommands []string
-var noLoginCommands []string
+var (
+	noEnvironmentCommands []string
+	noProjectCommands     []string
+	noLoginCommands       []string
+)
 
 func findCurrentCommand(args []string) string {
 	for _, candidate := range args[1:] {
@@ -176,7 +182,6 @@ func Initialize() {
 	if checkLogin && !config.IsLoggedIn() {
 		exit(kserrors.MustBeLoggedIn(nil))
 	}
-
 }
 
 func init() {
@@ -193,13 +198,17 @@ func init() {
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// setCmd.PersistentFlags().String("foo", "", "A help for foo")
-	RootCmd.PersistentFlags().BoolVarP(&quietOutput, "quiet", "q", false, "make the output machine readable")
+	RootCmd.PersistentFlags().
+		BoolVarP(&quietOutput, "quiet", "q", false, "make the output machine readable")
 
-	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.config/keystone/keystone.yaml)")
+	RootCmd.PersistentFlags().
+		StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.config/keystone/keystone.yaml)")
 
-	RootCmd.PersistentFlags().BoolVarP(&skipPrompts, "skip", "s", false, "skip prompts and use default")
+	RootCmd.PersistentFlags().
+		BoolVarP(&skipPrompts, "skip", "s", false, "skip prompts and use default")
 
-	RootCmd.PersistentFlags().StringVarP(&currentEnvironment, "env", "", "", "environment to use instead of the current one")
+	RootCmd.PersistentFlags().
+		StringVarP(&currentEnvironment, "env", "", "", "environment to use instead of the current one")
 
 	cobra.OnInitialize(func() {
 		// Call directly initConfig. cobra doesn't call initConfig func.
@@ -225,8 +234,6 @@ func printChanges(
 	changes core.ChangesByEnvironment,
 	// messagesByEnvironments models.GetMessageByEnvironmentResponse,
 ) {
-	changedEnvironments := make([]string, 0)
-
 	for _, environmentName := range envList {
 		changesList, ok := changes.Environments[environmentName]
 		if !ok {
@@ -234,31 +241,50 @@ func printChanges(
 		}
 
 		if changesList.IsSingleVersionChange() {
-			ui.PrintStdErr("Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯")
-			changedEnvironments = append(changedEnvironments, environmentName)
+			ui.PrintStdErr(
+				"Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯",
+			)
 			continue
 		}
 
 		if !changesList.IsEmpty() {
-			ui.PrintStdErr("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
+			ui.PrintStdErr(
+				"Environment " + environmentName + ": " + strconv.Itoa(
+					len(changes.Environments[environmentName]),
+				) + " secret(s) changed",
+			)
 
 			for _, change := range changesList {
 				// No previous cotent => secret is new
 				switch {
 				case change.IsSecretAdd():
-					ui.PrintStdErr(ui.RenderTemplate("secret added", ` {{ "++" | green }} {{ .Secret }} : {{ .To }}`, map[string]string{
-						"Secret": change.Name,
-						"From":   change.From,
-						"To":     change.To,
-					}))
+					ui.PrintStdErr(
+						ui.RenderTemplate(
+							"secret added",
+							` {{ "++" | green }} {{ .Secret }} : {{ .To }}`,
+							map[string]string{
+								"Secret": change.Name,
+								"From":   change.From,
+								"To":     change.To,
+							},
+						),
+					)
 
 				case change.IsSecretDelete():
-					ui.PrintStdErr(ui.RenderTemplate("secret deleted", ` {{ "--" | red }} {{ .Secret }} deleted.`, map[string]string{
-						"Secret": change.Name,
-					}))
+					ui.PrintStdErr(
+						ui.RenderTemplate(
+							"secret deleted",
+							` {{ "--" | red }} {{ .Secret }} deleted.`,
+							map[string]string{
+								"Secret": change.Name,
+							},
+						),
+					)
 
 				case change.IsSecretChange():
-					ui.PrintStdErr("   " + change.Name + " : " + change.From + " ↦ " + change.To)
+					ui.PrintStdErr(
+						"   " + change.Name + " : " + change.From + " ↦ " + change.To,
+					)
 				}
 			}
 		}

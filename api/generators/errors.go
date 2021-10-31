@@ -4,12 +4,11 @@ package main
 
 import (
 	"fmt"
-	. "fmt"
-	. "io/ioutil"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
-	. "strings"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -27,8 +26,7 @@ type DefFile struct {
 func open(p string) DefFile {
 	var def DefFile
 
-	f, err := ReadFile(p)
-
+	f, err := ioutil.ReadFile(p)
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +42,7 @@ func open(p string) DefFile {
 
 func write(contents string, outpath string) error {
 	fmt.Printf("Writing: %+v\n", outpath)
-	err := WriteFile(outpath, []byte(contents), 0o644)
+	err := ioutil.WriteFile(outpath, []byte(contents), 0o644)
 	if err != nil {
 		return err
 	}
@@ -76,7 +74,12 @@ func main() {
 		panic(err)
 	}
 
-	internalErrorsPath := path.Join(wd, "internal", "errors", "generated_errors.go")
+	internalErrorsPath := path.Join(
+		wd,
+		"internal",
+		"errors",
+		"generated_errors.go",
+	)
 	internalErrors := createInternalErrors(defs.Errors)
 
 	err = write(internalErrors, internalErrorsPath)
@@ -88,7 +91,7 @@ func main() {
 }
 
 func createPkgApiErrors(definitions []Error) string {
-	var sb Builder
+	var sb strings.Builder
 	sb.WriteString(`
 package apierrors
 
@@ -98,7 +101,7 @@ var (
 `)
 
 	for _, error := range definitions {
-		sb.WriteString(Sprintf(
+		sb.WriteString(fmt.Sprintf(
 			"%s error = errors.New(\"%s\")\n",
 			error.Symbol,
 			error.Value,
@@ -112,7 +115,7 @@ func FromString(s string) error {
 `)
 
 	for _, error := range definitions {
-		sb.WriteString(Sprintf(`case %s.Error():
+		sb.WriteString(fmt.Sprintf(`case %s.Error():
 		return %s
 `, error.Symbol, error.Symbol))
 	}
@@ -126,20 +129,20 @@ func FromString(s string) error {
 }
 
 func createInternalErrors(definitions []Error) string {
-	var sb Builder
+	var sb strings.Builder
 	sb.WriteString(`package errors
 
 `)
 
 	for _, error := range definitions {
 		if error.HasCause {
-			sb.WriteString(Sprintf(`func %s(cause error) error {
+			sb.WriteString(fmt.Sprintf(`func %s(cause error) error {
 	return newError("%s", cause)
 }
 
 `, error.Symbol, error.Value))
 		} else {
-			sb.WriteString(Sprintf(`func %s() error {
+			sb.WriteString(fmt.Sprintf(`func %s() error {
 	return newError("%s", nil)
 }
 

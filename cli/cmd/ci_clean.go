@@ -34,7 +34,6 @@ ks ci clean --env prod
 			ctx,
 			client.ApiURL,
 		)
-
 		if err != nil {
 			if errors.Is(err, ci.ErrorNoCIServices) {
 				exit(kserrors.NoCIServices(nil))

@@ -1,7 +1,6 @@
 package display
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/wearedevx/keystone/cli/ui"
@@ -47,7 +46,7 @@ To add them to the project use "member add" command:
   $ ks member add <username>
 `, map[string]string{
 			"Title":     "User already on Keystone",
-			"Usernames": fmt.Sprintf("%s", strings.Join(userUIDs, ", ")),
+			"Usernames": strings.Join(usersUIDs, ", "),
 		}))
 	} else {
 		ui.PrintSuccess("A email has been sent to %s, they will get back to you when their Keystone account will be created", email)

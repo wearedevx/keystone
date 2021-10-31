@@ -11,7 +11,8 @@ import (
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
-	. "github.com/wearedevx/keystone/cli/internal/utils"
+
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
@@ -22,8 +23,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var projectName string
-var organizationName string
+var (
+	projectName      string
+	organizationName string
+)
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
@@ -64,7 +67,7 @@ Created files and directories:
 			// inform the user they are in a keystone project
 			if ksfile.ProjectId != "" && ksfile.ProjectName != projectName {
 				// check if .keystone directory too
-				if DirExists(path.Join(ctx.Wd, ".keystone")) {
+				if utils.DirExists(path.Join(ctx.Wd, ".keystone")) {
 					kserrors.AlreadyKeystoneProject(errors.New("")).Print()
 					exit(nil)
 				}
@@ -167,7 +170,10 @@ func getProject(
 	return nil
 }
 
-func addOrganizationToProject(c client.KeystoneClient, project *models.Project) uint {
+func addOrganizationToProject(
+	c client.KeystoneClient,
+	project *models.Project,
+) uint {
 	organizations, err := c.Organizations().GetAll()
 	if err != nil {
 		// TODO: there should be proper error here

@@ -44,9 +44,15 @@ When a file is marked as optional, its absence or emptiness won’t cause
 
 		template := `Secret {{ .SecertName }} is now optional.`
 
-		ui.Print(ui.RenderTemplate("set secret optional", template, struct{ SecretName string }{
-			SecretName: secretName,
-		}))
+		ui.Print(
+			ui.RenderTemplate(
+				"set secret optional",
+				template,
+				struct{ SecretName string }{
+					SecretName: secretName,
+				},
+			),
+		)
 	},
 }
 

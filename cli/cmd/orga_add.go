@@ -19,7 +19,7 @@ Organzation names must be unique and composed of only alphanumeric characters,
 `,
 	Example: `ks orga add my_new_organization`,
 	Args:    cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err error
 		organizationName := args[0]
 

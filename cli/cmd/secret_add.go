@@ -125,7 +125,11 @@ ks secret add PORT`,
 			exit(err)
 		}
 
-		ui.PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(ctx.AccessibleEnvironments))
+		ui.PrintSuccess(
+			"Variable '%s' is set for %d environment(s)",
+			secretName,
+			len(ctx.AccessibleEnvironments),
+		)
 	},
 }
 
@@ -141,11 +145,15 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	secretAddCmd.Flags().BoolVarP(&addOptional, "optional", "o", false, "mark the secret as optional")
+	secretAddCmd.Flags().
+		BoolVarP(&addOptional, "optional", "o", false, "mark the secret as optional")
 }
 
-func setValuesForEnvironments(secretName string, secretValue string, accessibleEnvironments []models.Environment) map[string]string {
-
+func setValuesForEnvironments(
+	secretName string,
+	secretValue string,
+	accessibleEnvironments []models.Environment,
+) map[string]string {
 	environmentValueMap := make(map[string]string)
 	// Ask value for each env
 	if !skipPrompts {
@@ -153,7 +161,6 @@ func setValuesForEnvironments(secretName string, secretValue string, accessibleE
 Enter a values for {{ . }}:`, secretName))
 
 		for _, environment := range accessibleEnvironments {
-
 			// multiline edit
 			if strings.Contains(secretValue, "\n") {
 				var defaultContent strings.Builder
@@ -175,8 +182,10 @@ Enter a values for {{ . }}:`, secretName))
 				stringResult := string(result)
 
 				// remove blank line and comment from secret
-				stringResult = regexp.MustCompile(`#.*$`).ReplaceAllString(strings.TrimSpace(stringResult), "")
-				stringResult = regexp.MustCompile(`[\t\r\n]+`).ReplaceAllString(strings.TrimSpace(stringResult), "\n")
+				stringResult = regexp.MustCompile(`#.*$`).
+					ReplaceAllString(strings.TrimSpace(stringResult), "")
+				stringResult = regexp.MustCompile(`[\t\r\n]+`).
+					ReplaceAllString(strings.TrimSpace(stringResult), "\n")
 
 				if err != nil {
 					if err.Error() != "^C" {
@@ -186,7 +195,10 @@ Enter a values for {{ . }}:`, secretName))
 					os.Exit(0)
 				}
 
-				environmentValueMap[environment.Name] = strings.Trim(string(stringResult), " ")
+				environmentValueMap[environment.Name] = strings.Trim(
+					string(stringResult),
+					" ",
+				)
 			} else {
 				environmentValueMap[environment.Name] = prompts.StringInput(
 					environment.Name,
@@ -199,14 +211,15 @@ Enter a values for {{ . }}:`, secretName))
 		for _, environment := range accessibleEnvironments {
 			environmentValueMap[environment.Name] = strings.Trim(secretValue, " ")
 		}
-
 	}
 
 	return environmentValueMap
 }
 
 // TODO: should be a core function
-func checkSecretAlreadyInCache(secretName string) (inCache bool, _ map[core.EnvironmentName]core.SecretValue) {
+func checkSecretAlreadyInCache(
+	secretName string,
+) (inCache bool, _ map[core.EnvironmentName]core.SecretValue) {
 	var found core.Secret
 	values := make(map[core.EnvironmentName]core.SecretValue)
 	secrets := ctx.ListSecretsFromCache()

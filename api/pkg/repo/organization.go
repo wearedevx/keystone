@@ -25,7 +25,10 @@ func (r *Repo) GetOrganizationByName(orga *models.Organization) IRepo {
 	return r
 }
 
-func (r *Repo) GetOrganizationProjects(orga *models.Organization, projects *[]models.Project) IRepo {
+func (r *Repo) GetOrganizationProjects(
+	orga *models.Organization,
+	projects *[]models.Project,
+) IRepo {
 	fmt.Println(orga)
 	if err := r.GetDb().Where("organization_id = ?", orga.ID).Find(&projects).Error; err != nil {
 		r.err = err
@@ -145,7 +148,10 @@ func (r *Repo) OrganizationSetPaid(
 	return r
 }
 
-func (r *Repo) GetOrganizations(userID uint, result *models.GetOrganizationsResponse) IRepo {
+func (r *Repo) GetOrganizations(
+	userID uint,
+	result *models.GetOrganizationsResponse,
+) IRepo {
 	if r.Err() != nil {
 		return r
 	}
@@ -159,7 +165,6 @@ func (r *Repo) GetOrganizations(userID uint, result *models.GetOrganizationsResp
 		Where("(pm.user_id = ? and organizations.private = false) or organizations.user_id = ?", userID, userID).
 		Group("organizations.name").Group("organizations.id").
 		Find(&orgas).Error
-
 	if err != nil {
 		r.err = err
 		return r
@@ -170,7 +175,10 @@ func (r *Repo) GetOrganizations(userID uint, result *models.GetOrganizationsResp
 	return r
 }
 
-func (r *Repo) OrganizationCountMembers(organization *models.Organization, count *int64) IRepo {
+func (r *Repo) OrganizationCountMembers(
+	organization *models.Organization,
+	count *int64,
+) IRepo {
 	if r.Err() != nil {
 		return r
 	}
@@ -188,7 +196,10 @@ func (r *Repo) OrganizationCountMembers(organization *models.Organization, count
 	return r
 }
 
-func (r *Repo) IsUserOwnerOfOrga(user *models.User, orga *models.Organization) (isOwner bool, err error) {
+func (r *Repo) IsUserOwnerOfOrga(
+	user *models.User,
+	orga *models.Organization,
+) (isOwner bool, err error) {
 	foundOrga := models.Organization{}
 
 	if err = r.GetDb().Where("id=?", orga.ID).First(&foundOrga).Error; err != nil {
@@ -202,11 +213,13 @@ func (r *Repo) IsUserOwnerOfOrga(user *models.User, orga *models.Organization) (
 }
 
 func setRoleToAdminForAllProjectsFromOrga(orga *models.Organization) error {
-
 	return nil
 }
 
-func (r *Repo) GetOrganizationMembers(orgaID uint, result *[]models.ProjectMember) IRepo {
+func (r *Repo) GetOrganizationMembers(
+	orgaID uint,
+	result *[]models.ProjectMember,
+) IRepo {
 	if r.Err() != nil {
 		return r
 	}
@@ -219,7 +232,6 @@ func (r *Repo) GetOrganizationMembers(orgaID uint, result *[]models.ProjectMembe
 		Where("o.id = ?", orgaID).
 		Group("project_members.user_id").Group("project_members.id").
 		Find(result).Error
-
 	if err != nil {
 		r.err = err
 		return r

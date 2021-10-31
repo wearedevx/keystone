@@ -50,8 +50,8 @@ func PromptRole(memberId string, roles []models.Role) (models.Role, error) {
 
 	searcher := func(input string, index int) bool {
 		role := roles[index]
-		name := strings.Replace(strings.ToLower(role.Name), " ", "", -1)
-		input = strings.Replace(strings.ToLower(input), " ", "", -1)
+		name := strings.ReplaceAll(strings.ToLower(role.Name), " ", "")
+		input = strings.ReplaceAll(strings.ToLower(input), " ", "")
 
 		return strings.Contains(name, input)
 	}
@@ -76,7 +76,7 @@ func SelectDevice(devices []models.Device) models.Device {
 	items := make([]map[string]string, 0)
 
 	for _, device := range devices {
-		var newItem = make(map[string]string, 0)
+		newItem := make(map[string]string)
 		newItem["Name"] = device.Name
 		newItem["UID"] = device.UID
 		newItem["CreatedAt"] = device.CreatedAt.Format("2006/01/02")
@@ -107,7 +107,6 @@ func SelectDevice(devices []models.Device) models.Device {
 	}
 
 	index, _, err := prompt.Run()
-
 	if err != nil {
 		if err.Error() != "^C" {
 			ui.PrintError(err.Error())
@@ -117,7 +116,9 @@ func SelectDevice(devices []models.Device) models.Device {
 		os.Exit(0)
 	}
 
-	if !Confirm(fmt.Sprintf("Sure you want to revoke %s", devices[index].Name)) {
+	if !Confirm(
+		fmt.Sprintf("Sure you want to revoke %s", devices[index].Name),
+	) {
 		os.Exit(0)
 	}
 
@@ -141,7 +142,9 @@ func DeviceName(existingName string, forceDefault bool) string {
 		validate := func(input string) error {
 			matched, err := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, input)
 			if !matched {
-				return errors.New("Incorrect device name. Device name must be alphanumeric with ., -, _")
+				return errors.New(
+					"incorrect device name. Device name must be alphanumeric with ., -, _",
+				)
 			}
 			return err
 		}
@@ -244,7 +247,10 @@ This is permanent, and cannot be undone.
 			"Project": projectName,
 		}))
 
-	result := StringInput("Type the project name to confirm its destruction", "")
+	result := StringInput(
+		"Type the project name to confirm its destruction",
+		"",
+	)
 
 	// expect result to be the project name
 	return projectName == result
@@ -253,7 +259,9 @@ This is permanent, and cannot be undone.
 // ———— ORGANIZATION PROMPTS ————— //
 
 // Asks the usre to select from a list of organizations
-func OrganizationsSelect(organizations []models.Organization) models.Organization {
+func OrganizationsSelect(
+	organizations []models.Organization,
+) models.Organization {
 	templates := &promptui.SelectTemplates{
 		Active: fmt.Sprintf(
 			"%s {{ .Name | underline }}",
@@ -268,8 +276,8 @@ func OrganizationsSelect(organizations []models.Organization) models.Organizatio
 
 	searcher := func(input string, index int) bool {
 		orga := organizations[index]
-		name := strings.Replace(strings.ToLower(orga.Name), " ", "", -1)
-		input = strings.Replace(strings.ToLower(input), " ", "", -1)
+		name := strings.ReplaceAll(strings.ToLower(orga.Name), " ", "")
+		input = strings.ReplaceAll(strings.ToLower(input), " ", "")
 
 		return strings.Contains(name, input)
 	}
@@ -283,7 +291,6 @@ func OrganizationsSelect(organizations []models.Organization) models.Organizatio
 	}
 
 	i, _, err := prompt.Run()
-
 	if err != nil {
 		if err.Error() != "^C" {
 			ui.PrintError(err.Error())
@@ -305,10 +312,13 @@ func PasswordToDecrypt() string {
 }
 
 func ConfirmDotKeystonDirRemoval() bool {
-	ui.Print(ui.RenderTemplate("confirm files rm",
+	ui.Print(ui.RenderTemplate(
+		"confirm files rm",
 		`{{ CAREFUL }} You are about to remove the content of .keystone/ which contain all your local secrets and files.
 This will override the changes you and other members made since the backup.
-It will update other members secrets and files.`, map[string]string{}))
+It will update other members secrets and files.`,
+		map[string]string{},
+	))
 	return Confirm("Continue")
 }
 
@@ -338,14 +348,17 @@ func ConfirmFileRemove(filePath, environmentName string, forceYes bool) bool {
 		return true
 	}
 
-	ui.Print(ui.RenderTemplate("confirm files rm",
+	ui.Print(ui.RenderTemplate(
+		"confirm files rm",
 		`{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
 Its current content will be kept locally.
 Its content for other environments will be lost, it will no longer be gitignored.
-This is permanent, and cannot be undone.`, map[string]string{
+This is permanent, and cannot be undone.`,
+		map[string]string{
 			"Path":        filePath,
 			"Environment": environmentName,
-		}))
+		},
+	))
 
 	return Confirm("Continue")
 }

@@ -31,7 +31,7 @@ When a file is marked as optional, its absence or emptiness won’t cause
 ` + "`" + `ks source` + "`" + ` or ` + "`" + `ks ci send` + "`" + ` to fail.
 `,
 	Example: `ks file optional ./config.json`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		fileName := args[0]
 
 		if !ctx.HasFile(fileName) {

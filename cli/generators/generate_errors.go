@@ -3,12 +3,12 @@
 package main
 
 import (
-	. "fmt"
-	. "io/ioutil"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
-	. "strings"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -32,8 +32,7 @@ type DefFile struct {
 func open(p string) DefFile {
 	var def DefFile
 
-	f, err := ReadFile(p)
-
+	f, err := ioutil.ReadFile(p)
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +56,7 @@ func main() {
 
 	defs := open(filepath)
 
-	var sb Builder
+	var sb strings.Builder
 	sb.WriteString(`
 package errors
 
@@ -68,25 +67,28 @@ package errors
 		key := def.Typ
 		value := def.Template
 
-		kv_pairs = append(kv_pairs, Sprintf("  \"%s\": `\n%s\n`", key, value))
+		kv_pairs = append(
+			kv_pairs,
+			fmt.Sprintf("  \"%s\": `\n%s\n`", key, value),
+		)
 	}
 
 	var helpMap string
 	if len(kv_pairs) == 0 {
 		helpMap = "var helpTexts map[string]string = map[string]string {}\n\n"
 	} else {
-		helpMap = Sprintf("var helpTexts map[string]string = map[string]string {\n %s,\n }\n\n", Join(kv_pairs, ",\n"))
+		helpMap = fmt.Sprintf("var helpTexts map[string]string = map[string]string {\n %s,\n }\n\n", strings.Join(kv_pairs, ",\n"))
 	}
 
 	sb.WriteString(helpMap)
 
 	for _, def := range defs.Errors {
 		// Function signaturE
-		sb.WriteString(Sprintf("func %s (", def.Typ))
+		sb.WriteString(fmt.Sprintf("func %s (", def.Typ))
 
 		// Params
 		for _, param := range def.Params {
-			p := Sprintf("%s %s, ", ToLower(param.Name), param.Typ)
+			p := fmt.Sprintf("%s %s, ", strings.ToLower(param.Name), param.Typ)
 
 			sb.WriteString(p)
 		}
@@ -101,21 +103,30 @@ package errors
 		for _, param := range def.Params {
 			typ := param.Typ
 			name := param.Name
-			argName := ToLower(name)
+			argName := strings.ToLower(name)
 
-			kv_pairs = append(kv_pairs, Sprintf("  \"%s\": %s(%s)", name, typ, argName))
+			kv_pairs = append(
+				kv_pairs,
+				fmt.Sprintf("  \"%s\": %s(%s)", name, typ, argName),
+			)
 		}
 
 		var metaMap string
 		if len(kv_pairs) == 0 {
 			metaMap = "  meta := map[string]interface{}{}\n\n"
 		} else {
-			metaMap = Sprintf("meta := map[string]interface{}{\n  %s,\n}\n", Join(kv_pairs, ", \n"))
+			metaMap = fmt.Sprintf("meta := map[string]interface{}{\n  %s,\n}\n", strings.Join(kv_pairs, ", \n"))
 		}
 
 		sb.WriteString(metaMap)
 
-		sb.WriteString(Sprintf("  return NewError(\"%s\", helpTexts[\"%s\"], meta, cause)\n", def.Name, def.Typ))
+		sb.WriteString(
+			fmt.Sprintf(
+				"  return NewError(\"%s\", helpTexts[\"%s\"], meta, cause)\n",
+				def.Name,
+				def.Typ,
+			),
+		)
 
 		// End function
 		sb.WriteString("}\n\n")
@@ -123,9 +134,8 @@ package errors
 	}
 
 	outputPath := path.Join(wd, "internal", "errors", "generated_errors.go")
-	WriteFile(outputPath, []byte(sb.String()), 0o644)
+	ioutil.WriteFile(outputPath, []byte(sb.String()), 0o644)
 
 	c := exec.Command("gofmt", "-w", outputPath)
 	c.Run()
-
 }

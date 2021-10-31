@@ -32,7 +32,7 @@ var renameCmd = &cobra.Command{
 `,
 	Example: "ks orga rename my_orag my_orga",
 	Args:    cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err error
 		organizationName := args[0]
 		newName := args[1]

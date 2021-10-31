@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 	"time"
 
@@ -11,6 +11,11 @@ import (
 )
 
 var salt string
+
+var (
+	ErrorInvalidToken = errors.New("invalid token")
+	ErrorTokenExpired = errors.New("token expired")
+)
 
 type customClaims struct {
 	DeviceUID string `json:"device_uid"`
@@ -53,10 +58,12 @@ func cleanUpToken(token string) string {
 func VerifyToken(token string) (string, string, error) {
 	trimedToken := cleanUpToken(token)
 
-	t, err := jwt.Parse(trimedToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte(salt), nil
-	})
-
+	t, err := jwt.Parse(
+		trimedToken,
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(salt), nil
+		},
+	)
 	if err != nil {
 		return "", "", err
 	}
@@ -69,15 +76,15 @@ func VerifyToken(token string) (string, string, error) {
 		userID := claims["sub"].(string)
 
 		if claims["device_uid"] == nil {
-			return "", "", fmt.Errorf("Token expired")
+			return "", "", ErrorTokenExpired
 		}
 
 		deviceUID := claims["device_uid"].(string)
 
 		return userID, deviceUID, nil
 	} else if xerrors.As(err, expiredError) {
-		return "", "", fmt.Errorf("Token expired")
+		return "", "", ErrorTokenExpired
 	}
 
-	return "", "", fmt.Errorf("Invalid token")
+	return "", "", ErrorInvalidToken
 }

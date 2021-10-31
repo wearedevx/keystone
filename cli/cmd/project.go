@@ -19,7 +19,7 @@ var projectCmd = &cobra.Command{
 	Short: "Lists projects you are a member of",
 	Long:  `Lists projects you are a member of`,
 	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		var err error
 		c, err := client.NewKeystoneClient()
 		exitIfErr(err)
@@ -28,7 +28,6 @@ var projectCmd = &cobra.Command{
 		exitIfErr(kf.Load(ctx.Wd).Err())
 
 		projects, err := c.Project("").GetAll()
-
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
 				config.Logout()
@@ -43,9 +42,12 @@ var projectCmd = &cobra.Command{
 
 		fmt.Println()
 		for _, project := range projects {
-			fmt.Printf(" - %s, created on %s\n", project.Name, project.CreatedAt.Format("2006/01/02"))
+			fmt.Printf(
+				" - %s, created on %s\n",
+				project.Name,
+				project.CreatedAt.Format("2006/01/02"),
+			)
 		}
-
 	},
 }
 

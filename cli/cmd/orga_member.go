@@ -22,7 +22,7 @@ var orgaMemberCmd = &cobra.Command{
 `,
 	Args:    cobra.ExactArgs(1),
 	Example: "ks orga member my_organization",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err error
 		orgaName := args[0]
 		c, err := client.NewKeystoneClient()
@@ -32,6 +32,10 @@ var orgaMemberCmd = &cobra.Command{
 		exitIfErr(kf.Load(ctx.Wd).Err())
 
 		organizations, err := c.Organizations().GetAll()
+		if err != nil {
+			handleClientError(err)
+			exit(err)
+		}
 		orga := models.Organization{}
 
 		for _, organization := range organizations {
@@ -45,7 +49,6 @@ var orgaMemberCmd = &cobra.Command{
 		}
 
 		members, err := c.Organizations().GetMembers(orga)
-
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
 				config.Logout()
@@ -54,7 +57,10 @@ var orgaMemberCmd = &cobra.Command{
 				exit(kserrors.UnkownError(err))
 			}
 		}
-		ui.Print("%d members are in projects that belong to this organization:", len(members))
+		ui.Print(
+			"%d members are in projects that belong to this organization:",
+			len(members),
+		)
 
 		fmt.Println()
 		for _, member := range members {

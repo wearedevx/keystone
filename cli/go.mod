@@ -41,6 +41,4 @@ require (
 	gorm.io/gorm v1.21.15 // indirect
 )
 
-replace github.com/wearedevx/keystone/cmd => ./cmd
-
 replace github.com/wearedevx/keystone/api => ../api

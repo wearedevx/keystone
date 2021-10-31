@@ -52,7 +52,11 @@ Additionally, ` + "`" + `ks ci send` + "`" + ` will fail if a required secrets a
 			value := string(secret.Values[core.EnvironmentName(environment)])
 
 			for len(value) == 0 {
-				ui.Print("Enter the value of '%s' for the '%s' environment", secretName, environment)
+				ui.Print(
+					"Enter the value of '%s' for the '%s' environment",
+					secretName,
+					environment,
+				)
 
 				value = prompts.StringInput(secretName, value)
 			}
@@ -70,9 +74,15 @@ If you have setup a CI service, don’t forget to run:
   $ ks ci send
 		`
 
-		ui.Print(ui.RenderTemplate("set secret required", template, struct{ SecretName string }{
-			SecretName: secretName,
-		}))
+		ui.Print(
+			ui.RenderTemplate(
+				"set secret required",
+				template,
+				struct{ SecretName string }{
+					SecretName: secretName,
+				},
+			),
+		)
 	},
 }
 

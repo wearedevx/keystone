@@ -13,7 +13,7 @@ import (
 )
 
 type ActivityLog struct {
-	ID            uint        `json:"id" gorm:"primaryKey"`
+	ID            uint        `json:"id"             gorm:"primaryKey"`
 	UserID        *uint       `json:"user_id"`
 	User          User        `json:"user"`
 	ProjectID     *uint       `json:"project_id"`
@@ -147,26 +147,26 @@ type ActionFilter string
 
 const (
 	ActionFilterGetRoles                     ActionFilter = "GetRoles"
-	ActionFilterPostUser                                  = "PostUser"
-	ActionFilterPostUserToken                             = "PostUserToken"
-	ActionFilterPostLoginRequest                          = "PostLoginRequest"
-	ActionFilterGetLoginRequest                           = "GetLoginRequest"
-	ActionFilterGetUserKeys                               = "GetUserKeys"
-	ActionFilterGetDevices                                = "GetDevices"
-	ActionFilterDeleteDevice                              = "DeleteDevice"
-	ActionFilterPostProject                               = "PostProject"
-	ActionFilterGetProjectMembers                         = "GetProjectMembers"
-	ActionFilterPostProjectMembers                        = "PostProjectMembers"
-	ActionFilterDeleteProjectsMembers                     = "DeleteProjectsMembers"
-	ActionFilterGetAccessibleEnvironments                 = "GetAccessibleEnvironments"
-	ActionFilterDeleteProject                             = "DeleteProject"
-	ActionFilterGetEnvironmentPublicKeys                  = "GetEnvironmentPublicKeys"
-	ActionFilterGetMessagesFromProjectByUser              = "GetMessagesFromProjectByUser"
-	ActionFilterWriteMessages                             = "WriteMessages"
-	ActionFilterDeleteMessage                             = "DeleteMessage"
-	ActionFilterPostInvite                                = "PostInvite"
-	ActionFilterDoUsersExist                              = "DoUsersExist"
-	ActionFilterPutMemberSetRole                          = "PutMemberSetRole"
+	ActionFilterPostUser                     ActionFilter = "PostUser"
+	ActionFilterPostUserToken                ActionFilter = "PostUserToken"
+	ActionFilterPostLoginRequest             ActionFilter = "PostLoginRequest"
+	ActionFilterGetLoginRequest              ActionFilter = "GetLoginRequest"
+	ActionFilterGetUserKeys                  ActionFilter = "GetUserKeys"
+	ActionFilterGetDevices                   ActionFilter = "GetDevices"
+	ActionFilterDeleteDevice                 ActionFilter = "DeleteDevice"
+	ActionFilterPostProject                  ActionFilter = "PostProject"
+	ActionFilterGetProjectMembers            ActionFilter = "GetProjectMembers"
+	ActionFilterPostProjectMembers           ActionFilter = "PostProjectMembers"
+	ActionFilterDeleteProjectsMembers        ActionFilter = "DeleteProjectsMembers"
+	ActionFilterGetAccessibleEnvironments    ActionFilter = "GetAccessibleEnvironments"
+	ActionFilterDeleteProject                ActionFilter = "DeleteProject"
+	ActionFilterGetEnvironmentPublicKeys     ActionFilter = "GetEnvironmentPublicKeys"
+	ActionFilterGetMessagesFromProjectByUser ActionFilter = "GetMessagesFromProjectByUser"
+	ActionFilterWriteMessages                ActionFilter = "WriteMessages"
+	ActionFilterDeleteMessage                ActionFilter = "DeleteMessage"
+	ActionFilterPostInvite                   ActionFilter = "PostInvite"
+	ActionFilterDoUsersExist                 ActionFilter = "DoUsersExist"
+	ActionFilterPutMemberSetRole             ActionFilter = "PutMemberSetRole"
 )
 
 func (af ActionFilter) Validate() (ok bool) {
@@ -202,8 +202,8 @@ type EnvironmentFilter string
 
 const (
 	EnvironmentFilterDev     EnvironmentFilter = "dev"
-	EnvironmentFilterStaging                   = "staging"
-	EnvironmentFilterProd                      = "prod"
+	EnvironmentFilterStaging EnvironmentFilter = "staging"
+	EnvironmentFilterProd    EnvironmentFilter = "prod"
 )
 
 func (ef EnvironmentFilter) Validate() (ok bool) {
@@ -221,7 +221,7 @@ type GetLogsOptions struct {
 	Actions      []ActionFilter      `json:"actions"`
 	Environments []EnvironmentFilter `json:"environments"`
 	Users        []string            `json:"users"`
-	Limit        uint64              `json:"limit" default:"200"`
+	Limit        uint64              `json:"limit"        default:"200"`
 }
 
 func NewGetLogsOption() *GetLogsOptions {
@@ -266,7 +266,10 @@ func (o *GetLogsOptions) SetEnvironments(environments string) *GetLogsOptions {
 
 	for _, environment := range strings.Split(environments, ",") {
 		if e := EnvironmentFilter(strings.TrimSpace(environment)); e.Validate() {
-			o.Environments = append(o.Environments, EnvironmentFilter(environment))
+			o.Environments = append(
+				o.Environments,
+				EnvironmentFilter(environment),
+			)
 		}
 	}
 

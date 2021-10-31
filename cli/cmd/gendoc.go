@@ -37,8 +37,8 @@ type documentationType string
 
 const (
 	Hugo documentationType = "hugo"
-	Md                     = "md"
-	Man                    = "man"
+	Md   documentationType = "md"
+	Man  documentationType = "man"
 )
 
 // documentation format
@@ -52,8 +52,10 @@ var destination string
 func init() {
 	genCmd := newGenDocCommand(RootCmd)
 
-	genCmd.Flags().StringVarP(&doctype, "type", "t", "md", "either 'hugo' or 'md'")
-	genCmd.Flags().StringVarP(&destination, "destination", "d", "./doc", "target directory")
+	genCmd.Flags().
+		StringVarP(&doctype, "type", "t", "md", "either 'hugo' or 'md'")
+	genCmd.Flags().
+		StringVarP(&destination, "destination", "d", "./doc", "target directory")
 
 	RootCmd.AddCommand(genCmd)
 }
@@ -74,7 +76,12 @@ keystone documentation man`,
 
 			switch documentationType(doctype) {
 			case Hugo:
-				err = doc.GenMarkdownTreeCustom(rootCmd, destination, hugoFrontMatterPrepender, hugoLinkHandler)
+				err = doc.GenMarkdownTreeCustom(
+					rootCmd,
+					destination,
+					hugoFrontMatterPrepender,
+					hugoLinkHandler,
+				)
 
 			case Md:
 				err = doc.GenMarkdownTree(rootCmd, destination)
@@ -139,7 +146,7 @@ func hugoFrontMatterPrepender(filename string) string {
 	return fmt.Sprintf(
 		fmTemplate,
 		now,
-		strings.Replace(base, "_", " ", -1),
+		strings.ReplaceAll(base, "_", " "),
 		description,
 		base,
 		url,
@@ -159,7 +166,7 @@ func getDescription(filename string) (description string) {
 	if utils.FileExists(source) {
 		command := findCommand(source)
 		if command == nil {
-			log.Fatal(fmt.Errorf("Command not found in %s", source))
+			log.Fatal(fmt.Errorf("command not found in %s", source))
 		}
 
 		description = findStringValueAt(command, "Short")
@@ -176,8 +183,8 @@ func getDescription(filename string) (description string) {
 func findMatchingSource(filename string) (source string) {
 	filename = filepath.Base(filename)
 	filename = strings.TrimPrefix(filename, "ks_")
-	filename = strings.Replace(filename, ".md", ".go", -1)
-	filename = strings.Replace(filename, "-", "_", -1)
+	filename = strings.ReplaceAll(filename, ".md", ".go")
+	filename = strings.ReplaceAll(filename, "-", "_")
 
 	if filename == "ks.go" {
 		filename = "root.go"

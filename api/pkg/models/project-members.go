@@ -10,9 +10,9 @@ import (
 )
 
 type ProjectMember struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
+	ID        uint      `json:"id"         gorm:"primaryKey"`
 	User      User      `json:"user"`
-	UserID    uint      `json:"user_id" gorm:"uniqueIndex:project_members_user_id_project_id_key"`
+	UserID    uint      `json:"user_id"    gorm:"uniqueIndex:project_members_user_id_project_id_key"`
 	Project   Project   `json:"project"`
 	ProjectID uint      `json:"project_id" gorm:"uniqueIndex:project_members_user_id_project_id_key"`
 	Role      Role      `json:"role"`

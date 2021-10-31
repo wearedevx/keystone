@@ -34,9 +34,13 @@ To revoke access to one of these devices, use:
 	)
 }
 
-func DeviceRevokeSucces() {
-	ui.PrintSuccess("Device has been revoked and will no longer be updated with new secrets.")
-	ui.Print("If you did this because your account has been compromised, make sure to change your secrets.")
+func DeviceRevokeSuccess() {
+	ui.PrintSuccess(
+		"Device has been revoked and will no longer be updated with new secrets.",
+	)
+	ui.Print(
+		"If you did this because your account has been compromised, make sure to change your secrets.",
+	)
 }
 
 func formatDevice(device models.Device) string {

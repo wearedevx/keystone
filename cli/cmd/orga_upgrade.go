@@ -56,7 +56,6 @@ organization to a paid plan using this command.
 				},
 			),
 		)
-
 	},
 }
 

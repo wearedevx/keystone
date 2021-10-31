@@ -22,12 +22,16 @@ const (
 var availableServices map[CiServiceType]string
 
 var (
-	ErrorMissinCiInformation     error = errors.New("missing CI information")
-	ErrorNoCIServiceWithName           = errors.New("no ci service with that name")
-	ErrorUnknownServiceType            = errors.New("unknown service type")
-	ErrorInvalidServiceType            = errors.New("invalid service type")
-	ErrorNoCIServices                  = errors.New("no ci services")
-	ErrorNoSecretsForEnvironment       = errors.New("no secrets for environment")
+	ErrorMissinCiInformation error = errors.New("missing CI information")
+	ErrorNoCIServiceWithName       = errors.New(
+		"no ci service with that name",
+	)
+	ErrorUnknownServiceType      = errors.New("unknown service type")
+	ErrorInvalidServiceType      = errors.New("invalid service type")
+	ErrorNoCIServices            = errors.New("no ci services")
+	ErrorNoSecretsForEnvironment = errors.New(
+		"no secrets for environment",
+	)
 )
 
 type CiService interface {
@@ -48,11 +52,15 @@ func init() {
 	}
 }
 
-func GetCiService(serviceName string, ctx *core.Context, apiUrl string) (CiService, error) {
+func GetCiService(
+	serviceName string,
+	ctx *core.Context,
+	apiUrl string,
+) (CiService, error) {
 	var c CiService
 	var err error
 	var service keystonefile.CiService
-	var found bool = false
+	found := false
 
 	services, _ := ListCiServices(ctx)
 
@@ -74,7 +82,7 @@ func GetCiService(serviceName string, ctx *core.Context, apiUrl string) (CiServi
 
 	default:
 		err = fmt.Errorf(
-			"No service type %s: %w",
+			"no service type %s: %w",
 			service.Type,
 			ErrorUnknownServiceType,
 		)
@@ -85,7 +93,11 @@ func GetCiService(serviceName string, ctx *core.Context, apiUrl string) (CiServi
 
 // Asks the user to pick a type of CI service among the available ones
 // It returns a `CiService` instance ready to be setup, and an error
-func PickCiService(name string, ctx *core.Context, apiUrl string) (CiService, error) {
+func PickCiService(
+	name string,
+	ctx *core.Context,
+	apiUrl string,
+) (CiService, error) {
 	var err error
 	if err != nil {
 		return nil, err
@@ -131,7 +143,7 @@ func SelectCiServiceConfiguration(
 		return nil, ErrorNoCIServices
 	}
 
-	items := make([]string, len(services), len(services))
+	items := make([]string, len(services))
 
 	for idx, service := range services {
 		items[idx] = service.Name
@@ -165,7 +177,10 @@ func ListCiServices(ctx *core.Context) (_ []keystonefile.CiService, err error) {
 
 // FindCiServiceWithName returns the CI service configuration
 // matching `name`
-func FindCiServiceWithName(ctx *core.Context, name string) (service keystonefile.CiService, found bool) {
+func FindCiServiceWithName(
+	ctx *core.Context,
+	name string,
+) (service keystonefile.CiService, found bool) {
 	if ctx.Err() != nil {
 		return service, false
 	}

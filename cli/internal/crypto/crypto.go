@@ -11,7 +11,11 @@ import (
 	"github.com/cossacklabs/themis/gothemis/message"
 )
 
-func EncryptMessage(senderPrivateKey []byte, recipientPublicKey []byte, payload []byte) (msg []byte, err error) {
+func EncryptMessage(
+	senderPrivateKey []byte,
+	recipientPublicKey []byte,
+	payload []byte,
+) (msg []byte, err error) {
 	private := keys.PrivateKey{Value: senderPrivateKey}
 	public := keys.PublicKey{Value: recipientPublicKey}
 
@@ -29,7 +33,11 @@ func EncryptMessage(senderPrivateKey []byte, recipientPublicKey []byte, payload 
 	return p, nil
 }
 
-func DecryptMessage(recipientPrivateKey []byte, senderPublicKey []byte, msg []byte) (payload []byte, err error) {
+func DecryptMessage(
+	recipientPrivateKey []byte,
+	senderPublicKey []byte,
+	msg []byte,
+) (payload []byte, err error) {
 	private := keys.PrivateKey{Value: recipientPrivateKey}
 	public := keys.PublicKey{Value: senderPublicKey}
 
@@ -94,7 +102,7 @@ func DecryptFile(filepath, target, passphrase string) (err error) {
 		return err
 	}
 
-	err = ioutil.WriteFile(target, decrypted, 0600)
+	err = ioutil.WriteFile(target, decrypted, 0o600)
 
 	return err
 }

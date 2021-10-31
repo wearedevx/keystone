@@ -20,7 +20,6 @@ func (h *baseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	err := seed.SeedRoles()
-
 	if err != nil {
 		panic(err)
 	}

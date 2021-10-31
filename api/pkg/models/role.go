@@ -11,11 +11,11 @@ import (
 )
 
 type Role struct {
-	ID           uint      `json:"id" gorm:"primaryKey"`
+	ID           uint      `json:"id"             gorm:"primaryKey"`
 	Name         string    `json:"name"`
 	Description  string    `json:"description"`
 	ParentID     uint      `json:"parent_id"`
-	Parent       *Role     `json:"parent" gorm:"references:ID;foreignKey:ParentID"`
+	Parent       *Role     `json:"parent"         gorm:"references:ID;foreignKey:ParentID"`
 	CanAddMember bool      `json:"can_add_member"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`

@@ -87,7 +87,11 @@ func waitForServerStarted(serverUrl string) bool {
 	return result
 }
 
-func CreateFakeUserWithUsername(username string, accountType models.AccountType, env *testscript.Env) (err error) {
+func CreateFakeUserWithUsername(
+	username string,
+	accountType models.AccountType,
+	env *testscript.Env,
+) (err error) {
 	Repo := new(repo.Repo)
 	user := models.User{}
 
@@ -102,7 +106,9 @@ func CreateFakeUserWithUsername(username string, accountType models.AccountType,
 	user.Username = username
 	user.AccountType = accountType
 	user.UserID = fmt.Sprintf("%s@%s", user.Username, user.AccountType)
-	user.Devices = []models.Device{{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value}}
+	user.Devices = []models.Device{
+		{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value},
+	}
 
 	if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
 		fmt.Println(err)
@@ -161,7 +167,12 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	user.Email = "email@example.com"
 	user.Devices = []models.Device{
 		{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value},
-		{Name: "device-test-2", UID: uuid.NewV4().String(), PublicKey: keyPair.Public.Value}}
+		{
+			Name:      "device-test-2",
+			UID:       uuid.NewV4().String(),
+			PublicKey: keyPair.Public.Value,
+		},
+	}
 
 	if err := Repo.GetOrCreateUser(&user).Err(); err != nil {
 		return err
@@ -234,7 +245,9 @@ func CreateProject(env *testscript.Env) (err error) {
 	deviceUID := uuid.NewV4().String()
 	user.ID = 0
 	user.Email = "email@example.com"
-	user.Devices = []models.Device{{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value}}
+	user.Devices = []models.Device{
+		{Name: device, UID: deviceUID, PublicKey: keyPair.Public.Value},
+	}
 
 	Repo.
 		GetOrCreateUser(&user).
@@ -248,18 +261,25 @@ func CreateProject(env *testscript.Env) (err error) {
 		)
 
 	if err := Repo.Err(); err != nil {
-		fmt.Println("Get Or Create User, or Project, or add Member to Project", err)
+		fmt.Println(
+			"Get Or Create User, or Project, or add Member to Project",
+			err,
+		)
 		os.Exit(1)
 	}
 
 	cwd := env.Getenv("WORK")
 
 	pathToKeystoneFile := path.Join(cwd, "keystone.yaml")
-	err = ioutil.WriteFile(pathToKeystoneFile, []byte(`project_id: `+project.UUID+`
+	err = ioutil.WriteFile(
+		pathToKeystoneFile,
+		[]byte(`project_id: `+project.UUID+`
 name: `+project.Name+`
 env: []
 files: []
-ci_services: []`), 0o660)
+ci_services: []`),
+		0o660,
+	)
 
 	return nil
 }

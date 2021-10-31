@@ -5,10 +5,9 @@ import (
 
 	uuid "github.com/satori/go.uuid"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (repo *Repo) CreateEnvironment(environment *Environment) IRepo {
+func (repo *Repo) CreateEnvironment(environment *models.Environment) IRepo {
 	if repo.err != nil {
 		return repo
 	}
@@ -18,7 +17,7 @@ func (repo *Repo) CreateEnvironment(environment *Environment) IRepo {
 	return repo
 }
 
-func (repo *Repo) GetEnvironment(environment *Environment) IRepo {
+func (repo *Repo) GetEnvironment(environment *models.Environment) IRepo {
 	if repo.err != nil {
 		return repo
 	}
@@ -33,7 +32,9 @@ func (repo *Repo) GetEnvironment(environment *Environment) IRepo {
 	return repo
 }
 
-func (repo *Repo) GetOrCreateEnvironment(environment *Environment) IRepo {
+func (repo *Repo) GetOrCreateEnvironment(
+	environment *models.Environment,
+) IRepo {
 	if repo.err != nil {
 		return repo
 	}
@@ -47,24 +48,43 @@ func (repo *Repo) GetOrCreateEnvironment(environment *Environment) IRepo {
 	return repo
 }
 
-func (repo *Repo) GetEnvironmentsByProjectUUID(projectUUID string, foundEnvironments *[]Environment) IRepo {
-	var project Project
-	repo.err = repo.GetDb().Model(&Project{}).Where("uuid = ?", projectUUID).First(&project).Error
+func (repo *Repo) GetEnvironmentsByProjectUUID(
+	projectUUID string,
+	foundEnvironments *[]models.Environment,
+) IRepo {
+	var project models.Project
+	repo.err = repo.GetDb().
+		Model(&models.Project{}).
+		Where("uuid = ?", projectUUID).
+		First(&project).
+		Error
 
-	repo.err = repo.GetDb().Model(&Environment{}).Where("project_id = ?", project.ID).Find(&foundEnvironments).Error
+	repo.err = repo.GetDb().
+		Model(&models.Environment{}).
+		Where("project_id = ?", project.ID).
+		Find(&foundEnvironments).
+		Error
 
 	return repo
 }
 
-func (repo *Repo) SetNewVersionID(environment *Environment) error {
+func (repo *Repo) SetNewVersionID(environment *models.Environment) error {
 	newVersionID := uuid.NewV4().String()
-	repo.err = repo.GetDb().Model(&Environment{}).Where(environment).Update("version_id", newVersionID).Error
+	repo.err = repo.GetDb().
+		Model(&models.Environment{}).
+		Where(environment).
+		Update("version_id", newVersionID).
+		Error
 	environment.VersionID = newVersionID
 	return repo.Err()
 }
 
-func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *PublicKeys) IRepo {
-	rows, err := repo.GetDb().Raw(`select d.id, d.uid, d.name, d.public_key, u.user_id, u.id as UserID
+func (repo *Repo) GetEnvironmentPublicKeys(
+	environmentID string,
+	publicKeys *models.PublicKeys,
+) IRepo {
+	rows, err := repo.GetDb().
+		Raw(`select d.id, d.uid, d.name, d.public_key, u.user_id, u.id as UserID
 	from environments as e
 	inner join environment_types as et on et.id = e.environment_type_id
 	inner join roles_environment_types as ret on ret.environment_type_id = et.id
@@ -75,8 +95,8 @@ func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *Pub
 	inner join devices as d on ud.device_id = d.id
 	where e.environment_id = ?
 	and ret.read = true
-	`, environmentID).Rows()
-
+	`, environmentID).
+		Rows()
 	if err != nil {
 		repo.err = err
 		return repo
@@ -98,16 +118,31 @@ func (repo *Repo) GetEnvironmentPublicKeys(environmentID string, publicKeys *Pub
 
 		for i, pk := range publicKeys.Keys {
 			if pk.UserID == UserID {
-				publicKeys.Keys[i].PublicKeys = append(pk.PublicKeys, models.Device{PublicKey: PublicKey, Name: DeviceName, UID: DeviceUID, ID: PublicKeyId})
+				publicKeys.Keys[i].PublicKeys = append(
+					pk.PublicKeys,
+					models.Device{
+						PublicKey: PublicKey,
+						Name:      DeviceName,
+						UID:       DeviceUID,
+						ID:        PublicKeyId,
+					},
+				)
 				found = true
 			}
 		}
 
 		if !found {
 			publicKeys.Keys = append(publicKeys.Keys, models.UserPublicKeys{
-				UserID:     UserID,
-				PublicKeys: []models.Device{{PublicKey: PublicKey, Name: DeviceName, UID: DeviceUID, ID: PublicKeyId}},
-				UserUID:    fmt.Sprint(UserUID),
+				UserID: UserID,
+				PublicKeys: []models.Device{
+					{
+						PublicKey: PublicKey,
+						Name:      DeviceName,
+						UID:       DeviceUID,
+						ID:        PublicKeyId,
+					},
+				},
+				UserUID: fmt.Sprint(UserUID),
 			})
 		}
 	}

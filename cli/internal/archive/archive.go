@@ -21,7 +21,11 @@ func GetBackupPath(wd, projectName, backupName string) string {
 	if backupName == "" {
 		backupName = path.Join(
 			wd,
-			fmt.Sprintf(`keystone-backup-%s-%d.tar.gz`, projectName, time.Now().Unix()),
+			fmt.Sprintf(
+				`keystone-backup-%s-%d.tar.gz`,
+				projectName,
+				time.Now().Unix(),
+			),
 		)
 	} else {
 		backupName = path.Join(
@@ -70,7 +74,7 @@ func ArchiveWithPassphrase(source, target, passphrase string) (err error) {
 		return err
 	}
 
-	if err = ioutil.WriteFile(target, encrypted, 0644); err != nil {
+	if err = ioutil.WriteFile(target, encrypted, 0o644); err != nil {
 		return err
 	}
 
@@ -223,7 +227,11 @@ func Untar(tarball, target string) error {
 		}
 
 		/* #nosec */
-		file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode())
+		file, err := os.OpenFile(
+			path,
+			os.O_CREATE|os.O_TRUNC|os.O_WRONLY,
+			info.Mode(),
+		)
 		if err != nil {
 			return err
 		}

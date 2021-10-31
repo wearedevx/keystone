@@ -13,10 +13,10 @@ import (
 )
 
 type LoginRequest struct {
-	ID            uint      `json:"id" gorm:"primaryKey"`
+	ID            uint      `json:"id"             gorm:"primaryKey"`
 	TemporaryCode string    `json:"temporary_code" gorm:"not null"`
 	AuthCode      string    `json:"auth_code"`
-	Answered      bool      `json:"answered" gorm:"default:false"`
+	Answered      bool      `json:"answered"       gorm:"default:false"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
 }
@@ -106,7 +106,6 @@ func (state *AuthState) Decode(input string) (err error) {
 
 func (state AuthState) Encode() (out string, err error) {
 	outb, err := json.Marshal(state)
-
 	if err != nil {
 		return "", err
 	}

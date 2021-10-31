@@ -32,8 +32,10 @@ import (
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
-var memberId string
-var roleName string
+var (
+	memberId string
+	roleName string
+)
 
 // memberSetRoleCmd represents the memberSetRole command
 var memberSetRoleCmd = &cobra.Command{
@@ -53,7 +55,10 @@ ks member set-role sandra@github`,
 		argc := len(args)
 
 		if argc == 0 || argc > 2 {
-			return fmt.Errorf("invalid number of arguments. Expected 1 or 2, got %d", argc)
+			return fmt.Errorf(
+				"invalid number of arguments. Expected 1 or 2, got %d",
+				argc,
+			)
 		}
 
 		if argc >= 1 {
@@ -107,7 +112,9 @@ ks member set-role sandra@github`,
 
 		if len(roles) == 1 && roleName != "admin" {
 			// TODO: have a proper error
-			ui.PrintError("You are not allowed to set role other than admin for free organization")
+			ui.PrintError(
+				"You are not allowed to set role other than admin for free organization",
+			)
 			ui.Print("To learn more: https://keystone.sh")
 			os.Exit(1)
 		}
@@ -118,16 +125,16 @@ ks member set-role sandra@github`,
 			exitIfErr(err)
 		} else {
 			exit(
+				// TODO: have a proper error
 				kserrors.UnkownError(
-					fmt.Errorf("Role '%s' does not exist", roleName),
+					fmt.Errorf("role '%s' does not exist", roleName),
 				),
 			)
 		}
 
 		ui.Print(ui.RenderTemplate("set role ok", `
 {{ OK }} {{ "Role set" | green }}
-`, struct {
-		}{}))
+`, struct{}{}))
 	},
 }
 

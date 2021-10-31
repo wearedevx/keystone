@@ -121,5 +121,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// memberRmCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	memberRmCmd.Flags().BoolVarP(&forceYes, "yes", "y", false, "skip prompt say yes to all")
+	memberRmCmd.Flags().
+		BoolVarP(&forceYes, "yes", "y", false, "skip prompt say yes to all")
 }
