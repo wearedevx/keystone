@@ -9,14 +9,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 
 	"github.com/udhos/equalfile"
 	"github.com/wearedevx/keystone/cli/internal/envfile"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/utils"
-	"github.com/wearedevx/keystone/cli/ui"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
@@ -97,7 +95,6 @@ func (ce ChangesByEnvironment) ChangedEnvironmentsWithoutPayload() []string {
 /// It will replace secrets value with the new ones,
 /// add new secrets and their values
 /// remove secrets that have been removed by other user
-/// TODO: Split work in at least three functions
 func (ctx *Context) SaveMessages(
 	MessageByEnvironments models.GetMessageByEnvironmentResponse,
 ) ChangesByEnvironment {
@@ -110,34 +107,14 @@ func (ctx *Context) SaveMessages(
 
 		// If the payload is empty, and the enviroment version has changed,
 		// signal the version change.
-		if len(environment.Message.Payload) == 0 {
-			// If the message is empty, but the versionID has changed,
-			//
-			environmentChanged := ctx.EnvironmentVersionHasChanged(
-				environment.Environment.Name,
-				environment.Environment.VersionID,
-			)
-
-			if environmentChanged {
-				changes.Environments[environmentName] = []Change{
-					{
-						Type: ChangeTypeVersion,
-					},
-				}
+		if ctx.isVersionChangeWithoutPayload(environment) {
+			changes.Environments[environmentName] = []Change{
+				{
+					Type: ChangeTypeVersion,
+				},
 			}
 
 			continue
-		}
-
-		// We need the local values for every secret for `environment`
-		localSecrets := make([]models.SecretVal, 0)
-		for _, localSecret := range cachedLocalSecrets {
-			localSecrets = append(localSecrets, models.SecretVal{
-				Label: localSecret.Name,
-				Value: string(
-					localSecret.Values[EnvironmentName(environmentName)],
-				),
-			})
 		}
 
 		// Parse the decrypted message payload
@@ -153,67 +130,128 @@ func (ctx *Context) SaveMessages(
 			environmentName,
 		)
 
-		// Only remove cached files that have changed
-		for _, fileChange := range fileChanges {
-			filesDir := ctx.CachedEnvironmentFilesPath(environmentName)
-			filePath := path.Join(filesDir, fileChange.Name)
-
-			err := utils.RemoveFile(filePath)
-			if err != nil {
-				ctx.err = kserrors.CannotRemoveDirectoryContents(filePath, err)
-				return changes
-			}
-		}
-
-		err := ctx.saveFilesChanges(fileChanges, environmentName)
-		if err != nil {
-			ctx.err = kserrors.CannotSaveFiles(err.Error(), err)
+		if err := ctx.handleFileChanges(fileChanges, environmentName).Err(); err != nil {
 			return changes
 		}
 
 		// ——— Handle secrets ———
 
+		// We need the local values for every secret for `environment`
+		localSecrets := secretsForEnvironment(cachedLocalSecrets, environmentName)
 		secretChanges := GetSecretsChanges(localSecrets, PayloadContent.Secrets)
-		// NOTE: if there are changes, the .env file gets rewritten, therefore
-		// there is no need to delete it
+
+		if err := ctx.handleSecretChanges(PayloadContent, environmentName); err != nil {
+			return changes
+		}
 
 		environmentChanges = append(environmentChanges, fileChanges...)
 		environmentChanges = append(environmentChanges, secretChanges...)
 
-		if len(PayloadContent.Secrets) > 0 {
-			envFilePath := ctx.CachedEnvironmentDotEnvPath(environmentName)
-			envFile := new(envfile.EnvFile)
-			envFile.Load(envFilePath, nil)
-
-			for key := range envFile.GetData() {
-				found := false
-
-				for _, secret := range PayloadContent.Secrets {
-					if key == secret.Label {
-						found = true
-						break
-					}
-				}
-
-				if !found {
-					envFile.Unset(key)
-				}
-			}
-
-			for _, secret := range PayloadContent.Secrets {
-				envFile.Set(secret.Label, secret.Value)
-			}
-
-			if err := envFile.Dump().Err(); err != nil {
-				ctx.setError(kserrors.FailedToUpdateDotEnv(envFilePath, err))
-			}
-		}
-
 		changes.Environments[environmentName] = environmentChanges
+
 		ctx.UpdateEnvironment(environment.Environment)
 	}
 
 	return changes
+}
+
+func secretsForEnvironment(
+	cachedLocalSecrets []Secret,
+	environmentName string,
+) []models.SecretVal {
+	localSecrets := make([]models.SecretVal, 0)
+	for _, localSecret := range cachedLocalSecrets {
+		localSecrets = append(localSecrets, models.SecretVal{
+			Label: localSecret.Name,
+			Value: string(
+				localSecret.Values[EnvironmentName(environmentName)],
+			),
+		})
+	}
+	return localSecrets
+}
+
+func (ctx *Context) isVersionChangeWithoutPayload(
+	response models.GetMessageResponse,
+) bool {
+	if ctx.err != nil {
+		return false
+	}
+
+	if len(response.Message.Payload) == 0 {
+		// If the message is empty, but the versionID has changed,
+		return ctx.EnvironmentVersionHasChanged(
+			response.Environment.Name,
+			response.Environment.VersionID,
+		)
+	}
+	return false
+}
+
+func (ctx *Context) handleFileChanges(
+	fileChanges []Change,
+	environmentName string,
+) *Context {
+	if ctx.err != nil {
+		return ctx
+	}
+
+	// Only remove cached files that have changed
+	for _, fileChange := range fileChanges {
+		filesDir := ctx.CachedEnvironmentFilesPath(environmentName)
+		filePath := path.Join(filesDir, fileChange.Name)
+
+		err := utils.RemoveFile(filePath)
+		if err != nil {
+			ctx.err = kserrors.CannotRemoveDirectoryContents(filePath, err)
+		}
+	}
+
+	if err := ctx.saveFilesChanges(fileChanges, environmentName); err != nil {
+		ctx.err = kserrors.CannotSaveFiles(err.Error(), err)
+	}
+
+	return ctx
+}
+
+func (ctx *Context) handleSecretChanges(
+	PayloadContent models.MessagePayload,
+	environmentName string,
+) *Context {
+	if ctx.err != nil {
+		return ctx
+	}
+
+	if len(PayloadContent.Secrets) > 0 {
+		envFilePath := ctx.CachedEnvironmentDotEnvPath(environmentName)
+		envFile := new(envfile.EnvFile)
+		envFile.Load(envFilePath, nil)
+
+		for key := range envFile.GetData() {
+			found := false
+
+			for _, secret := range PayloadContent.Secrets {
+				if key == secret.Label {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				envFile.Unset(key)
+			}
+		}
+
+		for _, secret := range PayloadContent.Secrets {
+			envFile.Set(secret.Label, secret.Value)
+		}
+
+		if err := envFile.Dump().Err(); err != nil {
+			ctx.setError(kserrors.FailedToUpdateDotEnv(envFilePath, err))
+		}
+	}
+
+	return ctx
 }
 
 // GetSecretsChanges function
@@ -424,77 +462,8 @@ func (ctx *Context) PrepareMessagePayload(
 	return PayloadContent, err
 }
 
-// DEPRECATED
-func (ctx *Context) WriteNewMessages(
-	messagesByEnvironments models.GetMessageByEnvironmentResponse,
-) (ChangesByEnvironment, *kserrors.Error) {
-	changes := ctx.SaveMessages(messagesByEnvironments)
-
-	if err := ctx.Err(); err != nil {
-		err.Print()
-		return changes, kserrors.UnkownError(err)
-	}
-
-	changedEnvironments := make([]string, 0)
-
-	// FIXME: Should not this be an application-wide constant ?
-	envList := []string{"dev", "staging", "prod"}
-
-	for _, environmentName := range envList {
-		environment, ok := messagesByEnvironments.Environments[environmentName]
-		if !ok {
-			continue
-		}
-
-		messageID := environment.Message.ID
-
-		if messageID != 0 {
-			// IF changes detected
-			if len(changes.Environments[environmentName]) > 0 {
-				ui.PrintStdErr(
-					"Environment " + environmentName + ": " + strconv.Itoa(
-						len(changes.Environments[environmentName]),
-					) + " secret(s) changed",
-				)
-
-				for _, change := range changes.Environments[environmentName] {
-					// No previous cotent => secret is new
-					if len(change.From) == 0 {
-						ui.PrintStdErr("++ " + change.Name + " : " + change.To)
-					} else {
-						ui.PrintStdErr("   " + change.Name + " : " + change.From + " ↦ " + change.To)
-					}
-				}
-			} else {
-				ui.PrintStdErr("Environment " + environmentName + " up to date ✔")
-			}
-
-			if err := ctx.Err(); err != nil {
-				err.Print()
-				return changes, ctx.err
-			}
-		} else {
-			environmentChanged := ctx.EnvironmentVersionHasChanged(environmentName, environment.Environment.VersionID)
-
-			if environmentChanged {
-				ui.PrintStdErr("Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯")
-				changedEnvironments = append(changedEnvironments, environmentName)
-			} else {
-				ui.PrintStdErr("Environment " + environmentName + " up to date ✔")
-			}
-		}
-	}
-
-	if len(changedEnvironments) > 0 {
-		return changes, kserrors.EnvironmentsHaveChanged(
-			strings.Join(changedEnvironments, ", "),
-			nil,
-		)
-	}
-
-	return changes, nil
-}
-
+// CompareNewSecretWithChanges method compares recent changes with new
+// secret name and values
 func (ctx *Context) CompareNewSecretWithChanges(
 	secretName string,
 	newSecret map[string]string,
@@ -538,6 +507,8 @@ func (ctx *Context) CompareNewSecretWithChanges(
 	return ctx
 }
 
+// CompareRemovedSecretWithChanges method compares the removed secrete with
+// the latest set of changes
 func (ctx *Context) CompareRemovedSecretWithChanges(
 	secretName string,
 	changesByEnvironment ChangesByEnvironment,
@@ -577,6 +548,8 @@ func (ctx *Context) CompareRemovedSecretWithChanges(
 	return ctx
 }
 
+// CompareNewFileWhithChanges method compares the latest set of changes
+// with a new file
 func (ctx *Context) CompareNewFileWhithChanges(
 	filePath string,
 	changesByEnvironment ChangesByEnvironment,
