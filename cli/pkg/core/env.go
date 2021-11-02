@@ -543,3 +543,31 @@ func (ctx *Context) MarkSecretRequired(
 
 	return ctx
 }
+
+// Returns an array of secrets that are in the first list, an not in the second
+// TODO: should be in a service internal package
+func FilterSecretsFromCache(
+	secretsFromCache []Secret,
+	secrets []Secret,
+) []Secret {
+	secretsFromCacheToDisplay := make([]Secret, 0)
+
+	for _, secretFromCache := range secretsFromCache {
+		found := false
+
+		for _, secret := range secrets {
+			if secret.Name == secretFromCache.Name {
+				found = true
+			}
+		}
+
+		if !found {
+			secretFromCache.FromCache = true
+			secretsFromCacheToDisplay = append(
+				secretsFromCacheToDisplay,
+				secretFromCache,
+			)
+		}
+	}
+	return secretsFromCacheToDisplay
+}

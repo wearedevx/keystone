@@ -36,7 +36,10 @@ Used without arguments, displays a table of secrets.`,
 
 		secrets := ctx.ListSecrets()
 		secretsFromCache := ctx.ListSecretsFromCache()
-		secretsFromCache = filterSecretsFromCache(secretsFromCache, secrets)
+		secretsFromCache = core.FilterSecretsFromCache(
+			secretsFromCache,
+			secrets,
+		)
 		secrets = append(secrets, secretsFromCache...)
 
 		exitIfErr(ctx.Err())
@@ -57,32 +60,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// secretsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-// Returns an array of secrets that are in the first list, an not in the second
-// TODO: should be in a service internal package
-func filterSecretsFromCache(
-	secretsFromCache []core.Secret,
-	secrets []core.Secret,
-) []core.Secret {
-	secretsFromCacheToDisplay := make([]core.Secret, 0)
-
-	for _, secretFromCache := range secretsFromCache {
-		found := false
-
-		for _, secret := range secrets {
-			if secret.Name == secretFromCache.Name {
-				found = true
-			}
-		}
-
-		if !found {
-			secretFromCache.FromCache = true
-			secretsFromCacheToDisplay = append(
-				secretsFromCacheToDisplay,
-				secretFromCache,
-			)
-		}
-	}
-	return secretsFromCacheToDisplay
 }
