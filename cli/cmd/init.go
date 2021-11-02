@@ -3,22 +3,15 @@ package cmd
 import (
 	"errors"
 	"os"
-	"path"
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/internal/projects"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 
-	"github.com/wearedevx/keystone/cli/internal/utils"
-	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/display"
-	"github.com/wearedevx/keystone/cli/ui/prompts"
 
 	"github.com/spf13/cobra"
 )
@@ -58,46 +51,27 @@ Created files and directories:
 			exit(kserrors.NoWorkingDirectory(err))
 		}
 
-		var ksfile *keystonefile.KeystoneFile
-
-		if keystonefile.ExistsKeystoneFile(currentfolder) {
-			ksfile = new(keystonefile.KeystoneFile).Load(currentfolder)
-
-			// If there is already a keystone file around here,
-			// inform the user they are in a keystone project
-			if ksfile.ProjectId != "" && ksfile.ProjectName != projectName {
-				// check if .keystone directory too
-				if utils.DirExists(path.Join(ctx.Wd, ".keystone")) {
-					kserrors.AlreadyKeystoneProject(errors.New("")).Print()
-					exit(nil)
-				}
-			}
-		} else {
-			ksfile = keystonefile.NewKeystoneFile(
-				currentfolder,
-				models.Project{},
+		pservice := projects.NewProjectService(ctx, currentfolder, projectName)
+		if errors.Is(pservice.Err(), projects.ErrorAlreadyInKeystoneProject) {
+			exit(
+				kserrors.AlreadyKeystoneProject(nil),
 			)
 		}
+		exitIfErr(pservice.Err())
 
-		var project models.Project
-		c, err := client.NewKeystoneClient()
-		exitIfErr(err)
-
-		// Ask for project name if keystone file doesn't exist.
-		if ksfile.ProjectId == "" {
-			err = createProject(c, &project, ksfile)
-		} else {
-			err = getProject(c, &project, ksfile)
+		project := models.Project{
+			Name: projectName,
 		}
 
-		if err != nil {
-			if errors.Is(err, auth.ErrorUnauthorized) {
-				config.Logout()
-				err = kserrors.InvalidConnectionToken(err)
-			} else {
-				ui.PrintError(err.Error())
-			}
+		sp := spinner.Spinner("Creating project...")
+		sp.Start()
 
+		err = pservice.GetOrCreate(&project, organizationName).Err()
+
+		sp.Stop()
+
+		if err != nil {
+			handleClientError(err)
 			exit(err)
 		}
 
@@ -108,97 +82,6 @@ Created files and directories:
 
 		display.ProjectInitSuccess()
 	},
-}
-
-// TODO: these belong to a ProjectService package, see internal/messages
-func createProject(
-	c client.KeystoneClient,
-	project *models.Project,
-	ksfile *keystonefile.KeystoneFile,
-) (err error) {
-
-	organizationID := addOrganizationToProject(c, project)
-	// Remote Project Creation
-	sp := spinner.Spinner("Creating project...")
-	sp.Start()
-	*project, err = c.Project("").Init(projectName, organizationID)
-	sp.Stop()
-
-	// Handle invalid token
-	if err != nil {
-		return err
-	}
-
-	// Update the ksfile
-	// So that it keeps secrets and files
-	// if the file exited without a project-id
-	ksfile.ProjectId = project.UUID
-	ksfile.ProjectName = project.Name
-
-	if err := ksfile.Save().Err(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func getProject(
-	c client.KeystoneClient,
-	project *models.Project,
-	ksfile *keystonefile.KeystoneFile,
-) (err error) {
-	// We have a keystone.yaml with a project-id, but no .keystone dir
-	// So the project needs to be re-created.
-
-	// Reconstruct the project
-	// id and name are in the keystone file
-	project.UUID = ksfile.ProjectId
-	project.Name = ksfile.ProjectName
-
-	// But environment data is still on the server
-	sp := spinner.Spinner("Fetching project informations...")
-	sp.Start()
-	environments, err := c.Project(project.UUID).GetAccessibleEnvironments()
-	sp.Stop()
-
-	if err != nil {
-		return err
-	}
-
-	project.Environments = environments
-
-	return nil
-}
-
-func addOrganizationToProject(
-	c client.KeystoneClient,
-	project *models.Project,
-) uint {
-	organizations, err := c.Organizations().GetAll()
-	if err != nil {
-		// TODO: there should be proper error here
-		ui.PrintError("Error getting organizations: ", err.Error())
-		os.Exit(1)
-	}
-	orga := models.Organization{}
-	if organizationName == "" {
-		orga = prompts.OrganizationsSelect(organizations)
-		project.OrganizationID = orga.ID
-		return orga.ID
-	} else {
-		for _, o := range organizations {
-			if organizationName == o.Name {
-				orga = o
-			}
-		}
-		if orga.ID == 0 {
-			// TODO: there should be proper error here
-			ui.PrintError("Organization does not exist")
-			os.Exit(1)
-		}
-		project.OrganizationID = orga.ID
-		return orga.ID
-	}
 }
 
 func init() {
