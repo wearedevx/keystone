@@ -94,17 +94,9 @@ func CreateAccountAndLogin(c auth.AuthService) error {
 	return nil
 }
 
-// TODO: move to ui/prompts
+// TODO: move to an internal service package
 func SelectAuthService(ctx context.Context) (auth.AuthService, error) {
-	if serviceName == "" {
-		_, serviceName = prompts.Select(
-			"Select an identity provider",
-			[]string{
-				"github",
-				"gitlab",
-			},
-		)
-	}
+	serviceName = prompts.SelectAuthService(serviceName)
 
 	return auth.GetAuthService(serviceName, ctx, client.ApiURL)
 }

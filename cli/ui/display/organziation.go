@@ -87,3 +87,13 @@ func OrganizationAccessibleProjects(projects []models.Project) {
 func OrganizationRenamed(from, to string) {
 	ui.PrintSuccess("Organization %s has been renamed to %s", from, to)
 }
+
+func WarningFreeOrga(roles []models.Role) {
+	if len(roles) == 1 {
+		ui.PrintStdErr(
+			"WARNING: You are not allowed to set role other than admin for free organization",
+		)
+		ui.Print("To learn more: https://keystone.sh")
+		ui.Print("")
+	}
+}

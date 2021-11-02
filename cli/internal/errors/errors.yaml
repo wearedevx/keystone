@@ -78,6 +78,18 @@ errors:
       {{ ERROR }} {{ .Name | red }}
       Device names must be alphanumeric with ., -, _
 
+  # LOGIN ERROR
+  # --------------------
+  - type: CannotSaveConfig
+    name: "Cannot Save Config"
+    params: []
+    template: |-
+      {{ ERROR }} {{ .Name | red }}
+      You have been successfully logged in, but the configuration file could
+      not be written.
+
+      This happened because: {{ .Cause }}
+
   # KEYSTONE_YAML_ERRORS
   # ––––––––––––––––––––
   - type: FailedToReadKeystoneFile

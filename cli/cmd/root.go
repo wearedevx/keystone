@@ -211,7 +211,9 @@ func init() {
 
 	cobra.OnInitialize(func() {
 		// Call directly initConfig. cobra doesn't call initConfig func.
-		config.InitConfig(cfgFile)
+		err := config.InitConfig(cfgFile)
+		exitIfErr(err)
+
 		Initialize()
 	})
 	// Cobra also supports local flags, which will only run

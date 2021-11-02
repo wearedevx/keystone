@@ -25,22 +25,31 @@ import (
 	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
+var inviteEmail string
+
 // inviteCmd represents the invite command
 var inviteCmd = &cobra.Command{
 	Use:   "invite <email address>",
 	Short: "Sends an invitation to join Keystone",
 	Long:  `Sends an invitation to join Keystone.`,
-	Args:  cobra.ExactArgs(1),
-	Run: func(_ *cobra.Command, args []string) {
-		// TODO: put the email verification in its own functio
-		emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-
-		email := args[0]
-
-		if !emailRegex.Match([]byte(email)) {
-			exit(fmt.Errorf("invalid email address: %s", email))
+	// Args:  cobra.ExactArgs(1),
+	Args: func(cmd *cobra.Command, args []string) error {
+		err := cobra.ExactArgs(1)(cmd, args)
+		if err != nil {
+			return err
 		}
 
+		emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+		inviteEmail = args[0]
+
+		if !emailRegex.Match([]byte(inviteEmail)) {
+			return fmt.Errorf("invalid email address: %s", inviteEmail)
+		}
+
+		return nil
+	},
+	Run: func(_ *cobra.Command, _ []string) {
 		c, kcErr := client.NewKeystoneClient()
 		exitIfErr(kcErr)
 
@@ -49,10 +58,10 @@ var inviteCmd = &cobra.Command{
 
 		projectName := ctx.GetProjectName()
 
-		result, err := c.Users().InviteUser(email, projectName)
+		result, err := c.Users().InviteUser(inviteEmail, projectName)
 		exitIfErr(err)
 
-		display.InviteSuccess(result.UserUIDs, email)
+		display.InviteSuccess(result.UserUIDs, inviteEmail)
 	},
 }
 

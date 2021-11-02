@@ -130,13 +130,11 @@ func (g *gitHubCiService) PushSecret(
 	)
 
 	if resp.StatusCode == 403 {
-		// TODO: print porper error
 		g.err = ErrorGithubCIPermissionDenied
 		return g
 	}
 
 	if resp.StatusCode == 404 {
-		// TODO: print proper error
 		g.err = ErrorGithubCINoSuchRepository
 		return g
 	}

@@ -36,30 +36,10 @@ func exitIfErr(err error) {
 		return
 	}
 	if err != nil {
-		if printError(err) {
+		if display.Error(err) {
 			os.Exit(1)
 		}
 	}
-}
-
-/// Prints an error, taking into account the kserror.Error type
-// TODO: move it to ui package ?
-func printError(err error) bool {
-	if err == nil {
-		return false
-	}
-
-	if kserrors.IsKsError(err) {
-		kserr := kserrors.AsKsError(err)
-		if kserr == nil {
-			return false
-		}
-		kserr.Print()
-	} else {
-		ui.PrintError(err.Error())
-	}
-
-	return true
 }
 
 /// Get messages and print the changes

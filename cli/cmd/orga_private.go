@@ -1,13 +1,11 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
@@ -58,13 +56,7 @@ func getUserOwnedOrganization(
 	}
 
 	if foundOrga.ID == 0 {
-		// TODO: This needs to be a proper error
-		ui.PrintError(
-			"You don't own an organization named %s",
-			organizationName,
-		)
-		ui.Print("To see organizations you own, use : $ ks orga")
-		os.Exit(1)
+		exit(kserrors.YouDoNotOwnTheOrganization(organizationName, nil))
 	}
 	return foundOrga
 }

@@ -384,3 +384,19 @@ func ValueForEnvironment(
 
 	return StringInput(secretName, defaultValue)
 }
+
+// ——— LOGIN PROMPTS ———— //
+
+func SelectAuthService(serviceName string) string {
+	if serviceName == "" {
+		_, serviceName = Select(
+			"Select an identity provider",
+			[]string{
+				"github",
+				"gitlab",
+			},
+		)
+	}
+
+	return serviceName
+}

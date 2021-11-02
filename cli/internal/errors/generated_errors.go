@@ -47,6 +47,13 @@ To register it, please logout, then login again.
 {{ ERROR }} {{ .Name | red }}
 Device names must be alphanumeric with ., -, _
 `,
+	"CannotSaveConfig": `
+{{ ERROR }} {{ .Name | red }}
+You have been successfully logged in, but the configuration file could
+not be written.
+
+This happened because: {{ .Cause }}
+`,
 	"FailedToReadKeystoneFile": `
 {{ ERROR }} {{ .Name | red }}
 The keystone.yaml file exists, but it might not be readable or writable.
@@ -550,6 +557,12 @@ func BadDeviceName(cause error) *Error {
 	meta := map[string]interface{}{}
 
 	return NewError("Bad Device Name", helpTexts["BadDeviceName"], meta, cause)
+}
+
+func CannotSaveConfig(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Cannot Save Config", helpTexts["CannotSaveConfig"], meta, cause)
 }
 
 func FailedToReadKeystoneFile(cause error) *Error {

@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -28,7 +27,6 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 	"gopkg.in/yaml.v2"
@@ -154,13 +152,15 @@ func getMemberRolesFromFile(
 	mustMembersExist(c, memberIDs)
 	roles := mustGetRoles(c)
 
-	warningFreeOrga(roles)
+	display.WarningFreeOrga(roles)
 
-	memberRoles := mapRoleNamesToRoles(memberRoleNames, roles)
+	memberRoles, err := models.Roles(roles).MapWithMembersRoleNames(memberRoleNames)
+	exitIfErr(err)
 
 	return memberRoles
 }
 
+// TODO: move thess functions to a service internal package
 func getMemberRolesFromArgs(
 	c client.KeystoneClient,
 	roleName string,
@@ -170,7 +170,7 @@ func getMemberRolesFromArgs(
 	roles := mustGetRoles(c)
 	foundRole := &models.Role{}
 
-	warningFreeOrga(roles)
+	display.WarningFreeOrga(roles)
 
 	for _, role := range roles {
 		if role.Name == roleName {
@@ -187,7 +187,7 @@ func getMemberRolesFromArgs(
 	return memberRoles
 }
 
-// TODO: to ui package
+// TODO: move thess functions to a service internal package
 func getMemberRolesFromPrompt(
 	c client.KeystoneClient,
 	memberIDs []string,
@@ -195,7 +195,7 @@ func getMemberRolesFromPrompt(
 	mustMembersExist(c, memberIDs)
 	roles := mustGetRoles(c)
 
-	warningFreeOrga(roles)
+	display.WarningFreeOrga(roles)
 
 	memberRole := make(map[string]models.Role)
 
@@ -207,49 +207,6 @@ func getMemberRolesFromPrompt(
 	}
 
 	return memberRole
-}
-
-// TODO: to ui package
-func mapRoleNamesToRoles(
-	memberRoleNames map[string]string,
-	roles []models.Role,
-) map[string]models.Role {
-	memberRoles := make(map[string]models.Role)
-
-	for member, roleName := range memberRoleNames {
-		var foundRole *models.Role
-		for _, role := range roles {
-			if role.Name == roleName {
-				*foundRole = role
-
-				break
-			}
-		}
-
-		if foundRole == nil {
-			exit(
-				kserrors.UnkownError(
-					fmt.Errorf("role %s does not exist", roleName),
-				),
-			)
-		}
-
-		memberRoles[member] = *foundRole
-	}
-
-	return memberRoles
-}
-
-// TODO: to ui package
-func warningFreeOrga(roles []models.Role) {
-	if len(roles) == 1 {
-		fmt.Fprintln(
-			os.Stderr,
-			"WARNING: You are not allowed to set role other than admin for free organization",
-		)
-		ui.Print("To learn more: https://keystone.sh")
-		ui.Print("")
-	}
 }
 
 func init() {

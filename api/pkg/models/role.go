@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"sort"
 	"strings"
@@ -48,6 +49,34 @@ func (u *Role) Serialize(out *string) (err error) {
 	return err
 }
 
+type Roles []Role
+
+func (rs Roles) MapWithMembersRoleNames(
+	memberRoleNames map[string]string,
+) (map[string]Role, error) {
+	memberRoles := make(map[string]Role)
+
+	for member, roleName := range memberRoleNames {
+		var foundRole *Role
+		for _, role := range rs {
+			if role.Name == roleName {
+				*foundRole = role
+
+				break
+			}
+		}
+
+		if foundRole == nil {
+			return nil, fmt.Errorf("role %s does not exist", roleName)
+		}
+
+		memberRoles[member] = *foundRole
+	}
+
+	return memberRoles, nil
+}
+
+// API Types
 type GetRolesResponse struct {
 	Roles []Role
 }

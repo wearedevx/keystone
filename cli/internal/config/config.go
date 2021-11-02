@@ -1,10 +1,7 @@
 package config
 
 import (
-	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"reflect"
 
 	uuid "github.com/satori/go.uuid"
@@ -13,7 +10,6 @@ import (
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
 )
 
 var configFilePath string
@@ -31,16 +27,11 @@ func castAccount(
 
 // Writes the global config to the disk
 // Exits with 1 status code
-// TODO: have a proper error for that
 func Write() {
 	utils.CreateFileIfNotExists(configFilePath, "")
 
 	if err := viper.WriteConfigAs(configFilePath); err != nil {
-		ui.Print(ui.RenderTemplate("config write error", `
-{{ ERROR }} {{ . | red }}
-
-You have been successfully logged in, but the configuration file could not be written
-`, err.Error()))
+		kserrors.CannotSaveConfig(err)
 		os.Exit(1)
 	}
 }
@@ -202,27 +193,8 @@ func FindAccount(c auth.AuthService) (user models.User, current int) {
 	return user, current
 }
 
-// Create conf file if not exist
-// TODO: properly check errors
-func createFileIfNotExist(filePath string) {
-	// Check if need to create file
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		// path/to/whatever does not exist
-
-		if err := os.MkdirAll(filepath.Dir(filePath), 0o700); err != nil {
-			fmt.Printf("Unable to write file: %v", err)
-		}
-
-		err := ioutil.WriteFile(filePath, []byte(""), 0o600)
-		if err != nil {
-			fmt.Printf("Unable to write file: %v", err)
-		}
-	}
-}
-
 // initConfig reads in config file and ENV variables if set.
-// TODO: properly handle error
-func InitConfig(cfgFile string) {
+func InitConfig(cfgFile string) (err error) {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -230,7 +202,7 @@ func InitConfig(cfgFile string) {
 	} else {
 		configDir, err := ConfigDir()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			return err
 		}
 
 		viper.AddConfigPath(configDir)
@@ -240,7 +212,7 @@ func InitConfig(cfgFile string) {
 
 		configFilePath, err = ConfigPath()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			return err
 		}
 	}
 
@@ -252,12 +224,15 @@ func InitConfig(cfgFile string) {
 	viper.SetDefault("device_uid", uuid.NewV4().String())
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		err = viper.WriteConfig()
-		if err != nil {
-			panic(err)
-		}
+	if err = viper.ReadInConfig(); err != nil {
+		return err
 	}
+
+	if err = viper.WriteConfig(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func CheckExpiredTokenError(err *kserrors.Error) {

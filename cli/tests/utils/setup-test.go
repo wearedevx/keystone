@@ -53,7 +53,7 @@ func isServerResponse(serverUrl string) bool {
 }
 
 func pollServer(serverUrl string, c chan bool, maxAttempts int) {
-	var done bool = false
+	var done = false
 	attemps := 0
 
 	for !done {
