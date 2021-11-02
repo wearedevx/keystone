@@ -9,7 +9,6 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/utils"
-	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 )
 
 var configFilePath string
@@ -86,14 +85,14 @@ func GetCurrentAccount() (user models.User, index int) {
 	if viper.IsSet("current") {
 		if index = viper.Get("current").(int); index >= 0 &&
 			index < len(accounts) {
-			user = userFromAccount(accounts[index])
+			user = UserFromAccount(accounts[index])
 		}
 	}
 
 	return user, index
 }
 
-func userFromAccount(account map[string]string) (user models.User) {
+func UserFromAccount(account map[string]string) (user models.User) {
 	devices := make([]models.Device, 0)
 	devices = append(
 		devices,
@@ -174,23 +173,6 @@ func IsLoggedIn() bool {
 	_, index := GetCurrentAccount()
 
 	return index >= 0
-}
-
-// finds an account matching `user` in the `account` slice
-func FindAccount(c auth.AuthService) (user models.User, current int) {
-	current = -1
-
-	for i, account := range GetAllAccounts() {
-		isAccount, _ := c.CheckAccount(account)
-
-		if isAccount {
-			current = i
-			user = userFromAccount(account)
-			break
-		}
-	}
-
-	return user, current
 }
 
 // initConfig reads in config file and ENV variables if set.

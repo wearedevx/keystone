@@ -23,11 +23,11 @@ type AuthService interface {
 
 func GetAuthService(
 	serviceName string,
-	ctx context.Context,
 	apiUrl string,
 ) (AuthService, error) {
 	var c AuthService
 	var err error
+	ctx := context.Background()
 
 	switch serviceName {
 	case "github":

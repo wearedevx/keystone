@@ -16,90 +16,14 @@ limitations under the License.
 package cmd
 
 import (
-	"context"
-
-	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/cli/internal/config"
+	"github.com/wearedevx/keystone/cli/internal/login"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
-	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui/display"
-	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 var serviceName string
-
-// TODO: move to an internal package
-func LogIntoExisitingAccount(
-	accountIndex int,
-	c auth.AuthService,
-) error {
-	config.SetCurrentAccount(accountIndex)
-
-	publicKey, _ := config.GetUserPublicKey()
-	_, jwtToken, err := c.Finish(
-		publicKey,
-		config.GetDeviceName(),
-		config.GetDeviceUID(),
-	)
-	if err != nil {
-		return err
-	}
-
-	config.SetAuthToken(jwtToken)
-	config.Write()
-
-	return nil
-}
-
-// TODO: move to an internal package
-func CreateAccountAndLogin(c auth.AuthService) error {
-	keyPair, err := keys.New(keys.TypeEC)
-	if err != nil {
-		return err
-	}
-
-	// Transfer credentials to the server
-	// Create (or get) the user info
-	user, jwtToken, err := c.Finish(
-		keyPair.Public.Value,
-		config.GetDeviceName(),
-		config.GetDeviceUID(),
-	)
-	if err != nil {
-		return err
-	}
-
-	// Save the user info in the local config
-	accountIndex := config.AddAccount(
-		map[string]string{
-			"account_type": string(user.AccountType),
-			"user_id":      user.UserID,
-			"ext_id":       user.ExtID,
-			"username":     user.Username,
-			"fullname":     user.Fullname,
-			"email":        user.Email,
-		},
-	)
-
-	config.SetUserPublicKey(string(keyPair.Public.Value))
-	config.SetUserPrivateKey(string(keyPair.Private.Value))
-
-	config.SetCurrentAccount(accountIndex)
-	config.SetAuthToken(jwtToken)
-	config.Write()
-
-	return nil
-}
-
-// TODO: move to an internal service package
-func SelectAuthService(ctx context.Context) (auth.AuthService, error) {
-	serviceName = prompts.SelectAuthService(serviceName)
-
-	return auth.GetAuthService(serviceName, ctx, client.ApiURL)
-}
 
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
@@ -116,7 +40,6 @@ ks login --with=gitlab
 ks login ––with=github`,
 	Args: cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
-		ctx := context.Background()
 		currentAccount, accountIndex := config.GetCurrentAccount()
 
 		// Already logged in
@@ -125,46 +48,36 @@ ks login ––with=github`,
 			exit(nil)
 		}
 
-		c, err := SelectAuthService(ctx)
-		exitIfErr(err)
+		sp := spinner.Spinner(" ").Start()
 
-		// Get OAuth connect url
-		url, err := c.Start()
-		exitIfErr(err)
+		var url, name string
+		ls := login.NewLoginService(serviceName).
+			GetLoginLink(&url, &name)
 
-		display.LoginLink(c.Name(), url)
+		sp.Stop()
+		exitIfErr(ls.Err())
 
-		sp := spinner.Spinner(" ")
+		display.LoginLink(name, url)
+
 		sp.Start()
 
 		// Blocking call
-		err = c.WaitForExternalLogin()
+		err := ls.WaitForExternalLogin().Err()
+
 		sp.Stop()
 		exitIfErr(err)
 
-		existingName := config.GetDeviceName()
-		deviceName := prompts.DeviceName(existingName, skipPrompts)
-		viper.Set("device", deviceName)
+		existingUser := ls.
+			PromptDeviceName(skipPrompts).
+			FindAccount(&currentAccount, &accountIndex).
+			PerformLogin(currentAccount, accountIndex)
 
-		currentAccount, accountIndex = config.FindAccount(c)
+		exitIfErr(ls.Err())
 
-		if accountIndex >= 0 {
-			// Found an exiting matching account,
-			// log into it
-			if err = LogIntoExisitingAccount(
-				accountIndex,
-				c,
-			); err == nil {
-				display.WelcomeBack(currentAccount)
-			}
-
-			exit(err)
+		if existingUser {
+			display.WelcomeBack(currentAccount)
 		} else {
-			if err = CreateAccountAndLogin(c); err == nil {
-				display.LoginSucces()
-			}
-
-			exit(err)
+			display.LoginSucces()
 		}
 	},
 }

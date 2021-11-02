@@ -231,8 +231,7 @@ func mustBeAdmin(projectService *client.Project) {
 		}
 	}
 
-	// TODO: proper error
-	exit(kserrors.UnkownError(errors.New("not allowed")))
+	exit(kserrors.PermissionDenied(currentEnvironment, nil))
 }
 
 // Removes the project directory path form `filePathArg`,
