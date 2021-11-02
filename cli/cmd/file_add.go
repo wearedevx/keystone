@@ -18,20 +18,16 @@ package cmd
 import (
 	"errors"
 	"io/ioutil"
-	"os"
 	"path/filepath"
-	"reflect"
 
-	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/files"
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui/display"
-	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 // filesAddCmd represents the push command
@@ -62,12 +58,12 @@ ks file add -s ./credentials.json`,
 		filePath, err := cleanPathArgument(args[0], ctx.Wd)
 		exitIfErr(err)
 
+		fileservice := files.NewFileService(ctx)
+
 		environments := ctx.AccessibleEnvironments
 		environmentFileMap := map[string][]byte{}
 
-		useOldFile := askToOverrideFilesInCache(filePath)
-
-		if !useOldFile {
+		if !fileservice.AskToOverrideFilesInCache(filePath, skipPrompts) {
 			absPath := filepath.Join(ctx.Wd, filePath)
 
 			if !utils.FileExists(absPath) {
@@ -88,12 +84,13 @@ ks file add -s ./credentials.json`,
 			environmentFileMap[currentEnvironment] = currentContent
 
 			if !skipPrompts {
-				askContentOfFile(
-					environments,
+				exitIfErr(fileservice.AskContent(
 					filePath,
+					environments,
 					environmentFileMap,
 					currentContent,
-				)
+					currentEnvironment,
+				).Err())
 			} else {
 				for _, environment := range environments {
 					environmentFileMap[environment.Name] = currentContent
@@ -125,7 +122,8 @@ ks file add -s ./credentials.json`,
 			)
 
 			exitIfErr(
-				messageService.SendEnvironments(ctx.AccessibleEnvironments).Err(),
+				messageService.SendEnvironments(ctx.AccessibleEnvironments).
+					Err(),
 			)
 		} else {
 			// just add file to keystone.yaml and keep old content
@@ -150,68 +148,4 @@ ks file add -s ./credentials.json`,
 
 func init() {
 	filesCmd.AddCommand(filesAddCmd)
-}
-
-// TODO: determine which package this actually belongs to and move it there
-func askContentOfFile(
-	environments []models.Environment,
-	filePath string,
-	environmentFileMap map[string][]byte,
-	currentContent []byte,
-) {
-	extension := filepath.Ext(filePath)
-
-	for _, environment := range environments {
-		if environment.Name != currentEnvironment {
-			display.FileAskForFileContentForEnvironment(filePath, environment.Name)
-
-			_, _, err := keyboard.GetSingleKey()
-			if err != nil {
-				display.FileFailUserInput(err)
-				os.Exit(1)
-				return
-			}
-
-			content, err := utils.CaptureInputFromEditor(
-				utils.GetPreferredEditorFromEnvironment,
-				extension,
-				string(currentContent),
-			)
-
-			if err != nil {
-				display.FileFailedGetContentFromEditor(err)
-				os.Exit(1)
-				return
-			}
-
-			environmentFileMap[environment.Name] = content
-		}
-	}
-}
-
-// TODO: determine which package this actually belongs to and move it there
-func askToOverrideFilesInCache(fileName string) bool {
-	files := ctx.ListFilesFromCache()
-	var found keystonefile.FileKey
-	for _, file := range files {
-		if file.Path == fileName {
-			found = file
-		}
-	}
-	if !reflect.ValueOf(found).IsZero() {
-		display.FileContentsForEnvironments(
-			fileName,
-			ctx.AccessibleEnvironments,
-			ctx.GetFileContents,
-		)
-
-		override := false
-
-		if !skipPrompts {
-			override = prompts.ConfirmOverrideFileContents()
-		}
-
-		return !override
-	}
-	return false
 }
