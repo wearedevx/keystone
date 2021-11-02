@@ -16,20 +16,15 @@ limitations under the License.
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"io/ioutil"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/members"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui/display"
-	"github.com/wearedevx/keystone/cli/ui/prompts"
-	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -95,118 +90,46 @@ ks member add --from-file team.yaml
 		c, err := client.NewKeystoneClient()
 		exitIfErr(err)
 
+		roles := mustGetRoles(c)
+
 		var memberRoles map[string]models.Role
 
 		switch flow {
 		case FileFlow:
-			memberRoles = getMemberRolesFromFile(c, membersFile)
+			memberRoles, err = members.GetMemberRolesFromFile(
+				c,
+				membersFile,
+				roles,
+			)
 		case ArgsFlow:
-			memberRoles = getMemberRolesFromArgs(c, oneRole, manyMembers)
+			memberRoles, err = members.GetMemberRolesFromArgs(
+				c,
+				oneRole,
+				manyMembers,
+				roles,
+			)
 		default:
-			memberRoles = getMemberRolesFromPrompt(c, manyMembers)
+			memberRoles, err = members.GetMemberRolesFromPrompt(
+				c,
+				manyMembers,
+				roles,
+			)
 		}
+		exitIfErr(err)
 
-		sp := spinner.Spinner(" ")
-		sp.Start()
+		sp := spinner.Spinner(" ").Start()
 
 		err = c.Project(projectID).AddMembers(memberRoles)
 		sp.Stop()
 
 		if err != nil {
-			if errors.Is(err, auth.ErrorUnauthorized) {
-				config.Logout()
-				err = kserrors.InvalidConnectionToken(err)
-			} else {
-				err = kserrors.CannotAddMembers(err)
-			}
-
+			handleClientError(err)
+			err = kserrors.CannotAddMembers(err)
 			exit(err)
 		}
 
 		display.MembersAdded()
 	},
-}
-
-// TODO: move thess functions to a service internal package
-func getMemberRolesFromFile(
-	c client.KeystoneClient,
-	filepath string,
-) map[string]models.Role {
-	var err error
-	memberRoleNames := make(map[string]string)
-
-	/* #nosec
-	 * the file is going to be parsed, not executed in anyway
-	 */
-	dat, err := ioutil.ReadFile(filepath)
-	exitIfErr(err)
-
-	err = yaml.Unmarshal(dat, &memberRoleNames)
-	exitIfErr(err)
-
-	memberIDs := make([]string, 0)
-	for m := range memberRoleNames {
-		memberIDs = append(memberIDs, m)
-	}
-
-	mustMembersExist(c, memberIDs)
-	roles := mustGetRoles(c)
-
-	display.WarningFreeOrga(roles)
-
-	memberRoles, err := models.Roles(roles).MapWithMembersRoleNames(memberRoleNames)
-	exitIfErr(err)
-
-	return memberRoles
-}
-
-// TODO: move thess functions to a service internal package
-func getMemberRolesFromArgs(
-	c client.KeystoneClient,
-	roleName string,
-	memberIDs []string,
-) map[string]models.Role {
-	mustMembersExist(c, memberIDs)
-	roles := mustGetRoles(c)
-	foundRole := &models.Role{}
-
-	display.WarningFreeOrga(roles)
-
-	for _, role := range roles {
-		if role.Name == roleName {
-			*foundRole = role
-		}
-	}
-
-	memberRoles := make(map[string]models.Role)
-
-	for _, member := range memberIDs {
-		memberRoles[member] = *foundRole
-	}
-
-	return memberRoles
-}
-
-// TODO: move thess functions to a service internal package
-func getMemberRolesFromPrompt(
-	c client.KeystoneClient,
-	memberIDs []string,
-) map[string]models.Role {
-	mustMembersExist(c, memberIDs)
-	roles := mustGetRoles(c)
-
-	display.WarningFreeOrga(roles)
-
-	memberRole := make(map[string]models.Role)
-
-	for _, memberId := range memberIDs {
-		role, err := prompts.PromptRole(memberId, roles)
-		exitIfErr(err)
-
-		memberRole[memberId] = role
-	}
-
-	return memberRole
 }
 
 func init() {

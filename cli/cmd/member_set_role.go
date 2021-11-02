@@ -16,17 +16,14 @@ limitations under the License.
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/members"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
@@ -86,19 +83,14 @@ ks member set-role sandra@github`,
 		projectID := ctx.GetProjectID()
 		// Ensure member exists
 		r, err := c.Users().CheckUsersExist([]string{memberId})
-		switch {
-		case errors.Is(err, auth.ErrorUnauthorized):
-			config.Logout()
-			exit(kserrors.InvalidConnectionToken(err))
-
-		case err != nil || r.Error != "":
+		if err != nil || r.Error != "" {
+			handleClientError(err)
 			exit(kserrors.UsersDontExist(r.Error, err))
 		}
 
 		// Get all roles, te make sure the role exists
 		// And to be able to list them in the prompt
-		roles, err := c.Roles().GetAll(ctx.GetProjectID())
-		exitIfErr(err)
+		roles := mustGetRoles(c)
 
 		// If user didnot provide a role,
 		// prompt it
@@ -114,35 +106,18 @@ ks member set-role sandra@github`,
 		}
 
 		// If the role exists, do the work
-		if _, ok := getRoleWithName(roleName, roles); ok {
-			err = c.Project(projectID).SetMemberRole(memberId, roleName)
-		} else {
-			err = kserrors.RoleDoesNotExist(roleName, nil)
-		}
-
-		exitIfErr(err)
+		exitIfErr(
+			members.SetMemberRole(
+				c,
+				projectID,
+				memberId,
+				roleName,
+				roles,
+			),
+		)
 
 		display.SetRoleOk()
 	},
-}
-
-// TODO: this should probably be inside the SetMemberRole function,
-// or at least declared alongside it and called from there instead
-// OR it – and most of the logic surrounding it - goes in a service internal
-// package
-func getRoleWithName(roleName string, roles []models.Role) (models.Role, bool) {
-	found := false
-	var role models.Role
-
-	for _, existingRole := range roles {
-		if existingRole.Name == roleName {
-			found = true
-			role = existingRole
-			break
-		}
-	}
-
-	return role, found
 }
 
 func init() {
