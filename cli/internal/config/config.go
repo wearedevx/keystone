@@ -206,12 +206,11 @@ func InitConfig(cfgFile string) (err error) {
 	viper.SetDefault("device_uid", uuid.NewV4().String())
 
 	// If a config file is found, read it in.
-	if err = viper.ReadInConfig(); err != nil {
-		return err
-	}
-
-	if err = viper.WriteConfig(); err != nil {
-		return err
+	if err := viper.ReadInConfig(); err == nil {
+		err = viper.WriteConfig()
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	return nil
