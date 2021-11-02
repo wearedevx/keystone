@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -225,70 +224,4 @@ func init() {
 	noProjectCommands = noEnvironmentCommands
 
 	noLoginCommands = []string{"login", "source", "documentation", "version"}
-}
-
-// TODO: move to the ui package
-// TODO: should handle a `quiet` setting ?
-// printChanges displays changes for environments to the user
-func printChanges(
-	changes core.ChangesByEnvironment,
-	// messagesByEnvironments models.GetMessageByEnvironmentResponse,
-) {
-	for _, environmentName := range envList {
-		changesList, ok := changes.Environments[environmentName]
-		if !ok {
-			continue
-		}
-
-		if changesList.IsSingleVersionChange() {
-			ui.PrintStdErr(
-				"Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯",
-			)
-			continue
-		}
-
-		if !changesList.IsEmpty() {
-			ui.PrintStdErr(
-				"Environment " + environmentName + ": " + strconv.Itoa(
-					len(changes.Environments[environmentName]),
-				) + " secret(s) changed",
-			)
-
-			for _, change := range changesList {
-				// No previous cotent => secret is new
-				switch {
-				case change.IsSecretAdd():
-					ui.PrintStdErr(
-						ui.RenderTemplate(
-							"secret added",
-							` {{ "++" | green }} {{ .Secret }} : {{ .To }}`,
-							map[string]string{
-								"Secret": change.Name,
-								"From":   change.From,
-								"To":     change.To,
-							},
-						),
-					)
-
-				case change.IsSecretDelete():
-					ui.PrintStdErr(
-						ui.RenderTemplate(
-							"secret deleted",
-							` {{ "--" | red }} {{ .Secret }} deleted.`,
-							map[string]string{
-								"Secret": change.Name,
-							},
-						),
-					)
-
-				case change.IsSecretChange():
-					ui.PrintStdErr(
-						"   " + change.Name + " : " + change.From + " ↦ " + change.To,
-					)
-				}
-			}
-		}
-
-		ui.PrintStdErr("Environment " + environmentName + " up to date ✔")
-	}
 }

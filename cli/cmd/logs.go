@@ -16,13 +16,11 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 var (
@@ -66,49 +64,8 @@ ks log -a WriteMessages -l 1 -e prod`,
 			exit(err)
 		}
 
-		printAllTheLogs(allTheLogs)
+		display.Logs(allTheLogs)
 	},
-}
-
-// TODO: the four followin methods should be moved to the ui packag
-func printAllTheLogs(logs []models.ActivityLogLite) {
-	if len(logs) == 0 {
-		ui.PrintStdErr("No logs to display")
-		exit(nil)
-	}
-
-	for _, log := range logs {
-		printLog(log)
-	}
-}
-
-func printLog(log models.ActivityLogLite) {
-	fmt.Printf(
-		"[%s] %s on %s%s: %s %s %s\n",
-		log.CreatedAt.Format("2006-12-29 15:04:05"),
-		log.UserID,
-		log.ProjectName,
-		formatEnvironmentForLog(log.EnvironmentName),
-		formatSuccesForLog(log.Success),
-		log.Action,
-		log.ErrorMessage,
-	)
-}
-
-func formatEnvironmentForLog(envName string) string {
-	if envName == "" {
-		return ""
-	}
-
-	return fmt.Sprintf(" (%s)", envName)
-}
-
-func formatSuccesForLog(s bool) string {
-	if s {
-		return ""
-	} else {
-		return "✘"
-	}
 }
 
 func init() {

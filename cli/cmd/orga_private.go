@@ -8,13 +8,14 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // privateCmd represents the private command
 var privateCmd = &cobra.Command{
 	Use:   "private <organization-name>",
-	Short: "Toggle an organization privacy",
-	Long:  `Toggle an organization privacy.`,
+	Short: "Toggles an organization privacy",
+	Long:  `Toggles an organization privacy.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		var err error
@@ -33,11 +34,7 @@ var privateCmd = &cobra.Command{
 		organization, err := c.Organizations().UpdateOrganization(foundOrga)
 		exitIfErr(err)
 
-		if organization.Private {
-			ui.PrintSuccess("Organization %s is now private", organization.Name)
-		} else {
-			ui.PrintSuccess("Organization %s is not private anymore", organization.Name)
-		}
+		display.OrganizationStatusUpdate(organization)
 	},
 }
 

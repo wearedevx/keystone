@@ -29,6 +29,7 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 	"gopkg.in/yaml.v2"
 )
@@ -124,15 +125,11 @@ ks member add --from-file team.yaml
 			exit(err)
 		}
 
-		ui.Print(ui.RenderTemplate("added members", `
-{{ OK }} {{ "Members Added" | green }}
-
-To send secrets and files to new member, use "member add" command.
-  $ ks member send-env --all-env <member-id>
-`, struct{}{}))
+		display.MembersAdded()
 	},
 }
 
+// TODO: move thess functions to a service internal package
 func getMemberRolesFromFile(
 	c client.KeystoneClient,
 	filepath string,

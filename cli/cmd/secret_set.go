@@ -16,12 +16,10 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // secretsSetCmd represents the set command
@@ -65,13 +63,7 @@ ks --env staging PORT 4545
 			messageService.SendEnvironments(environment).Err(),
 		)
 
-		ui.PrintSuccess(
-			fmt.Sprintf(
-				"Secret '%s' updated for the '%s' environment",
-				secretName,
-				currentEnvironment,
-			),
-		)
+		display.SecretUpdated(secretName, currentEnvironment)
 	},
 }
 

@@ -18,7 +18,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 var purgeSecret bool
@@ -56,7 +56,7 @@ Removes the given secret from all environments.
 			)
 		}
 
-		ui.PrintSuccess("Variable '%s' removed", secretName)
+		display.SecretRemoved(secretName)
 	},
 }
 

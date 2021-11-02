@@ -48,6 +48,20 @@ func (pm *ProjectMember) Serialize(out *string) (err error) {
 	return err
 }
 
+type ProjectMembers []ProjectMember
+
+func (pms ProjectMembers) GroupByRole() map[Role]ProjectMembers {
+	result := make(map[Role]ProjectMembers)
+
+	for _, member := range pms {
+		membersWithSameRole := result[member.Role]
+
+		result[member.Role] = append(membersWithSameRole, member)
+	}
+
+	return result
+}
+
 // API Types
 type MemberRole struct {
 	MemberID string // <username>@<service>

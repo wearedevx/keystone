@@ -18,7 +18,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
 	"regexp"
 
 	"github.com/spf13/cobra"
@@ -28,7 +27,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -111,35 +110,26 @@ ks member set-role sandra@github`,
 		}
 
 		if len(roles) == 1 && roleName != "admin" {
-			// TODO: have a proper error
-			ui.PrintError(
-				"You are not allowed to set role other than admin for free organization",
-			)
-			ui.Print("To learn more: https://keystone.sh")
-			os.Exit(1)
+			exit(kserrors.RoleNeedsUpgrade(nil))
 		}
 
 		// If the role exists, do the work
 		if _, ok := getRoleWithName(roleName, roles); ok {
 			err = c.Project(projectID).SetMemberRole(memberId, roleName)
-			exitIfErr(err)
 		} else {
-			exit(
-				// TODO: have a proper error
-				kserrors.UnkownError(
-					fmt.Errorf("role '%s' does not exist", roleName),
-				),
-			)
+			err = kserrors.RoleDoesNotExist(roleName, nil)
 		}
 
-		ui.Print(ui.RenderTemplate("set role ok", `
-{{ OK }} {{ "Role set" | green }}
-`, struct{}{}))
+		exitIfErr(err)
+
+		display.SetRoleOk()
 	},
 }
 
 // TODO: this should probably be inside the SetMemberRole function,
 // or at least declared alongside it and called from there instead
+// OR it – and most of the logic surrounding it - goes in a service internal
+// package
 func getRoleWithName(roleName string, roles []models.Role) (models.Role, bool) {
 	found := false
 	var role models.Role

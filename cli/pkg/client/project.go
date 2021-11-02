@@ -11,6 +11,7 @@ type Project struct {
 	r  requester
 }
 
+// Init method creates a new project
 func (p *Project) Init(
 	name string,
 	organizationID uint,
@@ -27,6 +28,7 @@ func (p *Project) Init(
 	return project, err
 }
 
+// GetAllMembers method returns all members associated with the project
 func (p *Project) GetAllMembers() ([]models.ProjectMember, error) {
 	var err error
 	var result models.GetMembersResponse
@@ -37,7 +39,6 @@ func (p *Project) GetAllMembers() ([]models.ProjectMember, error) {
 }
 
 // Add members to a project
-//
 func (p *Project) AddMembers(memberRoles map[string]models.Role) error {
 	var result models.AddMembersResponse
 	var err error
@@ -93,6 +94,8 @@ func (p *Project) SetMemberRole(memberId string, role string) (err error) {
 	return err
 }
 
+// GetAccessibleEnvironments method returns the list of environments the
+// current user is allowed access to.
 func (p *Project) GetAccessibleEnvironments() ([]models.Environment, error) {
 	var result models.GetEnvironmentsResponse
 
@@ -109,6 +112,8 @@ func (p *Project) Destroy() (err error) {
 	return err
 }
 
+// GetProjectsOrganization method fetches the organziation this
+// project belongs to
 func (p *Project) GetProjectsOrganization() (models.Organization, error) {
 	var result models.Organization
 
@@ -117,6 +122,19 @@ func (p *Project) GetProjectsOrganization() (models.Organization, error) {
 	return result, err
 }
 
+// IsOrganizationPaid method returns true if the organization the project
+// belongs to is paid
+func (p *Project) IsOrganizationPaid() (bool, error) {
+	organization, err := p.GetProjectsOrganization()
+
+	if err != nil {
+		return false, err
+	}
+
+	return organization.Paid, nil
+}
+
+// GetRoles method  
 func (p *Project) GetRoles() ([]models.Role, error) {
 	var err error
 	var result models.GetRolesResponse
@@ -126,6 +144,8 @@ func (p *Project) GetRoles() ([]models.Role, error) {
 	return result.Roles, err
 }
 
+// GetAll method returns a list of all the projects the current user
+// is associated with
 func (p *Project) GetAll() ([]models.Project, error) {
 	var err error
 	var result models.GetProjectsResponse
@@ -135,6 +155,7 @@ func (p *Project) GetAll() ([]models.Project, error) {
 	return result.Projects, err
 }
 
+// GetLogs method returns all the logs relative to the current project
 func (p *Project) GetLogs(
 	options *models.GetLogsOptions,
 ) ([]models.ActivityLogLite, error) {

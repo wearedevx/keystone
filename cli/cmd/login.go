@@ -17,45 +17,25 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
 var serviceName string
 
-// TODO: move to ui package, and separate the exit part
-func ShowAlreadyLoggedInAndExit(account models.User) {
-	username := account.Username
-	if username == "" {
-		username = account.Email
-	}
-
-	ui.Print(
-		ui.RenderTemplate(
-			"already logged in",
-			`You are already logged in as {{ . }}`,
-			username,
-		),
-	)
-	exit(nil)
-}
-
 // TODO: move to an internal package
 func LogIntoExisitingAccount(
 	accountIndex int,
-	currentAccount models.User,
 	c auth.AuthService,
-) {
+) error {
 	config.SetCurrentAccount(accountIndex)
 
 	publicKey, _ := config.GetUserPublicKey()
@@ -64,22 +44,22 @@ func LogIntoExisitingAccount(
 		config.GetDeviceName(),
 		config.GetDeviceUID(),
 	)
-	exitIfErr(err)
+	if err != nil {
+		return err
+	}
 
 	config.SetAuthToken(jwtToken)
 	config.Write()
 
-	// TODO: move to a ui package
-	ui.Print(ui.RenderTemplate("login ok", `
-{{ OK }} {{ . | bright_green }}
-`, fmt.Sprintf("Welcome back, %s", currentAccount.Username)))
-	exit(nil)
+	return nil
 }
 
 // TODO: move to an internal package
-func CreateAccountAndLogin(c auth.AuthService) {
+func CreateAccountAndLogin(c auth.AuthService) error {
 	keyPair, err := keys.New(keys.TypeEC)
-	exitIfErr(err)
+	if err != nil {
+		return err
+	}
 
 	// Transfer credentials to the server
 	// Create (or get) the user info
@@ -88,7 +68,9 @@ func CreateAccountAndLogin(c auth.AuthService) {
 		config.GetDeviceName(),
 		config.GetDeviceUID(),
 	)
-	exitIfErr(err)
+	if err != nil {
+		return err
+	}
 
 	// Save the user info in the local config
 	accountIndex := config.AddAccount(
@@ -109,19 +91,7 @@ func CreateAccountAndLogin(c auth.AuthService) {
 	config.SetAuthToken(jwtToken)
 	config.Write()
 
-	// TODO: move to a ui package
-	ui.Print(ui.RenderTemplate("login success", `
-{{ OK }} {{ . | bright_green }}
-
-Thank you for using Keystone!
-
-To start managing secrets for a project:
-  $ cd <path-to-your-project>
-  $ ks init <your-project-name>
-
-To invite collaborators:
-  $ ks invite collaborator@email
-`, "Thank you for using Keystone!"))
+	return nil
 }
 
 // TODO: move to ui/prompts
@@ -159,7 +129,8 @@ ks login ––with=github`,
 
 		// Already logged in
 		if accountIndex >= 0 {
-			ShowAlreadyLoggedInAndExit(currentAccount)
+			display.AlreadyLoggedIn(currentAccount)
+			exit(nil)
 		}
 
 		c, err := SelectAuthService(ctx)
@@ -169,23 +140,7 @@ ks login ––with=github`,
 		url, err := c.Start()
 		exitIfErr(err)
 
-		ui.Print(
-			ui.RenderTemplate(
-				"login visit",
-				`Visit the URL below to login with your {{ .Service }} account:
-
-{{ .Url | indent 8 }}
-
-Waiting for you to login with your {{ .Service }} Account...`,
-				struct {
-					Service string
-					Url     string
-				}{
-					Service: c.Name(),
-					Url:     url,
-				},
-			),
-		)
+		display.LoginLink(c.Name(), url)
 
 		sp := spinner.Spinner(" ")
 		sp.Start()
@@ -204,9 +159,20 @@ Waiting for you to login with your {{ .Service }} Account...`,
 		if accountIndex >= 0 {
 			// Found an exiting matching account,
 			// log into it
-			LogIntoExisitingAccount(accountIndex, currentAccount, c)
+			if err = LogIntoExisitingAccount(
+				accountIndex,
+				c,
+			); err == nil {
+				display.WelcomeBack(currentAccount)
+			}
+
+			exit(err)
 		} else {
-			CreateAccountAndLogin(c)
+			if err = CreateAccountAndLogin(c); err == nil {
+				display.LoginSucces()
+			}
+
+			exit(err)
 		}
 	},
 }

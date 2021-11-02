@@ -3,6 +3,7 @@ package display
 import (
 	"strings"
 
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -50,5 +51,17 @@ To add them to the project use "member add" command:
 		}))
 	} else {
 		ui.PrintSuccess("A email has been sent to %s, they will get back to you when their Keystone account will be created", email)
+	}
+}
+
+func Projects(projects []models.Project) {
+	ui.Print("You are part of %d project(s):\n", len(projects))
+
+	for _, project := range projects {
+		ui.Print(
+			" - %s, created on %s",
+			project.Name,
+			project.CreatedAt.Format("2006/01/02"),
+		)
 	}
 }

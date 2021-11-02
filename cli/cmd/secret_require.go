@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -52,13 +52,11 @@ Additionally, ` + "`" + `ks ci send` + "`" + ` will fail if a required secrets a
 			value := string(secret.Values[core.EnvironmentName(environment)])
 
 			for len(value) == 0 {
-				ui.Print(
-					"Enter the value of '%s' for the '%s' environment",
+				value = prompts.ValueForEnvironment(
 					secretName,
 					environment,
+					value,
 				)
-
-				value = prompts.StringInput(secretName, value)
 			}
 
 			ctx.SetSecret(environment, secretName, value)
@@ -69,20 +67,7 @@ Additionally, ` + "`" + `ks ci send` + "`" + ` will fail if a required secrets a
 
 		exitIfErr(ctx.Err())
 
-		template := `Secret {{ .SecretName }} is now required.
-If you have setup a CI service, don’t forget to run:
-  $ ks ci send
-		`
-
-		ui.Print(
-			ui.RenderTemplate(
-				"set secret required",
-				template,
-				struct{ SecretName string }{
-					SecretName: secretName,
-				},
-			),
-		)
+		display.SecretIsNow(secretName, display.REQUIRED)
 	},
 }
 

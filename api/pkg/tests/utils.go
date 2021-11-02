@@ -88,7 +88,7 @@ func SeedTestData() {
 			Write:           true,
 		})
 
-	var userProjectOwner *models.User = &User{
+	var userProjectOwner = &models.User{
 		ExtID:       "my iowner ext id",
 		AccountType: "github",
 		Username:    "Username owner " + uuid.NewV4().String(),
@@ -96,7 +96,7 @@ func SeedTestData() {
 		Email:       "test+owner@example.com",
 	}
 
-	var devUser *models.User = &User{
+	var devUser = &models.User{
 		ExtID:       "my ext id",
 		AccountType: "github",
 		Username:    "Username dev " + uuid.NewV4().String(),
@@ -107,7 +107,7 @@ func SeedTestData() {
 	Repo.GetOrCreateUser(userProjectOwner)
 	Repo.GetOrCreateUser(devUser)
 
-	var project *models.Project = &Project{
+	var project = &models.Project{
 		Name: "project name",
 		User: *userProjectOwner,
 	}

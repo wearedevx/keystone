@@ -127,12 +127,18 @@ errors:
     params:
       - name: RoleName
         type: string
-      - name: Available
-        type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
-      Available roles are: {{ .Available }}
 
+  - type: RoleNeedsUpgrade
+    name: "Needs Upgrade"
+    params: []
+    template: |-
+      {{ ERROR }} {{ .Name | red }}
+      You are not allowed to set roles other than admin for a free organization.
+
+      To upgrade your plan:
+        $ ks orga upgrade
 
   # PROJECT_ERRORS
   # –––––––––––––––––

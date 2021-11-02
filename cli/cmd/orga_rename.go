@@ -21,7 +21,7 @@ import (
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // renameCmd represents the rename command
@@ -43,6 +43,7 @@ var renameCmd = &cobra.Command{
 		c, err := client.NewKeystoneClient()
 		exitIfErr(err)
 
+		// TODO: There should be a GetByName function, no ?
 		organizations, err := c.Organizations().GetAll()
 		if err != nil {
 			handleClientError(err)
@@ -64,9 +65,12 @@ var renameCmd = &cobra.Command{
 		foundOrga.Name = newName
 
 		organization, err := c.Organizations().UpdateOrganization(foundOrga)
-		exitIfErr(err)
+		if err != nil {
+			handleClientError(err)
+			exit(err)
+		}
 
-		ui.PrintSuccess("Organization %s has been updated to %s", organizationName, organization.Name)
+		display.OrganizationRenamed(organizationName, organization.Name)
 	},
 }
 

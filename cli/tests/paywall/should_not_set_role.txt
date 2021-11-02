@@ -12,4 +12,13 @@ stdout 'Members Added'
 # Set the role of a member
 ! ks member set-role john.doe@gitlab lead-dev
 
-stdout 'ERROR  You are not allowed to set role other than admin for free organization'
+cmp stderr expected.txt
+
+-- expected.txt --
+
+ ERROR  Needs Upgrade
+You are not allowed to set roles other than admin for a free organization.
+
+To upgrade your plan:
+  $ ks orga upgrade
+

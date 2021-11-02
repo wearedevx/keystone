@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
@@ -10,7 +9,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // projectCmd represents the project command
@@ -38,16 +37,7 @@ var projectCmd = &cobra.Command{
 			exit(err)
 		}
 
-		ui.Print("You are part of %d project(s):", len(projects))
-
-		fmt.Println()
-		for _, project := range projects {
-			fmt.Printf(
-				" - %s, created on %s\n",
-				project.Name,
-				project.CreatedAt.Format("2006/01/02"),
-			)
-		}
+		display.Projects(projects)
 	},
 }
 

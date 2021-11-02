@@ -31,6 +31,7 @@ func castAccount(
 
 // Writes the global config to the disk
 // Exits with 1 status code
+// TODO: have a proper error for that
 func Write() {
 	utils.CreateFileIfNotExists(configFilePath, "")
 
@@ -202,6 +203,7 @@ func FindAccount(c auth.AuthService) (user models.User, current int) {
 }
 
 // Create conf file if not exist
+// TODO: properly check errors
 func createFileIfNotExist(filePath string) {
 	// Check if need to create file
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -219,6 +221,7 @@ func createFileIfNotExist(filePath string) {
 }
 
 // initConfig reads in config file and ENV variables if set.
+// TODO: properly handle error
 func InitConfig(cfgFile string) {
 	if cfgFile != "" {
 		// Use config file from the flag.
@@ -250,7 +253,6 @@ func InitConfig(cfgFile string) {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		// fmt.Println("Using config file:", viper.ConfigFileUsed())
 		err = viper.WriteConfig()
 		if err != nil {
 			panic(err)
@@ -265,7 +267,6 @@ func CheckExpiredTokenError(err *kserrors.Error) {
 }
 
 func Logout() {
-	fmt.Print("Logout user\n")
 	SetCurrentAccount(-1)
 	SetAuthToken("")
 	Write()

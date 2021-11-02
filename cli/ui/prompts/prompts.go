@@ -372,3 +372,15 @@ func ConfirmOverrideSecretValue(forceYes bool) bool {
 
 	return Confirm("Do you want to overrid the value")
 }
+
+func ValueForEnvironment(
+	secretName, environmentName, defaultValue string,
+) string {
+	ui.Print(
+		"Enter the value of '%s' for the '%s' environment",
+		secretName,
+		environmentName,
+	)
+
+	return StringInput(secretName, defaultValue)
+}

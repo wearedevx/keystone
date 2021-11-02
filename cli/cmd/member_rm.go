@@ -26,7 +26,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -103,9 +103,7 @@ of the secrets and files.
 			exit(kserrors.CannotRemoveMembers(err))
 		}
 
-		ui.Print(ui.RenderTemplate("removed members", `
-{{ OK }} {{ "Revoked Access To Members" | green }}
-`, nil))
+		display.RemovedMembers()
 	},
 }
 

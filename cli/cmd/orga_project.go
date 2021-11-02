@@ -1,17 +1,12 @@
 package cmd
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // projectCmd represents the project command
@@ -31,6 +26,7 @@ var orgaProjectCmd = &cobra.Command{
 		kf := keystonefile.KeystoneFile{}
 		exitIfErr(kf.Load(ctx.Wd).Err())
 
+		// TODO: there should be a GetByName function, no ?
 		organizations, err := c.Organizations().GetAll()
 		if err != nil {
 			handleClientError(err)
@@ -51,24 +47,11 @@ var orgaProjectCmd = &cobra.Command{
 
 		projects, err := c.Organizations().GetProjects(orga)
 		if err != nil {
-			if errors.Is(err, auth.ErrorUnauthorized) {
-				config.Logout()
-				err = kserrors.InvalidConnectionToken(err)
-			} else {
-				err = kserrors.UnkownError(err)
-			}
+			handleClientError(err)
 			exit(err)
 		}
 
-		ui.Print(
-			"You have access to %d project(s) in this organization :",
-			len(projects),
-		)
-
-		fmt.Println()
-		for _, project := range projects {
-			fmt.Printf("  - %s\n", project.Name)
-		}
+		display.OrganizationAccessibleProjects(projects)
 	},
 }
 

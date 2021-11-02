@@ -16,6 +16,7 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -72,7 +73,7 @@ func fetchMessages() (core.ChangesByEnvironment, messages.MessageService, *kserr
 	}
 
 	if err == nil {
-		printChanges(changes)
+		display.Changes(changes)
 	}
 
 	return changes, ms, err

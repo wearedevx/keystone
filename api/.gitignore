@@ -1,3 +1,4 @@
 *credentials.json
 build
 server
+.vscode/**/*

@@ -1,17 +1,12 @@
 package cmd
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // projectCmd represents the project command
@@ -31,6 +26,7 @@ var orgaMemberCmd = &cobra.Command{
 		kf := keystonefile.KeystoneFile{}
 		exitIfErr(kf.Load(ctx.Wd).Err())
 
+		// TODO: There should be a GetByName method, no ?
 		organizations, err := c.Organizations().GetAll()
 		if err != nil {
 			handleClientError(err)
@@ -50,22 +46,11 @@ var orgaMemberCmd = &cobra.Command{
 
 		members, err := c.Organizations().GetMembers(orga)
 		if err != nil {
-			if errors.Is(err, auth.ErrorUnauthorized) {
-				config.Logout()
-				exit(kserrors.InvalidConnectionToken(err))
-			} else {
-				exit(kserrors.UnkownError(err))
-			}
+			handleClientError(err)
+			exit(err)
 		}
-		ui.Print(
-			"%d members are in projects that belong to this organization:",
-			len(members),
-		)
 
-		fmt.Println()
-		for _, member := range members {
-			fmt.Printf("  - %s\n", member.User.UserID)
-		}
+		display.OrganizationMembers(members)
 	},
 }
 

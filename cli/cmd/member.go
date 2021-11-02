@@ -17,17 +17,15 @@ package cmd
 
 import (
 	"errors"
-	"sort"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/ui/display"
 
-	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
 )
 
 // memberCmd represents the member command
@@ -59,55 +57,8 @@ grouped by their role.`,
 			exit(err)
 		}
 
-		grouped := groupMembersByRole(members)
-
-		for _, role := range getSortedRoles(grouped) {
-			members := grouped[role]
-			printRole(role, members)
-		}
+		display.MembersByRole(members)
 	},
-}
-
-func getSortedRoles(m map[models.Role][]models.ProjectMember) []models.Role {
-	roles := make([]models.Role, 0)
-	for r := range m {
-		roles = append(roles, r)
-	}
-
-	s := models.NewRoleSorter(roles)
-	return s.Sort()
-}
-
-// TODO: move the two following methodes to the ui packag
-func groupMembersByRole(pmembers []models.ProjectMember) map[models.Role][]models.ProjectMember {
-	result := make(map[models.Role][]models.ProjectMember)
-
-	for _, member := range pmembers {
-		membersWithSameRole := result[member.Role]
-
-		result[member.Role] = append(membersWithSameRole, member)
-	}
-
-	return result
-}
-
-func printRole(role models.Role, members []models.ProjectMember) {
-	ui.Print("%s: %s", role.Name, role.Description)
-	ui.Print("---")
-
-	memberIDs := make([]string, len(members))
-
-	for idx, member := range members {
-		memberIDs[idx] = member.User.UserID
-	}
-
-	sort.Strings(memberIDs)
-
-	for _, member := range memberIDs {
-		ui.Print("%s", member)
-	}
-
-	ui.Print("")
 }
 
 var envs []string
@@ -121,17 +72,4 @@ func init() {
 		"prod",
 	}
 
-}
-
-func isProjectOrganizationPaid(c client.KeystoneClient) bool {
-
-	projectID := ctx.GetProjectID()
-	organization, err := c.Project(projectID).GetProjectsOrganization()
-
-	if err != nil {
-		handleClientError(err)
-		exit(err)
-	}
-
-	return organization.Paid
 }

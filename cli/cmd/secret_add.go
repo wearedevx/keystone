@@ -28,6 +28,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 
 	"github.com/spf13/cobra"
@@ -72,11 +73,7 @@ ks secret add PORT`,
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		if yes, values := checkSecretAlreadyInCache(secretName); yes {
-			// TODO: that printing part should be in the ui packag
-			ui.Print(`The secret already exist. Values are:`)
-			for env, value := range values {
-				ui.Print(`%s: %s`, env, value)
-			}
+			display.SecretAlreadyExitsts(values)
 
 			useCache = !prompts.ConfirmOverrideSecretValue(skipPrompts)
 		}
@@ -125,8 +122,7 @@ ks secret add PORT`,
 			exit(err)
 		}
 
-		ui.PrintSuccess(
-			"Variable '%s' is set for %d environment(s)",
+		display.SecretIsSetForEnvironment(
 			secretName,
 			len(ctx.AccessibleEnvironments),
 		)

@@ -69,6 +69,16 @@ This happened because: {{ .Cause }}
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
 This happened because: {{ .Cause }}
 `,
+	"RoleDoesNotExist": `
+{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
+`,
+	"RoleNeedsUpgrade": `
+{{ ERROR }} {{ .Name | red }}
+You are not allowed to set roles other than admin for a free organization.
+
+To upgrade your plan:
+  $ ks orga upgrade
+`,
 	"ProjectDoesntExist": `
 {{ ERROR }} {{ "Project" | red }} {{ .ProjectName | red }} {{ "Does Not Exist" | red }}
 Project in your keystone.yaml does not exist or your are not part of it.
@@ -566,6 +576,19 @@ func FailedToReadDotEnv(path string, cause error) *Error {
 		"Path": string(path),
 	}
 	return NewError("Failed To Read .env", helpTexts["FailedToReadDotEnv"], meta, cause)
+}
+
+func RoleDoesNotExist(rolename string, cause error) *Error {
+	meta := map[string]interface{}{
+		"RoleName": string(rolename),
+	}
+	return NewError("Role Not Available", helpTexts["RoleDoesNotExist"], meta, cause)
+}
+
+func RoleNeedsUpgrade(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Needs Upgrade", helpTexts["RoleNeedsUpgrade"], meta, cause)
 }
 
 func ProjectDoesntExist(projectname string, projectid string, cause error) *Error {
