@@ -60,7 +60,7 @@ func Archive(source, wd, target string) (err error) {
 // Creates a `.tar.gz` archive of the `source` directory,
 // into the `traget` file, and encrypts it using `passphrase`
 func ArchiveWithPassphrase(source, target, passphrase string) (err error) {
-	tempdir, err := os.MkdirTemp("", "ks-archive-*")
+	tempdir, err := ioutil.TempDir("", "ks-archive-*")
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func Extract(archivepath, wd, target string) (err error) {
 // `target` is the directory where the archive will be extracted, and
 // `passphrase` is the passphrase used to decrypt.
 func ExtractWithPassphrase(archivepath, target, passphrase string) (err error) {
-	temporaryDir, err := os.MkdirTemp("", "ks-archive-*")
+	temporaryDir, err := ioutil.TempDir("", "ks-archive-*")
 	if err != nil {
 		return err
 	}
