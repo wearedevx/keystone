@@ -3,8 +3,6 @@
 package auth
 
 import (
-	"context"
-
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
@@ -16,7 +14,7 @@ type AuthService interface {
 	Finish(pkey []byte, device string, deviceUID string) (models.User, string, error)
 }
 
-func GetAuthService(serviceName string, ctx context.Context, apiUrl string) (AuthService, error) {
+func GetAuthService(serviceName string, apiUrl string) (AuthService, error) {
 	a := new(dummyAuthService)
 	a.apiUrl = apiUrl
 

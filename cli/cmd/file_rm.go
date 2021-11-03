@@ -57,6 +57,8 @@ Files can be used again using "file add" command.
 			ctx.CurrentEnvironment(),
 			skipPrompts || !purgeFile,
 		) {
+			fmt.Println("icit")
+
 			_, messageService := mustFetchMessages()
 
 			exitIfErr(ctx.

@@ -14,6 +14,8 @@ cmp stderr expected.txt
 
 -- expected.txt --
 WARNING: You are not allowed to set role other than admin for free organization
+To learn more: https://keystone.sh
+
 
  ERROR  Cannot Add Members
 

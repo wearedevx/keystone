@@ -163,6 +163,7 @@ func handleClientError(err error) {
 	default:
 		ui.PrintError(err.Error())
 	}
+
 	os.Exit(1)
 }
 

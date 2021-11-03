@@ -57,7 +57,6 @@ func (up *UiPrinter) PrintStdErr(messageString string, args ...interface{}) {
 }
 
 func PrintError(messageString string, args ...interface{}) {
-
 	formatted := messageString
 	if len(args) > 0 {
 		formatted = aurora.Sprintf(messageString, args...)
@@ -69,7 +68,7 @@ func PrintError(messageString string, args ...interface{}) {
 		"Message": formatted,
 	})
 
-	fmt.Println(displayable)
+	fmt.Fprintln(os.Stderr, displayable)
 }
 
 func PrintSuccess(messageString string, args ...interface{}) {

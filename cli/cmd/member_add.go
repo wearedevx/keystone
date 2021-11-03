@@ -16,14 +16,17 @@ limitations under the License.
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/members"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
@@ -123,8 +126,12 @@ ks member add --from-file team.yaml
 		sp.Stop()
 
 		if err != nil {
-			handleClientError(err)
-			err = kserrors.CannotAddMembers(err)
+			if errors.Is(err, auth.ErrorUnauthorized) {
+				config.Logout()
+				err = kserrors.InvalidConnectionToken(err)
+			} else {
+				err = kserrors.CannotAddMembers(err)
+			}
 			exit(err)
 		}
 

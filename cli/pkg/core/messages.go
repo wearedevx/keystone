@@ -107,13 +107,17 @@ func (ctx *Context) SaveMessages(
 
 		// If the payload is empty, and the enviroment version has changed,
 		// signal the version change.
-		if ctx.isVersionChangeWithoutPayload(environment) {
+		switch {
+		case ctx.isVersionChangeWithoutPayload(environment):
 			changes.Environments[environmentName] = []Change{
 				{
 					Type: ChangeTypeVersion,
 				},
 			}
 
+			continue
+
+		case payloadIsEmpty(environment):
 			continue
 		}
 
@@ -137,7 +141,10 @@ func (ctx *Context) SaveMessages(
 		// ——— Handle secrets ———
 
 		// We need the local values for every secret for `environment`
-		localSecrets := secretsForEnvironment(cachedLocalSecrets, environmentName)
+		localSecrets := secretsForEnvironment(
+			cachedLocalSecrets,
+			environmentName,
+		)
 		secretChanges := GetSecretsChanges(localSecrets, PayloadContent.Secrets)
 
 		if err := ctx.handleSecretChanges(PayloadContent, environmentName); err != nil {
@@ -169,6 +176,10 @@ func secretsForEnvironment(
 		})
 	}
 	return localSecrets
+}
+
+func payloadIsEmpty(response models.GetMessageResponse) bool {
+	return len(response.Message.Payload) == 0
 }
 
 func (ctx *Context) isVersionChangeWithoutPayload(

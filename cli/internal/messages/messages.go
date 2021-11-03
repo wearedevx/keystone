@@ -70,6 +70,7 @@ func (s *messageService) GetMessages() core.ChangesByEnvironment {
 
 	if s.ctx.Err() != nil {
 		s.err = s.ctx.Err()
+		fmt.Printf("LS -> internal/messages/messages.go:72 -> s.err: %+v\n", s.err)
 		return core.ChangesByEnvironment{}
 	}
 

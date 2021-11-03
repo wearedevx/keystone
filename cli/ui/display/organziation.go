@@ -91,9 +91,9 @@ func OrganizationRenamed(from, to string) {
 func WarningFreeOrga(roles []models.Role) {
 	if len(roles) == 1 {
 		ui.PrintStdErr(
-			"WARNING: You are not allowed to set role other than admin for free organization",
-		)
-		ui.Print("To learn more: https://keystone.sh")
-		ui.Print("")
+			`WARNING: You are not allowed to set role other than admin for free organization
+To learn more: https://keystone.sh
+`)
+
 	}
 }

@@ -1,8 +1,6 @@
 package display
 
 import (
-	"strconv"
-
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -21,7 +19,8 @@ func Changes(
 ) {
 	for _, environmentName := range envList {
 		changesList, ok := changes.Environments[environmentName]
-		if !ok {
+		if !ok { // means there are no changes, and versions are equal
+			printEnvironmentUpToDate(environmentName)
 			continue
 		}
 
@@ -31,16 +30,7 @@ func Changes(
 		}
 
 		if !changesList.IsEmpty() {
-			ui.PrintStdErr(
-				"Environment " + environmentName + ": " + strconv.Itoa(
-
-					len(changes.Environments[environmentName]),
-				) + " secret(s) changed",
-			)
-
-			for _, change := range changesList {
-				printChange(change)
-			}
+			printChangeList(environmentName, changesList)
 		}
 
 		printEnvironmentUpToDate(environmentName)
@@ -49,7 +39,8 @@ func Changes(
 
 func printChangesButNoMessage(environmentName string) {
 	ui.PrintStdErr(
-		"Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯",
+		"Environment %s has changed but no message available. Ask someone to push their secret ⨯",
+		environmentName,
 	)
 }
 
