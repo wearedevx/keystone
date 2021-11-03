@@ -234,7 +234,11 @@ func SelectCIService(items []SelectCIServiceItem) SelectCIServiceItem {
 
 // ———— PROJECT PROMPTS ———— //
 
-func ConfirmProjectDestruction(projectName string) bool {
+func ConfirmProjectDestruction(projectName string, skipPrompts bool) bool {
+	if skipPrompts {
+		return true
+	}
+
 	ui.Print(ui.RenderTemplate("confirm project destroy",
 		`{{ CAREFUL }} You are about to destroy the {{ .Project }} project.
 Secrets and files managed by Keystone WILL BE LOST. Make sure you have backups.
