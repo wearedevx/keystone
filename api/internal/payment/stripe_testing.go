@@ -10,21 +10,20 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
-var stripeKey string
-var stripeWebhookSecret string
-var stripeSubscriptionPrice string
-
 var (
-	ErrorNotAStripeEvent = errors.New("not a stripe event")
+	stripeKey               string
+	stripeWebhookSecret     string
+	stripeSubscriptionPrice string
 )
+
+var ErrorNotAStripeEvent = errors.New("not a stripe event")
 
 func init() {
 	stripe.Key = stripeKey
 	stripeSubscriptionPrice = "all_is_fake"
 }
 
-type stripePayment struct {
-}
+type stripePayment struct{}
 
 func NewStripePayment() Payment {
 	return new(stripePayment)
@@ -64,11 +63,16 @@ func (sp *stripePayment) GetSubscription(
 }
 
 // Updates the subscription (changes the number of seats)
-func (sp *stripePayment) UpdateSubscription(subscriptionID SubscriptionID, seats int64) (err error) {
+func (sp *stripePayment) UpdateSubscription(
+	subscriptionID SubscriptionID,
+	seats int64,
+) (err error) {
 	return nil
 }
 
 // Cancels the subscription
-func (sp *stripePayment) CancelSubscription(subscriptionID SubscriptionID) (err error) {
+func (sp *stripePayment) CancelSubscription(
+	subscriptionID SubscriptionID,
+) (err error) {
 	return nil
 }

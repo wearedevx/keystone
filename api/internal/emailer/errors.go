@@ -3,8 +3,8 @@ package emailer
 import "errors"
 
 var (
-	EmailErrorUnknown      = errors.New("Unknown email error")
-	EmailErrorClientError  = errors.New("Email client error")
-	EmailErrorServiceError = errors.New("Email service error")
-	EmailErrorNoRecipient  = errors.New("No recipient for email")
+	ErrorEmailUnknown      = errors.New("unknown email error")
+	ErrorEmailClientError  = errors.New("email client error")
+	ErrorEmailServiceError = errors.New("email service error")
+	ErrorEmailNoRecipient  = errors.New("no recipient for email")
 )

@@ -11,16 +11,15 @@ import (
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	. "github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (r *Repo) createProject(project *Project) IRepo {
+func (r *Repo) createProject(project *models.Project) IRepo {
 	if r.err != nil {
 		return r
 	}
 
 	db := r.GetDb()
-	role := Role{
+	role := models.Role{
 		Name: "admin",
 	}
 
@@ -32,7 +31,7 @@ func (r *Repo) createProject(project *Project) IRepo {
 		return r
 	}
 
-	projectMember := ProjectMember{
+	projectMember := models.ProjectMember{
 		Project: *project,
 		Role:    role,
 		UserID:  project.UserID,
@@ -43,7 +42,7 @@ func (r *Repo) createProject(project *Project) IRepo {
 	// Useless
 	// @Kévin : Care to say why ?
 	if r.err == nil {
-		envTypes := make([]EnvironmentType, 0)
+		envTypes := make([]models.EnvironmentType, 0)
 		r.getAllEnvironmentTypes(&envTypes)
 
 		if r.err != nil {
@@ -51,7 +50,7 @@ func (r *Repo) createProject(project *Project) IRepo {
 		}
 
 		for _, envType := range envTypes {
-			environment := Environment{
+			environment := models.Environment{
 				Name:            envType.Name,
 				EnvironmentType: envType,
 				Project:         *project,
@@ -76,19 +75,21 @@ func (r *Repo) createProject(project *Project) IRepo {
 	return r
 }
 
-func (r *Repo) getAllEnvironmentTypes(environmentTypes *[]EnvironmentType) IRepo {
+func (r *Repo) getAllEnvironmentTypes(
+	environmentTypes *[]models.EnvironmentType,
+) IRepo {
 	if r.err != nil {
 		return r
 	}
 
 	db := r.GetDb()
 
-	r.err = db.Model(EnvironmentType{}).Find(environmentTypes).Error
+	r.err = db.Model(models.EnvironmentType{}).Find(environmentTypes).Error
 
 	return r
 }
 
-func (r *Repo) GetProjectByUUID(uuid string, project *Project) IRepo {
+func (r *Repo) GetProjectByUUID(uuid string, project *models.Project) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -98,7 +99,7 @@ func (r *Repo) GetProjectByUUID(uuid string, project *Project) IRepo {
 	return r
 }
 
-func (r *Repo) GetProject(project *Project) IRepo {
+func (r *Repo) GetProject(project *models.Project) IRepo {
 	if r.Err() != nil {
 		return r
 	}
@@ -113,7 +114,7 @@ func (r *Repo) GetProject(project *Project) IRepo {
 	return r
 }
 
-func (r *Repo) GetOrCreateProject(project *Project) IRepo {
+func (r *Repo) GetOrCreateProject(project *models.Project) IRepo {
 	if r.Err() != nil {
 		return r
 	}
@@ -131,7 +132,10 @@ func (r *Repo) GetOrCreateProject(project *Project) IRepo {
 // ProjectGetMembers returns all members of a project with
 // their role
 // TODO: implement paid role restrictions
-func (r *Repo) ProjectGetMembers(project *Project, members *[]ProjectMember) IRepo {
+func (r *Repo) ProjectGetMembers(
+	project *models.Project,
+	members *[]models.ProjectMember,
+) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -147,7 +151,10 @@ func (r *Repo) ProjectGetMembers(project *Project, members *[]ProjectMember) IRe
 }
 
 // ProjectGetAdmins returns all admins of a project
-func (r *Repo) ProjectGetAdmins(project *Project, members *[]ProjectMember) IRepo {
+func (r *Repo) ProjectGetAdmins(
+	project *models.Project,
+	members *[]models.ProjectMember,
+) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -166,8 +173,8 @@ func (r *Repo) ProjectGetAdmins(project *Project, members *[]ProjectMember) IRep
 }
 
 func (r *Repo) ProjectIsMemberAdmin(
-	project *Project,
-	member *ProjectMember,
+	project *models.Project,
+	member *models.ProjectMember,
 ) bool {
 	if r.err != nil {
 		return false
@@ -185,7 +192,6 @@ func (r *Repo) ProjectIsMemberAdmin(
 		Where("project_id = ?", project.ID).
 		First(member).
 		Error
-
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			r.err = err
@@ -197,7 +203,10 @@ func (r *Repo) ProjectIsMemberAdmin(
 	return true
 }
 
-func (r *Repo) IsMemberOfProject(project *Project, member *ProjectMember) IRepo {
+func (r *Repo) IsMemberOfProject(
+	project *models.Project,
+	member *models.ProjectMember,
+) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -216,7 +225,9 @@ func (r *Repo) IsMemberOfProject(project *Project, member *ProjectMember) IRepo 
 
 // From a list of MemberEnvironmentRole, fetches users from database
 // Returns the found Users and a slice of not found userIDs
-func (r *Repo) usersInMemberRoles(mers []MemberRole) (map[string]User, []string) {
+func (r *Repo) usersInMemberRoles(
+	mers []models.MemberRole,
+) (map[string]models.User, []string) {
 	// Figure out members that do not exist in db
 	userIDs := make([]string, 0)
 	// only used so that userIDs are unique in the array
@@ -229,7 +240,7 @@ func (r *Repo) usersInMemberRoles(mers []MemberRole) (map[string]User, []string)
 		}
 	}
 
-	users := make(map[string]User)
+	users := make(map[string]models.User)
 	notFounds := make([]string, 0)
 
 	r.FindUsers(userIDs, &users, &notFounds)
@@ -237,18 +248,22 @@ func (r *Repo) usersInMemberRoles(mers []MemberRole) (map[string]User, []string)
 	return users, notFounds
 }
 
-func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole, currentUser models.User) IRepo {
+func (r *Repo) ProjectAddMembers(
+	project models.Project,
+	memberRoles []models.MemberRole,
+	currentUser models.User,
+) IRepo {
 	if r.err != nil {
 		return r
 	}
 
-	pms := make([]ProjectMember, 0)
+	pms := make([]models.ProjectMember, 0)
 	db := r.GetDb()
 
 	users, notFounds := r.usersInMemberRoles(memberRoles)
 
 	if len(notFounds) != 0 {
-		r.err = fmt.Errorf("Users not found: %s", strings.Join(notFounds, ", "))
+		r.err = fmt.Errorf("users not found: %s", strings.Join(notFounds, ", "))
 		return r
 	}
 
@@ -257,7 +272,7 @@ func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole, curr
 			user, hasUser := users[memberRole.MemberID]
 
 			if hasUser {
-				pms = append(pms, ProjectMember{
+				pms = append(pms, models.ProjectMember{
 					UserID:    user.ID,
 					ProjectID: project.ID,
 					RoleID:    memberRole.RoleID,
@@ -291,12 +306,15 @@ func (r *Repo) ProjectAddMembers(project Project, memberRoles []MemberRole, curr
 	return r
 }
 
-func (r *Repo) ProjectRemoveMembers(project Project, members []string) IRepo {
+func (r *Repo) ProjectRemoveMembers(
+	project models.Project,
+	members []string,
+) IRepo {
 	if r.err != nil {
 		return r
 	}
 
-	users := make(map[string]User)
+	users := make(map[string]models.User)
 	notFounds := make([]string, 0)
 
 	r.FindUsers(members, &users, &notFounds)
@@ -306,7 +324,7 @@ func (r *Repo) ProjectRemoveMembers(project Project, members []string) IRepo {
 	}
 
 	if len(notFounds) != 0 {
-		r.err = fmt.Errorf("Users not found: %s", strings.Join(notFounds, ", "))
+		r.err = fmt.Errorf("users not found: %s", strings.Join(notFounds, ", "))
 		return r
 	}
 
@@ -320,13 +338,13 @@ func (r *Repo) ProjectRemoveMembers(project Project, members []string) IRepo {
 	r.err = db.
 		Where("user_id IN (?)", memberIDs).
 		Where("project_id = ?", project.ID).
-		Delete(ProjectMember{}).
+		Delete(models.ProjectMember{}).
 		Error
 
 	return r
 }
 
-func (r *Repo) ProjectLoadUsers(project *Project) IRepo {
+func (r *Repo) ProjectLoadUsers(project *models.Project) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -336,14 +354,18 @@ func (r *Repo) ProjectLoadUsers(project *Project) IRepo {
 	return r
 }
 
-func (r *Repo) ProjectSetRoleForUser(project Project, user User, role Role) IRepo {
+func (r *Repo) ProjectSetRoleForUser(
+	project models.Project,
+	user models.User,
+	role models.Role,
+) IRepo {
 	if r.err != nil {
 		return r
 	}
 
 	db := r.GetDb()
 
-	pm := ProjectMember{
+	pm := models.ProjectMember{
 		Project: project,
 		User:    user,
 		Role:    role,
@@ -359,7 +381,10 @@ func (r *Repo) ProjectSetRoleForUser(project Project, user User, role Role) IRep
 	return r
 }
 
-func (r *Repo) CheckMembersAreInProject(project models.Project, members []string) (areInProjects []string, err error) {
+func (r *Repo) CheckMembersAreInProject(
+	project models.Project,
+	members []string,
+) (areInProjects []string, err error) {
 	for _, member := range members {
 		user := &models.User{UserID: member}
 
@@ -380,8 +405,9 @@ func (r *Repo) CheckMembersAreInProject(project models.Project, members []string
 		} else {
 			if errors.Is(r.err, ErrorNotFound) {
 				r.err = nil
+			} else {
+				break
 			}
-
 		}
 	}
 
@@ -414,7 +440,10 @@ func (r *Repo) GetUserProjects(userID uint, projects *[]models.Project) IRepo {
 	return r
 }
 
-func (r *Repo) GetProjectsOrganization(projectID string, organization *models.Organization) IRepo {
+func (r *Repo) GetProjectsOrganization(
+	projectID string,
+	organization *models.Organization,
+) IRepo {
 	var project models.Project
 
 	r.GetProjectByUUID(projectID, &project)

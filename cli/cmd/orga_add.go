@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 var private bool
@@ -19,7 +19,7 @@ Organzation names must be unique and composed of only alphanumeric characters,
 `,
 	Example: `ks orga add my_new_organization`,
 	Args:    cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var err error
 		organizationName := args[0]
 
@@ -30,9 +30,12 @@ Organzation names must be unique and composed of only alphanumeric characters,
 		exitIfErr(err)
 
 		organization, err := c.Organizations().CreateOrganization(organizationName, private)
-		exitIfErr(err)
+		if err != nil {
+			handleClientError(err)
+			exit(err)
+		}
 
-		ui.PrintSuccess("Organization %s has been created", organization.Name)
+		display.OrganizationCreated(organization)
 	},
 }
 

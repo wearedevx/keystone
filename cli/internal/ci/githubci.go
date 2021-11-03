@@ -19,8 +19,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var githubClientId string
-var githubClientSecret string
+var (
+	githubClientId     string
+	githubClientSecret string
+)
 
 type ServicesKeys map[string]string
 
@@ -37,9 +39,15 @@ type gitHubCiService struct {
 }
 
 var (
-	ErrorGithubCIPermissionDenied error = errors.New("You don't have rights to send secrets to the repo. Please ensure your personal access token has access to \"repo\" scope.")
-	ErrorGithubCINoSuchRepository       = errors.New("You are trying to send secret to a repository that doesn't exist. Please make sure repo's name and owner is correct.")
-	ErrorGithubCITooLarge               = errors.New("Secrets and files are too large to send to CI")
+	ErrorGithubCIPermissionDenied error = errors.New(
+		"you don't have rights to send secrets to the repo. Please ensure your personal access token has access to \"repo\" scope",
+	)
+	ErrorGithubCINoSuchRepository = errors.New(
+		"you are trying to send secret to a repository that doesn't exist. Please make sure repo's name and owner is correct",
+	)
+	ErrorGithubCITooLarge = errors.New(
+		"secrets and files are too large to send to CI",
+	)
 )
 
 func GitHubCi(ctx *core.Context, name string, apiUrl string) CiService {
@@ -98,7 +106,10 @@ func (g *gitHubCiService) CheckSetup() CiService {
 
 // PushSecret sends a "Message" (that's a complete encrypted environment)
 // to GitHub as one repository Secret
-func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment string) CiService {
+func (g *gitHubCiService) PushSecret(
+	message models.MessagePayload,
+	environment string,
+) CiService {
 	if g.err != nil {
 		return g
 	}
@@ -119,13 +130,11 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment 
 	)
 
 	if resp.StatusCode == 403 {
-		// TODO: print porper error
 		g.err = ErrorGithubCIPermissionDenied
 		return g
 	}
 
 	if resp.StatusCode == 404 {
-		// TODO: print proper error
 		g.err = ErrorGithubCINoSuchRepository
 		return g
 	}
@@ -136,7 +145,6 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment 
 	}
 
 	data, err := base64.StdEncoding.DecodeString(publicKey.GetKey())
-
 	if err != nil {
 		g.err = err
 		return g
@@ -147,7 +155,6 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment 
 	}
 
 	slots, err := g.sliceMessageInParts(payload)
-
 	if err != nil {
 		g.err = err
 		return g
@@ -159,7 +166,11 @@ func (g *gitHubCiService) PushSecret(message models.MessagePayload, environment 
 		base64data := base64.StdEncoding.EncodeToString(encryptedValue)
 
 		encryptedSecret := &github.EncryptedSecret{
-			Name:           fmt.Sprintf("KEYSTONE_%s_SLOT_%o", strings.ToUpper(environment), i+1),
+			Name: fmt.Sprintf(
+				"KEYSTONE_%s_SLOT_%o",
+				strings.ToUpper(environment),
+				i+1,
+			),
 			KeyID:          publicKey.GetKeyID(),
 			EncryptedValue: base64data,
 		}
@@ -198,9 +209,12 @@ func (g *gitHubCiService) CleanSecret(environment string) CiService {
 		g.servicesKeys["Project"],
 		fmt.Sprintf("KEYSTONE_%s_SLOT_1", strings.ToUpper(environment)),
 	)
-
 	if err != nil {
-		g.err = err
+		if strings.Contains(err.Error(), "404") {
+			g.err = ErrorNoSecretsForEnvironment
+		} else {
+			g.err = err
+		}
 	}
 
 	return g
@@ -326,8 +340,12 @@ func (g *gitHubCiService) askForApiKey() CiService {
 	serviceName := g.Name()
 	apiKey := g.getApiKey()
 
-	fmt.Println("Personal access token can be generated here: https://github.com/settings/tokens/new\nIt should have access to \"repo\" scope.")
-	apiKey = ApiKey(prompts.StringInput(serviceName+" Access Token", string(apiKey)))
+	fmt.Println(
+		"Personal access token can be generated here: https://github.com/settings/tokens/new\nIt should have access to \"repo\" scope.",
+	)
+	apiKey = ApiKey(
+		prompts.StringInput(serviceName+" Access Token", string(apiKey)),
+	)
 
 	g.setApiKey(apiKey)
 
@@ -338,7 +356,9 @@ func (g *gitHubCiService) Error() error {
 	return g.err
 }
 
-func (g *gitHubCiService) sliceMessageInParts(message string) ([]string, error) {
+func (g *gitHubCiService) sliceMessageInParts(
+	message string,
+) ([]string, error) {
 	slots := make([]string, 5)
 
 	// Add spaces to message to make it divisible by 5 (number of slots)
@@ -361,9 +381,4 @@ func (g *gitHubCiService) sliceMessageInParts(message string) ([]string, error) 
 	slots[4] = message[slotSize*4 : slotSize*5]
 
 	return slots, err
-}
-
-func (g *gitHubCiService) PrintSuccess(environment string) {
-	ui.PrintSuccess(fmt.Sprintf(`Secrets successfully sent to %s CI service, environment %s.
-See https://github.com/wearedevx/keystone-action to use them.`, g.name, environment))
 }

@@ -10,7 +10,9 @@ import (
 
 type dummyAuthConnector struct{}
 
-func (dac *dummyAuthConnector) GetUserInfo(token *oauth2.Token) (models.User, error) {
+func (dac *dummyAuthConnector) GetUserInfo(
+	token *oauth2.Token,
+) (models.User, error) {
 	user := models.User{}
 
 	faker.FakeData(&user)

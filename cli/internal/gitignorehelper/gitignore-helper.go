@@ -19,7 +19,11 @@ func GitIgnore(wd string, thatPath string) error {
 
 	gitignorePath := path.Join(wd, ".gitignore")
 	/* #nosec */
-	gitignore, err := os.OpenFile(gitignorePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	gitignore, err := os.OpenFile(
+		gitignorePath,
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY,
+		0o600,
+	)
 	if err != nil {
 		return err
 	}
@@ -41,8 +45,7 @@ func GitUnignore(wd string, thatPath string) error {
 	gitignorePath := path.Join(wd, ".gitignore")
 	if utils.FileExists(gitignorePath) {
 		/* #nosec */
-		gitignore, err := os.OpenFile(gitignorePath, os.O_RDONLY, 0644)
-
+		gitignore, err := os.OpenFile(gitignorePath, os.O_RDONLY, 0o644)
 		if err != nil {
 			return nil
 		}
@@ -65,7 +68,7 @@ func GitUnignore(wd string, thatPath string) error {
 
 		contents := []byte(strings.Join(lines, "\n"))
 
-		ioutil.WriteFile(gitignorePath, contents, 0600)
+		ioutil.WriteFile(gitignorePath, contents, 0o600)
 	}
 
 	return nil

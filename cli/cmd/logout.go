@@ -18,6 +18,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // logoutCmd represents the logout command
@@ -28,6 +29,8 @@ var logoutCmd = &cobra.Command{
 	Example: "ks logout",
 	Run: func(_ *cobra.Command, _ []string) {
 		config.Logout()
+
+		display.Logout()
 	},
 }
 

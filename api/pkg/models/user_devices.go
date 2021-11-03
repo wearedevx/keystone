@@ -10,11 +10,11 @@ import (
 )
 
 type UserDevice struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
+	ID        uint      `json:"id"         gorm:"primaryKey"`
 	User      User      `json:"user"`
-	UserID    uint      `json:"user_id" gorm:"uniqueIndex:user_devices_user_id_device_id_key"`
+	UserID    uint      `json:"user_id"    gorm:"uniqueIndex:user_devices_user_id_device_id_key"`
 	Device    Device    `json:"device"`
-	DeviceID  uint      `json:"device_id" gorm:"uniqueIndex:user_devices_user_id_device_id_key"`
+	DeviceID  uint      `json:"device_id"  gorm:"uniqueIndex:user_devices_user_id_device_id_key"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

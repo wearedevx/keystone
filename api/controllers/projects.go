@@ -55,7 +55,7 @@ func PostProject(
 			Name: "admin",
 		}
 
-		if err := Repo.GetRole(&role).Err(); err != nil {
+		if err = Repo.GetRole(&role).Err(); err != nil {
 			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToGetResource(err)
 
@@ -86,7 +86,7 @@ done:
 }
 
 func GetProjects(
-	params router.Params,
+	_ router.Params,
 	_ io.ReadCloser,
 	Repo repo.IRepo,
 	user models.User,
@@ -119,9 +119,9 @@ func GetProjectsMembers(
 
 	var project models.Project
 	var member models.ProjectMember
-	var projectID = params.Get("projectID").(string)
+	projectID := params.Get("projectID")
 	var result models.GetMembersResponse
-	var log = models.ActivityLog{
+	log := models.ActivityLog{
 		UserID: &user.ID,
 		Action: "GetProjectMembers",
 	}
@@ -165,7 +165,7 @@ func PostProjectsMembers(
 	var isPaid bool
 	var areInProjects []string
 	var project models.Project
-	var projectID = params.Get("projectID").(string)
+	projectID := params.Get("projectID")
 
 	members := make([]string, 0)
 	input := models.AddMembersPayload{}
@@ -197,7 +197,7 @@ func PostProjectsMembers(
 	for _, member := range input.Members {
 		role := models.Role{ID: member.RoleID}
 
-		if err := Repo.GetRole(&role).Err(); err == nil {
+		if err = Repo.GetRole(&role).Err(); err == nil {
 			if role.Name != "admin" && !isPaid {
 				status = http.StatusForbidden
 				err = apierrors.ErrorNeedsUpgrade()
@@ -225,6 +225,13 @@ func PostProjectsMembers(
 	}
 
 	areInProjects, err = Repo.CheckMembersAreInProject(project, members)
+	if err != nil {
+		status = http.StatusInternalServerError
+		err = apierrors.ErrorUnknown(err)
+		result.Error = "could no check if members were in project"
+
+		goto done
+	}
 
 	if len(areInProjects) > 0 {
 		status = http.StatusConflict
@@ -289,7 +296,7 @@ func DeleteProjectsMembers(
 
 	var project models.Project
 	var organization models.Organization
-	var projectID = params.Get("projectID").(string)
+	projectID := params.Get("projectID")
 	input := models.RemoveMembersPayload{}
 	result := models.RemoveMembersResponse{}
 	var can, userIsAdmin bool
@@ -337,6 +344,13 @@ func DeleteProjectsMembers(
 	}
 
 	areInProjects, err = Repo.CheckMembersAreInProject(project, input.Members)
+	if err != nil {
+		status = http.StatusInternalServerError
+		err = apierrors.ErrorUnknown(err)
+		result.Error = "could no check if members were in project"
+
+		goto done
+	}
 
 	if len(areInProjects) != len(input.Members) {
 		status = http.StatusConflict
@@ -387,7 +401,12 @@ done:
 
 // checkUserCanAddMembers checks wether a user can add all the members in `members` to `project`
 // Returns false if at least one of the members cannot be added
-func checkUserCanAddMembers(Repo repo.IRepo, user models.User, project models.Project, members []models.MemberRole) (can bool, err error) {
+func checkUserCanAddMembers(
+	Repo repo.IRepo,
+	user models.User,
+	project models.Project,
+	members []models.MemberRole,
+) (can bool, err error) {
 	can = true
 
 	projectMember := models.ProjectMember{
@@ -419,7 +438,12 @@ func checkUserCanAddMembers(Repo repo.IRepo, user models.User, project models.Pr
 
 // checkUserCanRemoveMembers checks wether a user can remove all the members in `members` from `project`
 // Returns false if at least one of the members cannot be removed
-func checkUserCanRemoveMembers(Repo repo.IRepo, user models.User, project models.Project, members []string) (can bool, err error) {
+func checkUserCanRemoveMembers(
+	Repo repo.IRepo,
+	user models.User,
+	project models.Project,
+	members []string,
+) (can bool, err error) {
 	can = true
 
 	projectMember := models.ProjectMember{
@@ -433,7 +457,6 @@ func checkUserCanRemoveMembers(Repo repo.IRepo, user models.User, project models
 		GetProjectMember(&projectMember).
 		ListProjectMembers(members, &projectMembers).
 		Err(); err != nil {
-
 		return false, err
 	}
 
@@ -445,7 +468,11 @@ func checkUserCanRemoveMembers(Repo repo.IRepo, user models.User, project models
 			break
 		}
 
-		isMemberOwnerOfOrga, isMemberOwnerOfOrgaErr := rights.IsUserOwnerOfOrga(Repo, m.UserID, project)
+		isMemberOwnerOfOrga, isMemberOwnerOfOrgaErr := rights.IsUserOwnerOfOrga(
+			Repo,
+			m.UserID,
+			project,
+		)
 		if isMemberOwnerOfOrgaErr != nil {
 			can = false
 			break
@@ -471,10 +498,10 @@ func GetAccessibleEnvironments(
 		Environments: make([]models.Environment, 0),
 	}
 	var environments []models.Environment
-	var projectID = params.Get("projectID").(string)
+	projectID := params.Get("projectID")
 	var project models.Project
 	var can bool
-	var log = models.ActivityLog{
+	log := models.ActivityLog{
 		UserID: &user.ID,
 		Action: "GetAccessibleEnvironments",
 	}
@@ -498,7 +525,12 @@ func GetAccessibleEnvironments(
 	for _, environment := range environments {
 		log.Environment = environment
 
-		can, err = rights.CanUserWriteOnEnvironment(Repo, user.ID, project.ID, &environment)
+		can, err = rights.CanUserWriteOnEnvironment(
+			Repo,
+			user.ID,
+			project.ID,
+			&environment,
+		)
 		if err != nil {
 			status = http.StatusNotFound
 			err = apierrors.ErrorFailedToGetPermission(err)
@@ -526,7 +558,7 @@ func DeleteProject(
 		Action: "DeleteProject",
 	}
 
-	var projectId = params.Get("projectID").(string)
+	projectId := params.Get("projectID")
 	var project models.Project
 
 	Repo.
@@ -558,7 +590,7 @@ func GetProjectsOrganization(
 	}
 
 	result := models.Organization{}
-	var projectId = params.Get("projectID").(string)
+	projectId := params.Get("projectID")
 	var organization models.Organization
 
 	if projectId == "" {

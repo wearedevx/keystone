@@ -5,7 +5,6 @@ import (
 )
 
 func (ctx *Context) GetRoles() *rolesfile.Roles {
-
 	file := &rolesfile.Roles{}
 	// err := file.Load(ctx.rolesFilePath())
 

@@ -16,11 +16,10 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // whoamiCmd represents the whoami command
@@ -39,7 +38,7 @@ to add members to projects.`,
 			exit(kserrors.MustBeLoggedIn(nil))
 		}
 
-		fmt.Println(currentAccount.UserID)
+		display.User(currentAccount)
 	},
 }
 

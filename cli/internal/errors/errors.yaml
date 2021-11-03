@@ -78,6 +78,18 @@ errors:
       {{ ERROR }} {{ .Name | red }}
       Device names must be alphanumeric with ., -, _
 
+  # LOGIN ERROR
+  # --------------------
+  - type: CannotSaveConfig
+    name: "Cannot Save Config"
+    params: []
+    template: |-
+      {{ ERROR }} {{ .Name | red }}
+      You have been successfully logged in, but the configuration file could
+      not be written.
+
+      This happened because: {{ .Cause }}
+
   # KEYSTONE_YAML_ERRORS
   # ––––––––––––––––––––
   - type: FailedToReadKeystoneFile
@@ -127,12 +139,18 @@ errors:
     params:
       - name: RoleName
         type: string
-      - name: Available
-        type: string
-    template: |
+    template: |-
       {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .RoleName | red }} {{- "'" | red }}
-      Available roles are: {{ .Available }}
 
+  - type: RoleNeedsUpgrade
+    name: "Needs Upgrade"
+    params: []
+    template: |-
+      {{ ERROR }} {{ .Name | red }}
+      You are not allowed to set roles other than admin for a free organization.
+
+      To upgrade your plan:
+        $ ks orga upgrade
 
   # PROJECT_ERRORS
   # –––––––––––––––––

@@ -26,7 +26,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -85,13 +85,7 @@ of the secrets and files.
 		membersToRevoke := make([]string, 0)
 
 		for _, memberId := range args {
-			revoke := true
-
-			if !forceYes {
-				revoke = prompts.Confirm("Revoke access to " + memberId)
-			}
-
-			if revoke {
+			if prompts.ConfirmRevokeAccessToMember(memberId, forceYes) {
 				membersToRevoke = append(membersToRevoke, memberId)
 			}
 		}
@@ -109,9 +103,7 @@ of the secrets and files.
 			exit(kserrors.CannotRemoveMembers(err))
 		}
 
-		ui.Print(ui.RenderTemplate("removed members", `
-{{ OK }} {{ "Revoked Access To Members" | green }}
-`, nil))
+		display.RemovedMembers()
 	},
 }
 
@@ -127,5 +119,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// memberRmCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	memberRmCmd.Flags().BoolVarP(&forceYes, "yes", "y", false, "skip prompt say yes to all")
+	memberRmCmd.Flags().
+		BoolVarP(&forceYes, "yes", "y", false, "skip prompt say yes to all")
 }

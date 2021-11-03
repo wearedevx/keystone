@@ -10,8 +10,10 @@ import (
 	"gorm.io/gorm"
 )
 
-var fakeRoles []Role
-var fakeUserRole map[string]string
+var (
+	fakeRoles    []Role
+	fakeUserRole map[string]string
+)
 
 func initFakeRoles() {
 	fakeRoles = []Role{
@@ -47,7 +49,6 @@ func initFakeRoles() {
 
 	fakeRoles[1].Parent = &fakeRoles[3]
 	fakeRoles[0].Parent = &fakeRoles[1]
-
 }
 
 func initFakeUserRoles() {
@@ -107,11 +108,17 @@ func (f *FakeRepo) DeleteExpiredMessages() IRepo {
 	panic("not implemented")
 }
 
-func (repo *FakeRepo) GetGroupedMessagesWillExpireByUser(groupedMessageUser *map[uint]emailer.GroupedMessagesUser) IRepo {
+func (repo *FakeRepo) GetGroupedMessagesWillExpireByUser(
+	groupedMessageUser *map[uint]emailer.GroupedMessagesUser,
+) IRepo {
 	panic("not implemented")
 }
 
-func (f *FakeRepo) FindUsers(_ []string, _ *map[string]User, _ *[]string) IRepo {
+func (f *FakeRepo) FindUsers(
+	_ []string,
+	_ *map[string]User,
+	_ *[]string,
+) IRepo {
 	panic("not implemented")
 }
 
@@ -123,7 +130,10 @@ func (f *FakeRepo) GetEnvironment(_ *Environment) IRepo {
 	panic("not implemented")
 }
 
-func (f *FakeRepo) GetEnvironmentsByProjectUUID(_ string, _ *[]Environment) IRepo {
+func (f *FakeRepo) GetEnvironmentsByProjectUUID(
+	_ string,
+	_ *[]Environment,
+) IRepo {
 	panic("not implemented")
 }
 
@@ -139,7 +149,11 @@ func (f *FakeRepo) GetLoginRequest(_ string) (LoginRequest, bool) {
 	panic("not implemented")
 }
 
-func (f *FakeRepo) GetMessagesForUserOnEnvironment(_ Device, _ Environment, _ *Message) IRepo {
+func (f *FakeRepo) GetMessagesForUserOnEnvironment(
+	_ Device,
+	_ Environment,
+	_ *Message,
+) IRepo {
 	panic("not implemented")
 }
 
@@ -187,7 +201,10 @@ func (f *FakeRepo) GetRoles(_ *[]Role) IRepo {
 	panic("not implemented")
 }
 
-func (r *FakeRepo) GetRolesMemberCanInvite(projectMember ProjectMember, roles *[]Role) IRepo {
+func (r *FakeRepo) GetRolesMemberCanInvite(
+	projectMember ProjectMember,
+	roles *[]Role,
+) IRepo {
 	panic("not implemented")
 }
 
@@ -199,7 +216,10 @@ func (f *FakeRepo) GetUser(_ *User) IRepo {
 	panic("not implemented")
 }
 
-func (f *FakeRepo) ListProjectMembers(userIDList []string, projectMember *[]ProjectMember) IRepo {
+func (f *FakeRepo) ListProjectMembers(
+	userIDList []string,
+	projectMember *[]ProjectMember,
+) IRepo {
 	panic("not implemented")
 }
 
@@ -239,7 +259,10 @@ func (f *FakeRepo) WriteMessage(_ User, _ Message) IRepo {
 	panic("not implemented")
 }
 
-func getRoleByEnvironmentTypeAndRole(environmentType *EnvironmentType, role *Role) RolesEnvironmentType {
+func getRoleByEnvironmentTypeAndRole(
+	environmentType *EnvironmentType,
+	role *Role,
+) RolesEnvironmentType {
 	switch {
 	case environmentType.Name == "dev" && (role.Name == "developer" || role.Name == "lead developer"):
 		return RolesEnvironmentType{
@@ -326,8 +349,13 @@ func (fakeRepo *FakeRepo) Err() error {
 	return nil
 }
 
-func (fakeRepo *FakeRepo) GetRolesEnvironmentType(rolesEnvironmentType *RolesEnvironmentType) IRepo {
-	*rolesEnvironmentType = getRoleByEnvironmentTypeAndRole(&rolesEnvironmentType.EnvironmentType, &rolesEnvironmentType.Role)
+func (fakeRepo *FakeRepo) GetRolesEnvironmentType(
+	rolesEnvironmentType *RolesEnvironmentType,
+) IRepo {
+	*rolesEnvironmentType = getRoleByEnvironmentTypeAndRole(
+		&rolesEnvironmentType.EnvironmentType,
+		&rolesEnvironmentType.Role,
+	)
 
 	return fakeRepo
 }
@@ -420,11 +448,35 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 		for envName, environment := range environments {
 			expectation := rightsMatrix[name][envName]
 
-			canRead, _ := CanUserReadEnvironment(fakeRepo, user.ID, project.ID, environment)
-			canWrite, _ := CanUserWriteOnEnvironment(fakeRepo, user.ID, project.ID, environment)
+			canRead, _ := CanUserReadEnvironment(
+				fakeRepo,
+				user.ID,
+				project.ID,
+				environment,
+			)
+			canWrite, _ := CanUserWriteOnEnvironment(
+				fakeRepo,
+				user.ID,
+				project.ID,
+				environment,
+			)
 
-			assert.Equal(t, expectation.r, canRead, "Oops! User %s has unexpected read rights on %s environment", name, envName)
-			assert.Equal(t, expectation.w, canWrite, "Oops! User %s has unexpected write rights on %s environment", name, envName)
+			assert.Equal(
+				t,
+				expectation.r,
+				canRead,
+				"Oops! User %s has unexpected read rights on %s environment",
+				name,
+				envName,
+			)
+			assert.Equal(
+				t,
+				expectation.w,
+				canWrite,
+				"Oops! User %s has unexpected write rights on %s environment",
+				name,
+				envName,
+			)
 		}
 	}
 }
@@ -477,9 +529,22 @@ func TestUserCanSetMemberRole(t *testing.T) {
 			expectation := rightsMatrix[name][otherName]
 			role := getRoleByUsername(otherName)
 
-			canSetMemberRole, _ := CanUserSetMemberRole(&fakeRepo, user, otherUser, role, project)
+			canSetMemberRole, _ := CanUserSetMemberRole(
+				&fakeRepo,
+				user,
+				otherUser,
+				role,
+				project,
+			)
 
-			assert.Equal(t, expectation, canSetMemberRole, "Oops! User %s has unexpected role setting rights on user %s", name, otherName)
+			assert.Equal(
+				t,
+				expectation,
+				canSetMemberRole,
+				"Oops! User %s has unexpected role setting rights on user %s",
+				name,
+				otherName,
+			)
 		}
 	}
 }

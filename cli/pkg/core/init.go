@@ -1,11 +1,11 @@
 package core
 
 import (
-	. "github.com/wearedevx/keystone/cli/internal/environmentsfile"
+	"github.com/wearedevx/keystone/cli/internal/environmentsfile"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	. "github.com/wearedevx/keystone/cli/internal/gitignorehelper"
-	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
-	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
+	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
@@ -38,55 +38,76 @@ func (ctx *Context) Init(project models.Project) *Context {
 	// erro handling
 	ops := []func() error{
 		func() error {
-			if !ExistsKeystoneFile(ctx.Wd) {
-				return NewKeystoneFile(ctx.Wd, project).Save().Err()
+			if !keystonefile.ExistsKeystoneFile(ctx.Wd) {
+				return keystonefile.NewKeystoneFile(ctx.Wd, project).
+					Save().
+					Err()
 			}
 			return nil
 		},
 		func() error {
-			return CreateDirIfNotExist(ctx.dotKeystonePath())
+			return utils.CreateDirIfNotExist(ctx.dotKeystonePath())
 		},
 		func() error {
-			if !ExistsEnvironmentsFile(ctx.dotKeystonePath()) {
-				return NewEnvironmentsFile(ctx.dotKeystonePath(), project.Environments).Save().Err()
+			if !environmentsfile.ExistsEnvironmentsFile(ctx.dotKeystonePath()) {
+				return environmentsfile.NewEnvironmentsFile(ctx.dotKeystonePath(), project.Environments).
+					Save().
+					Err()
 			}
 			return nil
 		},
 		func() error {
-			return CreateDirIfNotExist(ctx.cacheDirPath())
+			return utils.CreateDirIfNotExist(ctx.cacheDirPath())
 		},
 		func() error {
-			return CreateFileIfNotExists(ctx.CachedDotEnvPath(), "")
+			return utils.CreateFileIfNotExists(ctx.CachedDotEnvPath(), "")
 		},
 		func() error {
-			return CreateDirIfNotExist(ctx.CachedEnvironmentPath("dev"))
+			return utils.CreateDirIfNotExist(ctx.CachedEnvironmentPath("dev"))
 		},
 		func() error {
-			return CreateDirIfNotExist(ctx.CachedEnvironmentPath("staging"))
+			return utils.CreateDirIfNotExist(
+				ctx.CachedEnvironmentPath("staging"),
+			)
 		},
 		func() error {
-			return CreateDirIfNotExist(ctx.CachedEnvironmentPath("prod"))
+			return utils.CreateDirIfNotExist(ctx.CachedEnvironmentPath("prod"))
 		},
 		func() error {
-			return CreateFileIfNotExists(ctx.CachedEnvironmentDotEnvPath("dev"), "")
+			return utils.CreateFileIfNotExists(
+				ctx.CachedEnvironmentDotEnvPath("dev"),
+				"",
+			)
 		},
 		func() error {
-			return CreateFileIfNotExists(ctx.CachedEnvironmentDotEnvPath("staging"), "")
+			return utils.CreateFileIfNotExists(
+				ctx.CachedEnvironmentDotEnvPath("staging"),
+				"",
+			)
 		},
 		func() error {
-			return CreateFileIfNotExists(ctx.CachedEnvironmentDotEnvPath("prod"), "")
+			return utils.CreateFileIfNotExists(
+				ctx.CachedEnvironmentDotEnvPath("prod"),
+				"",
+			)
 		},
 		func() error {
-			return CreateDirIfNotExist(ctx.CachedEnvironmentFilesPath("dev"))
+			return utils.CreateDirIfNotExist(
+				ctx.CachedEnvironmentFilesPath("dev"),
+			)
 		},
 		func() error {
-			return CreateDirIfNotExist(ctx.CachedEnvironmentFilesPath("staging"))
+			return utils.CreateDirIfNotExist(
+				ctx.CachedEnvironmentFilesPath("staging"),
+			)
 		},
 		func() error {
-			return CreateDirIfNotExist(ctx.CachedEnvironmentFilesPath("prod"))
+			return utils.CreateDirIfNotExist(
+				ctx.CachedEnvironmentFilesPath("prod"),
+			)
 		},
 		func() error {
-			return GitIgnore(ctx.Wd, dotKeystone)
+			return gitignorehelper.GitIgnore(ctx.Wd, dotKeystone)
 		},
 	}
 

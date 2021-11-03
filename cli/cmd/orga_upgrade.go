@@ -16,12 +16,9 @@ limitations under the License.
 package cmd
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/ui"
-	"github.com/wearedevx/keystone/cli/ui/prompts"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // upgradeCmd represents the upgrade command
@@ -48,51 +45,8 @@ organization to a paid plan using this command.
 		url, err := o.GetUpgradeUrl(organizationName)
 		exitIfErr(err)
 
-		ui.Print(
-			ui.RenderTemplate(
-				"upgrade-url",
-				`To upgrade your organization plan, visit the following link:
-
-        {{.UpgradeURL }}`,
-				map[string]string{
-					"UpgradeURL": url,
-				},
-			),
-		)
-
+		display.UpgradeUrl(url)
 	},
-}
-
-func mustGetOrganizationName(
-	o *client.Organizations,
-	args []string,
-) (organizationName string) {
-	var err error
-
-	if len(args) == 1 {
-		organizationName = args[0]
-	} else {
-		err = pickOrganizationName(o, &organizationName)
-	}
-
-	if err != nil {
-		ui.PrintError(err.Error())
-		os.Exit(1)
-	}
-
-	return organizationName
-}
-
-func pickOrganizationName(o *client.Organizations, organizationName *string) error {
-	organizations, err := o.GetAll()
-	if err != nil {
-		return err
-	}
-
-	organization := prompts.OrganizationsSelect(organizations)
-	*organizationName = organization.Name
-
-	return nil
 }
 
 func init() {

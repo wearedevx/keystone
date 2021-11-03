@@ -16,19 +16,13 @@ limitations under the License.
 package cmd
 
 import (
-	"os"
-	"reflect"
-	"regexp"
-	"strings"
-
-	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
-	"github.com/wearedevx/keystone/cli/internal/messages"
+	"github.com/wearedevx/keystone/cli/internal/secrets"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 
 	"github.com/spf13/cobra"
@@ -58,6 +52,7 @@ ks secret add PORT`,
 	Args: cobra.RangeArgs(1, 2),
 	Run: func(_ *cobra.Command, args []string) {
 		var err error
+		var useCache bool
 
 		secretName := args[0]
 		secretValue := ""
@@ -70,26 +65,27 @@ ks secret add PORT`,
 		exitIfErr(err)
 
 		ctx.MustHaveEnvironment(currentEnvironment)
+		secretService := secrets.NewSecretService(ctx)
 
-		inCache := checkSecretAlreadyInCache(secretName)
-		useCache := inCache
+		if yes, values := secretService.IsSecretInCache(secretName); yes {
+			display.SecretAlreadyExitsts(values)
 
-		if inCache {
-			useCache = !askToOverride()
+			useCache = !prompts.ConfirmOverrideSecretValue(skipPrompts)
 		}
 
 		if !useCache {
 			es := environments.NewEnvironmentService(ctx)
 			exitIfErr(es.Err())
 
-			environmentValueMap := setValuesForEnvironments(
+			environmentValueMap, err := secretService.SetValuesForEnvironments(
 				secretName,
 				secretValue,
 				ctx.AccessibleEnvironments,
+				skipPrompts,
 			)
+			exitIfErr(err)
 
-			ms := messages.NewMessageService(ctx)
-			changes := mustFetchMessages(ms)
+			changes, messageService := mustFetchMessages()
 			flag := core.S_REQUIRED
 
 			if addOptional {
@@ -105,7 +101,9 @@ ks secret add PORT`,
 				AddSecret(secretName, environmentValueMap, flag).
 				Err())
 
-			exitIfErr(ms.SendEnvironments(ctx.AccessibleEnvironments).Err())
+			exitIfErr(messageService.
+				SendEnvironments(ctx.AccessibleEnvironments).
+				Err())
 		} else {
 			var ksfile keystonefile.KeystoneFile
 			// Add new env key to keystone.yaml
@@ -121,7 +119,10 @@ ks secret add PORT`,
 			exit(err)
 		}
 
-		ui.PrintSuccess("Variable '%s' is set for %d environment(s)", secretName, len(ctx.AccessibleEnvironments))
+		display.SecretIsSetForEnvironment(
+			secretName,
+			len(ctx.AccessibleEnvironments),
+		)
 	},
 }
 
@@ -137,97 +138,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	secretAddCmd.Flags().BoolVarP(&addOptional, "optional", "o", false, "mark the secret as optional")
-}
-
-func setValuesForEnvironments(secretName string, secretValue string, accessibleEnvironments []models.Environment) map[string]string {
-
-	environmentValueMap := make(map[string]string)
-	// Ask value for each env
-	if !skipPrompts {
-		ui.Print(ui.RenderTemplate("ask new value for environment", `
-Enter a values for {{ . }}:`, secretName))
-
-		for _, environment := range accessibleEnvironments {
-
-			// multiline edit
-			if strings.Contains(secretValue, "\n") {
-				var defaultContent strings.Builder
-
-				defaultContent.WriteString(secretValue)
-				defaultContent.WriteRune('\n')
-				defaultContent.WriteRune('\n')
-				defaultContent.WriteRune('\n')
-				defaultContent.WriteString("# Enter value for secret ")
-				defaultContent.WriteString(secretName)
-				defaultContent.WriteString(" on environment ")
-				defaultContent.WriteString(environment.Name)
-
-				result, err := utils.CaptureInputFromEditor(
-					utils.GetPreferredEditorFromEnvironment,
-					"",
-					defaultContent.String(),
-				)
-				stringResult := string(result)
-
-				// remove blank line and comment from secret
-				stringResult = regexp.MustCompile(`#.*$`).ReplaceAllString(strings.TrimSpace(stringResult), "")
-				stringResult = regexp.MustCompile(`[\t\r\n]+`).ReplaceAllString(strings.TrimSpace(stringResult), "\n")
-
-				if err != nil {
-					if err.Error() != "^C" {
-						ui.PrintError(err.Error())
-						os.Exit(1)
-					}
-					os.Exit(0)
-				}
-
-				environmentValueMap[environment.Name] = strings.Trim(string(stringResult), " ")
-
-			} else {
-				environmentValueMap[environment.Name] = prompts.StringInput(
-					environment.Name,
-					secretValue,
-				)
-			}
-		}
-
-	} else {
-		for _, environment := range accessibleEnvironments {
-			environmentValueMap[environment.Name] = strings.Trim(secretValue, " ")
-		}
-
-	}
-
-	return environmentValueMap
-}
-
-func checkSecretAlreadyInCache(secretName string) (inCache bool) {
-	secrets := ctx.ListSecretsFromCache()
-	var found core.Secret
-
-	for _, secret := range secrets {
-		if secret.Name == secretName {
-			found = secret
-		}
-	}
-
-	inCache = !reflect.ValueOf(found).IsZero()
-
-	if inCache {
-		ui.Print(`The secret already exist. Values are:`)
-		for env, value := range found.Values {
-			ui.Print(`%s: %s`, env, value)
-		}
-	}
-
-	return inCache
-}
-
-func askToOverride() (doOverride bool) {
-	if !skipPrompts {
-		return prompts.Confirm("Do you want to override the values")
-	}
-
-	return false
+	secretAddCmd.Flags().
+		BoolVarP(&addOptional, "optional", "o", false, "mark the secret as optional")
 }

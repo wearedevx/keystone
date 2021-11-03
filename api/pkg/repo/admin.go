@@ -2,7 +2,10 @@
 
 package repo
 
-func (r *Repo) GetAdminsFromUserProjects(userID uint, adminProjectsMap *map[string][]string) IRepo {
+func (r *Repo) GetAdminsFromUserProjects(
+	userID uint,
+	adminProjectsMap *map[string][]string,
+) IRepo {
 	rows, err := r.GetDb().Raw(`
 SELECT
 	u.email,
@@ -34,7 +37,6 @@ AND u.id <> ?`,
 		userID,
 		userID,
 	).Rows()
-
 	if err != nil {
 		r.err = err
 		return r

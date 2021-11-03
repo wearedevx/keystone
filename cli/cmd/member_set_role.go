@@ -16,25 +16,22 @@ limitations under the License.
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"regexp"
-	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/members"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
-var memberId string
-var roleName string
+var (
+	memberId string
+	roleName string
+)
 
 // memberSetRoleCmd represents the memberSetRole command
 var memberSetRoleCmd = &cobra.Command{
@@ -54,7 +51,10 @@ ks member set-role sandra@github`,
 		argc := len(args)
 
 		if argc == 0 || argc > 2 {
-			return fmt.Errorf("invalid number of arguments. Expected 1 or 2, got %d", argc)
+			return fmt.Errorf(
+				"invalid number of arguments. Expected 1 or 2, got %d",
+				argc,
+			)
 		}
 
 		if argc >= 1 {
@@ -83,19 +83,14 @@ ks member set-role sandra@github`,
 		projectID := ctx.GetProjectID()
 		// Ensure member exists
 		r, err := c.Users().CheckUsersExist([]string{memberId})
-		switch {
-		case errors.Is(err, auth.ErrorUnauthorized):
-			config.Logout()
-			exit(kserrors.InvalidConnectionToken(err))
-
-		case err != nil || r.Error != "":
+		if err != nil || r.Error != "" {
+			handleClientError(err)
 			exit(kserrors.UsersDontExist(r.Error, err))
 		}
 
 		// Get all roles, te make sure the role exists
 		// And to be able to list them in the prompt
-		roles, err := c.Roles().GetAll(ctx.GetProjectID())
-		exitIfErr(err)
+		roles := mustGetRoles(c)
 
 		// If user didnot provide a role,
 		// prompt it
@@ -107,48 +102,22 @@ ks member set-role sandra@github`,
 		}
 
 		if len(roles) == 1 && roleName != "admin" {
-			ui.PrintError("You are not allowed to set role other than admin for free organization")
-			ui.Print("To learn more: https://keystone.sh")
-			os.Exit(1)
+			exit(kserrors.RoleNeedsUpgrade(nil))
 		}
 
-		// If the role exsists, do the work
-		if _, ok := getRoleWithName(roleName, roles); ok {
-			err = c.Project(projectID).SetMemberRole(memberId, roleName)
-			exitIfErr(err)
-		} else {
-			roleNames := make([]string, len(roles))
-			for i, r := range roles {
-				roleNames[i] = r.Name
-			}
-
-			exit(kserrors.RoleDoesNotExist(
+		// If the role exists, do the work
+		exitIfErr(
+			members.SetMemberRole(
+				c,
+				projectID,
+				memberId,
 				roleName,
-				strings.Join(roleNames, ", "),
-				nil,
-			))
-		}
+				roles,
+			),
+		)
 
-		ui.Print(ui.RenderTemplate("set role ok", `
-{{ OK }} {{ "Role set" | green }}
-`, struct {
-		}{}))
+		display.SetRoleOk()
 	},
-}
-
-func getRoleWithName(roleName string, roles []models.Role) (models.Role, bool) {
-	found := false
-	var role models.Role
-
-	for _, existingRole := range roles {
-		if existingRole.Name == roleName {
-			found = true
-			role = existingRole
-			break
-		}
-	}
-
-	return role, found
 }
 
 func init() {

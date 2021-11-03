@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
-
-	"github.com/wearedevx/keystone/cli/pkg/constants"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // versionCmd represents the version command
@@ -15,7 +12,7 @@ var versionCmd = &cobra.Command{
 	Long:    "Displays the current CLI version.",
 	Example: "ks version",
 	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Printf("keystone-cli version %s\n", constants.Version)
+		display.Version()
 	},
 }
 

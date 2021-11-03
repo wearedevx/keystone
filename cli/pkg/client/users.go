@@ -8,7 +8,9 @@ type Users struct {
 	r requester
 }
 
-func (u *Users) CheckUsersExist(userIds []string) (models.CheckMembersResponse, error) {
+func (u *Users) CheckUsersExist(
+	userIds []string,
+) (models.CheckMembersResponse, error) {
 	var err error
 	var result models.CheckMembersResponse
 
@@ -20,7 +22,9 @@ func (u *Users) CheckUsersExist(userIds []string) (models.CheckMembersResponse, 
 	return result, err
 }
 
-func (u *Users) GetEnvironmentPublicKeys(environmentId string) (models.PublicKeys, error) {
+func (u *Users) GetEnvironmentPublicKeys(
+	environmentId string,
+) (models.PublicKeys, error) {
 	var err error
 	var result models.PublicKeys
 
@@ -29,13 +33,18 @@ func (u *Users) GetEnvironmentPublicKeys(environmentId string) (models.PublicKey
 	return result, err
 }
 
-func (u *Users) GetUserPublicKey(userID string) (result models.UserPublicKeys, err error) {
+func (u *Users) GetUserPublicKey(
+	userID string,
+) (result models.UserPublicKeys, err error) {
 	err = u.r.get("/users/"+userID+"/key", &result, nil)
 
 	return result, err
 }
 
-func (u *Users) InviteUser(userEmail string, projectName string) (result models.GetInviteResponse, err error) {
+func (u *Users) InviteUser(
+	userEmail string,
+	projectName string,
+) (result models.GetInviteResponse, err error) {
 	payload := models.InvitePayload{
 		Email:       userEmail,
 		ProjectName: projectName,

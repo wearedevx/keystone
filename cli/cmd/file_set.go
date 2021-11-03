@@ -17,18 +17,13 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
-	"os"
 	"path"
-	"path/filepath"
 
-	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // setCmd represents the set command
@@ -74,8 +69,7 @@ ks --env staging file set ./config.php
 			}
 		}
 
-		ms := messages.NewMessageService(ctx)
-		changes := mustFetchMessages(ms)
+		changes, messageService := mustFetchMessages()
 
 		err = ctx.
 			CompareNewFileWhithChanges(filePath, changes).
@@ -89,14 +83,10 @@ ks --env staging file set ./config.php
 			Err()
 		exitIfErr(err)
 
-		err = ms.SendEnvironments(ctx.AccessibleEnvironments).Err()
+		err = messageService.SendEnvironments(ctx.AccessibleEnvironments).Err()
 		exitIfErr(err)
 
-		ui.Print(ui.RenderTemplate("file set success", `
-{{ OK }} {{ .Title | green }}
-`, map[string]string{
-			"Title": fmt.Sprintf("Modified '%s'", filePath),
-		}))
+		display.FileSetSuccess(filePath)
 	},
 }
 
@@ -112,32 +102,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-func askContent(filePath string, currentContent []byte) []byte {
-	extension := filepath.Ext(filePath)
-
-	ui.Print(fmt.Sprintf("Enter content for file '%s' for the '%s' environment (Press any key to continue)", filePath, currentEnvironment))
-	_, _, err := keyboard.GetSingleKey()
-	if err != nil {
-		errmsg := fmt.Sprintf("Failed to read user input (%s)", err.Error())
-		println(errmsg)
-		os.Exit(1)
-		return []byte{}
-	}
-
-	content, err := utils.CaptureInputFromEditor(
-		utils.GetPreferredEditorFromEnvironment,
-		extension,
-		string(currentContent),
-	)
-
-	if err != nil {
-		errmsg := fmt.Sprintf("Failed to get content from editor (%s)", err.Error())
-		println(errmsg)
-		os.Exit(1)
-		return []byte{}
-	}
-
-	return content
 }

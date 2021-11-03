@@ -17,7 +17,12 @@ import (
 
 // DoUsersExist checks if users exists in the Keystone database
 // This is not project dependant, it checks all users in the whole world
-func DoUsersExist(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func DoUsersExist(
+	_ router.Params,
+	body io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	response := &models.CheckMembersResponse{}
 	payload := &models.CheckMembersPayload{}
@@ -49,7 +54,10 @@ func DoUsersExist(_ router.Params, body io.ReadCloser, Repo repo.IRepo, user mod
 	}
 
 	if len(notFounds) != 0 {
-		response.Error = fmt.Sprintf("%s do not exists", strings.Join(notFounds, ", "))
+		response.Error = fmt.Sprintf(
+			"%s do not exists",
+			strings.Join(notFounds, ", "),
+		)
 		response.Success = false
 
 		status = http.StatusNotFound
@@ -60,7 +68,12 @@ done:
 }
 
 // PutMembersSetRole sets the role for a given project member
-func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (response router.Serde, status int, err error) {
+func PutMembersSetRole(
+	params router.Params,
+	body io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (response router.Serde, status int, err error) {
 	status = http.StatusOK
 	payload := &models.SetMemberRolePayload{}
 	project := models.Project{}
@@ -70,7 +83,7 @@ func PutMembersSetRole(params router.Params, body io.ReadCloser, Repo repo.IRepo
 	isPaid := false
 
 	// input check
-	var projectID = params.Get("projectID").(string)
+	projectID := params.Get("projectID")
 
 	log := models.ActivityLog{
 		UserID: &user.ID,
@@ -142,7 +155,12 @@ done:
 	return response, status, log.SetError(err)
 }
 
-func checkUserCanChangeMember(Repo repo.IRepo, user models.User, project models.Project, other models.User) (can bool, err error) {
+func checkUserCanChangeMember(
+	Repo repo.IRepo,
+	user models.User,
+	project models.Project,
+	other models.User,
+) (can bool, err error) {
 	projectMember := models.ProjectMember{
 		UserID:    user.ID,
 		ProjectID: project.ID,
@@ -156,9 +174,12 @@ func checkUserCanChangeMember(Repo repo.IRepo, user models.User, project models.
 		GetProjectMember(&projectMember).
 		GetProjectMember(&otherProjectMember).
 		Err(); err != nil {
-
 		return false, err
 	}
 
-	return rights.CanRoleAddRole(Repo, projectMember.Role, otherProjectMember.Role)
+	return rights.CanRoleAddRole(
+		Repo,
+		projectMember.Role,
+		otherProjectMember.Role,
+	)
 }

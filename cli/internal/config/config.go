@@ -1,10 +1,7 @@
 package config
 
 import (
-	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"reflect"
 
 	uuid "github.com/satori/go.uuid"
@@ -12,13 +9,14 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/utils"
-	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	. "github.com/wearedevx/keystone/cli/ui"
 )
 
 var configFilePath string
 
-func castAccount(rawAccount map[interface{}]interface{}, account *map[string]string) {
+func castAccount(
+	rawAccount map[interface{}]interface{},
+	account *map[string]string,
+) {
 	*account = make(map[string]string)
 
 	for k, v := range rawAccount {
@@ -32,11 +30,7 @@ func Write() {
 	utils.CreateFileIfNotExists(configFilePath, "")
 
 	if err := viper.WriteConfigAs(configFilePath); err != nil {
-		Print(RenderTemplate("config write error", `
-{{ ERROR }} {{ . | red }}
-
-You have been successfully logged in, but the configuration file could not be written
-`, err.Error()))
+		kserrors.CannotSaveConfig(err)
 		os.Exit(1)
 	}
 }
@@ -58,7 +52,8 @@ func GetAllAccounts() []map[string]string {
 	rawAccounts := viper.Get("accounts")
 	ty := reflect.TypeOf(rawAccounts).String()
 
-	if ty == "[]interface {}" {
+	switch ty {
+	case "[]interface {}":
 		a := rawAccounts.([]interface{})
 		accounts := make([]map[string]string, len(a))
 
@@ -68,7 +63,8 @@ func GetAllAccounts() []map[string]string {
 		}
 
 		return accounts
-	} else if ty == "[]map[string]string" {
+
+	case "[]map[string]string":
 		accounts := rawAccounts.([]map[string]string)
 
 		return accounts
@@ -87,17 +83,21 @@ func GetCurrentAccount() (user models.User, index int) {
 	accounts := GetAllAccounts()
 
 	if viper.IsSet("current") {
-		if index = viper.Get("current").(int); index >= 0 && index < len(accounts) {
-			user = userFromAccount(accounts[index])
+		if index = viper.Get("current").(int); index >= 0 &&
+			index < len(accounts) {
+			user = UserFromAccount(accounts[index])
 		}
 	}
 
 	return user, index
 }
 
-func userFromAccount(account map[string]string) (user models.User) {
+func UserFromAccount(account map[string]string) (user models.User) {
 	devices := make([]models.Device, 0)
-	devices = append(devices, models.Device{PublicKey: []byte(account["public_keys"])})
+	devices = append(
+		devices,
+		models.Device{PublicKey: []byte(account["public_keys"])},
+	)
 	user.AccountType = models.AccountType(account["account_type"])
 	user.Email = account["email"]
 	user.ExtID = account["ext_id"]
@@ -175,43 +175,8 @@ func IsLoggedIn() bool {
 	return index >= 0
 }
 
-// finds an account matching `user` in the `account` slice
-func FindAccount(c auth.AuthService) (user models.User, current int) {
-	current = -1
-
-	for i, account := range GetAllAccounts() {
-		isAccount, _ := c.CheckAccount(account)
-
-		if isAccount {
-			current = i
-			user = userFromAccount(account)
-			break
-		}
-	}
-
-	return user, current
-}
-
-// Create conf file if not exist
-func createFileIfNotExist(filePath string) {
-	// Check if need to create file
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		// path/to/whatever does not exist
-
-		if err := os.MkdirAll(filepath.Dir(filePath), 0700); err != nil {
-			fmt.Printf("Unable to write file: %v", err)
-		}
-
-		err := ioutil.WriteFile(filePath, []byte(""), 0600)
-
-		if err != nil {
-			fmt.Printf("Unable to write file: %v", err)
-		}
-	}
-}
-
 // initConfig reads in config file and ENV variables if set.
-func InitConfig(cfgFile string) {
+func InitConfig(cfgFile string) (err error) {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -219,7 +184,7 @@ func InitConfig(cfgFile string) {
 	} else {
 		configDir, err := ConfigDir()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			return err
 		}
 
 		viper.AddConfigPath(configDir)
@@ -229,7 +194,7 @@ func InitConfig(cfgFile string) {
 
 		configFilePath, err = ConfigPath()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			return err
 		}
 	}
 
@@ -242,12 +207,13 @@ func InitConfig(cfgFile string) {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		// fmt.Println("Using config file:", viper.ConfigFileUsed())
 		err = viper.WriteConfig()
 		if err != nil {
 			panic(err)
 		}
 	}
+
+	return nil
 }
 
 func CheckExpiredTokenError(err *kserrors.Error) {
@@ -257,7 +223,6 @@ func CheckExpiredTokenError(err *kserrors.Error) {
 }
 
 func Logout() {
-	fmt.Print("Logout user\n")
 	SetCurrentAccount(-1)
 	SetAuthToken("")
 	Write()

@@ -7,7 +7,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // setupCmd represents the setup command
@@ -36,7 +36,11 @@ ks ci edit my-gitub-ci-service`,
 		}
 
 		if !found {
-			ciService, err = SelectCiService(ctx)
+			ciService, err = ci.SelectCiServiceConfiguration(
+				serviceName,
+				ctx,
+				client.ApiURL,
+			)
 			if err != nil {
 				if errors.Is(err, ci.ErrorNoCIServices) {
 					exit(kserrors.NoCIServices(nil))
@@ -50,11 +54,10 @@ ks ci edit my-gitub-ci-service`,
 			exit(kserrors.CouldNotChangeService(serviceName, err))
 		}
 
-		ui.PrintSuccess("CI service setup successfully")
+		display.CiServiceSetupSuccessfully()
 	},
 }
 
 func init() {
 	ciCmd.AddCommand(setupCmd)
-
 }

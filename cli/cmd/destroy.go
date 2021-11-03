@@ -16,13 +16,10 @@ limitations under the License.
 package cmd
 
 import (
-	"errors"
-
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -41,7 +38,7 @@ It is highly recommended that you backup everything up beforehand.
 This is irreversible.
 `,
 	Example: "ks destroy",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		var err error
 		c, kcErr := client.NewKeystoneClient()
 		exitIfErr(kcErr)
@@ -53,22 +50,7 @@ This is irreversible.
 
 		projectName := ctx.GetProjectName()
 
-		ui.Print(ui.RenderTemplate("confirm project destroy",
-			`{{ CAREFUL }} You are about to destroy the {{ .Project }} project.
-Secrets and files managed by Keystone WILL BE LOST. Make sure you have backups.
-
-Members of the project will no longer be able to get the latest updates,
-or share secrets between them.
-
-This is permanent, and cannot be undone.
-`, map[string]string{
-				"Project": projectName,
-			}))
-
-		result := prompts.StringInput("Type the project name to confirm its destruction", "")
-
-		// expect result to be the project name
-		if projectName != result {
+		if !prompts.ConfirmProjectDestruction(projectName) {
 			exit(kserrors.NameDoesNotMatch(nil))
 		}
 
@@ -81,35 +63,8 @@ This is permanent, and cannot be undone.
 			exit(kserrors.CouldNotRemoveLocalFiles(err))
 		}
 
-		ui.Print(ui.RenderTemplate("deletion ok",
-			`{{ OK }} The project {{ .Project }} has successfully been destroyed.
-Secrets and files are no longer accessible.
-You may need to remove entries from your .gitignore file`,
-			map[string]string{
-				"Project": projectName,
-			},
-		))
+		display.DeletionSuccess(projectName)
 	},
-}
-
-func mustBeAdmin(projectService *client.Project) {
-	members, err := projectService.GetAllMembers()
-	if err != nil {
-		exit(kserrors.UnkownError(err))
-	}
-
-	account, _ := config.GetCurrentAccount()
-
-	for _, member := range members {
-		if member.User.UserID == account.UserID {
-			if member.Role.Name == "admin" {
-				return
-			}
-		}
-	}
-
-	// TODO: proper error
-	exit(kserrors.UnkownError(errors.New("Not allowed")))
 }
 
 func init() {

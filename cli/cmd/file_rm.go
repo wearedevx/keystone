@@ -20,14 +20,15 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
-var forcePrompts bool
-var purgeFile bool
+var (
+	forcePrompts bool
+	purgeFile    bool
+)
 
 // filesRmCmd represents the rm command
 var filesRmCmd = &cobra.Command{
@@ -44,8 +45,6 @@ Files can be used again using "file add" command.
 	Example: `ks file rm config/old-test-config.php`,
 	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var err error
-
 		filePath := args[0]
 
 		if !utils.FileExists(filePath) {
@@ -53,25 +52,34 @@ Files can be used again using "file add" command.
 				CannotRemoveFile(filePath, fmt.Errorf("file not found")))
 		}
 
-		if promptYesNo(filePath) {
-			ms := messages.NewMessageService(ctx)
-			mustFetchMessages(ms)
+		if prompts.ConfirmFileRemove(
+			filePath,
+			ctx.CurrentEnvironment(),
+			skipPrompts || !purgeFile,
+		) {
+			fmt.Println("icit")
 
-			ctx.RemoveFile(filePath, forcePrompts, purgeFile, ctx.AccessibleEnvironments)
-			exitIfErr(err)
+			_, messageService := mustFetchMessages()
+
+			exitIfErr(ctx.
+				RemoveFile(
+					filePath,
+					forcePrompts,
+					purgeFile,
+					ctx.AccessibleEnvironments,
+				).
+				Err())
 
 			if purgeFile {
-				err = ms.SendEnvironments(ctx.AccessibleEnvironments).Err()
-				exitIfErr(err)
+				exitIfErr(messageService.
+					SendEnvironments(ctx.AccessibleEnvironments).
+					Err())
 			} else {
-				ui.Print("The file is kept in your keystone project for all the environments, in case you need it again.")
-				ui.Print("If you want to remove it from your device, use --purge")
-
+				display.FileKept()
 			}
 
-			ui.PrintSuccess("%s has been removed from the secret files.", filePath)
+			display.FileRemovedSuccess(filePath)
 		}
-
 	},
 }
 
@@ -93,24 +101,4 @@ func init() {
 		false,
 		"purge file content from all environments",
 	)
-}
-
-func promptYesNo(filePath string) bool {
-	if skipPrompts {
-		return true
-	}
-	if !purgeFile {
-		return true
-	}
-
-	ui.Print(ui.RenderTemplate("confirm files rm",
-		`{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
-Its current content will be kept locally.
-Its content for other environments will be lost, it will no longer be gitignored.
-This is permanent, and cannot be undone.`, map[string]string{
-			"Path":        filePath,
-			"Environment": ctx.CurrentEnvironment(),
-		}))
-
-	return prompts.Confirm("Continue")
 }

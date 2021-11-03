@@ -13,13 +13,18 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
-func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func GetEnvironmentPublicKeys(
+	params router.Params,
+	_ io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	result := models.PublicKeys{
 		Keys: make([]models.UserPublicKeys, 0),
 	}
 
-	var envID = params.Get("envID").(string)
+	envID := params.Get("envID")
 	var can bool
 
 	// - fetch the environment to check rights
@@ -45,7 +50,12 @@ func GetEnvironmentPublicKeys(params router.Params, _ io.ReadCloser, Repo repo.I
 	log.EnvironmentID = &environment.ID
 
 	// - check user has access to that environment
-	can, err = rights.CanUserReadEnvironment(Repo, user.ID, environment.ProjectID, &environment)
+	can, err = rights.CanUserReadEnvironment(
+		Repo,
+		user.ID,
+		environment.ProjectID,
+		&environment,
+	)
 	if err != nil {
 		status = http.StatusInternalServerError
 		goto done

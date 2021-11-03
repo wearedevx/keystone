@@ -12,19 +12,31 @@ import (
 )
 
 // Returns a List of Roles
-func GetRoles(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func GetRoles(
+	params router.Params,
+	_ io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
+	var isPaid bool
+
 	status = http.StatusOK
 	log := models.ActivityLog{
 		UserID: &user.ID,
 		Action: "GetRoles",
 	}
 
-	var result = models.GetRolesResponse{
+	result := models.GetRolesResponse{
 		Roles: []models.Role{},
 	}
 
-	projectID := params.Get("projectID").(string)
-	isPaid, err := Repo.IsProjectOrganizationPaid(projectID)
+	projectID := params.Get("projectID")
+	isPaid, err = Repo.IsProjectOrganizationPaid(projectID)
+	if err != nil {
+		status = http.StatusInternalServerError
+
+		goto done
+	}
 
 	// Get all roles for paid organizations
 	// otherwise, only the admin one

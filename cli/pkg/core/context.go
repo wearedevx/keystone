@@ -8,10 +8,10 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
-	. "github.com/wearedevx/keystone/cli/internal/environmentsfile"
+	"github.com/wearedevx/keystone/cli/internal/environmentsfile"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
-	. "github.com/wearedevx/keystone/cli/internal/utils"
+	ksfile "github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 )
 
 type Context struct {
@@ -22,11 +22,15 @@ type Context struct {
 	AccessibleEnvironments []models.Environment
 }
 
-const CTX_INIT = "init"
-const CTX_RESOLVE = "resolve"
+const (
+	CTX_INIT    = "init"
+	CTX_RESOLVE = "resolve"
+)
 
-const CTX_OVERWRITE_LOCAL_FILES = true
-const CTX_KEEP_LOCAL_FILES = !CTX_OVERWRITE_LOCAL_FILES
+const (
+	CTX_OVERWRITE_LOCAL_FILES = true
+	CTX_KEEP_LOCAL_FILES      = !CTX_OVERWRITE_LOCAL_FILES
+)
 
 // Creates a new execution context
 //
@@ -46,9 +50,10 @@ func New(flag string) *Context {
 	}
 
 	// Get Wd
-	if flag == CTX_INIT {
+	switch flag {
+	case CTX_INIT:
 		context.Wd = cwd
-	} else if flag == CTX_RESOLVE {
+	case CTX_RESOLVE:
 		wd, err := resolveKeystoneRootDir(cwd)
 
 		if err != nil {
@@ -56,7 +61,7 @@ func New(flag string) *Context {
 		} else {
 			context.Wd = wd
 		}
-	} else {
+	default:
 		context.err = kserrors.UnsupportedFlag(flag, nil)
 	}
 
@@ -67,7 +72,7 @@ func New(flag string) *Context {
 	// Get global configuration path
 	configDir, err := config.ConfigDir()
 	if err != nil {
-		println(fmt.Sprintf("Failed get the config directory"))
+		println("failed get the config directory")
 		os.Exit(1)
 	}
 
@@ -150,6 +155,7 @@ func (ctx *Context) SetError(err *kserrors.Error) *Context {
 
 	return ctx
 }
+
 func (ctx *Context) setError(err *kserrors.Error) *Context {
 	ctx.err = err
 
@@ -161,11 +167,11 @@ func (ctx *Context) setError(err *kserrors.Error) *Context {
 // - be a directory
 // - contain a keystone.yaml file
 func isKeystoneRootDir(path string) bool {
-	if !DirExists(path) {
+	if !utils.DirExists(path) {
 		return false
 	}
 
-	return ExistsKeystoneFile(path)
+	return ksfile.ExistsKeystoneFile(path)
 }
 
 // Looks for a keystone managed project root in a parent directory
@@ -181,7 +187,7 @@ func resolveKeystoneRootDir(cwd string) (string, error) {
 		if isKeystoneRootDir(candidate) {
 			found = true
 		} else if candidate == "" || candidate == "/" {
-			err = fmt.Errorf("Not in a keystone managed project")
+			err = fmt.Errorf("not in a keystone managed project")
 			break
 		} else {
 			candidate = filepath.Dir(candidate)
@@ -198,7 +204,7 @@ func (c *Context) currentEnvironmentCachePath() string {
 }
 
 func (c *Context) getCurrentEnvironmentId() string {
-	environmentsfile := new(EnvironmentsFile).Load(c.Wd)
+	environmentsfile := new(environmentsfile.EnvironmentsFile).Load(c.Wd)
 	currentEnvironment := c.CurrentEnvironment()
 
 	for _, env := range environmentsfile.Environments {

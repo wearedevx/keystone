@@ -18,7 +18,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // manageCmd represents the manage command
@@ -43,18 +43,7 @@ Gives you a link to update your payment method or cancel your plan.
 		url, err := o.GetManagementUrl(organizationName)
 		exitIfErr(err)
 
-		ui.Print(
-			ui.RenderTemplate(
-				"upgrade-url",
-				`To manage your organization plan, visit the following link:
-
-        {{.UpgradeURL }}`,
-				map[string]string{
-					"UpgradeURL": url,
-				},
-			),
-		)
-
+		display.ManageUrl(url)
 	},
 }
 

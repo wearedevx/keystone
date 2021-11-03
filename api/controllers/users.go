@@ -8,11 +8,11 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/wearedevx/keystone/api/internal/activitylog"
 	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	log "github.com/wearedevx/keystone/api/internal/utils/cloudlogger"
+	. "github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/jwt"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -26,11 +26,11 @@ import (
 
 // postUser Gets or Creates a user
 func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var status int = http.StatusOK
+	status := http.StatusOK
 	var responseBody bytes.Buffer
 	var err error
 
-	var user *models.User = &models.User{}
+	user := &models.User{}
 	var serializedUser string
 
 	err = repo.Transaction(func(Repo repo.IRepo) error {
@@ -99,12 +99,21 @@ func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
 
 // getUser gets a user
-func GetUser(_ router.Params, _ io.ReadCloser, _ repo.IRepo, user models.User) (router.Serde, int, error) {
+func GetUser(
+	_ router.Params,
+	_ io.ReadCloser,
+	_ repo.IRepo,
+	user models.User,
+) (router.Serde, int, error) {
 	return &user, http.StatusOK, nil
 }
 
 // Auth Complete route
-func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func PostUserToken(
+	w http.ResponseWriter,
+	r *http.Request,
+	_ httprouter.Params,
+) {
 	var err error
 	payload := models.LoginPayload{}
 
@@ -120,7 +129,9 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		return
 	}
 
-	connector, err = authconnector.GetConnectoForAccountType(payload.AccountType)
+	connector, err = authconnector.GetConnectoForAccountType(
+		payload.AccountType,
+	)
 	if err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
@@ -153,7 +164,7 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		}
 
 		if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
-			if strings.Contains(err.Error(), "Incorrect device name") {
+			if errors.Is(err, ErrorBadDeviceName) {
 				msg = err.Error()
 				status = http.StatusConflict
 			} else {
@@ -207,7 +218,11 @@ func PostUserToken(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 }
 
 // Route uses a redirect URI for OAuth2 requests
-func GetAuthRedirect(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func GetAuthRedirect(
+	w http.ResponseWriter,
+	r *http.Request,
+	_ httprouter.Params,
+) {
 	var err error
 	var response string
 
@@ -257,11 +272,13 @@ Thank you!`
 	}
 }
 
-func PostLoginRequest(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+func PostLoginRequest(
+	w http.ResponseWriter,
+	_ *http.Request,
+	_ httprouter.Params,
+) {
 	var response string
-	var err error
-
-	err = repo.Transaction(func(Repo repo.IRepo) (err error) {
+	err := repo.Transaction(func(Repo repo.IRepo) (err error) {
 		loginRequest := Repo.CreateLoginRequest()
 		alogger := activitylog.NewActivityLogger(Repo)
 		log := models.ActivityLog{
@@ -303,7 +320,11 @@ func PostLoginRequest(w http.ResponseWriter, _ *http.Request, _ httprouter.Param
 }
 
 // Route to poll to check wether the user has completed the login
-func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func GetLoginRequest(
+	w http.ResponseWriter,
+	r *http.Request,
+	_ httprouter.Params,
+) {
 	var response string
 	var err error
 
@@ -366,7 +387,12 @@ func GetLoginRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	}
 }
 
-func GetUserKeys(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ models.User) (_ router.Serde, status int, err error) {
+func GetUserKeys(
+	params router.Params,
+	_ io.ReadCloser,
+	Repo repo.IRepo,
+	_ models.User,
+) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	log := models.ActivityLog{
 		Action: "GetUserKeys",
@@ -378,7 +404,7 @@ func GetUserKeys(params router.Params, _ io.ReadCloser, Repo repo.IRepo, _ model
 		PublicKeys: make([]models.Device, 0),
 	}
 
-	userID := params.Get("userID").(string)
+	userID := params.Get("userID")
 
 	if userID == "" {
 		status = http.StatusBadRequest

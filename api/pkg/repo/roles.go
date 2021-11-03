@@ -1,10 +1,10 @@
 package repo
 
 import (
-	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (r *Repo) GetRoles(roles *[]Role) IRepo {
+func (r *Repo) GetRoles(roles *[]models.Role) IRepo {
 	if r.err != nil {
 		return r
 	}
@@ -14,12 +14,12 @@ func (r *Repo) GetRoles(roles *[]Role) IRepo {
 	return r
 }
 
-func (repo *Repo) CreateRole(role *Role) IRepo {
+func (repo *Repo) CreateRole(role *models.Role) IRepo {
 	repo.err = repo.GetDb().Create(role).Error
 	return repo
 }
 
-func (repo *Repo) GetRole(role *Role) IRepo {
+func (repo *Repo) GetRole(role *models.Role) IRepo {
 	if repo.Err() != nil {
 		return repo
 	}
@@ -32,7 +32,7 @@ func (repo *Repo) GetRole(role *Role) IRepo {
 	return repo
 }
 
-func (repo *Repo) GetOrCreateRole(role *Role) IRepo {
+func (repo *Repo) GetOrCreateRole(role *models.Role) IRepo {
 	if repo.err != nil {
 		return repo
 	}
@@ -42,8 +42,8 @@ func (repo *Repo) GetOrCreateRole(role *Role) IRepo {
 	return repo
 }
 
-func (r *Repo) GetInvitableRoles(role Role, roles *[]Role) IRepo {
-	r.err = r.GetDb().Model(&Role{}).
+func (r *Repo) GetInvitableRoles(role models.Role, roles *[]models.Role) IRepo {
+	r.err = r.GetDb().Model(&models.Role{}).
 		Joins("left join roles_environment_types on roles_environment_types.role_id = roles.id").
 		Where("roles_environment_types.role_id = ? and roles_environment_types.invite = true", role.ID).
 		Find(roles).Error
@@ -51,7 +51,10 @@ func (r *Repo) GetInvitableRoles(role Role, roles *[]Role) IRepo {
 	return r
 }
 
-func (r *Repo) GetRolesMemberCanInvite(projectMember ProjectMember, roles *[]Role) IRepo {
+func (r *Repo) GetRolesMemberCanInvite(
+	projectMember models.ProjectMember,
+	roles *[]models.Role,
+) IRepo {
 	if r.Err() != nil {
 		return r
 	}
@@ -63,7 +66,7 @@ func (r *Repo) GetRolesMemberCanInvite(projectMember ProjectMember, roles *[]Rol
 	return r
 }
 
-func (r *Repo) GetChildrenRoles(role Role, roles *[]Role) IRepo {
+func (r *Repo) GetChildrenRoles(role models.Role, roles *[]models.Role) IRepo {
 	if r.Err() != nil {
 		return r
 	}
@@ -71,18 +74,18 @@ func (r *Repo) GetChildrenRoles(role Role, roles *[]Role) IRepo {
 	q := roleQueue{}
 	q.push(role)
 
-	allRoles := make([]Role, 0)
+	allRoles := make([]models.Role, 0)
 	r.GetRoles(&allRoles)
 
 	if r.Err() != nil {
 		return r
 	}
 
-	var toAdd []Role
+	var toAdd []models.Role
 
-	var current Role
+	var current models.Role
 	for ok := true; ok; current, ok = q.pop() {
-		toAdd = make([]Role, 0)
+		toAdd = make([]models.Role, 0)
 
 		for _, dbRole := range allRoles {
 			if dbRole.ParentID == current.ID {
@@ -100,10 +103,10 @@ func (r *Repo) GetChildrenRoles(role Role, roles *[]Role) IRepo {
 }
 
 type roleQueue struct {
-	roles []Role
+	roles []models.Role
 }
 
-func (r *roleQueue) push(role Role) {
+func (r *roleQueue) push(role models.Role) {
 	for _, existing := range r.roles {
 		if existing.ID == role.ID {
 			return
@@ -113,14 +116,14 @@ func (r *roleQueue) push(role Role) {
 	r.roles = append(r.roles, role)
 }
 
-func (r *roleQueue) pushMany(roles []Role) {
+func (r *roleQueue) pushMany(roles []models.Role) {
 	for _, role := range roles {
 		r.push(role)
 	}
 }
 
-func (r *roleQueue) pop() (Role, bool) {
-	var res Role
+func (r *roleQueue) pop() (models.Role, bool) {
+	var res models.Role
 	var found bool
 
 	if len(r.roles) >= 1 {

@@ -23,20 +23,19 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
-var stripeKey string
-var stripeWebhookSecret string
-var stripeSubscriptionPrice string
-
 var (
-	ErrorNotAStripeEvent = errors.New("not a stripe event")
+	stripeKey               string
+	stripeWebhookSecret     string
+	stripeSubscriptionPrice string
 )
+
+var ErrorNotAStripeEvent = errors.New("not a stripe event")
 
 func init() {
 	stripe.Key = stripeKey
 }
 
-type stripePayment struct {
-}
+type stripePayment struct{}
 
 func NewStripePayment() Payment {
 	return new(stripePayment)
@@ -56,14 +55,22 @@ func (sp *stripePayment) StartCheckout(
 	var cus *stripe.Customer
 	var ses *stripe.CheckoutSession
 
-	successUrl := fmt.Sprintf("https://%s/checkout-success?session_id={CHECKOUT_SESSION_ID}", constants.Domain)
-	cancelUrl := fmt.Sprintf("https://%s/checkout-cancel?session_id={CHECKOUT_SESSION_ID}", constants.Domain)
+	successUrl := fmt.Sprintf(
+		"https://%s/checkout-success?session_id={CHECKOUT_SESSION_ID}",
+		constants.Domain,
+	)
+	cancelUrl := fmt.Sprintf(
+		"https://%s/checkout-cancel?session_id={CHECKOUT_SESSION_ID}",
+		constants.Domain,
+	)
 
 	sessionParams := stripe.CheckoutSessionParams{
 		SuccessURL:         stripe.String(successUrl),
 		CancelURL:          stripe.String(cancelUrl),
 		PaymentMethodTypes: stripe.StringSlice([]string{"card"}),
-		Mode:               stripe.String(string(stripe.CheckoutSessionModeSubscription)),
+		Mode: stripe.String(
+			string(stripe.CheckoutSessionModeSubscription),
+		),
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
 				Price: stripe.String(stripeSubscriptionPrice),
@@ -148,11 +155,18 @@ func (sp *stripePayment) HandleEvent(
 		goto done
 	}
 
-	event, err = webhook.ConstructEvent(b, r.Header.Get("Stripe-Signature"), stripeWebhookSecret)
+	event, err = webhook.ConstructEvent(
+		b,
+		r.Header.Get("Stripe-Signature"),
+		stripeWebhookSecret,
+	)
 
 	if err != nil {
 		// That error can be safely ignored.
-		if !strings.Contains(err.Error(), "cannot unmarshal string into Go struct field Event.request of type stripe.EventRequest") {
+		if !strings.Contains(
+			err.Error(),
+			"cannot unmarshal string into Go struct field Event.request of type stripe.EventRequest",
+		) {
 			err = fmt.Errorf(
 				"cannot construct event %w",
 				ErrorNotAStripeEvent,
@@ -170,34 +184,42 @@ func (sp *stripePayment) HandleEvent(
 		paymentEvent.OrganizationID = uint(oid)
 		paymentEvent.SessionID = ses["id"].(string)
 		paymentEvent.CustomerID = CustomerID(ses["customer"].(string))
-		paymentEvent.SubscriptionID = SubscriptionID(ses["subscription"].(string))
+		paymentEvent.SubscriptionID = SubscriptionID(
+			ses["subscription"].(string),
+		)
 
 	case "invoice.paid":
 		invoice := event.Data.Object
 		paymentEvent.Type = EventSubscriptionPaid
 		paymentEvent.CustomerID = CustomerID(invoice["customer"].(string))
-		paymentEvent.SubscriptionID = SubscriptionID(invoice["subscription"].(string))
+		paymentEvent.SubscriptionID = SubscriptionID(
+			invoice["subscription"].(string),
+		)
 
 	case "invoice.payment_failed":
 		invoice := event.Data.Object
 		paymentEvent.Type = EventSubscriptionUnpaid
 		paymentEvent.CustomerID = CustomerID(invoice["customer"].(string))
-		paymentEvent.SubscriptionID = SubscriptionID(invoice["subscription"].(string))
+		paymentEvent.SubscriptionID = SubscriptionID(
+			invoice["subscription"].(string),
+		)
 
 	case "customer.subscription.updated":
 		subscription := event.Data.Object
 		paymentEvent.CustomerID = CustomerID(subscription["customer"].(string))
-		paymentEvent.SubscriptionID = SubscriptionID(subscription["id"].(string))
+		paymentEvent.SubscriptionID = SubscriptionID(
+			subscription["id"].(string),
+		)
 		status := subscription["status"].(string)
 
-		switch {
-		case status == "active" || status == "trialing" || status == "incomplete":
+		switch status {
+		case "active", "trialing", "incomplete":
 			paymentEvent.Type = EventSubscriptionPaid
 
-		case status == "past_due" || status == "unpaid" || status == "incomplete_expired":
+		case "past_due", "unpaid", "incomplete_expired":
 			paymentEvent.Type = EventSubscriptionUnpaid
 
-		case status == "canceled":
+		case "canceled":
 			paymentEvent.Type = EventSubscriptionCanceled
 		}
 
@@ -205,7 +227,9 @@ func (sp *stripePayment) HandleEvent(
 		subscription := event.Data.Object
 		paymentEvent.Type = EventSubscriptionCanceled
 		paymentEvent.CustomerID = CustomerID(subscription["customer"].(string))
-		paymentEvent.SubscriptionID = SubscriptionID(subscription["id"].(string))
+		paymentEvent.SubscriptionID = SubscriptionID(
+			subscription["id"].(string),
+		)
 
 	default:
 		paymentEvent.Type = EventNothing
@@ -219,7 +243,10 @@ done:
 func (sp *stripePayment) GetSubscription(
 	subscriptionID SubscriptionID,
 ) (subscription Subscription, err error) {
-	s, err := sub.Get(string(subscriptionID), &stripe.SubscriptionParams{
+	var s *stripe.Subscription
+	var seats int
+
+	s, err = sub.Get(string(subscriptionID), &stripe.SubscriptionParams{
 		Params: stripe.Params{
 			Expand: []*string{
 				stripe.String("customer"),
@@ -227,7 +254,11 @@ func (sp *stripePayment) GetSubscription(
 		},
 	})
 
-	seats, err := stripeGetSeats(s.ID)
+	if err != nil {
+		goto done
+	}
+
+	seats, err = stripeGetSeats(s.ID)
 	if err != nil {
 		goto done
 	}
@@ -266,15 +297,17 @@ done:
 }
 
 //
-func stripeSubscriptionStatus(in stripe.SubscriptionStatus) (out SubscriptionStatus) {
-	switch {
-	case in == "active" || in == "trialing" || in == "incomplete":
+func stripeSubscriptionStatus(
+	in stripe.SubscriptionStatus,
+) (out SubscriptionStatus) {
+	switch in {
+	case "active", "trialing", "incomplete":
 		out = SubscriptionStatusPaid
 
-	case in == "past_due" || in == "unpaid":
+	case "past_due", "unpaid":
 		out = SubscriptionStatusUnpaid
 
-	case in == "canceled":
+	case "canceled":
 		out = SubscriptionStatusCanceled
 
 	default:
@@ -285,7 +318,10 @@ func stripeSubscriptionStatus(in stripe.SubscriptionStatus) (out SubscriptionSta
 }
 
 // Updates the subscription (changes the number of seats)
-func (sp *stripePayment) UpdateSubscription(subscriptionID SubscriptionID, seats int64) (err error) {
+func (sp *stripePayment) UpdateSubscription(
+	subscriptionID SubscriptionID,
+	seats int64,
+) (err error) {
 	params := stripe.SubscriptionParams{}
 	var s *stripe.Subscription
 	var urParams *stripe.UsageRecordParams
@@ -312,7 +348,9 @@ done:
 }
 
 // Cancels the subscription
-func (sp *stripePayment) CancelSubscription(subscriptionID SubscriptionID) (err error) {
+func (sp *stripePayment) CancelSubscription(
+	subscriptionID SubscriptionID,
+) (err error) {
 	_, err = sub.Cancel(string(subscriptionID), nil)
 	if err != nil {
 		return err

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
@@ -10,7 +9,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // projectCmd represents the project command
@@ -18,7 +17,8 @@ var projectCmd = &cobra.Command{
 	Use:   "project",
 	Short: "Lists projects you are a member of",
 	Long:  `Lists projects you are a member of`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Args:  cobra.NoArgs,
+	Run: func(_ *cobra.Command, _ []string) {
 		var err error
 		c, err := client.NewKeystoneClient()
 		exitIfErr(err)
@@ -27,7 +27,6 @@ var projectCmd = &cobra.Command{
 		exitIfErr(kf.Load(ctx.Wd).Err())
 
 		projects, err := c.Project("").GetAll()
-
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
 				config.Logout()
@@ -38,13 +37,7 @@ var projectCmd = &cobra.Command{
 			exit(err)
 		}
 
-		ui.Print("You are part of %d project(s):", len(projects))
-
-		fmt.Println()
-		for _, project := range projects {
-			fmt.Printf(" - %s, created on %s\n", project.Name, project.CreatedAt.Format("2006/01/02"))
-		}
-
+		display.Projects(projects)
 	},
 }
 

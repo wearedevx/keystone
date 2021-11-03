@@ -43,7 +43,7 @@ func (e *Email) Send(recipients []string) (err error) {
 	e.To = filterOutEmptyMails(recipients)
 
 	if len(e.To) == 0 {
-		return EmailErrorNoRecipient
+		return ErrorEmailNoRecipient
 	}
 
 	return send(e)

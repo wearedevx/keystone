@@ -12,8 +12,8 @@ type spin struct {
 }
 
 type SpinnerInterface interface {
-	Start()
-	Stop()
+	Start() SpinnerInterface
+	Stop() SpinnerInterface
 }
 
 var noSpin bool
@@ -41,19 +41,23 @@ func Spinner(message string) SpinnerInterface {
 }
 
 // Starts the spinner
-func (s *spin) Start() {
+func (s *spin) Start() SpinnerInterface {
 	if noSpin {
-		return
+		return s
 	}
 
 	s.inner.Start()
+
+	return s
 }
 
 // Stops the spinner
-func (s *spin) Stop() {
+func (s *spin) Stop() SpinnerInterface {
 	if noSpin {
-		return
+		return s
 	}
 
 	s.inner.Stop()
+
+	return s
 }

@@ -16,6 +16,8 @@ type AuthConnector interface {
 
 // Factory method returning the appropriate
 // AuthConnector for the given accontType
-func GetConnectoForAccountType(accountType models.AccountType) (AuthConnector, error) {
+func GetConnectoForAccountType(
+	accountType models.AccountType,
+) (AuthConnector, error) {
 	return new(dummyAuthConnector), nil
 }

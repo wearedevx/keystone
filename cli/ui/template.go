@@ -13,7 +13,7 @@ import (
 var au aurora.Aurora
 
 func init() {
-	var colors = os.Getenv("KSCOLORS") != "off"
+	colors := os.Getenv("KSCOLORS") != "off"
 
 	au = aurora.NewAurora(colors)
 }
@@ -24,9 +24,10 @@ func RenderTemplate(name string, tpl string, viewData interface{}) string {
 	t := template.Must(template.New(name).Funcs(functions).Parse(tpl))
 
 	err := t.Execute(&buf, viewData)
-
 	if err != nil {
-		println(fmt.Sprintf("Failed to render template %s (%s)", name, err.Error()))
+		println(
+			fmt.Sprintf("Failed to render template %s (%s)", name, err.Error()),
+		)
 		os.Exit(1)
 	}
 

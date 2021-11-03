@@ -8,8 +8,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -33,7 +32,7 @@ ks ci send --env prod
 		var environment models.Environment
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		fetchMessages(nil)
+		fetchMessages()
 
 		for _, accessibleEnvironment := range ctx.AccessibleEnvironments {
 			if accessibleEnvironment.Name == currentEnvironment {
@@ -44,16 +43,11 @@ ks ci send --env prod
 		mustNotHaveMissingSecrets(environment)
 		mustNotHaveMissingFiles(environment)
 
-		ui.Print(
-			"You are about to send the '%s' environment to your CI services.",
-			environment.Name,
-		)
-		if !prompts.Confirm("Continue") {
+		if !prompts.ConfirmSendEnvironmentToCiService(environment.Name) {
 			exit(nil)
 		}
 
 		message, err := ctx.PrepareMessagePayload(environment)
-
 		if err != nil {
 			exit(kserrors.PayloadErrors(err))
 		}
@@ -62,7 +56,11 @@ ks ci send --env prod
 		exitIfErr(err)
 
 		for _, serviceDef := range ciServices {
-			ciService, err := ci.GetCiService(serviceDef.Name, ctx, client.ApiURL)
+			ciService, err := ci.GetCiService(
+				serviceDef.Name,
+				ctx,
+				client.ApiURL,
+			)
 			exitIfErr(err)
 
 			if err = ciService.CheckSetup().Error(); err != nil {
@@ -80,7 +78,7 @@ ks ci send --env prod
 			}
 			exitIfErr(err)
 
-			ciService.PrintSuccess(currentEnvironment)
+			display.CiSecretSent(ciService.Name(), currentEnvironment)
 		}
 	},
 }
@@ -89,56 +87,4 @@ func init() {
 	ciCmd.AddCommand(ciSendCmd)
 
 	ciSendCmd.Flags().StringVar(&serviceName, "with", "", "Ci service name.")
-}
-
-func SelectCiService(ctx *core.Context) (ci.CiService, error) {
-	var err error
-
-	services, err := ci.ListCiServices(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(services) == 0 {
-		return nil, ci.ErrorNoCIServices
-	}
-
-	items := make([]string, len(services), len(services))
-
-	for idx, service := range services {
-		items[idx] = service.Name
-	}
-
-	if serviceName == "" {
-		_, serviceName = prompts.Select(
-			"Select a CI service",
-			items,
-		)
-	}
-
-	return ci.GetCiService(serviceName, ctx, client.ApiURL)
-}
-
-func mustNotHaveMissingSecrets(environment models.Environment) {
-	missing, hasMissing := ctx.MissingSecretsForEnvironment(
-		environment.Name,
-	)
-
-	if hasMissing {
-		exit(
-			kserrors.RequiredSecretsAreMissing(missing, environment.Name, nil),
-		)
-	}
-}
-
-func mustNotHaveMissingFiles(environment models.Environment) {
-	missing, hasMissing := ctx.MissingFilesForEnvironment(
-		environment.Name,
-	)
-
-	if hasMissing {
-		exit(
-			kserrors.RequiredFilesAreMissing(missing, environment.Name, nil),
-		)
-	}
 }

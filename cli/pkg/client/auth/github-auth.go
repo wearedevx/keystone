@@ -9,8 +9,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var githubClientId string
-var githubClientSecret string
+var (
+	githubClientId     string
+	githubClientSecret string
+)
 
 type PublicKey struct {
 	Typ       string
@@ -61,7 +63,6 @@ func (g *gitHubAuthService) Start() (string, error) {
 	}
 
 	return g.conf.AuthCodeURL(state, oauth2.AccessTypeOffline), err
-
 }
 
 func (g *gitHubAuthService) WaitForExternalLogin() error {
@@ -77,7 +78,6 @@ func (g *gitHubAuthService) WaitForExternalLogin() error {
 	}
 
 	token, err := g.conf.Exchange(g.ctx, result.authCode)
-
 	if err != nil {
 		return err
 	}
@@ -91,13 +91,25 @@ func (g *gitHubAuthService) WaitForExternalLogin() error {
 	return nil
 }
 
-func (g gitHubAuthService) Finish(pk []byte, device string, deviceUID string) (models.User, string, error) {
-	return completeLogin(g.apiUrl, models.GitHubAccountType, g.token, pk, device, deviceUID)
+func (g gitHubAuthService) Finish(
+	pk []byte,
+	device string,
+	deviceUID string,
+) (models.User, string, error) {
+	return completeLogin(
+		g.apiUrl,
+		models.GitHubAccountType,
+		g.token,
+		pk,
+		device,
+		deviceUID,
+	)
 }
 
-func (g gitHubAuthService) CheckAccount(account map[string]string) (bool, error) {
+func (g gitHubAuthService) CheckAccount(
+	account map[string]string,
+) (bool, error) {
 	gUser, _, err := g.client.Users.Get(g.ctx, "")
-
 	if err != nil {
 		return false, err
 	}

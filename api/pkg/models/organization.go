@@ -10,8 +10,8 @@ import (
 )
 
 type Organization struct {
-	ID             uint      `json:"id" gorm:"primaryKey"`
-	Name           string    `json:"name" gorm:"unique"`
+	ID             uint      `json:"id"              gorm:"primaryKey"`
+	Name           string    `json:"name"            gorm:"unique"`
 	Paid           bool      `json:"paid"`
 	Private        bool      `json:"private"`
 	CustomerID     string    `json:"customer_id"`
@@ -58,6 +58,24 @@ func (e *GetOrganizationsResponse) Deserialize(in io.Reader) error {
 }
 
 func (u *GetOrganizationsResponse) Serialize(out *string) (err error) {
+	var sb strings.Builder
+
+	err = json.NewEncoder(&sb).Encode(u)
+
+	*out = sb.String()
+
+	return err
+}
+
+type GetOrganizationByNameResponse struct {
+	Organization Organization
+}
+
+func (e *GetOrganizationByNameResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(e)
+}
+
+func (u *GetOrganizationByNameResponse) Serialize(out *string) (err error) {
 	var sb strings.Builder
 
 	err = json.NewEncoder(&sb).Encode(u)

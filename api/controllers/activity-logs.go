@@ -22,7 +22,7 @@ func GetActivityLogs(
 	var organization models.Organization
 	status = http.StatusOK
 
-	projectID := params.Get("projectID").(string)
+	projectID := params.Get("projectID")
 	options := models.GetLogsOptions{}
 	options.Deserialize(body)
 

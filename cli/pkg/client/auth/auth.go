@@ -34,7 +34,9 @@ func makeOAuthState(code string) (out string, err error) {
 	return out, nil
 }
 
-func getLoginRequest(apiUrl string) (loginRequest models.LoginRequest, err error) {
+func getLoginRequest(
+	apiUrl string,
+) (loginRequest models.LoginRequest, err error) {
 	var resp *http.Response
 	timeout := time.Duration(20 * time.Second)
 	client := http.Client{
@@ -50,7 +52,6 @@ func getLoginRequest(apiUrl string) (loginRequest models.LoginRequest, err error
 
 	if err != nil {
 		errmsg := fmt.Sprintf("Failed to send login request (%s)", err.Error())
-		fmt.Printf("loginRequest: %+v\n", loginRequest)
 		println(errmsg)
 		os.Exit(1)
 		return loginRequest, err
@@ -84,7 +85,7 @@ type pollResult struct {
 const MAX_ATTEMPTS int = 12
 
 func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
-	var done bool = false
+	done := false
 	attemps := 0
 
 	for !done {
@@ -123,7 +124,10 @@ func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
 		if resp.StatusCode == http.StatusOK {
 			err = json.NewDecoder(resp.Body).Decode(&loginRequest)
 			if err != nil {
-				errmsg := fmt.Sprintf("Failed decoding login request (%s)", err.Error())
+				errmsg := fmt.Sprintf(
+					"Failed decoding login request (%s)",
+					err.Error(),
+				)
 				println(errmsg)
 			}
 
@@ -154,10 +158,16 @@ func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
 			done = true
 		}
 	}
-
 }
 
-func completeLogin(apiUrl string, accountType models.AccountType, tok *oauth2.Token, pk []byte, device string, deviceUID string) (models.User, string, error) {
+func completeLogin(
+	apiUrl string,
+	accountType models.AccountType,
+	tok *oauth2.Token,
+	pk []byte,
+	device string,
+	deviceUID string,
+) (models.User, string, error) {
 	var user models.User
 	payload := models.LoginPayload{
 		AccountType: accountType,
@@ -187,7 +197,6 @@ func completeLogin(apiUrl string, accountType models.AccountType, tok *oauth2.To
 	}
 
 	resp, err := client.Do(req)
-
 	if err != nil {
 		return user, "", err
 	}
@@ -202,7 +211,10 @@ func completeLogin(apiUrl string, accountType models.AccountType, tok *oauth2.To
 
 		bodyBytes := []byte(sbuf.String())
 
-		return user, "", fmt.Errorf("Failed to complete login: %s", string(bodyBytes))
+		return user, "", fmt.Errorf(
+			"failed to complete login: %s",
+			string(bodyBytes),
+		)
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&user)
@@ -210,7 +222,7 @@ func completeLogin(apiUrl string, accountType models.AccountType, tok *oauth2.To
 	jwtToken = strings.Replace(jwtToken, "Bearer ", "", 1)
 
 	if jwtToken == "" {
-		err = fmt.Errorf("No token was returned")
+		err = fmt.Errorf("no token was returned")
 	}
 
 	return user, jwtToken, err

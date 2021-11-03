@@ -33,7 +33,6 @@ type Roles struct {
 func (r *Roles) Load(path string) error {
 	/* #nosec */
 	contents, err := ioutil.ReadFile(path)
-
 	if err != nil {
 		return err
 	}
@@ -44,7 +43,7 @@ func (r *Roles) Load(path string) error {
 func (r *Roles) List() []string {
 	l := make([]string, 0)
 
-	for roleName, _ := range r.Roles {
+	for roleName := range r.Roles {
 		l = append(l, roleName)
 	}
 

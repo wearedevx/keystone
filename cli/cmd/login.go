@@ -16,142 +16,14 @@ limitations under the License.
 package cmd
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"os"
-	"regexp"
-
-	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
+	"github.com/wearedevx/keystone/cli/internal/login"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
-	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
-	"github.com/wearedevx/keystone/cli/ui/prompts"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 var serviceName string
-
-func ShowAlreadyLoggedInAndExit(account models.User) {
-	username := account.Username
-	if username == "" {
-		username = account.Email
-	}
-
-	ui.Print(ui.RenderTemplate("already logged in", `You are already logged in as {{ . }}`, username))
-	exit(nil)
-}
-
-func LogIntoExisitingAccount(accountIndex int, currentAccount models.User, c auth.AuthService) {
-	config.SetCurrentAccount(accountIndex)
-
-	publicKey, _ := config.GetUserPublicKey()
-	_, jwtToken, err := c.Finish(
-		publicKey,
-		config.GetDeviceName(),
-		config.GetDeviceUID(),
-	)
-	exitIfErr(err)
-
-	config.SetAuthToken(jwtToken)
-	config.Write()
-
-	ui.Print(ui.RenderTemplate("login ok", `
-{{ OK }} {{ . | bright_green }}
-`, fmt.Sprintf("Welcome back, %s", currentAccount.Username)))
-	exit(nil)
-}
-
-func CreateAccountAndLogin(c auth.AuthService) {
-	keyPair, err := keys.New(keys.TypeEC)
-	exitIfErr(err)
-
-	// Transfer credentials to the server
-	// Create (or get) the user info
-	user, jwtToken, err := c.Finish(keyPair.Public.Value, config.GetDeviceName(), config.GetDeviceUID())
-	exitIfErr(err)
-
-	// Save the user info in the local config
-	accountIndex := config.AddAccount(
-		map[string]string{
-			"account_type": string(user.AccountType),
-			"user_id":      user.UserID,
-			"ext_id":       user.ExtID,
-			"username":     user.Username,
-			"fullname":     user.Fullname,
-			"email":        user.Email,
-		},
-	)
-
-	config.SetUserPublicKey(string(keyPair.Public.Value))
-	config.SetUserPrivateKey(string(keyPair.Private.Value))
-
-	config.SetCurrentAccount(accountIndex)
-	config.SetAuthToken(jwtToken)
-	config.Write()
-
-	ui.Print(ui.RenderTemplate("login success", `
-{{ OK }} {{ . | bright_green }}
-
-Thank you for using Keystone!
-
-To start managing secrets for a project:
-  $ cd <path-to-your-project>
-  $ ks init <your-project-name>
-
-To invite collaborators:
-  $ ks invite collaborator@email
-`, "Thank you for using Keystone!"))
-}
-
-func selectDeviceName() string {
-	existingName := config.GetDeviceName()
-
-	if existingName == "" {
-		defaultName := ""
-		if hostname, err := os.Hostname(); err == nil {
-			defaultName = hostname
-		}
-		if skipPrompts {
-			return defaultName
-		}
-
-		validate := func(input string) error {
-			matched, err := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, input)
-			if !matched {
-				return errors.New("Incorrect device name. Device name must be alphanumeric with ., -, _")
-			}
-			return err
-		}
-
-		deviceName := prompts.StringInputWithValidation(
-			"Enter the name you want this device to have",
-			defaultName,
-			validate,
-		)
-		return deviceName
-	}
-
-	return existingName
-}
-
-func SelectAuthService(ctx context.Context) (auth.AuthService, error) {
-	if serviceName == "" {
-		_, serviceName = prompts.Select(
-			"Select an identity provider",
-			[]string{
-				"github",
-				"gitlab",
-			},
-		)
-	}
-
-	return auth.GetAuthService(serviceName, ctx, client.ApiURL)
-}
 
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
@@ -168,52 +40,44 @@ ks login --with=gitlab
 ks login ––with=github`,
 	Args: cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
-		ctx := context.Background()
 		currentAccount, accountIndex := config.GetCurrentAccount()
 
 		// Already logged in
 		if accountIndex >= 0 {
-			ShowAlreadyLoggedInAndExit(currentAccount)
+			display.AlreadyLoggedIn(currentAccount)
+			exit(nil)
 		}
 
-		c, err := SelectAuthService(ctx)
-		exitIfErr(err)
+		sp := spinner.Spinner(" ").Start()
 
-		// Get OAuth connect url
-		url, err := c.Start()
-		exitIfErr(err)
+		var url, name string
+		ls := login.NewLoginService(serviceName).
+			GetLoginLink(&url, &name)
 
-		ui.Print(ui.RenderTemplate("login visit", `Visit the URL below to login with your {{ .Service }} account:
+		sp.Stop()
+		exitIfErr(ls.Err())
 
-{{ .Url | indent 8 }}
+		display.LoginLink(name, url)
 
-Waiting for you to login with your {{ .Service }} Account...`, struct {
-			Service string
-			Url     string
-		}{
-			Service: c.Name(),
-			Url:     url,
-		}))
-
-		sp := spinner.Spinner(" ")
 		sp.Start()
 
 		// Blocking call
-		err = c.WaitForExternalLogin()
+		err := ls.WaitForExternalLogin().Err()
+
 		sp.Stop()
 		exitIfErr(err)
 
-		deviceName := selectDeviceName()
-		viper.Set("device", deviceName)
+		existingUser := ls.
+			PromptDeviceName(skipPrompts).
+			FindAccount(&currentAccount, &accountIndex).
+			PerformLogin(currentAccount, accountIndex)
 
-		currentAccount, accountIndex = config.FindAccount(c)
+		exitIfErr(ls.Err())
 
-		if accountIndex >= 0 {
-			// Found an exiting matching account,
-			// log into it
-			LogIntoExisitingAccount(accountIndex, currentAccount, c)
+		if existingUser {
+			display.WelcomeBack(currentAccount)
 		} else {
-			CreateAccountAndLogin(c)
+			display.LoginSucces()
 		}
 	},
 }
@@ -231,5 +95,6 @@ func init() {
 	// is called directly, e.g.:
 	// loginCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	loginCmd.Flags().StringVar(&serviceName, "with", "", "identity provider. Either github or gitlab")
+	loginCmd.Flags().
+		StringVar(&serviceName, "with", "", "identity provider. Either github or gitlab")
 }

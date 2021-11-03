@@ -28,7 +28,11 @@ func (gr *MessagesPayload) Serialize(out *string) error {
 	return err
 }
 
-func (repo *Repo) GetMessagesForUserOnEnvironment(publicKey models.Device, environment models.Environment, message *models.Message) IRepo {
+func (repo *Repo) GetMessagesForUserOnEnvironment(
+	publicKey models.Device,
+	environment models.Environment,
+	message *models.Message,
+) IRepo {
 	if repo.err != nil {
 		return repo
 	}
@@ -165,7 +169,10 @@ func (repo *Repo) GetGroupedMessagesWillExpireByUser(
 	return repo
 }
 
-func (repo *Repo) RemoveOldMessageForRecipient(publicKeyID uint, environmentID string) IRepo {
+func (repo *Repo) RemoveOldMessageForRecipient(
+	publicKeyID uint,
+	environmentID string,
+) IRepo {
 	if repo.err != nil {
 		return repo
 	}

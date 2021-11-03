@@ -3,36 +3,36 @@ package keystonefile
 import (
 	"testing"
 
-	. "github.com/wearedevx/keystone/api/pkg/models"
-	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 )
 
 func TestKeystoneFile(t *testing.T) {
 	t.Run("Creates a new structure", func(t *testing.T) {
 		// Setup
-		testDir, err := CreateTestDir()
+		testDir, err := utils.CreateTestDir()
 		if err != nil {
 			t.Errorf("Error creating the test dir: %+v", err)
 		}
 
 		// Test
-		file := NewKeystoneFile(testDir, Project{Name: "test_name"})
+		file := NewKeystoneFile(testDir, models.Project{Name: "test_name"})
 
 		t.Logf("Success: %+v\n", file)
 
 		// TearDown
-		CleanTestDir(testDir)
+		utils.CleanTestDir(testDir)
 	})
 
 	t.Run("Saves a KeystoneFile", func(t *testing.T) {
 		// Setup
-		testDir, err := CreateTestDir()
+		testDir, err := utils.CreateTestDir()
 		if err != nil {
 			t.Errorf("Error creating the test dir: %+v", err)
 		}
 
 		// Test
-		file := NewKeystoneFile(testDir, Project{Name: "test_name"})
+		file := NewKeystoneFile(testDir, models.Project{Name: "test_name"})
 
 		err = file.Save().Err()
 
@@ -49,6 +49,6 @@ func TestKeystoneFile(t *testing.T) {
 		// TearDown
 		file.Remove()
 
-		CleanTestDir(testDir)
+		utils.CleanTestDir(testDir)
 	})
 }

@@ -23,7 +23,6 @@ func GetPreferredEditorFromEnvironment() string {
 
 	// Get the full executable path for the editor.
 	_, err := exec.LookPath(editor)
-
 	if err != nil {
 		return DefaultEditor
 	}
@@ -44,14 +43,19 @@ func resolveEditorArguments(executable string, filename string) []string {
 }
 
 // OpenFileInEditor opens filename in a text editor.
-func OpenFileInEditor(filename string, resolveEditor PreferredEditorResolver) error {
+func OpenFileInEditor(
+	filename string,
+	resolveEditor PreferredEditorResolver,
+) error {
 	// Get the full executable path for the editor.
 	executable, err := exec.LookPath(resolveEditor())
 	if err != nil {
 		return err
 	}
 
-	cmd := exec.Command(executable, resolveEditorArguments(executable, filename)...) // #nosec
+	cmd := exec.Command(
+		executable,
+		resolveEditorArguments(executable, filename)...) // #nosec
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -62,7 +66,11 @@ func OpenFileInEditor(filename string, resolveEditor PreferredEditorResolver) er
 // CaptureInputFromEditor opens a temporary file in a text editor and returns
 // the written bytes on success or an error on failure. It handles deletion
 // of the temporary file behind the scenes.
-func CaptureInputFromEditor(resolveEditor PreferredEditorResolver, extension string, defaultContent string) ([]byte, error) {
+func CaptureInputFromEditor(
+	resolveEditor PreferredEditorResolver,
+	extension string,
+	defaultContent string,
+) ([]byte, error) {
 	file, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("*%s", extension))
 	if err != nil {
 		return []byte{}, err

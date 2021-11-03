@@ -5,11 +5,11 @@ import (
 
 	"gorm.io/gorm"
 
-	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (repo *Repo) CreateLoginRequest() LoginRequest {
-	lr, err := NewLoginRequest()
+func (repo *Repo) CreateLoginRequest() models.LoginRequest {
+	lr, err := models.NewLoginRequest()
 	if err != nil {
 		repo.err = err
 	}
@@ -21,12 +21,12 @@ func (repo *Repo) CreateLoginRequest() LoginRequest {
 	return lr
 }
 
-func (repo *Repo) GetLoginRequest(code string) (LoginRequest, bool) {
-	lr := LoginRequest{}
+func (repo *Repo) GetLoginRequest(code string) (models.LoginRequest, bool) {
+	lr := models.LoginRequest{}
 
 	if repo.Err() == nil {
 		repo.err = repo.GetDb().Where(
-			&LoginRequest{
+			&models.LoginRequest{
 				TemporaryCode: code,
 			},
 		).First(&lr).Error
@@ -35,8 +35,11 @@ func (repo *Repo) GetLoginRequest(code string) (LoginRequest, bool) {
 	return lr, repo.err == nil
 }
 
-func (repo *Repo) SetLoginRequestCode(code string, authCode string) LoginRequest {
-	lr, err := NewLoginRequest()
+func (repo *Repo) SetLoginRequestCode(
+	code string,
+	authCode string,
+) models.LoginRequest {
+	lr, err := models.NewLoginRequest()
 	if err != nil {
 		repo.err = err
 	}
@@ -67,7 +70,7 @@ func (repo *Repo) DeleteLoginRequest(code string) bool {
 		return false
 	}
 
-	lr, err := NewLoginRequest()
+	lr, err := models.NewLoginRequest()
 	if err != nil {
 		repo.err = err
 		return false

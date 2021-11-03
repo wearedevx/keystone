@@ -54,15 +54,15 @@ func GetMessagesFromProjectByUser(
 		Success: false,
 	}
 
-	var projectID = params.Get("projectID").(string)
-	var deviceUID = params.Get("device").(string)
-	var project = models.Project{UUID: projectID}
-	var publicKey = models.Device{}
+	projectID := params.Get("projectID")
+	deviceUID := params.Get("device")
+	project := models.Project{UUID: projectID}
+	publicKey := models.Device{}
 	var environments []models.Environment
-	var result = models.GetMessageByEnvironmentResponse{
+	result := models.GetMessageByEnvironmentResponse{
 		Environments: map[string]models.GetMessageResponse{},
 	}
-	var log = models.ActivityLog{
+	log := models.ActivityLog{
 		UserID: &user.ID,
 		Action: "GetMessagesFromProjectByUser",
 	}
@@ -90,9 +90,10 @@ func GetMessagesFromProjectByUser(
 
 	for _, environment := range environments {
 		// - rights check
+		var can bool
 		log.Environment = environment
 
-		can, err := rights.
+		can, err = rights.
 			CanUserReadEnvironment(Repo, user.ID, project.ID, &environment)
 		if err != nil {
 			response.Error = err
@@ -164,6 +165,7 @@ func WriteMessages(
 	}
 	senderDevice := models.Device{}
 	var has bool
+	var can bool
 
 	payload := &models.MessagesToWritePayload{}
 	if err = payload.Deserialize(body); err != nil {
@@ -219,7 +221,7 @@ func WriteMessages(
 		}
 
 		// - check if user has rights to write on environment
-		can, err := rights.
+		can, err = rights.
 			CanUserWriteOnEnvironment(
 				Repo,
 				user.ID,
@@ -326,7 +328,12 @@ done:
 	return response, status, log.SetError(err)
 }
 
-func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user models.User) (_ router.Serde, status int, err error) {
+func DeleteMessage(
+	params router.Params,
+	_ io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
 	status = http.StatusNoContent
 	response := &GenericResponse{}
 	var message models.Message
@@ -336,10 +343,9 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 		Action: "DeleteMessage",
 	}
 
-	var messageID = params.Get("messageID").(string)
+	messageID := params.Get("messageID")
 
 	id, err := strconv.ParseUint(messageID, 10, 64)
-
 	if err != nil {
 		response.Success = false
 		response.Error = err
@@ -360,6 +366,14 @@ func DeleteMessage(params router.Params, _ io.ReadCloser, Repo repo.IRepo, user 
 		response.Error = err
 		response.Success = false
 		err = apierrors.ErrorFailedToDeleteResource(err)
+
+		goto done
+	}
+
+	if err = Repo.
+		MessageService().
+		DeleteMessageWithUuid(message.Uuid); err != nil {
+		fmt.Printf("Error deleting message on redis: %+v\n", err)
 	}
 
 	if err = Repo.
@@ -387,7 +401,11 @@ func getTTLToken(r *http.Request) (string, bool) {
 }
 
 // Delete every message older than a week
-func DeleteExpiredMessages(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func DeleteExpiredMessages(
+	w http.ResponseWriter,
+	r *http.Request,
+	_ httprouter.Params,
+) {
 	// Check caller with some sort of token
 	token, ok := getTTLToken(r)
 	if !ok {
@@ -411,7 +429,6 @@ func DeleteExpiredMessages(w http.ResponseWriter, r *http.Request, _ httprouter.
 
 		return Repo.Err()
 	})
-
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
@@ -419,7 +436,11 @@ func DeleteExpiredMessages(w http.ResponseWriter, r *http.Request, _ httprouter.
 	http.Error(w, "OK", http.StatusOK)
 }
 
-func AlertMessagesWillExpire(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func AlertMessagesWillExpire(
+	w http.ResponseWriter,
+	r *http.Request,
+	_ httprouter.Params,
+) {
 	// Check caller with some sort of token
 	token, ok := getTTLToken(r)
 	if !ok {
@@ -447,7 +468,10 @@ func AlertMessagesWillExpire(w http.ResponseWriter, r *http.Request, _ httproute
 
 		// For each recipients, send message.
 		for _, groupedMessagesUser := range groupedMessageUser {
-			email, err := emailer.MessageWillExpireMail(5, groupedMessagesUser.Projects)
+			email, err := emailer.MessageWillExpireMail(
+				5,
+				groupedMessagesUser.Projects,
+			)
 			if err != nil {
 				errors = append(errors, err)
 			} else if err = email.Send([]string{groupedMessagesUser.Recipient.Email}); err != nil {

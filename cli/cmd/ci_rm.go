@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -39,36 +39,31 @@ ks ci rm my-github-ci-service
 `,
 	Args: cobra.MaximumNArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
-		var serviceName string
-
-		if len(args) == 1 {
-			serviceName = args[0]
-		} else {
-			serviceName = prompts.StringInput(
-				"Enter the service name to remove",
-				"",
-			)
-		}
+		serviceName := getServiceNameToRemove(args)
 
 		s, ok := ci.FindCiServiceWithName(ctx, serviceName)
 		if !ok {
 			exit(kserrors.NoSuchService(serviceName, nil))
 		}
 
-		ui.Print(ui.RenderTemplate("careful rm ci", `
-{{ CAREFUL }} You are about to remove the {{ .Name }} CI service.
-
-This cannot be undone.`,
-			s))
-
-		if prompts.Confirm("Continue") {
+		if prompts.ConfirmCiConfigurationRemoval(s.Name) {
 			if err := ci.RemoveCiService(ctx, s.Name); err != nil {
 				exit(kserrors.CouldNotRemoveService(err))
 			}
 		}
 
-		ui.PrintSuccess("CI service '%s' successfully removed", s.Name)
+		display.CiServiceRemoved(s.Name)
 	},
+}
+
+func getServiceNameToRemove(args []string) (serviceName string) {
+	if len(args) == 1 {
+		serviceName = args[0]
+	} else {
+		serviceName = prompts.ServiceConfigurationToRemove()
+	}
+
+	return serviceName
 }
 
 func init() {

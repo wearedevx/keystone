@@ -8,7 +8,6 @@ import (
 )
 
 func SeedRoles() error {
-
 	Repo := new(repo.Repo)
 
 	devRole := models.Role{Name: "developer"}

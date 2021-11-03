@@ -16,12 +16,9 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/messages"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // secretsUnsetCmd represents the unset command
@@ -47,8 +44,7 @@ The secret must not be required.`,
 			exit(kserrors.SecretRequired(secretName, nil))
 		}
 
-		ms := messages.NewMessageService(ctx)
-		changes := mustFetchMessages(ms)
+		changes, messageService := mustFetchMessages()
 
 		exitIfErr(
 			ctx.
@@ -58,10 +54,10 @@ The secret must not be required.`,
 		)
 
 		exitIfErr(
-			ms.SendEnvironments(ctx.AccessibleEnvironments).Err(),
+			messageService.SendEnvironments(ctx.AccessibleEnvironments).Err(),
 		)
 
-		ui.PrintSuccess(fmt.Sprintf("Secret '%s' updated for the '%s' environment", secretName, currentEnvironment))
+		display.SecretUpdated(secretName, currentEnvironment)
 	},
 }
 
