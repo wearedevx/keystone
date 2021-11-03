@@ -545,7 +545,6 @@ func (ctx *Context) MarkSecretRequired(
 }
 
 // Returns an array of secrets that are in the first list, an not in the second
-// TODO: should be in a service internal package
 func FilterSecretsFromCache(
 	secretsFromCache []Secret,
 	secrets []Secret,

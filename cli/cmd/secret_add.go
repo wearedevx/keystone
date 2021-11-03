@@ -16,18 +16,12 @@ limitations under the License.
 package cmd
 
 import (
-	"os"
-	"reflect"
-	"regexp"
-	"strings"
-
-	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/internal/secrets"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	core "github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 
@@ -71,8 +65,9 @@ ks secret add PORT`,
 		exitIfErr(err)
 
 		ctx.MustHaveEnvironment(currentEnvironment)
+		secretService := secrets.NewSecretService(ctx)
 
-		if yes, values := checkSecretAlreadyInCache(secretName); yes {
+		if yes, values := secretService.IsSecretInCache(secretName); yes {
 			display.SecretAlreadyExitsts(values)
 
 			useCache = !prompts.ConfirmOverrideSecretValue(skipPrompts)
@@ -82,11 +77,13 @@ ks secret add PORT`,
 			es := environments.NewEnvironmentService(ctx)
 			exitIfErr(es.Err())
 
-			environmentValueMap := setValuesForEnvironments(
+			environmentValueMap, err := secretService.SetValuesForEnvironments(
 				secretName,
 				secretValue,
 				ctx.AccessibleEnvironments,
+				skipPrompts,
 			)
+			exitIfErr(err)
 
 			changes, messageService := mustFetchMessages()
 			flag := core.S_REQUIRED
@@ -143,94 +140,4 @@ func init() {
 	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	secretAddCmd.Flags().
 		BoolVarP(&addOptional, "optional", "o", false, "mark the secret as optional")
-}
-
-func setValuesForEnvironments(
-	secretName string,
-	secretValue string,
-	accessibleEnvironments []models.Environment,
-) map[string]string {
-	environmentValueMap := make(map[string]string)
-	// Ask value for each env
-	if !skipPrompts {
-		ui.Print(ui.RenderTemplate("ask new value for environment", `
-Enter a values for {{ . }}:`, secretName))
-
-		for _, environment := range accessibleEnvironments {
-			// multiline edit
-			if strings.Contains(secretValue, "\n") {
-				var defaultContent strings.Builder
-
-				defaultContent.WriteString(secretValue)
-				defaultContent.WriteRune('\n')
-				defaultContent.WriteRune('\n')
-				defaultContent.WriteRune('\n')
-				defaultContent.WriteString("# Enter value for secret ")
-				defaultContent.WriteString(secretName)
-				defaultContent.WriteString(" on environment ")
-				defaultContent.WriteString(environment.Name)
-
-				result, err := utils.CaptureInputFromEditor(
-					utils.GetPreferredEditorFromEnvironment,
-					"",
-					defaultContent.String(),
-				)
-				stringResult := string(result)
-
-				// remove blank line and comment from secret
-				stringResult = regexp.MustCompile(`#.*$`).
-					ReplaceAllString(strings.TrimSpace(stringResult), "")
-				stringResult = regexp.MustCompile(`[\t\r\n]+`).
-					ReplaceAllString(strings.TrimSpace(stringResult), "\n")
-
-				if err != nil {
-					if err.Error() != "^C" {
-						ui.PrintError(err.Error())
-						os.Exit(1)
-					}
-					os.Exit(0)
-				}
-
-				environmentValueMap[environment.Name] = strings.Trim(
-					string(stringResult),
-					" ",
-				)
-			} else {
-				environmentValueMap[environment.Name] = prompts.StringInput(
-					environment.Name,
-					secretValue,
-				)
-			}
-		}
-
-	} else {
-		for _, environment := range accessibleEnvironments {
-			environmentValueMap[environment.Name] = strings.Trim(secretValue, " ")
-		}
-	}
-
-	return environmentValueMap
-}
-
-// TODO: should be a core function
-func checkSecretAlreadyInCache(
-	secretName string,
-) (inCache bool, _ map[core.EnvironmentName]core.SecretValue) {
-	var found core.Secret
-	values := make(map[core.EnvironmentName]core.SecretValue)
-	secrets := ctx.ListSecretsFromCache()
-
-	for _, secret := range secrets {
-		if secret.Name == secretName {
-			found = secret
-		}
-	}
-
-	inCache = !reflect.ValueOf(found).IsZero()
-
-	if inCache {
-		values = found.Values
-	}
-
-	return inCache, values
 }

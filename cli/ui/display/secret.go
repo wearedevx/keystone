@@ -9,6 +9,11 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
+func EnterValue(secretName string) {
+	ui.Print(ui.RenderTemplate("ask new value for environment", `
+Enter a value for {{ . }}:`, secretName))
+}
+
 func SecretTable(secrets []core.Secret, environments []string) {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
