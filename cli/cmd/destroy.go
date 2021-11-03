@@ -50,7 +50,7 @@ This is irreversible.
 
 		projectName := ctx.GetProjectName()
 
-		if !prompts.ConfirmProjectDestruction(projectName) {
+		if !prompts.ConfirmProjectDestruction(projectName, skipPrompts) {
 			exit(kserrors.NameDoesNotMatch(nil))
 		}
 
