@@ -81,7 +81,7 @@ type IRepo interface {
 	OrganizationSetSubscription(organization *models.Organization, subscription string) IRepo
 	GetOrganization(orga *models.Organization) IRepo
 	GetOrganizations(userID uint, result *models.GetOrganizationsResponse) IRepo
-	GetOrganizationByName(orga *models.Organization) IRepo
+	GetOrganizationByName(userID uint, orga *models.Organization) IRepo
 	GetOrganizationProjects(*models.Organization, *[]models.Project) IRepo
 	GetOrganizationMembers(orgaID uint, result *[]models.ProjectMember) IRepo
 	IsUserOwnerOfOrga(*models.User, *models.Organization) (bool, error)

@@ -66,3 +66,21 @@ func (u *GetOrganizationsResponse) Serialize(out *string) (err error) {
 
 	return err
 }
+
+type GetOrganizationByNameResponse struct {
+	Organization Organization
+}
+
+func (e *GetOrganizationByNameResponse) Deserialize(in io.Reader) error {
+	return json.NewDecoder(in).Decode(e)
+}
+
+func (u *GetOrganizationByNameResponse) Serialize(out *string) (err error) {
+	var sb strings.Builder
+
+	err = json.NewEncoder(&sb).Encode(u)
+
+	*out = sb.String()
+
+	return err
+}

@@ -13,7 +13,7 @@ import (
 )
 
 func GetOrganizations(
-	_ router.Params,
+	params router.Params,
 	_ io.ReadCloser,
 	Repo repo.IRepo,
 	user models.User,
@@ -28,7 +28,59 @@ func GetOrganizations(
 		Action: "GetOrganizations",
 	}
 
-	if err = Repo.GetOrganizations(user.ID, &result).Err(); err != nil {
+	organizationName := params.Get("name").(string)
+	if organizationName != "" {
+		orga := models.Organization{
+			Name: organizationName,
+		}
+
+		if err = Repo.GetOrganizationByName(user.ID, &orga).Err(); err != nil {
+			if errors.Is(err, repo.ErrorNotFound) {
+				status = http.StatusNotFound
+			} else {
+				err = apierrors.ErrorFailedToGetResource(err)
+				status = http.StatusInternalServerError
+			}
+
+			goto done
+		}
+
+		result.Organizations = append(result.Organizations, orga)
+	} else {
+		if err = Repo.GetOrganizations(user.ID, &result).Err(); err != nil {
+			if errors.Is(err, repo.ErrorNotFound) {
+				status = http.StatusNotFound
+			} else {
+				err = apierrors.ErrorFailedToGetResource(err)
+				status = http.StatusInternalServerError
+			}
+		}
+	}
+
+done:
+
+	return &result, status, log.SetError(err)
+}
+
+func GetOrganizationByName(
+	params router.Params,
+	_ io.ReadCloser,
+	Repo repo.IRepo,
+	user models.User,
+) (_ router.Serde, status int, err error) {
+	status = http.StatusOK
+	result := models.GetOrganizationByNameResponse{}
+
+	orga := models.Organization{
+		Name: params.Get("organizationName").(string),
+	}
+
+	log := models.ActivityLog{
+		UserID: &user.ID,
+		Action: "GetOrganizationByName",
+	}
+
+	if err = Repo.GetOrganizationByName(user.ID, &orga).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
 		} else {
