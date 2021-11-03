@@ -28,59 +28,46 @@ func GetOrganizations(
 		Action: "GetOrganizations",
 	}
 
-	organizationName := params.Get("name").(string)
-	if organizationName != "" {
-		orga := models.Organization{
-			Name: organizationName,
+	organizationName := params.Get("name")
+	owned := params.Get("owned") == "1"
+
+	var method func() error
+
+	switch {
+	case organizationName != "" && owned:
+		method = func() error {
+			return Repo.
+				GetOwnedOrganizationByName(
+					user.ID,
+					organizationName,
+					&result.Organizations,
+				).
+				Err()
 		}
 
-		if err = Repo.GetOrganizationByName(user.ID, &orga).Err(); err != nil {
-			if errors.Is(err, repo.ErrorNotFound) {
-				status = http.StatusNotFound
-			} else {
-				err = apierrors.ErrorFailedToGetResource(err)
-				status = http.StatusInternalServerError
-			}
-
-			goto done
+	case organizationName != "" && !owned:
+		method = func() error {
+			return Repo.
+				GetOrganizationByName(
+					user.ID,
+					organizationName,
+					&result.Organizations,
+				).
+				Err()
 		}
 
-		result.Organizations = append(result.Organizations, orga)
-	} else {
-		if err = Repo.GetOrganizations(user.ID, &result).Err(); err != nil {
-			if errors.Is(err, repo.ErrorNotFound) {
-				status = http.StatusNotFound
-			} else {
-				err = apierrors.ErrorFailedToGetResource(err)
-				status = http.StatusInternalServerError
-			}
+	default:
+		method = func() error {
+			return Repo.
+				GetOrganizations(
+					user.ID,
+					&result.Organizations,
+				).
+				Err()
 		}
 	}
 
-done:
-
-	return &result, status, log.SetError(err)
-}
-
-func GetOrganizationByName(
-	params router.Params,
-	_ io.ReadCloser,
-	Repo repo.IRepo,
-	user models.User,
-) (_ router.Serde, status int, err error) {
-	status = http.StatusOK
-	result := models.GetOrganizationByNameResponse{}
-
-	orga := models.Organization{
-		Name: params.Get("organizationName").(string),
-	}
-
-	log := models.ActivityLog{
-		UserID: &user.ID,
-		Action: "GetOrganizationByName",
-	}
-
-	if err = Repo.GetOrganizationByName(user.ID, &orga).Err(); err != nil {
+	if err = method(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
 		} else {
@@ -194,7 +181,7 @@ func GetOrganizationProjects(
 		UserID: &user.ID,
 	}
 
-	orgaID := params.Get("orgaID").(string)
+	orgaID := params.Get("orgaID")
 
 	result := models.GetProjectsResponse{
 		Projects: []models.Project{},
@@ -256,7 +243,7 @@ func GetOrganizationMembers(
 		UserID: &user.ID,
 	}
 
-	orgaID := params.Get("orgaID").(string)
+	orgaID := params.Get("orgaID")
 
 	result := models.GetMembersResponse{
 		Members: []models.ProjectMember{},

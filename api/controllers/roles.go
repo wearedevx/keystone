@@ -30,7 +30,7 @@ func GetRoles(
 		Roles: []models.Role{},
 	}
 
-	projectID := params.Get("projectID").(string)
+	projectID := params.Get("projectID")
 	isPaid, err = Repo.IsProjectOrganizationPaid(projectID)
 	if err != nil {
 		status = http.StatusInternalServerError

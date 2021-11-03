@@ -18,7 +18,8 @@ func matchOrganizationName(name string) error {
 
 func (r *Repo) GetOrganizationByName(
 	userID uint,
-	orga *models.Organization,
+	name string,
+	orgas *[]models.Organization,
 ) IRepo {
 	if r.err != nil {
 		return r
@@ -30,8 +31,27 @@ func (r *Repo) GetOrganizationByName(
 		Joins("left join project_members pm on pm.project_id = p.id").
 		Joins("left join users u on u.id = pm.user_id").
 		Where("(pm.user_id = ? and organizations.private = false) or organizations.user_id = ?", userID, userID).
-		Where("organizations.name = ?", orga.Name).
-		First(&orga).
+		Where("organizations.name = ?", name).
+		Find(&orgas).
+		Error
+
+	return r
+}
+
+func (r *Repo) GetOwnedOrganizationByName(
+	userID uint,
+	name string,
+	orgas *[]models.Organization,
+) IRepo {
+	if r.err != nil {
+		return r
+	}
+
+	r.err = r.GetDb().
+		Preload("User").
+		Where("organizations.user_id = ?", userID).
+		Where("organizations.name = ?", name).
+		Find(&orgas).
 		Error
 
 	return r
@@ -161,13 +181,12 @@ func (r *Repo) OrganizationSetPaid(
 
 func (r *Repo) GetOrganizations(
 	userID uint,
-	result *models.GetOrganizationsResponse,
+	orgas *[]models.Organization,
 ) IRepo {
 	if r.Err() != nil {
 		return r
 	}
 
-	orgas := make([]models.Organization, 0)
 	err := r.GetDb().
 		Preload("User").
 		Joins("left join projects p on p.organization_id = organizations.id").
@@ -180,8 +199,6 @@ func (r *Repo) GetOrganizations(
 		r.err = err
 		return r
 	}
-
-	result.Organizations = orgas
 
 	return r
 }

@@ -39,16 +39,16 @@ func newParams(req *http.Request, params httprouter.Params) Params {
 	}
 }
 
-func (p Params) Get(key string) interface{} {
+func (p Params) Get(key string) string {
 	if v := p.urlParams.ByName(key); v != "" {
 		return v
 	}
 
 	v := p.urlQuery.Get(key)
 
-	if len(v) == 1 {
+	/* if len(v) == 1 {
 		return v[0]
-	}
+	} */
 
 	return v
 }

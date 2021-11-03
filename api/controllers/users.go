@@ -403,7 +403,7 @@ func GetUserKeys(
 		PublicKeys: make([]models.Device, 0),
 	}
 
-	userID := params.Get("userID").(string)
+	userID := params.Get("userID")
 
 	if userID == "" {
 		status = http.StatusBadRequest

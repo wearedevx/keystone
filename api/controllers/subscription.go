@@ -32,7 +32,7 @@ func PostSubscription(
 
 	p := payment.NewStripePayment()
 
-	organizationName := params.Get("organizationName").(string)
+	organizationName := params.Get("organizationName")
 	organization := models.Organization{
 		Name: organizationName,
 	}
@@ -103,7 +103,7 @@ func GetPollSubscriptionSuccess(
 	}
 
 	var cs models.CheckoutSession
-	sessionID := params.Get("sessionID").(string)
+	sessionID := params.Get("sessionID")
 
 	if err = Repo.GetCheckoutSession(sessionID, &cs).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
@@ -317,7 +317,7 @@ func ManageSubscription(
 		Action: "ManageSubscription",
 	}
 
-	organizationName := params.Get("organizationName").(string)
+	organizationName := params.Get("organizationName")
 	organization := models.Organization{
 		Name: organizationName,
 	}

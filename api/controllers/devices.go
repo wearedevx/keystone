@@ -55,7 +55,7 @@ func DeleteDevice(
 
 	result := &models.RemoveDeviceResponse{Success: true}
 
-	deviceUID := params.Get("uid").(string)
+	deviceUID := params.Get("uid")
 
 	if err = Repo.RevokeDevice(user.ID, deviceUID).Err(); err != nil {
 		result.Error = err.Error()

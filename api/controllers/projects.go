@@ -119,7 +119,7 @@ func GetProjectsMembers(
 
 	var project models.Project
 	var member models.ProjectMember
-	projectID := params.Get("projectID").(string)
+	projectID := params.Get("projectID")
 	var result models.GetMembersResponse
 	log := models.ActivityLog{
 		UserID: &user.ID,
@@ -165,7 +165,7 @@ func PostProjectsMembers(
 	var isPaid bool
 	var areInProjects []string
 	var project models.Project
-	projectID := params.Get("projectID").(string)
+	projectID := params.Get("projectID")
 
 	members := make([]string, 0)
 	input := models.AddMembersPayload{}
@@ -296,7 +296,7 @@ func DeleteProjectsMembers(
 
 	var project models.Project
 	var organization models.Organization
-	projectID := params.Get("projectID").(string)
+	projectID := params.Get("projectID")
 	input := models.RemoveMembersPayload{}
 	result := models.RemoveMembersResponse{}
 	var can, userIsAdmin bool
@@ -498,7 +498,7 @@ func GetAccessibleEnvironments(
 		Environments: make([]models.Environment, 0),
 	}
 	var environments []models.Environment
-	projectID := params.Get("projectID").(string)
+	projectID := params.Get("projectID")
 	var project models.Project
 	var can bool
 	log := models.ActivityLog{
@@ -558,7 +558,7 @@ func DeleteProject(
 		Action: "DeleteProject",
 	}
 
-	projectId := params.Get("projectID").(string)
+	projectId := params.Get("projectID")
 	var project models.Project
 
 	Repo.
@@ -590,7 +590,7 @@ func GetProjectsOrganization(
 	}
 
 	result := models.Organization{}
-	projectId := params.Get("projectID").(string)
+	projectId := params.Get("projectID")
 	var organization models.Organization
 
 	if projectId == "" {

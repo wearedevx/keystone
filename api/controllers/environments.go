@@ -24,7 +24,7 @@ func GetEnvironmentPublicKeys(
 		Keys: make([]models.UserPublicKeys, 0),
 	}
 
-	envID := params.Get("envID").(string)
+	envID := params.Get("envID")
 	var can bool
 
 	// - fetch the environment to check rights

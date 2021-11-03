@@ -83,7 +83,7 @@ func PutMembersSetRole(
 	isPaid := false
 
 	// input check
-	projectID := params.Get("projectID").(string)
+	projectID := params.Get("projectID")
 
 	log := models.ActivityLog{
 		UserID: &user.ID,

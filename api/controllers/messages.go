@@ -54,8 +54,8 @@ func GetMessagesFromProjectByUser(
 		Success: false,
 	}
 
-	projectID := params.Get("projectID").(string)
-	deviceUID := params.Get("device").(string)
+	projectID := params.Get("projectID")
+	deviceUID := params.Get("device")
 	project := models.Project{UUID: projectID}
 	publicKey := models.Device{}
 	var environments []models.Environment
@@ -343,7 +343,7 @@ func DeleteMessage(
 		Action: "DeleteMessage",
 	}
 
-	messageID := params.Get("messageID").(string)
+	messageID := params.Get("messageID")
 
 	id, err := strconv.ParseUint(messageID, 10, 64)
 	if err != nil {
