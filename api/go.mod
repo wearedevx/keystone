@@ -5,9 +5,9 @@ go 1.16
 require (
 	github.com/GoogleCloudPlatform/cloudsql-proxy v1.22.0
 	github.com/bxcodec/faker/v3 v3.6.0
-	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/go-redis/redis/v8 v8.11.3
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
+	github.com/golang-jwt/jwt/v4 v4.1.0 
 	github.com/google/go-github/v32 v32.1.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/k3a/html2text v1.0.8

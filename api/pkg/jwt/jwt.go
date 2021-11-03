@@ -5,9 +5,8 @@ import (
 	"strings"
 	"time"
 
-	jwt "github.com/dgrijalva/jwt-go/v4"
+	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"golang.org/x/xerrors"
 )
 
 var salt string
@@ -28,15 +27,10 @@ func MakeToken(user models.User, deviceUID string) (string, error) {
 	claims := customClaims{
 		DeviceUID: deviceUID,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: &jwt.Time{
-				Time: time.Now().Add(30 * 24 * time.Hour),
-			},
-			IssuedAt: &jwt.Time{
-				Time: time.Now(),
-			},
-			Issuer:  "keystone",
-			Subject: user.UserID,
-			// ID:      deviceUID,
+			ExpiresAt: time.Now().Add(30 * 24 * time.Hour).Unix(),
+			IssuedAt:  time.Now().Unix(),
+			Issuer:    "keystone",
+			Subject:   user.UserID,
 		},
 	}
 
@@ -65,10 +59,14 @@ func VerifyToken(token string) (string, string, error) {
 		},
 	)
 	if err != nil {
-		return "", "", err
+		if validationError, ok := err.(jwt.ValidationError); ok {
+			if validationError.Errors&jwt.ValidationErrorExpired == jwt.ValidationErrorExpired {
+				return "", "", ErrorTokenExpired
+			}
+		} else {
+			return "", "", err
+		}
 	}
-
-	expiredError := &jwt.TokenExpiredError{}
 
 	if t.Valid {
 		claims := t.Claims.(jwt.MapClaims)
@@ -82,8 +80,6 @@ func VerifyToken(token string) (string, string, error) {
 		deviceUID := claims["device_uid"].(string)
 
 		return userID, deviceUID, nil
-	} else if xerrors.As(err, expiredError) {
-		return "", "", ErrorTokenExpired
 	}
 
 	return "", "", ErrorInvalidToken
