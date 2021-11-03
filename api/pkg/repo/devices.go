@@ -113,7 +113,12 @@ func (r *Repo) RevokeDevice(userID uint, deviceUID string) IRepo {
 	return r
 }
 
-func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, userEmail string) IRepo {
+func (r *Repo) AddNewDevice(
+	device models.Device,
+	userID uint,
+	userName string,
+	userEmail string,
+) IRepo {
 	db := r.GetDb()
 
 	matched, _ := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, device.Name)
@@ -137,7 +142,6 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 	userDevice := models.UserDevice{UserID: userID, DeviceID: device.ID}
 
 	err := db.SetupJoinTable(&models.User{}, "Devices", &models.UserDevice{})
-
 	if err != nil {
 		r.err = err
 		return r
@@ -171,7 +175,6 @@ func (r *Repo) AddNewDevice(device models.Device, userID uint, userName string, 
 
 	// Send mail to user
 	e, err := emailer.NewDeviceMail(device.Name, userName)
-
 	if err != nil {
 		r.err = err
 		return r

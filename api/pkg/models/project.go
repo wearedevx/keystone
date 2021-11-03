@@ -11,15 +11,15 @@ import (
 )
 
 type Project struct {
-	ID                  uint            `json:"id" gorm:"primaryKey" faker:"-"`
-	UUID                string          `json:"uuid" gorm:"not null;unique" faker:"word,unique"`
-	TTL                 int             `json:"ttl" gorm:"column:ttl;not null;default:7" default:"7"`
-	DaysBeforeTTLExpiry int             `json:"days_before_ttl_expiry" gorm:"column:days_before_ttl_expiry;not null;default:2" default:"2"`
-	Name                string          `json:"name" gorm:"not null"`
-	Members             []ProjectMember `json:"members" faker:"-"`
+	ID                  uint            `json:"id"                     gorm:"primaryKey"                                       faker:"-"`
+	UUID                string          `json:"uuid"                   gorm:"not null;unique"                                  faker:"word,unique"`
+	TTL                 int             `json:"ttl"                    gorm:"column:ttl;not null;default:7"                                        default:"7"`
+	DaysBeforeTTLExpiry int             `json:"days_before_ttl_expiry" gorm:"column:days_before_ttl_expiry;not null;default:2"                     default:"2"`
+	Name                string          `json:"name"                   gorm:"not null"`
+	Members             []ProjectMember `json:"members"                                                                        faker:"-"`
 	UserID              uint            `json:"user_id"`
-	User                User            `json:"user" faker:"-"`
-	Environments        []Environment   `json:"environments" faker:"-"`
+	User                User            `json:"user"                                                                           faker:"-"`
+	Environments        []Environment   `json:"environments"                                                                   faker:"-"`
 	OrganizationID      uint            `json:"organization_id"`
 	Organization        Organization    `json:"organization"`
 	CreatedAt           time.Time       `json:"created_at"`

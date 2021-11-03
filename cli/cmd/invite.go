@@ -18,29 +18,38 @@ package cmd
 import (
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
+
+var inviteEmail string
 
 // inviteCmd represents the invite command
 var inviteCmd = &cobra.Command{
 	Use:   "invite <email address>",
 	Short: "Sends an invitation to join Keystone",
 	Long:  `Sends an invitation to join Keystone.`,
-	Args:  cobra.ExactArgs(1),
-	Run: func(_ *cobra.Command, args []string) {
-		emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-
-		email := args[0]
-
-		if !emailRegex.Match([]byte(email)) {
-			exit(fmt.Errorf("invalid email address: %s", email))
+	// Args:  cobra.ExactArgs(1),
+	Args: func(cmd *cobra.Command, args []string) error {
+		err := cobra.ExactArgs(1)(cmd, args)
+		if err != nil {
+			return err
 		}
 
+		emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+		inviteEmail = args[0]
+
+		if !emailRegex.Match([]byte(inviteEmail)) {
+			return fmt.Errorf("invalid email address: %s", inviteEmail)
+		}
+
+		return nil
+	},
+	Run: func(_ *cobra.Command, _ []string) {
 		c, kcErr := client.NewKeystoneClient()
 		exitIfErr(kcErr)
 
@@ -49,26 +58,10 @@ var inviteCmd = &cobra.Command{
 
 		projectName := ctx.GetProjectName()
 
-		result, err := c.Users().InviteUser(email, projectName)
+		result, err := c.Users().InviteUser(inviteEmail, projectName)
 		exitIfErr(err)
 
-		if len(result.UserUIDs) > 0 {
-
-			ui.Print(ui.RenderTemplate("file add success", `
-{{ OK }} {{ .Title | green }}
-
-The email is associated with a Keystone account. They are registered as: {{ .Usernames | bright_green }}.
-
-To add them to the project use "member add" command:
-  $ ks member add <username>
-`, map[string]string{
-				"Title":     "User already on Keystone",
-				"Usernames": fmt.Sprintf("%s", strings.Join(result.UserUIDs, ", ")),
-			}))
-		} else {
-			ui.PrintSuccess("A email has been sent to %s, they will get back to you when their Keystone account will be created", email)
-		}
-
+		display.InviteSuccess(result.UserUIDs, inviteEmail)
 	},
 }
 

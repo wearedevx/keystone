@@ -19,7 +19,7 @@ import (
 	"path"
 
 	"github.com/wearedevx/keystone/cli/internal/utils"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 
 	"github.com/spf13/cobra"
@@ -44,7 +44,7 @@ ks file reset ./config.js
 ks file reset
 `,
 	Run: func(_ *cobra.Command, args []string) {
-		mustFetchMessages(nil)
+		mustFetchMessages()
 
 		filesToReset := args
 		if len(filesToReset) == 0 {
@@ -53,26 +53,17 @@ ks file reset
 			}
 		}
 
-		ui.Print(ui.RenderTemplate(
-			"careful reset",
-			`{{ CAREFUL }} {{ "Local changes will be lost" | yellow }}
-The content of the files you are resetting will be replaced by their cached content.`,
-			nil,
-		))
-
-		doIt := fileResetYes
-		if !fileResetYes {
-			doIt = prompts.Confirm("Continue")
-		}
-
-		if doIt {
+		if prompts.ConfirmFileReset(fileResetYes) {
 			for _, file := range filesToReset {
 				if !ctx.HasFile(file) {
-					ui.Print("File '" + file + "' is not managed by Keystone, ignoring")
+					display.FileNotManaged(file)
 					continue
 				}
 
-				cachedFilePath := path.Join(ctx.CachedEnvironmentFilesPath(currentEnvironment), file)
+				cachedFilePath := path.Join(
+					ctx.CachedEnvironmentFilesPath(currentEnvironment),
+					file,
+				)
 				filePath := path.Join(ctx.Wd, file)
 
 				err := utils.CopyFile(cachedFilePath, filePath)

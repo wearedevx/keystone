@@ -9,8 +9,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var gitlabClientId string
-var gitlabClientSecret string
+var (
+	gitlabClientId     string
+	gitlabClientSecret string
+)
 
 type gitlabAuthService struct {
 	apiUrl       string
@@ -70,7 +72,6 @@ func (g *gitlabAuthService) WaitForExternalLogin() error {
 	}
 
 	token, err := g.conf.Exchange(g.ctx, result.authCode)
-
 	if err != nil {
 		return err
 	}
@@ -84,13 +85,25 @@ func (g *gitlabAuthService) WaitForExternalLogin() error {
 	return nil
 }
 
-func (g gitlabAuthService) Finish(pk []byte, device string, deviceUID string) (models.User, string, error) {
-	return completeLogin(g.apiUrl, models.GitlabAccountType, g.token, pk, device, deviceUID)
+func (g gitlabAuthService) Finish(
+	pk []byte,
+	device string,
+	deviceUID string,
+) (models.User, string, error) {
+	return completeLogin(
+		g.apiUrl,
+		models.GitlabAccountType,
+		g.token,
+		pk,
+		device,
+		deviceUID,
+	)
 }
 
-func (g gitlabAuthService) CheckAccount(account map[string]string) (bool, error) {
+func (g gitlabAuthService) CheckAccount(
+	account map[string]string,
+) (bool, error) {
 	gUser, _, err := g.client.Users.CurrentUser()
-
 	if err != nil {
 		return false, err
 	}

@@ -4,7 +4,15 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/models"
+)
+
+type GetOptions bool
+
+const (
+	OWNED_ONLY GetOptions = true
+	ALL_KNWON  GetOptions = false
 )
 
 type Organizations struct {
@@ -20,7 +28,41 @@ func (c *Organizations) GetAll() ([]models.Organization, error) {
 	return result.Organizations, err
 }
 
-func (c *Organizations) CreateOrganization(organizationName string, private bool) (models.Organization, error) {
+func (c *Organizations) GetByName(
+	name string,
+	owned GetOptions,
+) (models.Organization, error) {
+	var err error
+	var result models.GetOrganizationsResponse
+	orga := models.Organization{}
+
+	params := map[string]string{
+		"name": name,
+	}
+
+	if owned {
+		params["owned"] = "1"
+	}
+
+	err = c.r.get("/organizations", &result, params)
+
+	if err != nil {
+		return orga, err
+	}
+
+	if len(result.Organizations) == 0 {
+		return orga, apierrors.ErrorFailedToGetResource
+	}
+
+	orga = result.Organizations[0]
+
+	return orga, nil
+}
+
+func (c *Organizations) CreateOrganization(
+	organizationName string,
+	private bool,
+) (models.Organization, error) {
 	var err error
 	var result models.Organization
 	payload := models.Organization{Name: organizationName, Private: private}
@@ -30,7 +72,9 @@ func (c *Organizations) CreateOrganization(organizationName string, private bool
 	return result, err
 }
 
-func (c *Organizations) UpdateOrganization(organization models.Organization) (models.Organization, error) {
+func (c *Organizations) UpdateOrganization(
+	organization models.Organization,
+) (models.Organization, error) {
 	var err error
 	var result models.Organization
 

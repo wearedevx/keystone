@@ -18,8 +18,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/messages"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 var purgeSecret bool
@@ -43,8 +42,7 @@ Removes the given secret from all environments.
 			exit(kserrors.SecretDoesNotExist(secretName, nil))
 		}
 
-		ms := messages.NewMessageService(ctx)
-		changes := mustFetchMessages(ms)
+		changes, messageService := mustFetchMessages()
 
 		ctx.
 			CompareRemovedSecretWithChanges(secretName, changes).
@@ -54,11 +52,11 @@ Removes the given secret from all environments.
 
 		if purgeSecret {
 			exitIfErr(
-				ms.SendEnvironments(ctx.AccessibleEnvironments).Err(),
+				messageService.SendEnvironments(ctx.AccessibleEnvironments).Err(),
 			)
 		}
 
-		ui.PrintSuccess("Variable '%s' removed", secretName)
+		display.SecretRemoved(secretName)
 	},
 }
 

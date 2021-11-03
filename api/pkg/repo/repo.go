@@ -21,13 +21,15 @@ type Repo struct {
 
 var db *gorm.DB
 
-var dbHost string
-var dbPort string
-var dbUser string
-var dbPassword string
-var dbName string
-var dbDialect string
-var dbDriverName string
+var (
+	dbHost       string
+	dbPort       string
+	dbUser       string
+	dbPassword   string
+	dbName       string
+	dbDialect    string
+	dbDriverName string
+)
 
 func getOrDefault(s string, env string, d string) string {
 	if s == "" {
@@ -55,7 +57,6 @@ func getDSN() string {
 
 // getPostrgres gets the postgres driver for GORM
 func getPostgres() gorm.Dialector {
-
 	os.TempDir()
 	config := postgres.Config{
 		DSN: getDSN(),
@@ -81,7 +82,6 @@ func Transaction(fn func(IRepo) error) error {
 		}
 
 		return fn(repo)
-
 	})
 	return err
 }

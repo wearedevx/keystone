@@ -25,6 +25,7 @@ func setupFunc(env *testscript.Env) error {
 
 	return nil
 }
+
 func TestCommands(t *testing.T) {
 	testscript.Run(t, testscript.Params{
 		Dir:                  "./",

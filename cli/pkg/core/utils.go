@@ -22,7 +22,7 @@ func Uniq(arr []string) []string {
 	result := []string{}
 
 	for e := range arr {
-		if occured[arr[e]] != true {
+		if !occured[arr[e]] {
 			occured[arr[e]] = true
 			result = append(result, arr[e])
 		}

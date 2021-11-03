@@ -21,7 +21,11 @@ func GetBackupPath(wd, projectName, backupName string) string {
 	if backupName == "" {
 		backupName = path.Join(
 			wd,
-			fmt.Sprintf(`keystone-backup-%s-%d.tar.gz`, projectName, time.Now().Unix()),
+			fmt.Sprintf(
+				`keystone-backup-%s-%d.tar.gz`,
+				projectName,
+				time.Now().Unix(),
+			),
 		)
 	} else {
 		backupName = path.Join(
@@ -33,13 +37,10 @@ func GetBackupPath(wd, projectName, backupName string) string {
 	return backupName
 }
 
-<<<<<<< HEAD
-=======
 // Creates a .tar.gz archive.
 // `source` is a path to a directory to archive.
 // `wd` is a path to a working directory, used to store the temporary `.tar` file.
 // `target` is a path to the target `.tar.gz` file
->>>>>>> refactor/restore-in-archive
 func Archive(source, wd, target string) (err error) {
 	if err = Tar(source, wd); err != nil {
 		return err
@@ -56,8 +57,6 @@ func Archive(source, wd, target string) (err error) {
 	return nil
 }
 
-<<<<<<< HEAD
-=======
 // Creates a `.tar.gz` archive of the `source` directory,
 // into the `traget` file, and encrypts it using `passphrase`
 func ArchiveWithPassphrase(source, target, passphrase string) (err error) {
@@ -75,7 +74,7 @@ func ArchiveWithPassphrase(source, target, passphrase string) (err error) {
 		return err
 	}
 
-	if err = ioutil.WriteFile(target, encrypted, 0644); err != nil {
+	if err = ioutil.WriteFile(target, encrypted, 0o644); err != nil {
 		return err
 	}
 
@@ -130,7 +129,6 @@ func ExtractWithPassphrase(archivepath, target, passphrase string) (err error) {
 	return nil
 }
 
->>>>>>> refactor/restore-in-archive
 // Tar creates a tar archive
 // source is a path to a directory to archive
 // target is a path to a directory to write the archive to.
@@ -229,7 +227,11 @@ func Untar(tarball, target string) error {
 		}
 
 		/* #nosec */
-		file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode())
+		file, err := os.OpenFile(
+			path,
+			os.O_CREATE|os.O_TRUNC|os.O_WRONLY,
+			info.Mode(),
+		)
 		if err != nil {
 			return err
 		}

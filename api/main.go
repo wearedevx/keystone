@@ -1,6 +1,6 @@
 package main
 
-//go:generate go run ./generators/errors.go
+// go:generate go run ./generators/errors.go
 
 import (
 	"log"
@@ -20,7 +20,6 @@ func (h *baseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	err := seed.SeedRoles()
-
 	if err != nil {
 		panic(err)
 	}

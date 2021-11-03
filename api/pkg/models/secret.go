@@ -17,11 +17,11 @@ const (
 )
 
 type Secret struct {
-	ID        uint       `join:"id" gorm:"primaryKey"`
-	Name      string     `json:"name" gorm:"not null"`
-	Type      SecretType `json:"type" gorm:"not null"`
-	CreatedAt time.Time  `json:"created_at" gorm:"not null"`
-	UpdatedAt time.Time  `json:"updated_at"`
+	ID        uint       `gorm:"primaryKey" join:"id"`
+	Name      string     `gorm:"not null"             json:"name"`
+	Type      SecretType `gorm:"not null"             json:"type"`
+	CreatedAt time.Time  `gorm:"not null"             json:"created_at"`
+	UpdatedAt time.Time  `                            json:"updated_at"`
 }
 
 func (s *Secret) BeforeCreate(tx *gorm.DB) (err error) {

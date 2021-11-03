@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
@@ -17,7 +17,7 @@ func EndScript() int {
 func GithubLoginSuccess() int {
 	time.Sleep(3000 * time.Millisecond)
 
-	lrs := []LoginRequest{}
+	lrs := []models.LoginRequest{}
 
 	// Retrieve login_attemps in db
 	Repo := new(repo.Repo)
@@ -34,7 +34,7 @@ func GithubLoginSuccess() int {
 		client := http.Client{
 			Timeout: timeout,
 		}
-		state := AuthState{
+		state := models.AuthState{
 			TemporaryCode: lr.TemporaryCode,
 			Version:       "test",
 		}
@@ -44,7 +44,11 @@ func GithubLoginSuccess() int {
 			panic(err)
 		}
 
-		request, err := http.NewRequest("GET", "http://localhost:9001/auth-redirect/?state="+codedState+"&code=youpicode", nil)
+		request, err := http.NewRequest(
+			"GET",
+			"http://localhost:9001/auth-redirect/?state="+codedState+"&code=youpicode",
+			nil,
+		)
 
 		if err == nil {
 			fmt.Println("reguest auth-redirect")

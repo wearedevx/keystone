@@ -2,13 +2,12 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/pkg/client"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // cleanCmd represents the clean command
@@ -30,7 +29,11 @@ ks ci clean --env prod
 		var err error
 		ctx.MustHaveEnvironment(currentEnvironment)
 
-		ciService, err := SelectCiService(ctx)
+		ciService, err := ci.SelectCiServiceConfiguration(
+			"",
+			ctx,
+			client.ApiURL,
+		)
 		if err != nil {
 			if errors.Is(err, ci.ErrorNoCIServices) {
 				exit(kserrors.NoCIServices(nil))
@@ -42,15 +45,15 @@ ks ci clean --env prod
 		if err = ciService.
 			CleanSecret(currentEnvironment).
 			Error(); err != nil {
-			if strings.Contains(ciService.Error().Error(), "404") == true {
-				ui.PrintSuccess(fmt.Sprintf("No secret found for environment %s in CI service", currentEnvironment))
+			if errors.Is(err, ci.ErrorNoSecretsForEnvironment) {
+				display.CiNoSecretsForEnvironment(currentEnvironment)
 				exit(nil)
 			}
 
 			exit(kserrors.CouldNotCleanService(err))
 		}
 
-		ui.PrintSuccess(fmt.Sprintf("Secrets successfully removed from CI service, environment %s.", currentEnvironment))
+		display.CiSecretsRemoved(currentEnvironment)
 	},
 }
 

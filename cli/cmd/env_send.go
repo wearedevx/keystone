@@ -18,9 +18,8 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	kerrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // sendCmd represents the send command
@@ -34,9 +33,7 @@ they have access to.
 `,
 	Example: `ks env send`,
 	Args:    cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		var err *kerrors.Error
-
+	Run: func(_ *cobra.Command, _ []string) {
 		ctx.MustHaveEnvironment(currentEnvironment)
 
 		environments := ctx.AccessibleEnvironments
@@ -53,16 +50,11 @@ they have access to.
 
 		ms := messages.NewMessageService(ctx)
 
-		err = ms.SendEnvironments(environments).Err()
-		exitIfErr(err)
-
-		ui.Print(
-			ui.RenderTemplate(
-				"send success",
-				`{{ OK }} {{ "Environments sent successfully to members" | green }}`,
-				nil,
-			),
+		exitIfErr(
+			ms.SendEnvironments(environments).Err(),
 		)
+
+		display.EnvironmentSendSuccess()
 	},
 }
 

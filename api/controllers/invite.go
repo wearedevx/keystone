@@ -38,22 +38,22 @@ func PostInvite(
 	// check if user exist
 	if err = Repo.GetUserByEmail(targetEmail, &targetUsers).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
+			var email *emailer.Email
 
-			e, err := emailer.InviteMail(user, payload.ProjectName)
+			email, err = emailer.InviteMail(user, payload.ProjectName)
 			if err != nil {
 				status = http.StatusInternalServerError
 				err = apierrors.ErrorFailedToCreateMailContent(err)
 				goto done
 			}
 
-			if err = e.Send([]string{targetEmail}); err != nil {
+			if err = email.Send([]string{targetEmail}); err != nil {
 				fmt.Printf("Invite Mail err: %+v\n", err)
 				status = http.StatusInternalServerError
 				err = apierrors.ErrorFailedToSendMail(err)
 				goto done
 			}
 		}
-
 	} else {
 		for _, user := range targetUsers {
 			result.UserUIDs = append(result.UserUIDs, user.UserID)

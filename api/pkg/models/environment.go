@@ -11,8 +11,8 @@ import (
 )
 
 type Environment struct {
-	ID                uint            `json:"id" gorm:"primaryKey"`
-	Name              string          `json:"name" gorm:"not null"`
+	ID                uint            `json:"id"                  gorm:"primaryKey"`
+	Name              string          `json:"name"                gorm:"not null"`
 	EnvironmentTypeID uint            `json:"environment_type_id"`
 	EnvironmentType   EnvironmentType `json:"environment_type"`
 	ProjectID         uint            `json:"project_id"`
@@ -73,8 +73,8 @@ func (u *GetEnvironmentsResponse) Serialize(out *string) (err error) {
 
 type EnvironmentUserSecret struct {
 	EnvironmentID uint      `json:"environmentID" gorm:"primaryKey"`
-	UserID        uint      `json:"userID" gorm:"primaryKey"`
-	SecretID      uint      `json:"secretID" gorm:"primaryKey"`
+	UserID        uint      `json:"userID"        gorm:"primaryKey"`
+	SecretID      uint      `json:"secretID"      gorm:"primaryKey"`
 	Value         []byte    `json:"value"`
 	CreatedAt     time.Time `json:"createdAt"`
 	UpdatedAt     time.Time `json:"updatedAt"`

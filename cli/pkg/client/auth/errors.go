@@ -4,6 +4,6 @@ import "errors"
 
 var (
 	ErrorUnauthorized   = errors.New("Unauthorized")
-	ServiceNotAvailable = errors.New("connection refused")
-	DeviceNotRegistered = errors.New("Device not registered")
+	ErrorServiceNotAvailable = errors.New("connection refused")
+	ErrorDeviceNotRegistered = errors.New("device not registered")
 )

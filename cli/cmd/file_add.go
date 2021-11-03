@@ -17,24 +17,17 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
-	"reflect"
-	"strings"
 
-	"github.com/eiannone/keyboard"
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/files"
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
-	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
-	"github.com/wearedevx/keystone/cli/ui/prompts"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // filesAddCmd represents the push command
@@ -65,11 +58,12 @@ ks file add -s ./credentials.json`,
 		filePath, err := cleanPathArgument(args[0], ctx.Wd)
 		exitIfErr(err)
 
+		fileservice := files.NewFileService(ctx)
+
 		environments := ctx.AccessibleEnvironments
 		environmentFileMap := map[string][]byte{}
 
-		useOldFile := checkFileAlreadyInCache(filePath)
-		if !useOldFile {
+		if !fileservice.AskToOverrideFilesInCache(filePath, skipPrompts) {
 			absPath := filepath.Join(ctx.Wd, filePath)
 
 			if !utils.FileExists(absPath) {
@@ -90,20 +84,20 @@ ks file add -s ./credentials.json`,
 			environmentFileMap[currentEnvironment] = currentContent
 
 			if !skipPrompts {
-				askContentOfFile(
-					environments,
+				exitIfErr(fileservice.AskContent(
 					filePath,
+					environments,
 					environmentFileMap,
 					currentContent,
-				)
+					currentEnvironment,
+				).Err())
 			} else {
 				for _, environment := range environments {
 					environmentFileMap[environment.Name] = currentContent
 				}
 			}
 
-			ms := messages.NewMessageService(ctx)
-			changes := mustFetchMessages(ms)
+			changes, messageService := mustFetchMessages()
 
 			exitIfErr(
 				ctx.CompareNewFileWhithChanges(filePath, changes).Err(),
@@ -127,7 +121,10 @@ ks file add -s ./credentials.json`,
 				).Err(),
 			)
 
-			exitIfErr(ms.SendEnvironments(ctx.AccessibleEnvironments).Err())
+			exitIfErr(
+				messageService.SendEnvironments(ctx.AccessibleEnvironments).
+					Err(),
+			)
 		} else {
 			// just add file to keystone.yaml and keep old content
 
@@ -145,104 +142,10 @@ ks file add -s ./credentials.json`,
 			}
 		}
 
-		ui.Print(ui.RenderTemplate("file add success", `
-{{ OK }} {{ .Title | green }}
-The file has been added to {{ .NumberEnvironments }} environment(s).
-It has also been gitignored.`, map[string]string{
-			"Title":              fmt.Sprintf("Added '%s'", filePath),
-			"NumberEnvironments": fmt.Sprintf("%d", len(environments)),
-		}))
+		display.FileAddSuccess(filePath, len(environments))
 	},
 }
 
 func init() {
 	filesCmd.AddCommand(filesAddCmd)
-}
-
-func askContentOfFile(
-	environments []models.Environment,
-	filePath string,
-	environmentFileMap map[string][]byte,
-	currentContent []byte,
-) {
-	extension := filepath.Ext(filePath)
-
-	for _, environment := range environments {
-		if environment.Name != currentEnvironment {
-			ui.Print(fmt.Sprintf("Enter content for file `%s` for the '%s' environment (Press any key to continue)", filePath, environment.Name))
-			_, _, err := keyboard.GetSingleKey()
-			if err != nil {
-				errmsg := fmt.Sprintf("Failed to read user input (%s)", err.Error())
-				println(errmsg)
-				os.Exit(1)
-				return
-			}
-
-			content, err := utils.CaptureInputFromEditor(
-				utils.GetPreferredEditorFromEnvironment,
-				extension,
-				string(currentContent),
-			)
-
-			if err != nil {
-				errmsg := fmt.Sprintf("Failed to get content from editor (%s)", err.Error())
-				println(errmsg)
-				os.Exit(1)
-				return
-			}
-
-			environmentFileMap[environment.Name] = content
-		}
-	}
-}
-
-func checkFileAlreadyInCache(fileName string) bool {
-	files := ctx.ListFilesFromCache()
-	var found keystonefile.FileKey
-	for _, file := range files {
-		if file.Path == fileName {
-			found = file
-		}
-	}
-	if !reflect.ValueOf(found).IsZero() {
-		ui.Print(`The file already exist but is not used.`)
-		for _, env := range ctx.AccessibleEnvironments {
-			content, err := ctx.GetFileContents(fileName, env.Name)
-
-			ui.Print("\n")
-			ui.Print("------------------" + env.Name + "------------------")
-			ui.Print("\n")
-			if err != nil {
-				ui.Print("File not found for this environment")
-			}
-
-			ui.Print(string(content))
-		}
-
-		override := false
-
-		if !skipPrompts {
-			override = prompts.Confirm("Do you want to override the contents")
-		}
-
-		return !override
-	}
-	return false
-}
-
-func cleanPathArgument(
-	filePathArg string,
-	wd string,
-) (filePath string, err error) {
-	filePathInCwd := filepath.Join(CWD, filePathArg)
-	filePathClean := filepath.Clean(filePathInCwd)
-
-	if !strings.HasPrefix(filePathClean, wd) {
-		return "", fmt.Errorf("File %s not in project", filePath)
-	}
-
-	filePath = strings.TrimPrefix(filePathClean, ctx.Wd)
-	filePath = strings.TrimPrefix(filePath, "/")
-
-	return filePath, nil
 }

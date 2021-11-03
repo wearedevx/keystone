@@ -3,7 +3,6 @@ package messages
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/apierrors"
@@ -19,36 +18,29 @@ import (
 )
 
 type messageService struct {
-	err     *kserrors.Error
-	ctx     *core.Context
-	client  client.KeystoneClient
-	printer ui.Printer
+	err    *kserrors.Error
+	ctx    *core.Context
+	client client.KeystoneClient
 }
 
 type MessageService interface {
 	Err() *kserrors.Error
 	GetMessages() core.ChangesByEnvironment
 	SendEnvironments(environments []models.Environment) MessageService
-	SendEnvironmentsToOneMember(environments []models.Environment, member string) MessageService
+	SendEnvironmentsToOneMember(
+		environments []models.Environment,
+		member string,
+	) MessageService
 	DeleteMessages(messagesIds []uint) MessageService
 }
 
-func NewEchoMessageService(ctx *core.Context) (service MessageService) {
-	return newMessageService(ctx, &ui.EchoPrinter{})
-}
-
 func NewMessageService(ctx *core.Context) (service MessageService) {
-	return newMessageService(ctx, &ui.UiPrinter{})
-}
-
-func newMessageService(ctx *core.Context, Printer ui.Printer) (service MessageService) {
 	client, ksErr := client.NewKeystoneClient()
 
 	service = &messageService{
-		err:     ksErr,
-		ctx:     ctx,
-		client:  client,
-		printer: Printer,
+		err:    ksErr,
+		ctx:    ctx,
+		client: client,
 	}
 
 	return service
@@ -81,7 +73,13 @@ func (s *messageService) GetMessages() core.ChangesByEnvironment {
 		return core.ChangesByEnvironment{}
 	}
 
-	s.printChanges(changes, messagesByEnvironment)
+	environmentsNeedingASend := changes.ChangedEnvironmentsWithoutPayload()
+	if len(environmentsNeedingASend) > 0 {
+		s.err = kserrors.EnvironmentsHaveChanged(
+			strings.Join(environmentsNeedingASend, ", "),
+			nil,
+		)
+	}
 
 	messagesIds := getMessagesIds(messagesByEnvironment)
 	s.DeleteMessages(messagesIds)
@@ -114,7 +112,9 @@ func (s *messageService) DeleteMessages(messagesIds []uint) MessageService {
 
 // getMessagesIds returns all messages’ ids
 // from the API response
-func getMessagesIds(messagesByEnvironment models.GetMessageByEnvironmentResponse) []uint {
+func getMessagesIds(
+	messagesByEnvironment models.GetMessageByEnvironmentResponse,
+) []uint {
 	ids := []uint{}
 
 	for _, msgEnv := range messagesByEnvironment.Environments {
@@ -125,7 +125,9 @@ func getMessagesIds(messagesByEnvironment models.GetMessageByEnvironmentResponse
 }
 
 // fetchNewMessages fetches Messages and dercrypts them
-func (s *messageService) fetchNewMessages(result *models.GetMessageByEnvironmentResponse) {
+func (s *messageService) fetchNewMessages(
+	result *models.GetMessageByEnvironmentResponse,
+) {
 	var err error
 
 	if s.err != nil {
@@ -138,6 +140,8 @@ func (s *messageService) fetchNewMessages(result *models.GetMessageByEnvironment
 	projectID := s.ctx.GetProjectID()
 	*result, err = s.client.Messages().GetMessages(projectID)
 
+	sp.Stop()
+
 	if err != nil {
 		if errors.Is(err, auth.ErrorUnauthorized) {
 			s.err = kserrors.InvalidConnectionToken(err)
@@ -146,18 +150,21 @@ func (s *messageService) fetchNewMessages(result *models.GetMessageByEnvironment
 		return
 	}
 
-	sp.Stop()
-
 	s.err = s.decryptMessages(result)
 }
 
 // decryptMessages decrypts messages
 // Since the payload in GetMessageByEnvironmentResponse is bytes anyway,
 // the decryption is done in place.
-func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvironmentResponse) (err *kserrors.Error) {
+func (s *messageService) decryptMessages(
+	byEnvironment *models.GetMessageByEnvironmentResponse,
+) (err *kserrors.Error) {
 	privateKey, e := config.GetUserPrivateKey()
 	if e != nil {
-		return kserrors.CouldNotDecryptMessages("Failed to get the current user private key", e)
+		return kserrors.CouldNotDecryptMessages(
+			"Failed to get the current user private key",
+			e,
+		)
 	}
 
 	for environmentName, environment := range byEnvironment.Environments {
@@ -165,7 +172,23 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 		if msg.Sender.UserID != "" && len(msg.Payload) > 0 {
 			upks, e := s.client.Users().GetUserPublicKey(msg.Sender.UserID)
 			if e != nil {
-				return kserrors.CouldNotDecryptMessages(fmt.Sprintf("Failed to get the public key for user %s", msg.Sender.UserID), e)
+				return kserrors.CouldNotDecryptMessages(
+					fmt.Sprintf(
+						"Failed to get the public key for user %s",
+						msg.Sender.UserID,
+					),
+					e,
+				)
+			}
+
+			if len(upks.PublicKeys) == 0 {
+				return kserrors.CouldNotDecryptMessages(
+					fmt.Sprintf(
+						"User %s has no public keys",
+						msg.Sender.UserID,
+					),
+					nil,
+				)
 			}
 
 			if len(upks.PublicKeys) == 0 {
@@ -182,7 +205,11 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 				}
 			}
 
-			d, e := crypto.DecryptMessage(privateKey, udevice.PublicKey, msg.Payload)
+			d, e := crypto.DecryptMessage(
+				privateKey,
+				udevice.PublicKey,
+				msg.Payload,
+			)
 			if e != nil {
 				return kserrors.CouldNotDecryptMessages("Decryption failed", e)
 			}
@@ -196,71 +223,14 @@ func (s *messageService) decryptMessages(byEnvironment *models.GetMessageByEnvir
 	return nil
 }
 
-// printChanges displays changes for environments to the user
-func (s *messageService) printChanges(changes core.ChangesByEnvironment, messagesByEnvironments models.GetMessageByEnvironmentResponse) {
-	changedEnvironments := make([]string, 0)
-
-	var envList []string = []string{"dev", "staging", "prod"}
-
-	for _, environmentName := range envList {
-		environment, ok := messagesByEnvironments.Environments[environmentName]
-		if !ok {
-			continue
-		}
-
-		messageID := environment.Message.ID
-
-		if messageID != 0 {
-			// IF changes detected
-			if len(changes.Environments[environmentName]) > 0 {
-				s.printer.PrintStdErr("Environment " + environmentName + ": " + strconv.Itoa(len(changes.Environments[environmentName])) + " secret(s) changed")
-
-				for _, change := range changes.Environments[environmentName] {
-					// No previous cotent => secret is new
-					if len(change.From) == 0 {
-						s.printer.PrintStdErr(ui.RenderTemplate("secret added", ` {{ "++" | green }} {{ .Secret }} : {{ .To }}`, map[string]string{
-							"Secret": change.Name,
-							"From":   change.From,
-							"To":     change.To,
-						}))
-					} else if len(change.To) == 0 {
-						s.printer.PrintStdErr(ui.RenderTemplate("secret deleted", ` {{ "--" | red }} {{ .Secret }} deleted.`, map[string]string{
-							"Secret": change.Name,
-						}))
-					} else {
-						s.printer.PrintStdErr("   " + change.Name + " : " + change.From + " ↦ " + change.To)
-					}
-
-				}
-			} else {
-				s.printer.PrintStdErr("Environment " + environmentName + " up to date ✔")
-			}
-
-			if err := s.ctx.Err(); err != nil {
-				s.err = err
-				return
-			}
-		} else {
-			environmentChanged := s.ctx.EnvironmentVersionHasChanged(environmentName, environment.Environment.VersionID)
-
-			if environmentChanged {
-				s.printer.PrintStdErr("Environment " + environmentName + " has changed but no message available. Ask someone to push their secret ⨯")
-				changedEnvironments = append(changedEnvironments, environmentName)
-			} else {
-				s.printer.PrintStdErr("Environment " + environmentName + " up to date ✔")
-			}
-		}
-	}
-
-	if len(changedEnvironments) > 0 {
-		s.err = kserrors.EnvironmentsHaveChanged(strings.Join(changedEnvironments, ", "), nil)
-	}
-}
+var envList []string = []string{"dev", "staging", "prod"}
 
 // SendEnvironments sends environments to all members of the project
 // The API providing the public keys, it should handle reading rights for
 // each project member
-func (s *messageService) SendEnvironments(environments []models.Environment) MessageService {
+func (s *messageService) SendEnvironments(
+	environments []models.Environment,
+) MessageService {
 	if s.err != nil {
 		return s
 	}
@@ -275,7 +245,11 @@ func (s *messageService) SendEnvironments(environments []models.Environment) Mes
 	}
 
 	for _, environment := range environments {
-		messages, err := s.prepareMessages(currentUser, senderPrivateKey, environment)
+		messages, err := s.prepareMessages(
+			currentUser,
+			senderPrivateKey,
+			environment,
+		)
 		if err != nil {
 			s.err = err
 			return s
@@ -286,7 +260,9 @@ func (s *messageService) SendEnvironments(environments []models.Environment) Mes
 	return s.sendMessageAndUpdateEnvironment(messagesToWrite)
 }
 
-func (s *messageService) sendMessageAndUpdateEnvironment(messagesToWrite models.MessagesToWritePayload) *messageService {
+func (s *messageService) sendMessageAndUpdateEnvironment(
+	messagesToWrite models.MessagesToWritePayload,
+) *messageService {
 	sp := spinner.Spinner(" Sending secrets...")
 	sp.Start()
 
@@ -321,7 +297,10 @@ func (s *messageService) sendMessageAndUpdateEnvironment(messagesToWrite models.
 
 // SendEnvironmentsToOneMember sends environments to only one specified
 // member.
-func (s *messageService) SendEnvironmentsToOneMember(environments []models.Environment, member string) MessageService {
+func (s *messageService) SendEnvironmentsToOneMember(
+	environments []models.Environment,
+	member string,
+) MessageService {
 	if s.err != nil {
 		return s
 	}
@@ -336,7 +315,8 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 	for _, environment := range environments {
 		environmentId := environment.EnvironmentID
 
-		userPublicKeys, err := s.client.Users().GetEnvironmentPublicKeys(environmentId)
+		userPublicKeys, err := s.client.Users().
+			GetEnvironmentPublicKeys(environmentId)
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
 				s.err = kserrors.InvalidConnectionToken(err)
@@ -347,7 +327,7 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 		}
 
 		var recipientPublicKeys models.UserPublicKeys
-		var found bool = false
+		found := false
 
 		for _, upk := range userPublicKeys.Keys {
 			if upk.UserUID == member {
@@ -359,7 +339,8 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 
 		// If receiver has no access to environment, print error and continue to other environments
 		if !found {
-			kserrors.MemberHasNoAccessToEnv(fmt.Errorf("%s has no public key associated with the environment %s", member, environment.Name)).Print()
+			kserrors.MemberHasNoAccessToEnv(fmt.Errorf("%s has no public key associated with the environment %s", member, environment.Name)).
+				Print()
 			sentEnvironmentCount -= 1
 			continue
 		}
@@ -371,7 +352,13 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 		}
 
 		for _, recipientPublicKey := range recipientPublicKeys.PublicKeys {
-			message, err := s.prepareMessage(senderPrivateKey, environment, recipientPublicKey, recipientPublicKeys.UserID, PayloadContent)
+			message, err := s.prepareMessage(
+				senderPrivateKey,
+				environment,
+				recipientPublicKey,
+				recipientPublicKeys.UserID,
+				PayloadContent,
+			)
 			if err != nil {
 				s.err = kserrors.UnkownError(err)
 				return s
@@ -383,7 +370,10 @@ func (s *messageService) SendEnvironmentsToOneMember(environments []models.Envir
 	}
 
 	s = s.sendMessageAndUpdateEnvironment(messagesToWrite)
-	ui.PrintSuccess("Secrets and files sent to user for %d environments.", len(environments))
+	ui.PrintSuccess(
+		"Secrets and files sent to user for %d environments.",
+		len(environments),
+	)
 
 	return s
 }
@@ -418,12 +408,16 @@ func (s *messageService) prepareMessages(
 	environmentId := environment.EnvironmentID
 	messages := make([]models.MessageToWritePayload, 0)
 
-	userPublicKeys, err := s.client.Users().GetEnvironmentPublicKeys(environmentId)
+	userPublicKeys, err := s.client.Users().
+		GetEnvironmentPublicKeys(environmentId)
 	if err != nil {
 		if errors.Is(err, auth.ErrorUnauthorized) {
 			return messages, kserrors.PermissionDenied(environment.Name, err)
 		}
-		return messages, kserrors.CannotGetEnvironmentKeys(environment.Name, err)
+		return messages, kserrors.CannotGetEnvironmentKeys(
+			environment.Name,
+			err,
+		)
 	}
 
 	PayloadContent, err := s.ctx.PrepareMessagePayload(environment)
@@ -472,7 +466,11 @@ func (s *messageService) prepareMessage(
 		return message, err
 	}
 
-	encryptedPayload, err := crypto.EncryptMessage(senderPrivateKey, userDevice.PublicKey, []byte(payload))
+	encryptedPayload, err := crypto.EncryptMessage(
+		senderPrivateKey,
+		userDevice.PublicKey,
+		[]byte(payload),
+	)
 	if err != nil {
 		return message, err
 	}

@@ -10,13 +10,12 @@ import (
 )
 
 type Device struct {
-	ID uint `json:"id" gorm:"primaryKey"`
-	// UserID    uint      `json:"user_id" gorm:"uniqueIndex:idx_public_keys_user_id"`
-	PublicKey  []byte    `json:"public_key" gorm:"type:bytea"`
+	ID         uint      `json:"id"           gorm:"primaryKey"`
+	PublicKey  []byte    `json:"public_key"   gorm:"type:bytea"`
 	Name       string    `json:"name"`
 	UID        string    `json:"uid"`
-	Users      []User    `json:"users" gorm:"many2many:user_devices;"`
-	LastUsedAt time.Time `json:last_used_at`
+	Users      []User    `json:"users"        gorm:"many2many:user_devices;"`
+	LastUsedAt time.Time `json:"last_used_at"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 	DeletedAt  gorm.DeletedAt

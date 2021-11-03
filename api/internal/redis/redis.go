@@ -17,9 +17,11 @@ type Redis struct {
 
 var rdb *redis.Client
 
-var redisHost string
-var redisPort string
-var redisIndex string
+var (
+	redisHost  string
+	redisPort  string
+	redisIndex string
+)
 
 var ctx = context.Background()
 
@@ -78,7 +80,6 @@ func (r *Redis) Write(key string, value string) IRedis {
 	}
 
 	err := r.rdb.Set(ctx, key, value, 0).Err()
-
 	if err != nil {
 		r.err = err
 	}
@@ -90,7 +91,6 @@ func (r *Redis) Delete(key string) IRedis {
 	intCmd := r.rdb.Del(ctx, key)
 
 	_, err := intCmd.Result()
-
 	if err != nil {
 		r.err = err
 	}

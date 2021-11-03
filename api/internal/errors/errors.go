@@ -2,7 +2,6 @@ package errors
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"strings"
 )
@@ -13,7 +12,7 @@ type Error struct {
 }
 
 func (e Error) Error() string {
-	return fmt.Sprintf("%s", e.message)
+	return e.message
 }
 
 func (e Error) Is(err error) bool {

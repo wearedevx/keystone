@@ -51,14 +51,16 @@ func (f *EnvFile) Load(path string, opts *LoadOptions) *EnvFile {
 	/* #nosec
 	 * Caller must ensure that path is within ctx.Wd
 	 */
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0600)
-
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0o600)
 	if err != nil {
 		return f.SetError("Failed to open `%s` (%w)", path, err)
 	}
 	defer utils.Close(file)
 
 	envFile, err := readFile(path, f.opts)
+	if err != nil {
+		return f.SetError("Failed to read `%s` (%w)", path, err)
+	}
 
 	for key, value := range envFile {
 		f.data[key] = value
@@ -124,7 +126,7 @@ func (f *EnvFile) Dump() *EnvFile {
 	contents := sb.String()
 
 	if err := ioutil.WriteFile(f.path, []byte(contents), 0o600); err != nil {
-		f.err = fmt.Errorf("Failed to write `%s` (%w)", f.path, err)
+		f.err = fmt.Errorf("failed to write `%s` (%w)", f.path, err)
 	}
 
 	return f
@@ -190,7 +192,10 @@ func Parse(r io.Reader, opts LoadOptions) (map[string]string, error) {
 
 // Read all env (with same file loading semantics as Load) but return values as
 // a map rather than automatically writing values into env
-func Read(filename string, opts LoadOptions) (envMap map[string]string, err error) {
+func Read(
+	filename string,
+	opts LoadOptions,
+) (envMap map[string]string, err error) {
 	envMap = make(map[string]string)
 
 	individualEnvMap, individualErr := readFile(filename, opts)
@@ -214,7 +219,10 @@ func UnmarshalBytes(src []byte, opts LoadOptions) (map[string]string, error) {
 	return out, err
 }
 
-func readFile(filename string, opts LoadOptions) (envMap map[string]string, err error) {
+func readFile(
+	filename string,
+	opts LoadOptions,
+) (envMap map[string]string, err error) {
 	/* #nosec
 	 * File is parsed and not exicuted, de facto ensurign that
 	 * no arbitrary code is run after reading

@@ -13,7 +13,7 @@ import (
 
 type KeyRing struct {
 	Cipher string `json:"cipher" gorm:"column:keys_cipher"`
-	Sign   string `json:"sign" gorm:"column:keys_sign"`
+	Sign   string `json:"sign"   gorm:"column:keys_sign"`
 }
 
 type InvitePayload struct {
@@ -36,17 +36,17 @@ func (pm *InvitePayload) Serialize(out *string) (err error) {
 }
 
 type User struct {
-	ID            uint           `json:"id" gorm:"primaryKey" faker:"-"`
-	AccountType   AccountType    `json:"account_type" gorm:"default:custom" faker:"oneof: github, gitlab"`
-	UserID        string         `json:"user_id" gorm:"uniqueIndex"`
-	ExtID         string         `json:"ext_id" faker:"uuid_digit"`
-	Username      string         `json:"username" faker:"username"`
-	Fullname      string         `json:"fullname" gorm:"not null" faker:"name"`
-	Email         string         `json:"email" gorm:"not null" faker:"email"`
+	ID            uint           `json:"id"            gorm:"primaryKey"              faker:"-"`
+	AccountType   AccountType    `json:"account_type"  gorm:"default:custom"          faker:"oneof: github, gitlab"`
+	UserID        string         `json:"user_id"       gorm:"uniqueIndex"`
+	ExtID         string         `json:"ext_id"                                       faker:"uuid_digit"`
+	Username      string         `json:"username"                                     faker:"username"`
+	Fullname      string         `json:"fullname"      gorm:"not null"                faker:"name"`
+	Email         string         `json:"email"         gorm:"not null"                faker:"email"`
 	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
-	Devices       []Device       `json:"devices" faker:"-" gorm:"many2many:user_devices;"`
-	Organizations []Organization `json:"organizations" faker:"-"`
+	Devices       []Device       `json:"devices"       gorm:"many2many:user_devices;" faker:"-"`
+	Organizations []Organization `json:"organizations"                                faker:"-"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
@@ -161,9 +161,7 @@ func (e *GetInviteResponse) Deserialize(in io.Reader) error {
 
 func (u *GetInviteResponse) Serialize(out *string) error {
 	var sb strings.Builder
-	var err error
-
-	err = json.NewEncoder(&sb).Encode(u)
+	err := json.NewEncoder(&sb).Encode(u)
 
 	*out = sb.String()
 

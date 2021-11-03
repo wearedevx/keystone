@@ -85,7 +85,8 @@ The Keystone team
 </p>
 `))
 
-	templates["new_device_admin/html"] = template.Must(template.New("new_device_admin/html").Parse(`
+	templates["new_device_admin/html"] = template.Must(
+		template.New("new_device_admin/html").Parse(`
 <p>
 	Hello!
 </p>
@@ -108,9 +109,11 @@ Have a nice day!
 <p>
 The Keystone team
 </p>
-`))
+`),
+	)
 
-	templates["new_device/html"] = template.Must(template.New("new_device/html").Parse(`
+	templates["new_device/html"] = template.Must(
+		template.New("new_device/html").Parse(`
 <p>
 	Hello!
 </p>
@@ -133,9 +136,11 @@ Have a nice day!
 <p>
 The Keystone team
 </p>
-`))
+`),
+	)
 
-	templates["message_will_expire/html"] = template.Must(template.New("mesage_will_expire/html").Parse(`
+	templates["message_will_expire/html"] = template.Must(
+		template.New("mesage_will_expire/html").Parse(`
 		<p>
 			Hello!
 		</p>
@@ -170,7 +175,8 @@ The Keystone team
 				<li>$ ks source</li>
 			</ol>
 		</p>
-`))
+`),
+	)
 }
 
 type inviteData struct {
@@ -311,7 +317,10 @@ func renderNewDeviceAdmin(
 	return html, text, nil
 }
 
-func renderNewDevice(deviceName string, userID string) (html string, text string, err error) {
+func renderNewDevice(
+	deviceName string,
+	userID string,
+) (html string, text string, err error) {
 	html, text, err = renderTemplate(
 		"new_device/html",
 		newDeviceData{
@@ -326,20 +335,28 @@ func renderNewDevice(deviceName string, userID string) (html string, text string
 	return html, text, nil
 }
 
-func renderMessageWillExpire(nbDays int, groupedProjects map[uint]GroupedMessageProject) (html string, text string, err error) {
+func renderMessageWillExpire(
+	nbDays int,
+	groupedProjects map[uint]GroupedMessageProject,
+) (html string, text string, err error) {
 	html, text, err = renderTemplate(
 		"message_will_expire/html",
-		newGroupedMessageProjectData{NbDays: nbDays, GroupedProjects: groupedProjects},
+		newGroupedMessageProjectData{
+			NbDays:          nbDays,
+			GroupedProjects: groupedProjects,
+		},
 	)
 	if err != nil {
 		return "", "", err
 	}
 
 	return html, text, nil
-
 }
 
-func InviteMail(inviter models.User, projectName string) (email *Email, err error) {
+func InviteMail(
+	inviter models.User,
+	projectName string,
+) (email *Email, err error) {
 	html, text, err := renderInviteTemplate(inviter.Email, projectName)
 	if err != nil {
 		return nil, err
@@ -356,7 +373,10 @@ func InviteMail(inviter models.User, projectName string) (email *Email, err erro
 	return email, nil
 }
 
-func AddedMail(inviter models.User, projectName string) (email *Email, err error) {
+func AddedMail(
+	inviter models.User,
+	projectName string,
+) (email *Email, err error) {
 	html, text, err := renderInviteTemplate(inviter.Email, projectName)
 	if err != nil {
 		return nil, err
@@ -373,7 +393,11 @@ func AddedMail(inviter models.User, projectName string) (email *Email, err error
 	return email, nil
 }
 
-func NewDeviceAdminMail(userID string, projects []string, deviceName string) (email *Email, err error) {
+func NewDeviceAdminMail(
+	userID string,
+	projects []string,
+	deviceName string,
+) (email *Email, err error) {
 	html, text, err := renderNewDeviceAdmin(userID, projects, deviceName)
 	if err != nil {
 		return nil, err
@@ -399,7 +423,7 @@ func NewDeviceMail(deviceName string, userID string) (email *Email, err error) {
 	email = &Email{
 		FromEmail: KEYSTONE_MAIL,
 		FromName:  "Keystone",
-		Subject:   fmt.Sprintf("A new device has been registered"),
+		Subject:   "A new device has been registered",
 		HtmlBody:  html,
 		TextBody:  text,
 	}
@@ -407,7 +431,10 @@ func NewDeviceMail(deviceName string, userID string) (email *Email, err error) {
 	return email, nil
 }
 
-func MessageWillExpireMail(nbDays int, groupedProjects map[uint]GroupedMessageProject) (email *Email, err error) {
+func MessageWillExpireMail(
+	nbDays int,
+	groupedProjects map[uint]GroupedMessageProject,
+) (email *Email, err error) {
 	html, text, err := renderMessageWillExpire(nbDays, groupedProjects)
 	if err != nil {
 		return nil, err

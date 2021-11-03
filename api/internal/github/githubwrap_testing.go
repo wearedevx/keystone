@@ -9,7 +9,10 @@ import (
 	"github.com/google/go-github/v32/github"
 )
 
-func GetUser(client *github.Client, ctx context.Context) (*github.User, *github.Response, error) {
+func GetUser(
+	client *github.Client,
+	ctx context.Context,
+) (*github.User, *github.Response, error) {
 	objUser := &github.User{}
 
 	userJSON := []byte(`
@@ -64,11 +67,12 @@ func GetUser(client *github.Client, ctx context.Context) (*github.User, *github.
 	json.Unmarshal(userJSON, &objUser)
 
 	return objUser, nil, nil
-
 }
 
-func ListEmails(client *github.Client, ctx context.Context) ([]*github.UserEmail, *github.Response, error) {
-
+func ListEmails(
+	client *github.Client,
+	ctx context.Context,
+) ([]*github.UserEmail, *github.Response, error) {
 	Email := "email@example.com"
 	Verified := true
 	Primary := true
@@ -78,7 +82,8 @@ func ListEmails(client *github.Client, ctx context.Context) ([]*github.UserEmail
 		Email:      &Email,
 		Primary:    &Primary,
 		Verified:   &Verified,
-		Visibility: &Visibility}
+		Visibility: &Visibility,
+	}
 
 	var emails []*github.UserEmail
 	emails = append(emails, &UserEmail)

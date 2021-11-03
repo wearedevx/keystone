@@ -32,7 +32,7 @@ func PostSubscription(
 
 	p := payment.NewStripePayment()
 
-	organizationName := params.Get("organizationName").(string)
+	organizationName := params.Get("organizationName")
 	organization := models.Organization{
 		Name: organizationName,
 	}
@@ -57,7 +57,8 @@ func PostSubscription(
 		goto done
 	}
 
-	if organization.CustomerID != "" && organization.SubscriptionID != "" && organization.Paid {
+	if organization.CustomerID != "" && organization.SubscriptionID != "" &&
+		organization.Paid {
 		status = http.StatusConflict
 		err = apierrors.ErrorAlreadySubscribed()
 		goto done
@@ -91,7 +92,7 @@ done:
 
 func GetPollSubscriptionSuccess(
 	params router.Params,
-	body io.ReadCloser,
+	_ io.ReadCloser,
 	Repo repo.IRepo,
 	user models.User,
 ) (response router.Serde, status int, err error) {
@@ -102,7 +103,7 @@ func GetPollSubscriptionSuccess(
 	}
 
 	var cs models.CheckoutSession
-	var sessionID string = params.Get("sessionID").(string)
+	sessionID := params.Get("sessionID")
 
 	if err = Repo.GetCheckoutSession(sessionID, &cs).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
@@ -134,7 +135,6 @@ func GetCheckoutSuccess(
 			DeleteCheckoutSession(&cs).
 			Err()
 	})
-
 	if err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
@@ -171,7 +171,6 @@ func GetCheckoutCancel(
 			DeleteCheckoutSession(&cs).
 			Err()
 	})
-
 	if err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
@@ -301,8 +300,6 @@ func PostStripeWebhook(
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
-	return
 }
 
 func ManageSubscription(
@@ -320,7 +317,7 @@ func ManageSubscription(
 		Action: "ManageSubscription",
 	}
 
-	organizationName := params.Get("organizationName").(string)
+	organizationName := params.Get("organizationName")
 	organization := models.Organization{
 		Name: organizationName,
 	}

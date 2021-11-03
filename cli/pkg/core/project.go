@@ -4,7 +4,7 @@ import (
 	"os"
 
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	. "github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 )
 
 func (ctx *Context) GetProjectName() string {
@@ -12,7 +12,7 @@ func (ctx *Context) GetProjectName() string {
 		return ""
 	}
 
-	ksFile := &KeystoneFile{}
+	ksFile := &keystonefile.KeystoneFile{}
 	ksFile.Load(ctx.Wd)
 
 	ctx.err = kserrors.FailedToReadKeystoneFile(ksFile.Err())
@@ -25,7 +25,7 @@ func (ctx *Context) GetProjectID() string {
 		return ""
 	}
 
-	ksFile := &KeystoneFile{}
+	ksFile := &keystonefile.KeystoneFile{}
 	ksFile.Load(ctx.Wd)
 
 	if ksFile.Err() != nil {
@@ -48,7 +48,7 @@ func (ctx *Context) MustHaveProject() {
 func (ctx *Context) Destroy() error {
 	var err error
 
-	if err = new(KeystoneFile).
+	if err = new(keystonefile.KeystoneFile).
 		Load(ctx.Wd).
 		Remove().
 		Err(); err != nil {

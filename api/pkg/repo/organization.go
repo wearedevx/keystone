@@ -2,7 +2,6 @@ package repo
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -17,16 +16,51 @@ func matchOrganizationName(name string) error {
 	return nil
 }
 
-func (r *Repo) GetOrganizationByName(orga *models.Organization) IRepo {
-	if err := r.GetDb().Where("name = ?", orga.Name).First(&orga).Error; err != nil {
-		r.err = err
+func (r *Repo) GetOrganizationByName(
+	userID uint,
+	name string,
+	orgas *[]models.Organization,
+) IRepo {
+	if r.err != nil {
 		return r
 	}
+
+	r.err = r.GetDb().
+		Preload("User").
+		Joins("left join projects p on p.organization_id = organizations.id").
+		Joins("left join project_members pm on pm.project_id = p.id").
+		Joins("left join users u on u.id = pm.user_id").
+		Where("(pm.user_id = ? and organizations.private = false) or organizations.user_id = ?", userID, userID).
+		Where("organizations.name = ?", name).
+		Find(&orgas).
+		Error
+
 	return r
 }
 
-func (r *Repo) GetOrganizationProjects(orga *models.Organization, projects *[]models.Project) IRepo {
-	fmt.Println(orga)
+func (r *Repo) GetOwnedOrganizationByName(
+	userID uint,
+	name string,
+	orgas *[]models.Organization,
+) IRepo {
+	if r.err != nil {
+		return r
+	}
+
+	r.err = r.GetDb().
+		Preload("User").
+		Where("organizations.user_id = ?", userID).
+		Where("organizations.name = ?", name).
+		Find(&orgas).
+		Error
+
+	return r
+}
+
+func (r *Repo) GetOrganizationProjects(
+	orga *models.Organization,
+	projects *[]models.Project,
+) IRepo {
 	if err := r.GetDb().Where("organization_id = ?", orga.ID).Find(&projects).Error; err != nil {
 		r.err = err
 		return r
@@ -145,12 +179,14 @@ func (r *Repo) OrganizationSetPaid(
 	return r
 }
 
-func (r *Repo) GetOrganizations(userID uint, result *models.GetOrganizationsResponse) IRepo {
+func (r *Repo) GetOrganizations(
+	userID uint,
+	orgas *[]models.Organization,
+) IRepo {
 	if r.Err() != nil {
 		return r
 	}
 
-	orgas := make([]models.Organization, 0)
 	err := r.GetDb().
 		Preload("User").
 		Joins("left join projects p on p.organization_id = organizations.id").
@@ -159,18 +195,18 @@ func (r *Repo) GetOrganizations(userID uint, result *models.GetOrganizationsResp
 		Where("(pm.user_id = ? and organizations.private = false) or organizations.user_id = ?", userID, userID).
 		Group("organizations.name").Group("organizations.id").
 		Find(&orgas).Error
-
 	if err != nil {
 		r.err = err
 		return r
 	}
 
-	result.Organizations = orgas
-
 	return r
 }
 
-func (r *Repo) OrganizationCountMembers(organization *models.Organization, count *int64) IRepo {
+func (r *Repo) OrganizationCountMembers(
+	organization *models.Organization,
+	count *int64,
+) IRepo {
 	if r.Err() != nil {
 		return r
 	}
@@ -188,25 +224,34 @@ func (r *Repo) OrganizationCountMembers(organization *models.Organization, count
 	return r
 }
 
-func (r *Repo) IsUserOwnerOfOrga(user *models.User, orga *models.Organization) (isOwner bool, err error) {
+func (r *Repo) IsUserOwnerOfOrga(
+	user *models.User,
+	orga *models.Organization,
+) (isOwner bool, err error) {
 	foundOrga := models.Organization{}
 
-	if err = r.GetDb().Where("id=?", orga.ID).First(&foundOrga).Error; err != nil {
+	if err = r.GetDb().
+		Where("user_id = ?", user.ID).
+		Where("id=?", orga.ID).
+		First(&foundOrga).Error; err != nil {
+		if errors.Is(gorm.ErrRecordNotFound, err) {
+			return false, nil
+		}
+
 		return false, err
 	}
-	if foundOrga.UserID == user.ID {
-		return true, nil
-	}
 
-	return isOwner, err
+	return true, nil
 }
 
 func setRoleToAdminForAllProjectsFromOrga(orga *models.Organization) error {
-
 	return nil
 }
 
-func (r *Repo) GetOrganizationMembers(orgaID uint, result *[]models.ProjectMember) IRepo {
+func (r *Repo) GetOrganizationMembers(
+	orgaID uint,
+	result *[]models.ProjectMember,
+) IRepo {
 	if r.Err() != nil {
 		return r
 	}
@@ -219,7 +264,6 @@ func (r *Repo) GetOrganizationMembers(orgaID uint, result *[]models.ProjectMembe
 		Where("o.id = ?", orgaID).
 		Group("project_members.user_id").Group("project_members.id").
 		Find(result).Error
-
 	if err != nil {
 		r.err = err
 		return r

@@ -19,9 +19,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // ciCmd represents the ci command
@@ -40,16 +39,7 @@ Used without arguments, lists CI services this project has been setup with.
 			exit(kserrors.UnkownError(err))
 		}
 
-		if len(services) != 0 {
-			ui.Print(ui.RenderTemplate("ci list", `
-CI Services:{{ range $service := .Services }} 
- - {{ $service.Name }} ({{ $service.Type }}){{end}}`, struct {
-				Services []keystonefile.CiService
-			}{
-				Services: services,
-			}))
-		}
-
+		display.CiConfigurations(services)
 	},
 }
 

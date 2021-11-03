@@ -11,7 +11,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/wearedevx/keystone/api/internal/activitylog"
-	. "github.com/wearedevx/keystone/api/pkg/jwt"
+	"github.com/wearedevx/keystone/api/pkg/jwt"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
@@ -39,16 +39,16 @@ func newParams(req *http.Request, params httprouter.Params) Params {
 	}
 }
 
-func (p Params) Get(key string) interface{} {
+func (p Params) Get(key string) string {
 	if v := p.urlParams.ByName(key); v != "" {
 		return v
 	}
 
 	v := p.urlQuery.Get(key)
 
-	if len(v) == 1 {
+	/* if len(v) == 1 {
 		return v[0]
-	}
+	} */
 
 	return v
 }
@@ -63,9 +63,7 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 		// Get user and prepare the repo
 		token := r.Header.Get("authorization")
 
-		userID, deviceUID, err := VerifyToken(token)
-		fmt.Printf("deviceUID: %+v\n", deviceUID)
-
+		userID, deviceUID, err := jwt.VerifyToken(token)
 		if err != nil {
 			// JWT verificatin failed
 			http.Error(dw, "", http.StatusUnauthorized)
@@ -125,14 +123,19 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 			}
 
 			if err != nil {
-				http.Error(dw, "Error Serializing results", http.StatusInternalServerError)
+				http.Error(
+					dw,
+					"Error Serializing results",
+					http.StatusInternalServerError,
+				)
 			}
 
 			out := bytes.NewBufferString(serialized)
 
 			// Write the response if any
 			if out.Len() > 0 {
-				dw.Header().Add("Content-Type", "application/json; charset=utf-8")
+				dw.Header().
+					Add("Content-Type", "application/json; charset=utf-8")
 				dw.Header().Add("Content-Length", strconv.Itoa(out.Len()))
 
 				if _, err := dw.Write(out.Bytes()); err != nil {

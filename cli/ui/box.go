@@ -5,7 +5,6 @@ import (
 )
 
 func Box(text string) string {
-
 	lines := strings.Split(text, "\n")
 	contentWidth := longestLine(lines)
 	// contentHeight := len(lines)
@@ -67,7 +66,7 @@ func drawLine(text string, length int) string {
 }
 
 func longestLine(lines []string) int {
-	var result = 0
+	result := 0
 
 	for _, line := range lines {
 		l := len(line)

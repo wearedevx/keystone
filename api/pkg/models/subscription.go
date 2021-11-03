@@ -13,14 +13,14 @@ type CheckoutSessionStatus string
 
 const (
 	CheckoutSessionStatusPending  CheckoutSessionStatus = "pending"
-	CheckoutSessionStatusSuccess                        = "success"
-	CheckoutSessionStatusCanceled                       = "canceled"
+	CheckoutSessionStatusSuccess  CheckoutSessionStatus = "success"
+	CheckoutSessionStatusCanceled CheckoutSessionStatus = "canceled"
 )
 
 type CheckoutSession struct {
-	ID        uint                  `json:"id" gorm:"primaryKey"`
+	ID        uint                  `json:"id"         gorm:"primaryKey"`
 	SessionID string                `json:"session_id" gorm:"unique"`
-	Status    CheckoutSessionStatus `json:"status" gorm:"default:pending" default:"pending"`
+	Status    CheckoutSessionStatus `json:"status"     gorm:"default:pending" default:"pending"`
 	CreatedAt time.Time             `json:"created_at"`
 	UpdatedAt time.Time             `json:"updated_at"`
 }

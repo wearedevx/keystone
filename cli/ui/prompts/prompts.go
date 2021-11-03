@@ -1,8 +1,10 @@
 package prompts
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -10,8 +12,25 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
-func PromptRole(memberId string, roles []models.Role) (models.Role, error) {
+// ———— MEMBERS PROMTS ———— //
 
+// ConfirmRevokeAccessToMember asks the user to confirm they
+// want to revoke the access to the given member,
+// unless `forceYes` is true, in which case it returns true without
+// asking the user.
+func ConfirmRevokeAccessToMember(memberId string, forceYes bool) bool {
+	if forceYes {
+		return true
+	}
+
+	return Confirm("Revoke access to " + memberId)
+}
+
+// Prompts to select a role for a user
+// `memberId` is a `username@service` userID
+// `roles` is a list of roles to select from
+// Returns the selected role
+func PromptRole(memberId string, roles []models.Role) (models.Role, error) {
 	templates := &promptui.SelectTemplates{
 		Label: "Role for {{ . }}?",
 		Active: fmt.Sprintf(
@@ -31,8 +50,8 @@ func PromptRole(memberId string, roles []models.Role) (models.Role, error) {
 
 	searcher := func(input string, index int) bool {
 		role := roles[index]
-		name := strings.Replace(strings.ToLower(role.Name), " ", "", -1)
-		input = strings.Replace(strings.ToLower(input), " ", "", -1)
+		name := strings.ReplaceAll(strings.ToLower(role.Name), " ", "")
+		input = strings.ReplaceAll(strings.ToLower(input), " ", "")
 
 		return strings.Contains(name, input)
 	}
@@ -50,77 +69,18 @@ func PromptRole(memberId string, roles []models.Role) (models.Role, error) {
 	return roles[index], err
 }
 
-func Confirm(message string) bool {
-	p := promptui.Prompt{
-		Label:     message,
-		IsConfirm: true,
-	}
+// ———— DEVICE PROMPTS ———— //
 
-	answer, err := p.Run()
-
-	if err != nil {
-		if err.Error() != "^C" && err.Error() != "" {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
-	} else if strings.ToLower(answer) == "y" {
-		return true
-	}
-
-	return false
-}
-
-func StringInputWithValidation(message string, defaultValue string, validation promptui.ValidateFunc) string {
-	p := promptui.Prompt{
-		Label:    message,
-		Default:  defaultValue,
-		Validate: validation,
-	}
-
-	answer, err := p.Run()
-
-	if err != nil {
-		if err.Error() != "^C" && err.Error() != "" {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
-
-	return strings.Trim(answer, " ")
-}
-func StringInput(message string, defaultValue string) string {
-	p := promptui.Prompt{
-		Label:   message,
-		Default: defaultValue,
-	}
-
-	answer, err := p.Run()
-
-	if err != nil {
-		if err.Error() != "^C" && err.Error() != "" {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
-
-	return strings.Trim(answer, " ")
-}
-
-type SelectCIServiceItem struct {
-	Name string
-	Type string
-}
-
+// Asks the user to select from a list of devices
 func SelectDevice(devices []models.Device) models.Device {
 	items := make([]map[string]string, 0)
 
 	for _, device := range devices {
-		var newItem = make(map[string]string, 0)
+		newItem := make(map[string]string)
 		newItem["Name"] = device.Name
 		newItem["UID"] = device.UID
 		newItem["CreatedAt"] = device.CreatedAt.Format("2006/01/02")
+
 		if device.LastUsedAt.IsZero() {
 			newItem["LastUsedAtString"] = "never used"
 		} else {
@@ -152,15 +112,97 @@ func SelectDevice(devices []models.Device) models.Device {
 			ui.PrintError(err.Error())
 			os.Exit(1)
 		}
+
 		os.Exit(0)
 	}
 
-	if !Confirm(fmt.Sprintf("Sure you want to revoke %s", devices[index].Name)) {
+	if !Confirm(
+		fmt.Sprintf("Sure you want to revoke %s", devices[index].Name),
+	) {
 		os.Exit(0)
 	}
 
 	return devices[index]
 }
+
+// DeviceName asks the user to enter a device name.
+// If there is no existing name, it will use the device hostname as default
+func DeviceName(existingName string, forceDefault bool) string {
+	if existingName == "" {
+		var defaultName string
+
+		if hostname, err := os.Hostname(); err == nil {
+			defaultName = hostname
+		}
+
+		if forceDefault {
+			return defaultName
+		}
+
+		validate := func(input string) error {
+			matched, err := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, input)
+			if !matched {
+				return errors.New(
+					"incorrect device name. Device name must be alphanumeric with ., -, _",
+				)
+			}
+			return err
+		}
+
+		deviceName := StringInputWithValidation(
+			"Enter the name you want this device to have",
+			defaultName,
+			validate,
+		)
+
+		return deviceName
+	}
+
+	return existingName
+}
+
+// ———— CI SERVICE PROMPTS ———— //
+
+func ServiceIntegrationName() string {
+	return StringInput(
+		"Enter a name for your integration",
+		"",
+	)
+}
+
+func ServiceConfigurationToRemove() string {
+	return StringInput(
+		"Enter the service name to remove",
+		"",
+	)
+}
+
+func ConfirmCiConfigurationRemoval(serviceName string) bool {
+	ui.Print(ui.RenderTemplate("careful rm ci", `
+{{ CAREFUL }} You are about to remove the {{ . }} CI service.
+
+This cannot be undone.`,
+		serviceName))
+
+	return Confirm("Continue")
+}
+
+func ConfirmSendEnvironmentToCiService(environmentName string) bool {
+	ui.Print(
+		"You are about to send the '%s' environment to your CI services.",
+		environmentName,
+	)
+
+	return Confirm("Continue")
+}
+
+// Items for SelectCIService prompt
+type SelectCIServiceItem struct {
+	Name string
+	Type string
+}
+
+// Asks the user to select from a list of CI services
 func SelectCIService(items []SelectCIServiceItem) SelectCIServiceItem {
 	prompt := promptui.Select{
 		Label: "Select a CI service",
@@ -190,26 +232,36 @@ func SelectCIService(items []SelectCIServiceItem) SelectCIServiceItem {
 	return items[index]
 }
 
-func Select(message string, items []string) (index int, selected string) {
-	prompt := promptui.Select{
-		Label: message,
-		Items: items,
-	}
+// ———— PROJECT PROMPTS ———— //
 
-	index, selected, err := prompt.Run()
+func ConfirmProjectDestruction(projectName string) bool {
+	ui.Print(ui.RenderTemplate("confirm project destroy",
+		`{{ CAREFUL }} You are about to destroy the {{ .Project }} project.
+Secrets and files managed by Keystone WILL BE LOST. Make sure you have backups.
 
-	if err != nil {
-		if err.Error() != "^C" {
-			ui.PrintError(err.Error())
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
+Members of the project will no longer be able to get the latest updates,
+or share secrets between them.
 
-	return index, selected
+This is permanent, and cannot be undone.
+`, map[string]string{
+			"Project": projectName,
+		}))
+
+	result := StringInput(
+		"Type the project name to confirm its destruction",
+		"",
+	)
+
+	// expect result to be the project name
+	return projectName == result
 }
 
-func OrganizationsSelect(organizations []models.Organization) models.Organization {
+// ———— ORGANIZATION PROMPTS ————— //
+
+// Asks the usre to select from a list of organizations
+func OrganizationsSelect(
+	organizations []models.Organization,
+) models.Organization {
 	templates := &promptui.SelectTemplates{
 		Active: fmt.Sprintf(
 			"%s {{ .Name | underline }}",
@@ -224,8 +276,8 @@ func OrganizationsSelect(organizations []models.Organization) models.Organizatio
 
 	searcher := func(input string, index int) bool {
 		orga := organizations[index]
-		name := strings.Replace(strings.ToLower(orga.Name), " ", "", -1)
-		input = strings.Replace(strings.ToLower(input), " ", "", -1)
+		name := strings.ReplaceAll(strings.ToLower(orga.Name), " ", "")
+		input = strings.ReplaceAll(strings.ToLower(input), " ", "")
 
 		return strings.Contains(name, input)
 	}
@@ -239,7 +291,6 @@ func OrganizationsSelect(organizations []models.Organization) models.Organizatio
 	}
 
 	i, _, err := prompt.Run()
-
 	if err != nil {
 		if err.Error() != "^C" {
 			ui.PrintError(err.Error())
@@ -248,4 +299,104 @@ func OrganizationsSelect(organizations []models.Organization) models.Organizatio
 		os.Exit(0)
 	}
 	return organizations[i]
+}
+
+// ———— BACKUP/RESTORE PROMPTS ————— //
+
+func PasswordToEncrypt() string {
+	return StringInput("Password to encrypt backup", "")
+}
+
+func PasswordToDecrypt() string {
+	return StringInput("Password to decrypt backup", "")
+}
+
+func ConfirmDotKeystonDirRemoval() bool {
+	ui.Print(ui.RenderTemplate(
+		"confirm files rm",
+		`{{ CAREFUL }} You are about to remove the content of .keystone/ which contain all your local secrets and files.
+This will override the changes you and other members made since the backup.
+It will update other members secrets and files.`,
+		map[string]string{},
+	))
+	return Confirm("Continue")
+}
+
+// ——— FILES PROMPTS ———— //
+
+func ConfirmOverrideFileContents() bool {
+	return Confirm("Do you want to overrid the contents")
+}
+
+func ConfirmFileReset(forceYes bool) bool {
+	ui.Print(ui.RenderTemplate(
+		"careful reset",
+		`{{ CAREFUL }} {{ "Local changes will be lost" | yellow }}
+The content of the files you are resetting will be replaced by their cached content.`,
+		nil,
+	))
+
+	if forceYes {
+		return true
+	}
+
+	return Confirm("Continue")
+}
+
+func ConfirmFileRemove(filePath, environmentName string, forceYes bool) bool {
+	if forceYes {
+		return true
+	}
+
+	ui.Print(ui.RenderTemplate(
+		"confirm files rm",
+		`{{ CAREFUL }} You are about to remove {{ .Path }} from the secret files.
+Its current content will be kept locally.
+Its content for other environments will be lost, it will no longer be gitignored.
+This is permanent, and cannot be undone.`,
+		map[string]string{
+			"Path":        filePath,
+			"Environment": environmentName,
+		},
+	))
+
+	return Confirm("Continue")
+}
+
+// ——— SECRETS PROMPTS ——— //
+
+func ConfirmOverrideSecretValue(forceYes bool) bool {
+	if forceYes {
+		return true
+	}
+
+	return Confirm("Do you want to overrid the value")
+}
+
+func ValueForEnvironment(
+	secretName, environmentName, defaultValue string,
+) string {
+	ui.Print(
+		"Enter the value of '%s' for the '%s' environment",
+		secretName,
+		environmentName,
+	)
+
+	return StringInput(secretName, defaultValue)
+}
+
+// ——— LOGIN PROMPTS ———— //
+
+func SelectAuthService(serviceName string) string {
+	if serviceName == "" {
+		_, serviceName = Select(
+			"Select an identity provider",
+			[]string{
+				"github",
+				"gitlab",
+			},
+		)
+	}
+
+	return serviceName
 }

@@ -8,8 +8,10 @@ import (
 	"github.com/keighl/mandrill"
 )
 
-var mandrillKey string
-var baseTemplate *template.Template
+var (
+	mandrillKey  string
+	baseTemplate *template.Template
+)
 
 func init() {
 	mandrillKey = os.Getenv("MANDRILL_API_KEY")
@@ -25,18 +27,29 @@ func send(email *Email) (err error) {
 	client := mandrill.ClientWithKey(mandrillKey)
 
 	responses, err := client.MessagesSend(email.toMandrill())
-	fmt.Printf("### EMAIL SENT TO %s ###\n", email.To)
-
 	if err != nil {
-		return fmt.Errorf("Error sending mail: %s | %w", err.Error(), EmailErrorClientError)
+		return fmt.Errorf(
+			"error sending mail: %s | %w",
+			err.Error(),
+			ErrorEmailClientError,
+		)
 	}
+
+	fmt.Printf("### EMAIL SENT TO %s ###\n", email.To)
 
 	for _, response := range responses {
 		if response.Status == "rejected" {
-			fmt.Printf("Email to %s was rejected because: %s\n", response.Email, response.RejectionReason)
+			fmt.Printf(
+				"Email to %s was rejected because: %s\n",
+				response.Email,
+				response.RejectionReason,
+			)
 		}
 		if response.Status == "invalid" {
-			fmt.Printf("Email to %s was deemed invalid by the service", response.Email)
+			fmt.Printf(
+				"Email to %s was deemed invalid by the service",
+				response.Email,
+			)
 		}
 	}
 

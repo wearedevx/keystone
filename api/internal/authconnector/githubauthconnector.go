@@ -14,7 +14,9 @@ type githubAuthConnector struct {
 	token string
 }
 
-func (ghac *githubAuthConnector) GetUserInfo(token *oauth2.Token) (user models.User, err error) {
+func (ghac *githubAuthConnector) GetUserInfo(
+	token *oauth2.Token,
+) (user models.User, err error) {
 	userEmail := ""
 
 	ctx := context.Background()

@@ -32,7 +32,14 @@ func newRequester(userID string, token string) requester {
 	return requester{userID: userID, jwtToken: token}
 }
 
-func (r *requester) request(method methodType, expectedStatusCode int, path string, data interface{}, result interface{}, params map[string]string) error {
+func (r *requester) request(
+	method methodType,
+	expectedStatusCode int,
+	path string,
+	data interface{},
+	result interface{},
+	params map[string]string,
+) error {
 	requestPayload := make([]byte, 0)
 	buf := bytes.NewBuffer(requestPayload)
 
@@ -77,7 +84,7 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 	resp, err := c.Do(req)
 
 	if resp == nil {
-		return auth.ServiceNotAvailable
+		return auth.ErrorServiceNotAvailable
 	}
 
 	if err != nil {
@@ -104,24 +111,45 @@ func (r *requester) request(method methodType, expectedStatusCode int, path stri
 		return auth.ErrorUnauthorized
 	}
 
-	if resp.StatusCode != expectedStatusCode && resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != expectedStatusCode &&
+		resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("request failed with status code %d", resp.StatusCode)
 	}
 
 	return nil
 }
-func (r *requester) get(path string, result interface{}, params map[string]string) error {
+
+func (r *requester) get(
+	path string,
+	result interface{},
+	params map[string]string,
+) error {
 	return r.request(GET, http.StatusOK, path, nil, result, params)
 }
 
-func (r *requester) post(path string, data interface{}, result interface{}, params map[string]string) error {
+func (r *requester) post(
+	path string,
+	data interface{},
+	result interface{},
+	params map[string]string,
+) error {
 	return r.request(POST, http.StatusCreated, path, data, result, params)
 }
 
-func (r *requester) put(path string, data interface{}, result interface{}, params map[string]string) error {
+func (r *requester) put(
+	path string,
+	data interface{},
+	result interface{},
+	params map[string]string,
+) error {
 	return r.request(PUT, http.StatusOK, path, data, result, params)
 }
 
-func (r *requester) del(path string, data interface{}, result interface{}, params map[string]string) error {
+func (r *requester) del(
+	path string,
+	data interface{},
+	result interface{},
+	params map[string]string,
+) error {
 	return r.request(DELETE, http.StatusNoContent, path, data, result, params)
 }

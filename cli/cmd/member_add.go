@@ -18,25 +18,23 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/members"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
-	"github.com/wearedevx/keystone/cli/ui"
-	"github.com/wearedevx/keystone/cli/ui/prompts"
-	"gopkg.in/yaml.v2"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
-var membersFile string
-var oneRole string
-var manyMembers []string
+var (
+	membersFile string
+	oneRole     string
+	manyMembers []string
+)
 
 type Flow int
 
@@ -55,7 +53,8 @@ var memberAddCmd = &cobra.Command{
 		// r := regexp.MustCompile(`[\w-_.]+@(gitlab|github)`)
 		flow = PromptFlow
 
-		if len(args) == 0 && membersFile == "" && oneRole == "" && len(manyMembers) == 0 {
+		if len(args) == 0 && membersFile == "" && oneRole == "" &&
+			len(manyMembers) == 0 {
 			return fmt.Errorf("missing arguments")
 		}
 
@@ -94,19 +93,34 @@ ks member add --from-file team.yaml
 		c, err := client.NewKeystoneClient()
 		exitIfErr(err)
 
+		roles := mustGetRoles(c)
+
 		var memberRoles map[string]models.Role
 
 		switch flow {
 		case FileFlow:
-			memberRoles = getMemberRolesFromFile(c, membersFile)
+			memberRoles, err = members.GetMemberRolesFromFile(
+				c,
+				membersFile,
+				roles,
+			)
 		case ArgsFlow:
-			memberRoles = getMemberRolesFromArgs(c, oneRole, manyMembers)
+			memberRoles, err = members.GetMemberRolesFromArgs(
+				c,
+				oneRole,
+				manyMembers,
+				roles,
+			)
 		default:
-			memberRoles = getMemberRolesFromPrompt(c, manyMembers)
+			memberRoles, err = members.GetMemberRolesFromPrompt(
+				c,
+				manyMembers,
+				roles,
+			)
 		}
+		exitIfErr(err)
 
-		sp := spinner.Spinner(" ")
-		sp.Start()
+		sp := spinner.Spinner(" ").Start()
 
 		err = c.Project(projectID).AddMembers(memberRoles)
 		sp.Stop()
@@ -118,156 +132,21 @@ ks member add --from-file team.yaml
 			} else {
 				err = kserrors.CannotAddMembers(err)
 			}
-
 			exit(err)
 		}
 
-		ui.Print(ui.RenderTemplate("added members", `
-{{ OK }} {{ "Members Added" | green }}
-
-To send secrets and files to new member, use "member add" command.
-  $ ks member send-env --all-env <member-id>
-`, struct {
-		}{}))
+		display.MembersAdded()
 	},
-}
-
-func getMemberRolesFromFile(c client.KeystoneClient, filepath string) map[string]models.Role {
-	var err error
-	memberRoleNames := make(map[string]string)
-
-	/* #nosec
-	 * the file is going to be parsed, not executed in anyway
-	 */
-	dat, err := ioutil.ReadFile(filepath)
-	exitIfErr(err)
-
-	err = yaml.Unmarshal(dat, &memberRoleNames)
-	exitIfErr(err)
-
-	memberIDs := make([]string, 0)
-	for m := range memberRoleNames {
-		memberIDs = append(memberIDs, m)
-	}
-
-	mustMembersExist(c, memberIDs)
-	roles := mustGetRoles(c)
-
-	warningFreeOrga(roles)
-
-	memberRoles := mapRoleNamesToRoles(memberRoleNames, roles)
-
-	return memberRoles
-}
-
-func getMemberRolesFromArgs(c client.KeystoneClient, roleName string, memberIDs []string) map[string]models.Role {
-	mustMembersExist(c, memberIDs)
-	roles := mustGetRoles(c)
-	foundRole := &models.Role{}
-
-	warningFreeOrga(roles)
-
-	for _, role := range roles {
-		if role.Name == roleName {
-			*foundRole = role
-		}
-	}
-
-	memberRoles := make(map[string]models.Role)
-
-	for _, member := range memberIDs {
-		memberRoles[member] = *foundRole
-	}
-
-	return memberRoles
-}
-
-func getMemberRolesFromPrompt(c client.KeystoneClient, memberIDs []string) map[string]models.Role {
-	mustMembersExist(c, memberIDs)
-	roles := mustGetRoles(c)
-
-	warningFreeOrga(roles)
-
-	memberRole := make(map[string]models.Role)
-
-	for _, memberId := range memberIDs {
-		role, err := prompts.PromptRole(memberId, roles)
-		exitIfErr(err)
-
-		memberRole[memberId] = role
-	}
-
-	return memberRole
-}
-
-func mustMembersExist(c client.KeystoneClient, memberIDs []string) {
-	r, err := c.Users().CheckUsersExist(memberIDs)
-	if err != nil {
-		// The HTTP request must have failed
-		exit(kserrors.UnkownError(err))
-	}
-
-	if r.Error != "" {
-		exit(kserrors.UsersDontExist(r.Error, nil))
-	}
-}
-
-func mustGetRoles(c client.KeystoneClient) []models.Role {
-	projectID := ctx.GetProjectID()
-	roles, err := c.Roles().GetAll(projectID)
-	exitIfErr(err)
-
-	return roles
-}
-
-func mapRoleNamesToRoles(memberRoleNames map[string]string, roles []models.Role) map[string]models.Role {
-	memberRoles := make(map[string]models.Role)
-
-	for member, roleName := range memberRoleNames {
-		var foundRole *models.Role
-		for _, role := range roles {
-			if role.Name == roleName {
-				*foundRole = role
-
-				break
-			}
-		}
-
-		if foundRole == nil {
-			roleNames := []string{}
-
-			for _, role := range roles {
-				roleNames = append(roleNames, role.Name)
-			}
-
-			exit(
-				kserrors.RoleDoesNotExist(
-					roleName,
-					strings.Join(roleNames, ", "),
-					nil,
-				),
-			)
-		}
-
-		memberRoles[member] = *foundRole
-	}
-
-	return memberRoles
-}
-
-func warningFreeOrga(roles []models.Role) {
-	if len(roles) == 1 {
-		fmt.Fprintln(os.Stderr, "WARNING: You are not allowed to set role other than admin for free organization")
-		ui.Print("To learn more: https://keystone.sh")
-		ui.Print("")
-	}
 }
 
 func init() {
 	memberCmd.AddCommand(memberAddCmd)
 
-	memberAddCmd.Flags().StringVar(&membersFile, "from-file", "", "yaml file to import a known list of members")
+	memberAddCmd.Flags().
+		StringVar(&membersFile, "from-file", "", "yaml file to import a known list of members")
 
-	memberAddCmd.Flags().StringVarP(&oneRole, "role", "r", "", "role to set users, when not using the prompt")
-	memberAddCmd.Flags().StringSliceVarP(&manyMembers, "user", "u", []string{}, "user to add, when not using the prompt")
+	memberAddCmd.Flags().
+		StringVarP(&oneRole, "role", "r", "", "role to set users, when not using the prompt")
+	memberAddCmd.Flags().
+		StringSliceVarP(&manyMembers, "user", "u", []string{}, "user to add, when not using the prompt")
 }

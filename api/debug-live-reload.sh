@@ -37,6 +37,8 @@ killRunningServer() {
     kill $(cat /tmp/server.pid)
     rm -f /tmp/server.pid
   fi
+
+	kill $(lsof -t -i :9001)
 }
 
 buildServer() {

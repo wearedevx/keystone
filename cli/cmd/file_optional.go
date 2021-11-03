@@ -18,7 +18,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // optionalCmd represents the optional command
@@ -31,7 +31,7 @@ When a file is marked as optional, its absence or emptiness won’t cause
 ` + "`" + `ks source` + "`" + ` or ` + "`" + `ks ci send` + "`" + ` to fail.
 `,
 	Example: `ks file optional ./config.json`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		fileName := args[0]
 
 		if !ctx.HasFile(fileName) {
@@ -39,14 +39,11 @@ When a file is marked as optional, its absence or emptiness won’t cause
 			return
 		}
 
-		ctx.MarkFileRequired(fileName, false)
-		exitIfErr(ctx.Err())
+		exitIfErr(
+			ctx.MarkFileRequired(fileName, false).Err(),
+		)
 
-		template := `File {{ .FilePath }} is now optional.`
-
-		ui.Print(ui.RenderTemplate("set file optional", template, struct{ FilePath string }{
-			FilePath: fileName,
-		}))
+		display.FileIsNowOptional(fileName)
 	},
 }
 

@@ -249,7 +249,7 @@ func doubleQuoteEscape(line string) string {
 		if c == '\r' {
 			toReplace = `\r`
 		}
-		line = strings.Replace(line, string(c), toReplace, -1)
+		line = strings.ReplaceAll(line, string(c), toReplace)
 	}
 	return line
 }
@@ -259,5 +259,5 @@ func doubleQuoteEscape(line string) string {
 // a value that has \n or \" sequence, like GCP credentials files,
 // which contain a private key
 func overEscape(line string) string {
-	return strings.Replace(line, "\\", "\\\\", -1)
+	return strings.ReplaceAll(line, "\\", "\\\\")
 }

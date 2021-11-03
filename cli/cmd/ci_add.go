@@ -20,7 +20,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -33,11 +33,9 @@ var addCmd = &cobra.Command{
 Once you have configured a new CI service, you can send it secrets using:
 ` + "`" + `ks ci send --env prod` + "`\n",
 	Example: `ks ci add`,
+	Args:    cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
-		serviceName := prompts.StringInput(
-			"Enter a name for your integration",
-			"",
-		)
+		serviceName := prompts.ServiceIntegrationName()
 
 		if _, nameExists := ci.FindCiServiceWithName(ctx, serviceName); nameExists {
 			exit(kserrors.CiServiceAlreadyExists(serviceName, nil))
@@ -56,7 +54,7 @@ Once you have configured a new CI service, you can send it secrets using:
 			exit(kserrors.CouldNotAddService(serviceName, err))
 		}
 
-		ui.PrintSuccess("CI service added successfully")
+		display.CiAdded()
 	},
 }
 

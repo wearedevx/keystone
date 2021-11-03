@@ -13,7 +13,7 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/core"
 )
 
-var NoAccess = errors.New("has no access")
+var ErrorNoAccess = errors.New("has no access")
 
 type environmentService struct {
 	err    *kserrors.Error
@@ -56,16 +56,17 @@ func (s *environmentService) GetAccessibleEnvironments() []models.Environment {
 	sp := spinner.Spinner(" ")
 	sp.Start()
 
-	accessibleEnvironments, err := s.client.Project(projectID).GetAccessibleEnvironments()
+	accessibleEnvironments, err := s.client.Project(projectID).
+		GetAccessibleEnvironments()
 	sp.Stop()
 
 	if err != nil {
 		if errors.Is(err, auth.ErrorUnauthorized) {
 			config.Logout()
 			s.ctx.SetError(kserrors.InvalidConnectionToken(err))
-		} else if errors.Is(err, auth.ServiceNotAvailable) {
+		} else if errors.Is(err, auth.ErrorServiceNotAvailable) {
 			s.ctx.SetError(kserrors.ServiceNotAvailable(err))
-		} else if strings.Contains(err.Error(), auth.DeviceNotRegistered.Error()) {
+		} else if strings.Contains(err.Error(), auth.ErrorDeviceNotRegistered.Error()) {
 			s.ctx.SetError(kserrors.DeviceNotRegistered(err))
 		} else if strings.Contains(err.Error(), "not found") {
 			s.ctx.SetError(kserrors.ProjectDoesntExist("", "", err))

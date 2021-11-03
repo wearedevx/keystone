@@ -10,8 +10,7 @@ import (
 
 func CreateTestDir() (string, error) {
 	testDir := path.Join(os.TempDir(), "tests", uuid.NewV4().String())
-	err := os.MkdirAll(testDir, 0700)
-
+	err := os.MkdirAll(testDir, 0o700)
 	if err != nil {
 		return testDir, err
 	}
@@ -21,9 +20,8 @@ func CreateTestDir() (string, error) {
 
 func CleanTestDir(testDir string) error {
 	err := os.RemoveAll(testDir)
-
 	if err != nil {
-		return fmt.Errorf("Error Cleaning Test Dir: `%s` (%w)", testDir, err)
+		return fmt.Errorf("error cleaning test dir: `%s` (%w)", testDir, err)
 	}
 
 	return err

@@ -19,7 +19,7 @@ type dummyAuthService struct {
 	token        *oauth2.Token
 }
 
-func (g dummyAuthService) Name() string { return "Gitlab" }
+func (g dummyAuthService) Name() string { return "Dummy" }
 
 func DummyAuth(ctx context.Context, apiUrl string) AuthService {
 	return &dummyAuthService{

@@ -16,13 +16,10 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
-	"github.com/wearedevx/keystone/cli/internal/messages"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // secretsSetCmd represents the set command
@@ -49,13 +46,13 @@ ks --env staging PORT 4545
 			exit(kserrors.SecretDoesNotExist(secretName, nil))
 		}
 
-		ms := messages.NewMessageService(ctx)
-		mustFetchMessages(ms)
+		_, messageService := mustFetchMessages()
 
 		ctx.SetSecret(currentEnvironment, secretName, secretValue)
 		exitIfErr(ctx.Err())
 
-		localEnvironment := ctx.LoadEnvironmentsFile().GetByName(currentEnvironment)
+		localEnvironment := ctx.LoadEnvironmentsFile().
+			GetByName(currentEnvironment)
 		environment := []models.Environment{{
 			Name:          localEnvironment.Name,
 			VersionID:     localEnvironment.VersionID,
@@ -63,10 +60,10 @@ ks --env staging PORT 4545
 		}}
 
 		exitIfErr(
-			ms.SendEnvironments(environment).Err(),
+			messageService.SendEnvironments(environment).Err(),
 		)
 
-		ui.PrintSuccess(fmt.Sprintf("Secret '%s' updated for the '%s' environment", secretName, currentEnvironment))
+		display.SecretUpdated(secretName, currentEnvironment)
 	},
 }
 

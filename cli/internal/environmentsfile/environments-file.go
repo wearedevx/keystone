@@ -6,8 +6,8 @@ import (
 	"os"
 	"path"
 
-	. "github.com/wearedevx/keystone/api/pkg/models"
-	. "github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -33,7 +33,7 @@ func environmentsFilePath(dotKeystonePath string) string {
 	return path.Join(dotKeystonePath, "environments.yaml")
 }
 
-func NewEnvironmentsFile(dotKeystonePath string, updatedEnvironments []Environment) *EnvironmentsFile {
+func NewEnvironmentsFile(dotKeystonePath string, updatedEnvironments []models.Environment) *EnvironmentsFile {
 	envs := make([]Env, 0)
 
 	for _, env := range updatedEnvironments {
@@ -50,7 +50,7 @@ func NewEnvironmentsFile(dotKeystonePath string, updatedEnvironments []Environme
 
 // Checks if current execution context contains a keystone.yaml
 func ExistsEnvironmentsFile(dotKeystonePath string) bool {
-	return FileExists(environmentsFilePath(dotKeystonePath))
+	return utils.FileExists(environmentsFilePath(dotKeystonePath))
 }
 
 // Loads a Keystone from disk
@@ -89,7 +89,7 @@ func (file *EnvironmentsFile) toYaml() []byte {
 	bytes, err := yaml.Marshal(file)
 
 	if err != nil {
-		file.err = fmt.Errorf("Could not serialize environments file (%w)", err)
+		file.err = fmt.Errorf("could not serialize environments file (%w)", err)
 	}
 
 	return bytes
@@ -107,7 +107,7 @@ func (file *EnvironmentsFile) Save() *EnvironmentsFile {
 		yamlBytes := file.toYaml()
 
 		if err := ioutil.WriteFile(file.path, yamlBytes, 0600); err != nil {
-			file.err = fmt.Errorf("Could not write `environments.yaml` (%w)", err)
+			file.err = fmt.Errorf("could not write `environments.yaml` (%w)", err)
 		}
 	}
 
@@ -122,10 +122,8 @@ func (file *EnvironmentsFile) Remove() {
 	}
 
 	if err := os.Remove(file.path); err != nil {
-		file.err = fmt.Errorf("Could not remove `environments.yaml` (%w)", err)
+		file.err = fmt.Errorf("could not remove `environments.yaml` (%w)", err)
 	}
-
-	return
 }
 
 // Adds a variable to the project
@@ -170,7 +168,7 @@ func (file *EnvironmentsFile) GetByName(environmentName string) *Env {
 // Replaces an environment in the environment file with updated data
 // If the environment does not exist in the environment file,
 // it should be appended to it
-func (file *EnvironmentsFile) Replace(environment Environment) *EnvironmentsFile {
+func (file *EnvironmentsFile) Replace(environment models.Environment) *EnvironmentsFile {
 	if file.Err() != nil {
 		return file
 	}
