@@ -2,7 +2,6 @@ package secrets
 
 import (
 	"fmt"
-	"gitEnterValuee/cli/ui/display"
 	"os"
 	"reflect"
 	"regexp"
@@ -11,7 +10,7 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui/cli/ui/display"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 

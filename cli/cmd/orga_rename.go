@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
@@ -43,22 +42,10 @@ var renameCmd = &cobra.Command{
 		c, err := client.NewKeystoneClient()
 		exitIfErr(err)
 
-		// TODO: There should be a GetByName function, no ?
-		organizations, err := c.Organizations().GetAll()
+		// TODO: Should use a GetOwnedOrganization ?
+		foundOrga, err := c.Organizations().GetByName(organizationName, true)
 		if err != nil {
 			handleClientError(err)
-			exit(err)
-		}
-
-		foundOrga := models.Organization{}
-
-		for _, orga := range organizations {
-			if orga.Name == organizationName {
-				foundOrga = orga
-			}
-		}
-
-		if foundOrga.ID == 0 {
 			exit(kserrors.YouDoNotOwnTheOrganization(organizationName, nil))
 		}
 

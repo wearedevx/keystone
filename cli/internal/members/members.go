@@ -137,10 +137,6 @@ func SetMemberRole(
 	return err
 }
 
-// TODO: this should probably be inside the SetMemberRole function,
-// or at least declared alongside it and called from there instead
-// OR it – and most of the logic surrounding it - goes in a service internal
-// package
 func getRoleWithName(roleName string, roles []models.Role) (models.Role, bool) {
 	found := false
 	var role models.Role

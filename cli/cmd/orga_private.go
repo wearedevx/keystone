@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/api/pkg/models"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
@@ -25,7 +24,12 @@ var privateCmd = &cobra.Command{
 		c, err := client.NewKeystoneClient()
 		exitIfErr(err)
 
-		foundOrga := getUserOwnedOrganization(c, organizationName)
+		// TODO: Should be get owned organization ?
+		foundOrga, err := c.Organizations().GetByName(organizationName, true)
+		if err != nil {
+			handleClientError(err)
+			exit(kserrors.YouDoNotOwnTheOrganization(organizationName, err))
+		}
 
 		foundOrga.Private = !foundOrga.Private
 
@@ -38,25 +42,4 @@ var privateCmd = &cobra.Command{
 
 func init() {
 	orgaCmd.AddCommand(privateCmd)
-}
-
-// TODO: This should be an API thing
-func getUserOwnedOrganization(
-	c client.KeystoneClient,
-	organizationName string,
-) models.Organization {
-	organizations, _ := c.Organizations().GetAll()
-
-	foundOrga := models.Organization{}
-
-	for _, orga := range organizations {
-		if orga.Name == organizationName {
-			foundOrga = orga
-		}
-	}
-
-	if foundOrga.ID == 0 {
-		exit(kserrors.YouDoNotOwnTheOrganization(organizationName, nil))
-	}
-	return foundOrga
 }

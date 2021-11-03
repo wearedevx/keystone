@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
@@ -18,6 +19,34 @@ func (c *Organizations) GetAll() ([]models.Organization, error) {
 	err = c.r.get("/organizations", &result, nil)
 
 	return result.Organizations, err
+}
+
+func (c *Organizations) GetByName(name string, owned bool) (models.Organization, error) {
+	var err error
+	var result models.GetOrganizationsResponse
+	var orga = models.Organization{}
+
+	params := map[string]string{
+		"name": name,
+	}
+
+	if owned {
+		params["owned"] = "1"
+	}
+
+	err = c.r.get("/organizations", &result, params)
+
+	if err != nil {
+		return orga, err
+	}
+
+	if len(result.Organizations) == 0 {
+		return orga, apierrors.ErrorFailedToGetResource
+	}
+
+	orga = result.Organizations[0]
+
+	return orga, nil
 }
 
 func (c *Organizations) CreateOrganization(
