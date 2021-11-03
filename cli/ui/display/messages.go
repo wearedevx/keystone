@@ -15,7 +15,6 @@ var envList = []string{
 // printChanges displays changes for environments to the user
 func Changes(
 	changes core.ChangesByEnvironment,
-	// messagesByEnvironments models.GetMessageByEnvironmentResponse,
 ) {
 	for _, environmentName := range envList {
 		changesList, ok := changes.Environments[environmentName]

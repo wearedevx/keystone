@@ -8,6 +8,13 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
+type GetOptions bool
+
+const (
+	OWNED_ONLY GetOptions = true
+	ALL_KNWON  GetOptions = false
+)
+
 type Organizations struct {
 	r requester
 }
@@ -21,10 +28,13 @@ func (c *Organizations) GetAll() ([]models.Organization, error) {
 	return result.Organizations, err
 }
 
-func (c *Organizations) GetByName(name string, owned bool) (models.Organization, error) {
+func (c *Organizations) GetByName(
+	name string,
+	owned GetOptions,
+) (models.Organization, error) {
 	var err error
 	var result models.GetOrganizationsResponse
-	var orga = models.Organization{}
+	orga := models.Organization{}
 
 	params := map[string]string{
 		"name": name,

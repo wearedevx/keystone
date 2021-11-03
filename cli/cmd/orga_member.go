@@ -25,7 +25,7 @@ var orgaMemberCmd = &cobra.Command{
 		kf := keystonefile.KeystoneFile{}
 		exitIfErr(kf.Load(ctx.Wd).Err())
 
-		orga, err := c.Organizations().GetByName(orgaName, false)
+		orga, err := c.Organizations().GetByName(orgaName, client.OWNED_ONLY)
 		if err != nil {
 			handleClientError(err)
 			exit(kserrors.OrganizationDoesNotExist(nil))

@@ -24,8 +24,7 @@ var privateCmd = &cobra.Command{
 		c, err := client.NewKeystoneClient()
 		exitIfErr(err)
 
-		// TODO: Should be get owned organization ?
-		foundOrga, err := c.Organizations().GetByName(organizationName, true)
+		foundOrga, err := c.Organizations().GetByName(organizationName, client.OWNED_ONLY)
 		if err != nil {
 			handleClientError(err)
 			exit(kserrors.YouDoNotOwnTheOrganization(organizationName, err))
