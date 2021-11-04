@@ -31,6 +31,7 @@ type FileService interface {
 	AskToOverrideFilesInCache(fileName string, skipPrompts bool) bool
 }
 
+// NewFileService function returns a new instance of FileService
 func NewFileService(ctx *core.Context) FileService {
 	fs := new(fileService)
 	fs.ctx = ctx
@@ -38,10 +39,13 @@ func NewFileService(ctx *core.Context) FileService {
 	return fs
 }
 
+// Err method returns the last error encountered
 func (fs *fileService) Err() error {
 	return fs.err
 }
 
+// AskContent method asks the user to enter the content of a file using
+// their default editor, using the `$EDITOR` environment variable
 func (fs *fileService) AskContent(
 	filePath string,
 	environments []models.Environment,
@@ -87,6 +91,9 @@ func (fs *fileService) AskContent(
 	return fs
 }
 
+// AskToOverrideFilesInCache method asks the user wether they want to override
+// the contents of files that already exist in the `.keystone` cache folder.
+// `skipPrompts` forces a no (keep the cached content)
 func (fs *fileService) AskToOverrideFilesInCache(fileName string, skipPrompts bool) bool {
 	if fs.err != nil {
 		return false

@@ -19,10 +19,7 @@ var EnvList EnvNameList = []EnvName{
 	PROD,
 }
 
-func (el EnvNameList) Len() int {
-	return len(el)
-}
-
+// String method formats the envlist for display
 func (el EnvNameList) String() string {
 	l := make([]string, 0, len(el))
 

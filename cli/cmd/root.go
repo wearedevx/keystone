@@ -89,6 +89,8 @@ func findCurrentCommand(args []string) string {
 	return ""
 }
 
+// Initialize function performs initialization logic before executing the
+// actual command
 func Initialize() {
 	if len(os.Args) <= 1 {
 		return

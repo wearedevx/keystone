@@ -9,6 +9,8 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/utils"
 )
 
+// ConfigDir function returns the path to the config dir,
+// and creates it if it doesn't exist
 func ConfigDir() (dirpath string, err error) {
 	userConfigDir, err := os.UserConfigDir()
 	if err != nil {
@@ -28,6 +30,7 @@ func ConfigDir() (dirpath string, err error) {
 	return dirpath, nil
 }
 
+// ConfigPath function returns the path to the config file.
 func ConfigPath() (configPath string, err error) {
 	configDirPath, err := ConfigDir()
 	if err != nil {

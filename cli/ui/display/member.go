@@ -7,6 +7,7 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
+// MembersByRole function displays list of project members, grouped by role
 func MembersByRole(members []models.ProjectMember) {
 	grouped := models.ProjectMembers(members).GroupByRole()
 
@@ -17,6 +18,7 @@ func MembersByRole(members []models.ProjectMember) {
 
 }
 
+// MembersAdded function Message when members arr added
 func MembersAdded() {
 	ui.Print(ui.RenderTemplate("added members", `
 {{ OK }} {{ "Members Added" | green }}
@@ -26,12 +28,14 @@ To send secrets and files to new member, use "member add" command.
 `, nil))
 }
 
+// RemovedMembers function Message when members are removed
 func RemovedMembers() {
 	ui.Print(ui.RenderTemplate("removed members", `
 {{ OK }} {{ "Revoked Access To Members" | green }}
 `, nil))
 }
 
+// SetRoleOk function Message when member role is set
 func SetRoleOk() {
 	ui.Print(ui.RenderTemplate("set role ok", `
 {{ OK }} {{ "Role set" | green }}

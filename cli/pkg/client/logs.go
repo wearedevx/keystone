@@ -8,6 +8,7 @@ type Logs struct {
 	r requester
 }
 
+// GetAll method returns all the logs
 func (c *Logs) GetAll() ([]models.ActivityLogLite, error) {
 	var err error
 	var result models.GetActivityLogResponse

@@ -52,6 +52,8 @@ To add files to secret files:
 `)
 }
 
+// FileContentsForEnvironments function displays the contents of a file
+// for each environment
 func FileContentsForEnvironments(
 	fileName string,
 	environments []models.Environment,
@@ -72,6 +74,7 @@ func FileContentsForEnvironments(
 	}
 }
 
+// FileAddSuccess function Message when adding a file is successfull
 func FileAddSuccess(filePath string, numberOfEnvironments int) {
 	ui.Print(ui.RenderTemplate("file add success", `
 {{ OK }} {{ .Title | green }}
@@ -82,6 +85,7 @@ It has also been gitignored.`, map[string]string{
 	}))
 }
 
+// FileAskForFileContentForEnvironment function Ask file content
 func FileAskForFileContentForEnvironment(filePath, environmentName string) {
 	ui.Print(
 		fmt.Sprintf(
@@ -92,18 +96,21 @@ func FileAskForFileContentForEnvironment(filePath, environmentName string) {
 	)
 }
 
+// FileFailUserInput function Message when input from $EDITOR failed
 func FileFailUserInput(err error) {
 	ui.PrintStdErr(
 		fmt.Sprintf("Failed to read user input (%s)", err.Error()),
 	)
 }
 
+// FileFailUserInput function Message when input from $EDITOR failed
 func FileFailedGetContentFromEditor(err error) {
 	ui.PrintStdErr(
 		fmt.Sprintf("Failed to get content from editor (%s)", err.Error()),
 	)
 }
 
+// FileIsNowOptional function Message when setting the file as optional
 func FileIsNowOptional(filePath string) {
 	ui.Print(ui.RenderTemplate(
 		"set file optional",
@@ -112,6 +119,7 @@ func FileIsNowOptional(filePath string) {
 	))
 }
 
+// FileIsNowOptional function Message when setting the file as required
 func FileIsNowRequired(filePath string) {
 	ui.Print(ui.RenderTemplate(
 		"set file optional",
@@ -120,10 +128,12 @@ func FileIsNowRequired(filePath string) {
 	))
 }
 
+// FileNotManaged function Message when the file is not managed by Keystone
 func FileNotManaged(filePath string) {
 	ui.Print("File '" + filePath + "' is not managed by Keystone, ignoring")
 }
 
+// FileKept function Message informing the file is kept in cache after ks file rm
 func FileKept() {
 	ui.Print(
 		`The file is kept in your keystone project for all the environments,
@@ -132,10 +142,12 @@ If you want to remove it from your device, use --purge`,
 	)
 }
 
+// FileRemovedSuccess function Message when file removal happened successfully
 func FileRemovedSuccess(filePath string) {
 	ui.PrintSuccess("%s has been removed from the secret files.", filePath)
 }
 
+// FileSetSuccess function Message when file content updated successfully
 func FileSetSuccess(filePath string) {
 	ui.Print(ui.RenderTemplate("file set success", `
 {{ OK }} {{ . | green }}

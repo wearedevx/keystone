@@ -14,6 +14,7 @@ import (
 	"github.com/wearedevx/keystone/cli/pkg/constants"
 )
 
+// CurrentEnvironment method returns the current environment name
 func (ctx *Context) CurrentEnvironment() string {
 	if ctx.Err() != nil {
 		return ""
@@ -56,7 +57,8 @@ func (ctx *Context) mustEnvironmentNameBeValid(name string) {
 	}
 }
 
-//
+// ListEnvironments method returns a list of environments that can be found
+// in the cache
 func (ctx *Context) ListEnvironments() []string {
 	if ctx.Err() != nil {
 		return []string{}
@@ -94,6 +96,8 @@ func (ctx *Context) ListEnvironments() []string {
 	return envs
 }
 
+// RemoveEnvironment method
+// Deprecated
 func (ctx *Context) RemoveEnvironment(name string) *Context {
 	if ctx.Err() != nil {
 		return ctx
@@ -116,6 +120,7 @@ func (ctx *Context) RemoveEnvironment(name string) *Context {
 	return ctx
 }
 
+// SetCurrent method changes the current environment
 func (ctx *Context) SetCurrent(name string) *Context {
 	if ctx.Err() != nil {
 		return ctx
@@ -160,6 +165,7 @@ func (ctx *Context) SetCurrent(name string) *Context {
 	return ctx
 }
 
+// SetAllSecrets method sets all the secrets at once in the cache
 func (ctx *Context) SetAllSecrets(
 	name string,
 	secrets map[string]string,
@@ -182,6 +188,7 @@ func (ctx *Context) SetAllSecrets(
 	return ctx
 }
 
+// GetAllSecrets method returns all the secrets and thei value for the given environment
 func (ctx *Context) GetAllSecrets(envName string) map[string]string {
 	emptyMap := map[string]string{}
 
@@ -207,6 +214,7 @@ func (ctx *Context) GetAllSecrets(envName string) map[string]string {
 	return emptyMap
 }
 
+// HasEnvironment method returns true environment exists
 func (ctx *Context) HasEnvironment(name string) bool {
 	if ctx.Err() != nil {
 		return false
@@ -215,6 +223,8 @@ func (ctx *Context) HasEnvironment(name string) bool {
 	return utils.DirExists(ctx.CachedEnvironmentPath(name))
 }
 
+// MustHaveEnvironment method exits with an error if the environment
+// does not exist
 func (ctx *Context) MustHaveEnvironment(name string) {
 	if !ctx.HasEnvironment(name) {
 		kserrors.EnvironmentDoesntExist(name, strings.Join(ctx.ListEnvironments(), ", "), nil).
@@ -223,6 +233,8 @@ func (ctx *Context) MustHaveEnvironment(name string) {
 	}
 }
 
+// MustHaveAccessToEnvironment method exits with an error if the user
+// does not have read access to the environment
 func (ctx *Context) MustHaveAccessToEnvironment(
 	environmentName string,
 ) *Context {
@@ -238,6 +250,7 @@ func (ctx *Context) MustHaveAccessToEnvironment(
 	return ctx
 }
 
+// UpdateEnvironment method updates environment info (e.g. versionID)
 func (ctx *Context) UpdateEnvironment(environment models.Environment) *Context {
 	environmentFile := new(environmentsfile.EnvironmentsFile)
 
@@ -252,20 +265,8 @@ func (ctx *Context) UpdateEnvironment(environment models.Environment) *Context {
 	return ctx
 }
 
-func (ctx *Context) SetEnvironmentVersion(
-	name string,
-	version_id string,
-) string {
-	environments := ctx.EnvironmentsFromConfig()
-
-	for _, e := range environments {
-		if e.Name == name {
-			return e.VersionID
-		}
-	}
-	return ""
-}
-
+// EnvironmentVersion method returns the local version of the current
+// environment
 func (ctx *Context) EnvironmentVersion() string {
 	environments := ctx.EnvironmentsFromConfig()
 	currentEnvironment := ctx.CurrentEnvironment()
@@ -278,6 +279,8 @@ func (ctx *Context) EnvironmentVersion() string {
 	return ""
 }
 
+// EnvironmentVersionByName method returns the local version of the
+// environment named `name`
 func (ctx *Context) EnvironmentVersionByName(name string) string {
 	environments := ctx.EnvironmentsFromConfig()
 
@@ -289,10 +292,12 @@ func (ctx *Context) EnvironmentVersionByName(name string) string {
 	return ""
 }
 
+// EnvironmentID method returns the environmentID of the current environment
 func (ctx *Context) EnvironmentID() string {
 	return ctx.getCurrentEnvironmentId()
 }
 
+// EnvironmentsFromConfig method reads the environmentfile
 func (ctx *Context) EnvironmentsFromConfig() []environmentsfile.Env {
 	environmentsfile := new(
 		environmentsfile.EnvironmentsFile,
@@ -300,6 +305,7 @@ func (ctx *Context) EnvironmentsFromConfig() []environmentsfile.Env {
 	return environmentsfile.Environments
 }
 
+// EnvironmentVersionHasChanged method indiciates whether the versions differ
 func (ctx *Context) EnvironmentVersionHasChanged(
 	name string,
 	environmentVersion string,
@@ -308,10 +314,13 @@ func (ctx *Context) EnvironmentVersionHasChanged(
 	return currentVersion != environmentVersion
 }
 
+// LoadEnvironmentsFile method
 func (ctx *Context) LoadEnvironmentsFile() *environmentsfile.EnvironmentsFile {
 	return new(environmentsfile.EnvironmentsFile).Load(ctx.dotKeystonePath())
 }
 
+// RemoveForbiddenEnvironments method removes the environments information
+// the current user may not access.
 func (ctx *Context) RemoveForbiddenEnvironments(
 	accessibleEnvironments []models.Environment,
 ) {

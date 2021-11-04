@@ -21,6 +21,7 @@ type ProjectService struct {
 	cli    client.KeystoneClient
 }
 
+// NewProjectService function returns a new instance of ProjectService
 func NewProjectService(
 	ctx *core.Context,
 	currentfolder, projectName string,
@@ -41,10 +42,13 @@ func NewProjectService(
 	return s
 }
 
+// Err method returns the last error that occurred in the service
 func (s *ProjectService) Err() error {
 	return s.err
 }
 
+// loads the keystone file, but sets the ProjectService error if we
+// already are in a Keystone project
 func (s *ProjectService) load(currentfolder, projectName string) {
 	if keystonefile.ExistsKeystoneFile(currentfolder) {
 		s.ksfile.Load(currentfolder)
@@ -65,6 +69,7 @@ func (s *ProjectService) load(currentfolder, projectName string) {
 	}
 }
 
+// GetOrCreate method gets or create a project in organization
 func (s *ProjectService) GetOrCreate(
 	project *models.Project,
 	organizationName string,
@@ -78,6 +83,7 @@ func (s *ProjectService) GetOrCreate(
 	return s
 }
 
+// Create method creates a project in an organization
 func (s *ProjectService) Create(
 	project *models.Project,
 	organizationName string,
@@ -113,6 +119,7 @@ func (s *ProjectService) Create(
 	return s
 }
 
+// Get method gets the project information from the API
 func (s *ProjectService) Get(project *models.Project) *ProjectService {
 	if s.err != nil {
 		return s
@@ -133,6 +140,7 @@ func (s *ProjectService) Get(project *models.Project) *ProjectService {
 	return s
 }
 
+// prompts the user the pick the organizaiton the project is going to belong to
 func (s *ProjectService) pickOrganization(
 	organizationName string,
 	organizationID *uint,

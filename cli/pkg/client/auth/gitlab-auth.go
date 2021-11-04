@@ -23,8 +23,10 @@ type gitlabAuthService struct {
 	token        *oauth2.Token
 }
 
+// Name method returns the name of the service
 func (g gitlabAuthService) Name() string { return "Gitlab" }
 
+// GitlabAuth function returns an instance of GitLabAuth service
 func GitlabAuth(ctx context.Context, apiUrl string) AuthService {
 	return &gitlabAuthService{
 		apiUrl: apiUrl,
@@ -32,6 +34,8 @@ func GitlabAuth(ctx context.Context, apiUrl string) AuthService {
 	}
 }
 
+// Start method initiate the oauth process by creating a login request
+// on the Keystone server and requesting a login url to GitLab
 func (g *gitlabAuthService) Start() (string, error) {
 	lr, err := getLoginRequest(g.apiUrl)
 	if err != nil {
@@ -59,6 +63,8 @@ func (g *gitlabAuthService) Start() (string, error) {
 	return g.conf.AuthCodeURL(state, oauth2.AccessTypeOffline), nil
 }
 
+// WaitForExternalLogin method polls the API until the user has completed the
+// login process and authorized the Keystone application
 func (g *gitlabAuthService) WaitForExternalLogin() error {
 	c := make(chan pollResult)
 	var result pollResult
@@ -85,6 +91,7 @@ func (g *gitlabAuthService) WaitForExternalLogin() error {
 	return nil
 }
 
+// Finish method finish the login process
 func (g gitlabAuthService) Finish(
 	pk []byte,
 	device string,
@@ -100,6 +107,7 @@ func (g gitlabAuthService) Finish(
 	)
 }
 
+// CheckAccount method returns true if the account is gitlab one
 func (g gitlabAuthService) CheckAccount(
 	account map[string]string,
 ) (bool, error) {

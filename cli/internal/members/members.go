@@ -25,6 +25,8 @@ func isMembersExist(c client.KeystoneClient, memberIDs []string) error {
 	return nil
 }
 
+// GetMemberRolesFromFile function reads the yaml file at `filepath`
+// and return a map of userIDs and their roles
 func GetMemberRolesFromFile(
 	c client.KeystoneClient,
 	filepath string,
@@ -66,6 +68,8 @@ func GetMemberRolesFromFile(
 	return memberRoles, nil
 }
 
+// GetMemberRolesFromArgs function uses memberIDs and role names obtained
+// through command line arguments to returns a map of memberIDs and their Role
 func GetMemberRolesFromArgs(
 	c client.KeystoneClient,
 	roleName string,
@@ -96,6 +100,8 @@ func GetMemberRolesFromArgs(
 	return memberRoles, nil
 }
 
+// GetMemberRolesFromPrompt function uses a propmt to get a map of userIDs
+// and their roles
 func GetMemberRolesFromPrompt(
 	c client.KeystoneClient,
 	memberIDs []string,
@@ -121,6 +127,7 @@ func GetMemberRolesFromPrompt(
 	return memberRole, nil
 }
 
+// SetMemberRole function changes the role of a member
 func SetMemberRole(
 	c client.KeystoneClient,
 	projectID, memberId, roleName string,

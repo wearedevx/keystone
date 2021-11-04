@@ -39,18 +39,22 @@ type Change struct {
 	Type ChangeType // Type of change (file, secret, version only)
 }
 
+// IsSecretAdd method tells if the change is adding a secret
 func (c Change) IsSecretAdd() bool {
 	return c.Type == ChangeTypeSecretAdd
 }
 
+// IsSecretChange method tells if the change is changing a secret
 func (c Change) IsSecretChange() bool {
 	return c.Type == ChangeTypeSecretChange
 }
 
+// IsSecretDelete method tells if the change is removing a secret
 func (c Change) IsSecretDelete() bool {
 	return c.Type == ChangeTypeSecretDelete
 }
 
+// IsFile method tells if the change is about a file
 func (c Change) IsFile() bool {
 	return c.Type == ChangeTypeFile
 }
@@ -68,6 +72,7 @@ func (changes Changes) IsSingleVersionChange() bool {
 	return false
 }
 
+// IsEmpty method tells if the list is empty
 func (changes Changes) IsEmpty() bool {
 	return len(changes) == 0
 }

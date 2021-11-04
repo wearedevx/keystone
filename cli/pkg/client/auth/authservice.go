@@ -21,6 +21,8 @@ type AuthService interface {
 	) (models.User, string, error)
 }
 
+// GetAuthService function returns the instance of an AuthService implementor
+// based on `serviceName`
 func GetAuthService(
 	serviceName string,
 	apiUrl string,

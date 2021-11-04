@@ -4,10 +4,10 @@ import (
 	"strings"
 )
 
+// Box function displays `text` surrounded by a box
 func Box(text string) string {
 	lines := strings.Split(text, "\n")
 	contentWidth := longestLine(lines)
-	// contentHeight := len(lines)
 
 	var sb strings.Builder
 	sb.WriteString(drawFirstLine(contentWidth + 3))

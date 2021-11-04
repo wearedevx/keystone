@@ -18,6 +18,7 @@ func init() {
 	au = aurora.NewAurora(colors)
 }
 
+// RenderTemplate function uility to render template string
 func RenderTemplate(name string, tpl string, viewData interface{}) string {
 	var buf bytes.Buffer
 

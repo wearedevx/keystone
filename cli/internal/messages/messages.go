@@ -34,6 +34,7 @@ type MessageService interface {
 	DeleteMessages(messagesIds []uint) MessageService
 }
 
+// NewMessageService function returns a new instance of MessageService
 func NewMessageService(ctx *core.Context) (service MessageService) {
 	client, ksErr := client.NewKeystoneClient()
 

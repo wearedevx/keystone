@@ -28,6 +28,7 @@ type LoadOptions struct {
 	DontUnescapeChars bool
 }
 
+// DefaultLoadOptions function returns LoadOptions with default values
 func DefaultLoadOptions() LoadOptions {
 	return LoadOptions{}
 }
@@ -154,6 +155,8 @@ func (f *EnvFile) GetData() map[string]string {
 	return make(map[string]string)
 }
 
+// SetData method sets the key/value pairs all at once in the .env file
+// from the data map
 func (f *EnvFile) SetData(data map[string]string) *EnvFile {
 	if f.Err() == nil {
 		f.data = data

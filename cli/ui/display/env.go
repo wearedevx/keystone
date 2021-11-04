@@ -12,10 +12,12 @@ type envListViewModel struct {
 	Environments []string
 }
 
+// Environment function display environment name
 func Environment(environment string) {
 	ui.Print(environment)
 }
 
+// EnvironmentUsing function Message after switch
 func EnvironmentUsing(environmentName string) {
 	ui.Print(ui.RenderTemplate("using env", `
 {{ OK }} {{ .Message | bright_green }}
@@ -28,6 +30,8 @@ To load its variables:
 	}))
 }
 
+// EnvironmentList function displays a list of environment
+// Emphasize the current one
 func EnvironmentList(environments []string, currentEnvironment string) {
 	template := `{{ range  .Environments }}
 {{ if eq . $.Current }} {{ "*" | blue }} {{ . | yellow }} {{ else }}   {{ . }} {{ end }} {{ end }}`
@@ -38,6 +42,8 @@ func EnvironmentList(environments []string, currentEnvironment string) {
 	}))
 }
 
+// EnvironmentSendSuccess function Message when sharing envirionments is
+// successfull
 func EnvironmentSendSuccess() {
 	ui.Print(
 		ui.RenderTemplate(
