@@ -114,7 +114,7 @@ Secrets will be available as environment variables, and files will be created
 }
 
 // Type method returns the type of the service
-func (g *gitHubCiService) Type() string { return string(GithubCI) }
+func (g *gitHubCiService) Type() CiServiceType { return GithubCI }
 
 // GetOptions method returns the service options
 func (g *gitHubCiService) GetOptions() map[string]string {

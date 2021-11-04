@@ -58,18 +58,13 @@ func CiServiceRemoved(serviceName string) {
 }
 
 // CiSecretSent function Message when secrets were sent successfully
-func CiSecretSent(serviceName, environmentName, usage string) {
-	ui.Print(ui.RenderTemplate(
-		"ok ci sent",
-		`{{ OK }} {{ "Secrets sent to" | green }} {{ .ServiceName | green }}
-Secrets and files for the "{{ .Environment }}" environment have successfully
-been sent to your CI Service.
-{{ .Usage }}
-`,
-		map[string]string{
-			"ServiceName": serviceName,
-			"Environment": environmentName,
-			"Usage":       usage,
-		},
-	))
+func CiSecretSent(serviceName, environmentName string) {
+	ui.PrintSuccess(
+		fmt.Sprintf(
+			`Secrets successfully sent to %s CI service, environment %s.
+See https://github.com/wearedevx/keystone-action to use them.`,
+			serviceName,
+			environmentName,
+		),
+	)
 }

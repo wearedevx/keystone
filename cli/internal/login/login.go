@@ -52,7 +52,9 @@ func (s *LoginService) WaitForExternalLogin() *LoginService {
 }
 
 // LogIntoExisitingAccount method logs an existing user in
-func (s *LoginService) LogIntoExisitingAccount(accountIndex int) {
+func (s *LoginService) LogIntoExisitingAccount(
+	accountIndex int,
+) error {
 	config.SetCurrentAccount(accountIndex)
 
 	publicKey, _ := config.GetUserPublicKey()
@@ -71,7 +73,7 @@ func (s *LoginService) LogIntoExisitingAccount(accountIndex int) {
 }
 
 // CreateAccountAndLogin method creates a new user account and logs them in
-func (s *LoginService) CreateAccountAndLogin() {
+func (s *LoginService) CreateAccountAndLogin() error {
 	keyPair, err := keys.New(keys.TypeEC)
 	if err != nil {
 		s.err = err
