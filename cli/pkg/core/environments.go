@@ -11,6 +11,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/environmentsfile"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/pkg/constants"
 )
 
 func (ctx *Context) CurrentEnvironment() string {
@@ -19,7 +20,7 @@ func (ctx *Context) CurrentEnvironment() string {
 	}
 
 	environmentsfile := &environmentsfile.EnvironmentsFile{
-		Current: "dev",
+		Current: string(constants.DEV),
 	}
 	environmentsfile.Load(ctx.dotKeystonePath())
 
@@ -35,19 +36,19 @@ func (ctx *Context) CurrentEnvironment() string {
 func (ctx *Context) mustEnvironmentNameBeValid(name string) {
 	valid := false
 
-	switch name {
-	case "dev":
+	switch constants.EnvName(name) {
+	case constants.DEV:
 		valid = true
-	case "staging":
+	case constants.STAGING:
 		valid = true
-	case "prod":
+	case constants.PROD:
 		valid = true
 	}
 
 	if !valid {
 		kserrors.EnvironmentDoesntExist(
 			name,
-			"dev, staging, prod",
+			constants.EnvList.String(),
 			nil,
 		).Print()
 

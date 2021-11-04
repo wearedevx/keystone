@@ -223,8 +223,6 @@ func (s *messageService) decryptMessages(
 	return nil
 }
 
-var envList []string = []string{"dev", "staging", "prod"}
-
 // SendEnvironments sends environments to all members of the project
 // The API providing the public keys, it should handle reading rights for
 // each project member

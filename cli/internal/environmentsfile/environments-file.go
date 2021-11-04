@@ -8,6 +8,7 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/pkg/constants"
 	"gopkg.in/yaml.v2"
 )
 
@@ -42,7 +43,7 @@ func NewEnvironmentsFile(dotKeystonePath string, updatedEnvironments []models.En
 	return &EnvironmentsFile{
 		path:         environmentsFilePath(dotKeystonePath),
 		err:          nil,
-		Current:      "dev",
+		Current:      string(constants.DEV),
 		Environments: envs,
 	}
 

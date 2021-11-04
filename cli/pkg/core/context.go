@@ -12,6 +12,7 @@ import (
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	ksfile "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/pkg/constants"
 )
 
 type Context struct {
@@ -109,7 +110,7 @@ func (c *Context) CachedDotEnvPath() string {
 
 func (c *Context) CachedEnvironmentPath(environmentName string) string {
 	if environmentName == "" {
-		environmentName = "dev"
+		environmentName = string(constants.DEV)
 	}
 
 	p := path.Join(c.cacheDirPath(), environmentName)

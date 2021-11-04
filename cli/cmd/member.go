@@ -61,15 +61,6 @@ grouped by their role.`,
 	},
 }
 
-var envs []string
-
 func init() {
 	RootCmd.AddCommand(memberCmd)
-
-	envs = []string{
-		"dev",
-		"staging",
-		"prod",
-	}
-
 }
