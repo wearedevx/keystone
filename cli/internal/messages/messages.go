@@ -34,6 +34,7 @@ type MessageService interface {
 	DeleteMessages(messagesIds []uint) MessageService
 }
 
+// NewMessageService function returns a new instance of MessageService
 func NewMessageService(ctx *core.Context) (service MessageService) {
 	client, ksErr := client.NewKeystoneClient()
 
@@ -222,8 +223,6 @@ func (s *messageService) decryptMessages(
 
 	return nil
 }
-
-var envList []string = []string{"dev", "staging", "prod"}
 
 // SendEnvironments sends environments to all members of the project
 // The API providing the public keys, it should handle reading rights for

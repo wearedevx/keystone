@@ -26,6 +26,7 @@ type EnvironmentService interface {
 	GetAccessibleEnvironments() []models.Environment
 }
 
+// NewEnvironmentService function return an instance of EnvironmentService
 func NewEnvironmentService(ctx *core.Context) EnvironmentService {
 	var ksc client.KeystoneClient
 	var err *kserrors.Error
@@ -43,10 +44,13 @@ func NewEnvironmentService(ctx *core.Context) EnvironmentService {
 	return s
 }
 
+// Err method returns the last error encountered
 func (s *environmentService) Err() *kserrors.Error {
 	return s.err
 }
 
+// GetAccessibleEnvironments method returns the environments the currently
+// logged in user has access to.
 func (s *environmentService) GetAccessibleEnvironments() []models.Environment {
 	if s.err != nil {
 		return []models.Environment{}

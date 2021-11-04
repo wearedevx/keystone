@@ -7,6 +7,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 )
 
+// GetProjectName method returns the project name from the keysotnefile
 func (ctx *Context) GetProjectName() string {
 	if ctx.err != nil {
 		return ""
@@ -20,6 +21,7 @@ func (ctx *Context) GetProjectName() string {
 	return ksFile.ProjectName
 }
 
+// GetProjectID method returns the project ID from the keystonefile
 func (ctx *Context) GetProjectID() string {
 	if ctx.err != nil {
 		return ""
@@ -36,6 +38,8 @@ func (ctx *Context) GetProjectID() string {
 	return ksFile.ProjectId
 }
 
+// MustHaveProject method sets a context error if the keystonefile does
+// not have a project id
 func (ctx *Context) MustHaveProject() {
 	projectID := ctx.GetProjectID()
 

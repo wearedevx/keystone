@@ -134,7 +134,7 @@ func (p *Project) IsOrganizationPaid() (bool, error) {
 	return organization.Paid, nil
 }
 
-// GetRoles method  
+// GetRoles method returns roles available for that organization
 func (p *Project) GetRoles() ([]models.Role, error) {
 	var err error
 	var result models.GetRolesResponse

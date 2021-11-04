@@ -16,6 +16,7 @@ type Error struct {
 	meta  map[string]interface{}
 }
 
+// NewError function creates a new keysone error
 func NewError(
 	name string,
 	help string,
@@ -41,6 +42,7 @@ func NewError(
 	return err
 }
 
+// SetCause method sets the original error that cause this one to be raised
 func (e *Error) SetCause(err error) *Error {
 	e.cause = err
 
@@ -49,23 +51,28 @@ func (e *Error) SetCause(err error) *Error {
 	return e
 }
 
+// Cause method return the originalerror that caused this one to be raised
 func (e *Error) Cause() error {
 	return e.cause
 }
 
+// Name method returns the name of the error
 func (e *Error) Name() string {
 	return e.name
 }
 
+// Print method prints the error to stderr
 func (e *Error) Print() {
 	fmt.Fprintln(os.Stderr, e.Error())
 	// os.Stderr.WriteString(e.Error())
 }
 
+// Error method returns the formatted error message
 func (e *Error) Error() string {
 	return ui.RenderTemplate(e.name, e.help, e.meta)
 }
 
+// IsKsError function checks if `err` is an instance of a keystone `Error`
 func IsKsError(err error) bool {
 	if err == nil {
 		return false
@@ -77,6 +84,9 @@ func IsKsError(err error) bool {
 	return kserrorPtrType == errType
 }
 
+// AsKsError function dynamically casts an `error` into a keystone `Error`.
+// You should use `IsKsError(error) bool` beforehand to ensure this cast
+// will wor
 func AsKsError(err error) *Error {
 	return (err).(*Error)
 }

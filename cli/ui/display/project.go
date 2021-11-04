@@ -7,6 +7,7 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
+// DeletionSuccess function Message when porject destruction is successful
 func DeletionSuccess(projectName string) {
 	ui.Print(ui.RenderTemplate(
 		"deletion ok",
@@ -17,6 +18,7 @@ You may need to remove entries from your .gitignore file`,
 	))
 }
 
+// ProjectInitSuccess function Message when project has been created
 func ProjectInitSuccess() {
 	ui.Print(ui.RenderTemplate("Init Success", `
 {{ .Message | box | bright_green | indent 2 }}
@@ -36,6 +38,7 @@ If you need help with anything:
 	}))
 }
 
+// InviteSuccess function Message when invitation is successful
 func InviteSuccess(usersUIDs []string, email string) {
 	if len(usersUIDs) > 0 {
 		ui.Print(ui.RenderTemplate("file add success", `
@@ -54,6 +57,7 @@ To add them to the project use "member add" command:
 	}
 }
 
+// Projects function displays a list of the projects the user is a member of
 func Projects(projects []models.Project) {
 	ui.Print("You are part of %d project(s):\n", len(projects))
 

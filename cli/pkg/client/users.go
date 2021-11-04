@@ -8,6 +8,8 @@ type Users struct {
 	r requester
 }
 
+// CheckUsersExist method check the existence of the users given in `userIds`
+// These are Keystone userIds: `member@service`
 func (u *Users) CheckUsersExist(
 	userIds []string,
 ) (models.CheckMembersResponse, error) {
@@ -22,6 +24,8 @@ func (u *Users) CheckUsersExist(
 	return result, err
 }
 
+// GetEnvironmentPublicKeys method get the public keys of all the devices
+// that have a read access to the environment
 func (u *Users) GetEnvironmentPublicKeys(
 	environmentId string,
 ) (models.PublicKeys, error) {
@@ -33,6 +37,7 @@ func (u *Users) GetEnvironmentPublicKeys(
 	return result, err
 }
 
+// GetUserPublicKey method returns the public key of a specific user
 func (u *Users) GetUserPublicKey(
 	userID string,
 ) (result models.UserPublicKeys, err error) {
@@ -41,6 +46,7 @@ func (u *Users) GetUserPublicKey(
 	return result, err
 }
 
+// InviteUser method sends a Keystone invitation mail
 func (u *Users) InviteUser(
 	userEmail string,
 	projectName string,

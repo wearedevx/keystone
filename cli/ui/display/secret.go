@@ -9,11 +9,13 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
+// EnterValue function Asks the user to enter value for a secret
 func EnterValue(secretName string) {
 	ui.Print(ui.RenderTemplate("ask new value for environment", `
 Enter a value for {{ . }}:`, secretName))
 }
 
+// SecretTable function displays the secret table
 func SecretTable(secrets []core.Secret, environments []string) {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
@@ -64,6 +66,7 @@ func SecretTable(secrets []core.Secret, environments []string) {
 	fmt.Println(" * Required secrets; A Available secrets")
 }
 
+// SecretAlreadyExitsts function Messsage when secret already exists
 func SecretAlreadyExitsts(values map[core.EnvironmentName]core.SecretValue) {
 	ui.Print(`The secret already exist. Values are:`)
 	for env, value := range values {
@@ -71,6 +74,7 @@ func SecretAlreadyExitsts(values map[core.EnvironmentName]core.SecretValue) {
 	}
 }
 
+// SecretIsSetForEnvironment function Message when secret add is successfull
 func SecretIsSetForEnvironment(secretName string, nbEnvironments int) {
 	ui.PrintSuccess(
 		"Secret '%s' is set for %d environment(s)",
@@ -79,10 +83,12 @@ func SecretIsSetForEnvironment(secretName string, nbEnvironments int) {
 	)
 }
 
+// SecretRemoved function Message when secret rm is successfull
 func SecretRemoved(secretName string) {
 	ui.PrintSuccess("Secret '%s' removed", secretName)
 }
 
+// SecretUpdated function Message when secret set is successfull
 func SecretUpdated(secretName, environmentName string) {
 	ui.PrintSuccess(
 		fmt.Sprintf(
@@ -98,6 +104,7 @@ const (
 	REQUIRED string = "required"
 )
 
+// SecretIsNow function Message when changing the required status of a secret
 func SecretIsNow(secretName, prop string) {
 	template := `Secret {{ .SecretName }} is now {{ .Prop }}.`
 

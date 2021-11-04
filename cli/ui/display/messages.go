@@ -1,22 +1,19 @@
 package display
 
 import (
+	"github.com/wearedevx/keystone/cli/pkg/constants"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
-
-var envList = []string{
-	"dev",
-	"staging",
-	"prod",
-}
 
 // TODO: should handle a `quiet` setting ?
 // printChanges displays changes for environments to the user
 func Changes(
 	changes core.ChangesByEnvironment,
 ) {
-	for _, environmentName := range envList {
+	for _, envName := range constants.EnvList {
+		environmentName := string(envName)
+
 		changesList, ok := changes.Environments[environmentName]
 		if !ok { // means there are no changes, and versions are equal
 			printEnvironmentUpToDate(environmentName)

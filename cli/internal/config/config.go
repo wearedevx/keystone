@@ -92,6 +92,8 @@ func GetCurrentAccount() (user models.User, index int) {
 	return user, index
 }
 
+// UserFromAccount function returns a `models.User` instance
+// from an account map
 func UserFromAccount(account map[string]string) (user models.User) {
 	devices := make([]models.Device, 0)
 	devices = append(
@@ -109,20 +111,24 @@ func UserFromAccount(account map[string]string) (user models.User) {
 	return user
 }
 
+// GetUserPrivateKey function returns the currently logged in user's private key
 func GetUserPrivateKey() (privateKey []byte, err error) {
 	privateKey = []byte(viper.Get("private_key").(string))
 	return privateKey, err
 }
 
+// GetUserPublicKey function returns the currently logged in users's public key
 func GetUserPublicKey() (publicKey []byte, err error) {
 	publicKey = []byte(viper.Get("public_key").(string))
 	return publicKey, err
 }
 
+// SetUserPrivateKey function sets the private key for the currenty logged in user
 func SetUserPrivateKey(privateKey string) {
 	viper.Set("private_key", privateKey)
 }
 
+// SetUserPublicKey function sets the pulblic key for the currently logged in use
 func SetUserPublicKey(publicKey string) {
 	viper.Set("public_key", publicKey)
 }
@@ -138,10 +144,12 @@ func SetAuthToken(token string) {
 	viper.Set("auth_token", token)
 }
 
+// GetAuthToken function returns the latest auth token we obtained
 func GetAuthToken() string {
 	return viper.Get("auth_token").(string)
 }
 
+// GetDeviceName function returns the current device name
 func GetDeviceName() string {
 	if viper.Get("device") != nil {
 		return viper.Get("device").(string)
@@ -149,6 +157,7 @@ func GetDeviceName() string {
 	return ""
 }
 
+// GetDeviceUID function returns the current device UID
 func GetDeviceUID() string {
 	if viper.Get("device_uid") != nil {
 		return viper.Get("device_uid").(string)
@@ -156,6 +165,7 @@ func GetDeviceUID() string {
 	return ""
 }
 
+// GetServiceApiKey function returns the API Key for the named CI service
 func GetServiceApiKey(serviceName string) string {
 	token := viper.Get(serviceName + "_auth_token")
 	if token != nil {
@@ -164,6 +174,7 @@ func GetServiceApiKey(serviceName string) string {
 	return ""
 }
 
+// SetServiceApiKey function sets the API Key for the named CI service
 func SetServiceApiKey(serviceName string, token string) {
 	viper.Set(serviceName+"_auth_token", token)
 }
@@ -216,12 +227,15 @@ func InitConfig(cfgFile string) (err error) {
 	return nil
 }
 
+// CheckExpiredTokenError function checks if the API error is a token exipiration
+// and logsout the user if so
 func CheckExpiredTokenError(err *kserrors.Error) {
 	if err.Name() == "Invalid Connection Token" {
 		Logout()
 	}
 }
 
+// Logout function logs the user oud
 func Logout() {
 	SetCurrentAccount(-1)
 	SetAuthToken("")

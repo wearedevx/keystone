@@ -10,6 +10,7 @@ type Devices struct {
 	r requester
 }
 
+// GetAll method fetches and returns a list of all the user's devices
 func (c *Devices) GetAll() ([]models.Device, error) {
 	var err error
 	var result models.GetDevicesResponse
@@ -19,6 +20,7 @@ func (c *Devices) GetAll() ([]models.Device, error) {
 	return result.Devices, err
 }
 
+// Revoke method revokes access to the device with UID `uid`
 func (c *Devices) Revoke(uid string) error {
 	var err error
 

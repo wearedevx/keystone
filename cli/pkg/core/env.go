@@ -272,6 +272,7 @@ func (ctx *Context) SetSecret(
 	return ctx
 }
 
+// UnsetSecret method clears the secret value
 func (ctx *Context) UnsetSecret(envName string, secretName string) *Context {
 	if ctx.Err() != nil {
 		return ctx
@@ -478,6 +479,9 @@ func (ctx *Context) HasSecret(secretName string) bool {
 	return haveIt
 }
 
+// MissingSecretsForEnvironment method returns a list of all the secrets
+// that are listed in keystone.yaml and are not in the cache.
+// The second value is true if there are missing things.
 func (ctx *Context) MissingSecretsForEnvironment(
 	environmentName string,
 ) ([]string, bool) {
@@ -503,6 +507,7 @@ func (ctx *Context) MissingSecretsForEnvironment(
 	return missing, hasMissing
 }
 
+// SecretIsRequired method tells if `secretName` is required.
 func (ctx *Context) SecretIsRequired(secretName string) bool {
 	required := false
 	if ctx.Err() != nil {
@@ -525,6 +530,7 @@ func (ctx *Context) SecretIsRequired(secretName string) bool {
 	return required
 }
 
+// MarkSecretRequired method changes the required status of a secret
 func (ctx *Context) MarkSecretRequired(
 	secretName string,
 	required bool,

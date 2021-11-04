@@ -12,6 +12,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/utils"
 )
 
+// GitIgnore function adds `thatPath` to the .gitignore file
 func GitIgnore(wd string, thatPath string) error {
 	if IsIgnored(wd, thatPath) {
 		return nil
@@ -37,6 +38,7 @@ func GitIgnore(wd string, thatPath string) error {
 	return nil
 }
 
+// GitUnignore function removes `thatPath` from the gitignor file
 func GitUnignore(wd string, thatPath string) error {
 	if !IsIgnored(wd, thatPath) {
 		return nil
@@ -74,6 +76,7 @@ func GitUnignore(wd string, thatPath string) error {
 	return nil
 }
 
+// IsIgnored function returns true if `thatPath` is gitignored
 func IsIgnored(wd string, thatPath string) bool {
 	gitignorePath := path.Join(wd, ".gitignore")
 

@@ -12,6 +12,7 @@ import (
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	ksfile "github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/pkg/constants"
 )
 
 type Context struct {
@@ -103,13 +104,16 @@ func (c *Context) cacheDirPath() string {
 	return path.Join(c.dotKeystonePath(), "cache")
 }
 
+// CachedDotEnvPath method returns the path of the .env in .keystone
 func (c *Context) CachedDotEnvPath() string {
 	return path.Join(c.cacheDirPath(), ".env")
 }
 
+// CachedEnvironmentPath method returns the path to the environment in cache
+// e.g. `$PWD/.keystone/cache/dev`
 func (c *Context) CachedEnvironmentPath(environmentName string) string {
 	if environmentName == "" {
-		environmentName = "dev"
+		environmentName = string(constants.DEV)
 	}
 
 	p := path.Join(c.cacheDirPath(), environmentName)
@@ -125,10 +129,14 @@ func (c *Context) CachedEnvironmentPath(environmentName string) string {
 	return path.Join(c.cacheDirPath(), environmentName)
 }
 
+// CachedEnvironmentDotEnvPath method returns the path to the .env
+// for the given environment in cache
 func (c *Context) CachedEnvironmentDotEnvPath(environmentName string) string {
 	return path.Join(c.CachedEnvironmentPath(environmentName), ".env")
 }
 
+// CachedEnvironmentFilesPath method returns the path to the files dir
+// for the given environment in cache
 func (c *Context) CachedEnvironmentFilesPath(environmentName string) string {
 	return path.Join(c.CachedEnvironmentPath(environmentName), "files")
 }
@@ -150,6 +158,7 @@ func (context *Context) Err() *kserrors.Error {
 	return context.err
 }
 
+// SetError method sets the context error
 func (ctx *Context) SetError(err *kserrors.Error) *Context {
 	ctx.err = err
 
@@ -216,6 +225,7 @@ func (c *Context) getCurrentEnvironmentId() string {
 	return ""
 }
 
+// DotKeystonePath method returns the path to the .keystone dir
 func (c *Context) DotKeystonePath() string {
 	return path.Join(c.Wd, ".keystone")
 }

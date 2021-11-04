@@ -19,8 +19,10 @@ type dummyAuthService struct {
 	token        *oauth2.Token
 }
 
+// Name method return the name of the service
 func (g dummyAuthService) Name() string { return "Dummy" }
 
+// DummyAuth function  
 func DummyAuth(ctx context.Context, apiUrl string) AuthService {
 	return &dummyAuthService{
 		apiUrl: apiUrl,
@@ -28,6 +30,7 @@ func DummyAuth(ctx context.Context, apiUrl string) AuthService {
 	}
 }
 
+// Start method  
 func (g *dummyAuthService) Start() (string, error) {
 	lr, _ := getLoginRequest(g.apiUrl)
 
@@ -55,6 +58,7 @@ func fakeLoginSuccess(temporaryCode string) {
 
 }
 
+// WaitForExternalLogin method  
 func (g *dummyAuthService) WaitForExternalLogin() error {
 	c := make(chan pollResult)
 	var result pollResult
@@ -78,10 +82,12 @@ func (g *dummyAuthService) WaitForExternalLogin() error {
 	return nil
 }
 
+// Finish method  
 func (g dummyAuthService) Finish(pk []byte, device string, deviceUID string) (models.User, string, error) {
 	return completeLogin(g.apiUrl, models.GitlabAccountType, g.token, pk, device, deviceUID)
 }
 
+// CheckAccount method  
 func (g dummyAuthService) CheckAccount(account map[string]string) (bool, error) {
 	var err error
 

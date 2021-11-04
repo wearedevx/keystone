@@ -19,6 +19,7 @@ type Organizations struct {
 	r requester
 }
 
+// GetAll method returns all the organizations the user is a member of
 func (c *Organizations) GetAll() ([]models.Organization, error) {
 	var err error
 	var result models.GetOrganizationsResponse
@@ -28,6 +29,10 @@ func (c *Organizations) GetAll() ([]models.Organization, error) {
 	return result.Organizations, err
 }
 
+// GetByName method returns the organiziation withe the name `name`.
+// Set `owned` to `OWNED_ONLY` to only search among the organizations owned
+// by the user. Set it to `ALL_KNWON` to search among all the organizations
+// the user is a member of.
 func (c *Organizations) GetByName(
 	name string,
 	owned GetOptions,
@@ -59,6 +64,7 @@ func (c *Organizations) GetByName(
 	return orga, nil
 }
 
+// CreateOrganization method creates a new organization
 func (c *Organizations) CreateOrganization(
 	organizationName string,
 	private bool,
@@ -72,6 +78,7 @@ func (c *Organizations) CreateOrganization(
 	return result, err
 }
 
+// UpdateOrganization method updates (renames) an organizaiton
 func (c *Organizations) UpdateOrganization(
 	organization models.Organization,
 ) (models.Organization, error) {
@@ -132,6 +139,8 @@ func (c *Organizations) GetManagementUrl(
 	return url, nil
 }
 
+// GetProjects method returns all the projects that belong to the
+// organization
 func (c *Organizations) GetProjects(
 	orga models.Organization,
 ) ([]models.Project, error) {
@@ -144,6 +153,7 @@ func (c *Organizations) GetProjects(
 	return result.Projects, err
 }
 
+// GetMembers method returns all the members having access to the organization
 func (c *Organizations) GetMembers(
 	orga models.Organization,
 ) ([]models.ProjectMember, error) {

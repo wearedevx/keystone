@@ -163,6 +163,7 @@ func DeviceName(existingName string, forceDefault bool) string {
 
 // ———— CI SERVICE PROMPTS ———— //
 
+// ServiceIntegrationName function prompts the CI integration name
 func ServiceIntegrationName() string {
 	return StringInput(
 		"Enter a name for your integration",
@@ -170,6 +171,7 @@ func ServiceIntegrationName() string {
 	)
 }
 
+// ServiceConfigurationToRemove function prompts the CI service name to remove
 func ServiceConfigurationToRemove() string {
 	return StringInput(
 		"Enter the service name to remove",
@@ -177,6 +179,8 @@ func ServiceConfigurationToRemove() string {
 	)
 }
 
+// ConfirmCiConfigurationRemoval function asks confirmation for the CI service
+// removal
 func ConfirmCiConfigurationRemoval(serviceName string) bool {
 	ui.Print(ui.RenderTemplate("careful rm ci", `
 {{ CAREFUL }} You are about to remove the {{ . }} CI service.
@@ -187,6 +191,8 @@ This cannot be undone.`,
 	return Confirm("Continue")
 }
 
+// ConfirmSendEnvironmentToCiService function asks confirmation to send
+// environment to CI service
 func ConfirmSendEnvironmentToCiService(environmentName string) bool {
 	ui.Print(
 		"You are about to send the '%s' environment to your CI services.",
@@ -234,6 +240,7 @@ func SelectCIService(items []SelectCIServiceItem) SelectCIServiceItem {
 
 // ———— PROJECT PROMPTS ———— //
 
+// ConfirmProjectDestruction function as confirmation for project destruction
 func ConfirmProjectDestruction(projectName string, skipPrompts bool) bool {
 	if skipPrompts {
 		return true
@@ -307,14 +314,20 @@ func OrganizationsSelect(
 
 // ———— BACKUP/RESTORE PROMPTS ————— //
 
+// PasswordToEncrypt function prompts the user a passphrase to encrypt
+// the backup
 func PasswordToEncrypt() string {
 	return StringInput("Password to encrypt backup", "")
 }
 
+// PasswordToDecrypt function promps the user the passphrase to decrypt
+// the backup
 func PasswordToDecrypt() string {
 	return StringInput("Password to decrypt backup", "")
 }
 
+// ConfirmDotKeystonDirRemoval function aks confirmation for complete .keystone
+// removal
 func ConfirmDotKeystonDirRemoval() bool {
 	ui.Print(ui.RenderTemplate(
 		"confirm files rm",
@@ -328,10 +341,14 @@ It will update other members secrets and files.`,
 
 // ——— FILES PROMPTS ———— //
 
+// ConfirmOverrideFileContents function asks confirmation for ovirriding
+// existing file contents
 func ConfirmOverrideFileContents() bool {
 	return Confirm("Do you want to overrid the contents")
 }
 
+// ConfirmFileReset function asks confirmation to reset the local contents
+// of a file
 func ConfirmFileReset(forceYes bool) bool {
 	ui.Print(ui.RenderTemplate(
 		"careful reset",
@@ -347,6 +364,7 @@ The content of the files you are resetting will be replaced by their cached cont
 	return Confirm("Continue")
 }
 
+// ConfirmFileRemove function asks confirmation for file removal
 func ConfirmFileRemove(filePath, environmentName string, forceYes bool) bool {
 	if forceYes {
 		return true
@@ -369,6 +387,8 @@ This is permanent, and cannot be undone.`,
 
 // ——— SECRETS PROMPTS ——— //
 
+// ConfirmOverrideSecretValue function asks confirmation to override existing
+// secret value
 func ConfirmOverrideSecretValue(forceYes bool) bool {
 	if forceYes {
 		return true
@@ -377,6 +397,7 @@ func ConfirmOverrideSecretValue(forceYes bool) bool {
 	return Confirm("Do you want to overrid the value")
 }
 
+// ValueForEnvironment function prompts the secret value for an environment
 func ValueForEnvironment(
 	secretName, environmentName, defaultValue string,
 ) string {
@@ -391,6 +412,8 @@ func ValueForEnvironment(
 
 // ——— LOGIN PROMPTS ———— //
 
+// SelectAuthService function asks the user which third party to use
+// for authentication
 func SelectAuthService(serviceName string) string {
 	if serviceName == "" {
 		_, serviceName = Select(
