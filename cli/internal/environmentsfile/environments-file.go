@@ -8,6 +8,7 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/pkg/constants"
 	"gopkg.in/yaml.v2"
 )
 
@@ -33,6 +34,7 @@ func environmentsFilePath(dotKeystonePath string) string {
 	return path.Join(dotKeystonePath, "environments.yaml")
 }
 
+// NewEnvironmentsFile function returns a new instance of EnvironmentsFile
 func NewEnvironmentsFile(dotKeystonePath string, updatedEnvironments []models.Environment) *EnvironmentsFile {
 	envs := make([]Env, 0)
 
@@ -42,7 +44,7 @@ func NewEnvironmentsFile(dotKeystonePath string, updatedEnvironments []models.En
 	return &EnvironmentsFile{
 		path:         environmentsFilePath(dotKeystonePath),
 		err:          nil,
-		Current:      "dev",
+		Current:      string(constants.DEV),
 		Environments: envs,
 	}
 
@@ -142,6 +144,7 @@ func (file *EnvironmentsFile) SetVersion(environmentName string, versionID strin
 	return file
 }
 
+// SetCurrent method sets the current environment in the environmentsfile
 func (file *EnvironmentsFile) SetCurrent(environmentName string) *EnvironmentsFile {
 	if file.Err() != nil {
 		return file
@@ -152,6 +155,8 @@ func (file *EnvironmentsFile) SetCurrent(environmentName string) *EnvironmentsFi
 	return file
 }
 
+// GetByName method returns an environment named `environmentName` from
+// the environmentfile, or nil if theres no such environment
 func (file *EnvironmentsFile) GetByName(environmentName string) *Env {
 	if file.Err() != nil {
 		return nil
@@ -192,23 +197,7 @@ func (file *EnvironmentsFile) Replace(environment models.Environment) *Environme
 	return file
 }
 
+// Path method returns the path to the environment file
 func (file *EnvironmentsFile) Path() string {
 	return file.path
 }
-
-// // Removes a variable from the project
-// func (file *EnvironmentsFile) UnsetEnv(varname string) *KeystoneFile {
-// 	if file.Err() != nil {
-// 		return file
-// 	}
-
-// 	envs := make([]envKey, 0)
-
-// 	// Filter out previously existing value
-// 	for _, env := range file.Env {
-// 		if env.Key != varname {
-// 			envs = append(envs, env)
-// 		}
-// 	}
-
-// 	file.Env = eenvironmentFile.Save/ }

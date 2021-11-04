@@ -50,6 +50,7 @@ var (
 	)
 )
 
+// GitHubCi function return a `CiService` that works with the GitHub API
 func GitHubCi(ctx *core.Context, name string, apiUrl string) CiService {
 	kf := keystonefile.KeystoneFile{}
 	kf.Load(ctx.Wd)
@@ -71,12 +72,19 @@ func GitHubCi(ctx *core.Context, name string, apiUrl string) CiService {
 	return ciService
 }
 
-func (g *gitHubCiService) Name() string        { return g.name }
+// Name method returns the name of the service
+func (g *gitHubCiService) Name() string { return g.name }
+
+// Type method returns the type of the service
 func (g *gitHubCiService) Type() CiServiceType { return GithubCI }
+
+// GetOptions method returns the service options
 func (g *gitHubCiService) GetOptions() map[string]string {
 	return g.servicesKeys
 }
 
+// Setup method starts the ci service setup process, asking
+// the user information through prompts
 func (g *gitHubCiService) Setup() CiService {
 	if g.err != nil {
 		return g
@@ -90,6 +98,7 @@ func (g *gitHubCiService) Setup() CiService {
 	return g
 }
 
+// CheckSetup method verifies the user submitted information is valid
 func (g *gitHubCiService) CheckSetup() CiService {
 	if g.err != nil {
 		return g
@@ -196,6 +205,8 @@ func (g *gitHubCiService) PushSecret(
 	return g
 }
 
+// CleanSecret method remove all the secrets for the given environment
+// from the CI service
 func (g *gitHubCiService) CleanSecret(environment string) CiService {
 	if g.err != nil {
 		return g
@@ -352,6 +363,7 @@ func (g *gitHubCiService) askForApiKey() CiService {
 	return g
 }
 
+// Error method returns the last error encountered
 func (g *gitHubCiService) Error() error {
 	return g.err
 }

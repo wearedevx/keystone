@@ -49,6 +49,7 @@ func keystoneFilePath(wd string) string {
 	return path.Join(wd, "keystone.yaml")
 }
 
+// NewKeystoneFile function returns a new instance of a KeyatoneFile
 func NewKeystoneFile(wd string, project models.Project) *KeystoneFile {
 	return &KeystoneFile{
 		path:        keystoneFilePath(wd),
@@ -158,6 +159,8 @@ func (file *KeystoneFile) SetEnv(varname string, strict bool) *KeystoneFile {
 	return file
 }
 
+// HasEnv method returns true the environment variable `varname` exists
+// in the keystone file
 func (file *KeystoneFile) HasEnv(varname string) (hasIt bool, strict bool) {
 	if file.Err() != nil {
 		return false, false
@@ -192,6 +195,7 @@ func (file *KeystoneFile) UnsetEnv(varname string) *KeystoneFile {
 	return file
 }
 
+// AddFile method adds a tracked file to the keystone file
 func (file *KeystoneFile) AddFile(filekey FileKey) *KeystoneFile {
 	if file.Err() != nil {
 		return file
@@ -204,6 +208,7 @@ func (file *KeystoneFile) AddFile(filekey FileKey) *KeystoneFile {
 	return file
 }
 
+// RemoveFile method removes a file from the keysotne file
 func (file *KeystoneFile) RemoveFile(filepath string) *KeystoneFile {
 	if file.Err() != nil {
 		return file
@@ -222,6 +227,7 @@ func (file *KeystoneFile) RemoveFile(filepath string) *KeystoneFile {
 	return file
 }
 
+// SetFileRequired method marks a file a required in the keystone file
 func (file *KeystoneFile) SetFileRequired(
 	filepath string,
 	required bool,
@@ -239,6 +245,7 @@ func (file *KeystoneFile) SetFileRequired(
 	return file
 }
 
+// AddCiService method adds a CI service to the keystone file
 func (file *KeystoneFile) AddCiService(ciService CiService) *KeystoneFile {
 	if file.Err() != nil {
 		return file
@@ -250,6 +257,7 @@ func (file *KeystoneFile) AddCiService(ciService CiService) *KeystoneFile {
 	return file
 }
 
+// RemoveCiService method removes a CI service from the keystone file
 func (file *KeystoneFile) RemoveCiService(serviceName string) *KeystoneFile {
 	if file.Err() != nil {
 		return file
@@ -268,6 +276,7 @@ func (file *KeystoneFile) RemoveCiService(serviceName string) *KeystoneFile {
 	return file
 }
 
+// GetCiService method returns the CI service named `serviceName`
 func (file *KeystoneFile) GetCiService(serviceName string) CiService {
 	var ciService CiService
 	for _, service := range file.CiServices {

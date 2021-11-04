@@ -19,6 +19,7 @@ type SecretService struct {
 	ctx *core.Context
 }
 
+// NewSecretService function returns a new SecretService
 func NewSecretService(ctx *core.Context) *SecretService {
 	return &SecretService{
 		err: nil,
@@ -26,10 +27,13 @@ func NewSecretService(ctx *core.Context) *SecretService {
 	}
 }
 
+// Err method returns the last error encountered
 func (ss *SecretService) Err() error {
 	return ss.err
 }
 
+// IsSecretInCache method indicates wether `secretName` exists in cache.
+// also returns its values per environments if it does
 func (ss *SecretService) IsSecretInCache(secretName string) (inCache bool, _ map[core.EnvironmentName]core.SecretValue) {
 	{
 		var found core.Secret
@@ -52,6 +56,13 @@ func (ss *SecretService) IsSecretInCache(secretName string) (inCache bool, _ map
 	}
 }
 
+// SetValuesForEnvironments method asks the user secret values per environment.
+// It uses `secretValue` for the current environment, triggers prompts for the
+// others.
+// If `skipPrompts` is true, is does not ask the user anything and uses
+// `secretValue` for every environments.
+// If `secretValue` contains a new line (`\n`), it will fire up the user's
+// default editor for them to enter multiline values
 func (ss *SecretService) SetValuesForEnvironments(
 	secretName, secretValue string,
 	environments []models.Environment,

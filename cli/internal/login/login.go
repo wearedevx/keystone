@@ -15,6 +15,7 @@ type LoginService struct {
 	c   auth.AuthService
 }
 
+// NewLoginService function returns an instance of LoginService
 func NewLoginService(serviceName string) *LoginService {
 	ls := new(LoginService)
 
@@ -23,10 +24,13 @@ func NewLoginService(serviceName string) *LoginService {
 	return ls
 }
 
+// Err method returns the last error encountered
 func (s *LoginService) Err() error {
 	return s.err
 }
 
+// GetLoginLink method returns a link to the third party to initiate the oauth
+// process
 func (s *LoginService) GetLoginLink(url *string, name *string) *LoginService {
 	if s.err != nil {
 		return s
@@ -38,12 +42,16 @@ func (s *LoginService) GetLoginLink(url *string, name *string) *LoginService {
 	return s
 }
 
+// WaitForExternalLogin method polls the API regularly to check if the
+// user has completed the login on the third party an authorized access
+// for Keystone
 func (s *LoginService) WaitForExternalLogin() *LoginService {
 	s.err = s.c.WaitForExternalLogin()
 
 	return s
 }
 
+// LogIntoExisitingAccount method logs an existing user in
 func (s *LoginService) LogIntoExisitingAccount(
 	accountIndex int,
 ) error {
@@ -65,6 +73,7 @@ func (s *LoginService) LogIntoExisitingAccount(
 	return nil
 }
 
+// CreateAccountAndLogin method creates a new user account and logs them in
 func (s *LoginService) CreateAccountAndLogin() error {
 	keyPair, err := keys.New(keys.TypeEC)
 	if err != nil {
@@ -104,6 +113,7 @@ func (s *LoginService) CreateAccountAndLogin() error {
 	return nil
 }
 
+// PerformLogin method logs a user in, creating the account if necessary
 func (ls *LoginService) PerformLogin(
 	currentAccount models.User,
 	accountIndex int,
@@ -145,6 +155,7 @@ func (s *LoginService) FindAccount(
 	return s
 }
 
+// PromptDeviceName method asks the user for their device name
 func (ls *LoginService) PromptDeviceName(skipPrompts bool) *LoginService {
 	if ls.err != nil {
 		return ls

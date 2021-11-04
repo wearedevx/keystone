@@ -29,8 +29,10 @@ type gitHubAuthService struct {
 	token        *oauth2.Token
 }
 
+// Name method returns the name of the service
 func (g gitHubAuthService) Name() string { return "GitHub" }
 
+// GitHubAuth function returns an instance of GitHubAuth service
 func GitHubAuth(ctx context.Context, apiUrl string) AuthService {
 	return &gitHubAuthService{
 		apiUrl: apiUrl,
@@ -38,6 +40,8 @@ func GitHubAuth(ctx context.Context, apiUrl string) AuthService {
 	}
 }
 
+// Start method initiate the oauth process by creating a login request
+// on the Keystone server and requesting a login url to GitHub
 func (g *gitHubAuthService) Start() (string, error) {
 	lr, err := getLoginRequest(g.apiUrl)
 	if err != nil {
@@ -65,6 +69,8 @@ func (g *gitHubAuthService) Start() (string, error) {
 	return g.conf.AuthCodeURL(state, oauth2.AccessTypeOffline), err
 }
 
+// WaitForExternalLogin method polls the API until the user has completed the
+// login process and authorized the Keystone application
 func (g *gitHubAuthService) WaitForExternalLogin() error {
 	c := make(chan pollResult)
 	var result pollResult
@@ -91,6 +97,7 @@ func (g *gitHubAuthService) WaitForExternalLogin() error {
 	return nil
 }
 
+// Finish method finish the login process
 func (g gitHubAuthService) Finish(
 	pk []byte,
 	device string,
@@ -106,6 +113,7 @@ func (g gitHubAuthService) Finish(
 	)
 }
 
+// CheckAccount method returns true if the account is github one
 func (g gitHubAuthService) CheckAccount(
 	account map[string]string,
 ) (bool, error) {

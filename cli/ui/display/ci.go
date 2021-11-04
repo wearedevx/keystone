@@ -20,10 +20,13 @@ CI Services:{{ range $service := .Services }}
 	}
 }
 
+// CiAdded function Message on CI service successfully added
 func CiAdded() {
 	ui.PrintSuccess("CI service added successfully")
 }
 
+// CiSecretsRemoved function Message on secrets successfully removed
+// from the CI service
 func CiSecretsRemoved(environmentName string) {
 	ui.PrintSuccess(
 		fmt.Sprintf(
@@ -33,6 +36,8 @@ func CiSecretsRemoved(environmentName string) {
 	)
 }
 
+// CiNoSecretsForEnvironment function Message when there are no secrets
+// for environment in the CI service
 func CiNoSecretsForEnvironment(environmentName string) {
 	ui.PrintSuccess(
 		fmt.Sprintf(
@@ -42,14 +47,17 @@ func CiNoSecretsForEnvironment(environmentName string) {
 	)
 }
 
+// CiServiceSetupSuccessfully function Message when CI setup happened successfully
 func CiServiceSetupSuccessfully() {
 	ui.PrintSuccess("CI service setup successfully")
 }
 
+// CiServiceRemoved function Message when CI service removal happened successfully
 func CiServiceRemoved(serviceName string) {
 	ui.PrintSuccess("CI service '%s' successfully removed", serviceName)
 }
 
+// CiSecretSent function Message when secrets were sent successfully
 func CiSecretSent(serviceName, environmentName string) {
 	ui.PrintSuccess(
 		fmt.Sprintf(

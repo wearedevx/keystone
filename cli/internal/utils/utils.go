@@ -29,6 +29,7 @@ func FileExists(filename string) bool {
 	return !info.IsDir()
 }
 
+// DirExists function returns true if `filename` exists and is a directory
 func DirExists(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) || info == nil {
@@ -69,12 +70,14 @@ type Closer interface {
 	Close() error
 }
 
+// Close function closes anything with a `Close()` method
 func Close(r Closer) {
 	if err := r.Close(); err != nil {
 		panic(err)
 	}
 }
 
+// CopyFile function copies a file from `src` to `dst`
 func CopyFile(src, dst string) error {
 	sourceFileStat, err := os.Stat(src)
 	if err != nil {
@@ -103,6 +106,7 @@ func CopyFile(src, dst string) error {
 	return err
 }
 
+// RemoveFile function removes a file
 func RemoveFile(f string) error {
 	err := os.Remove(f)
 
@@ -113,6 +117,7 @@ func RemoveFile(f string) error {
 	return nil
 }
 
+// RemoveContents function remove all contents of a directory
 func RemoveContents(dir string) error {
 	/* #nosec
 	 * as long as contents of dir are only removed
@@ -137,6 +142,7 @@ func RemoveContents(dir string) error {
 	return nil
 }
 
+// AppendIfMissing function appends a string to a slice, if it is not already there
 func AppendIfMissing(slice []string, i string) []string {
 	for _, ele := range slice {
 		if ele == i {
@@ -161,6 +167,7 @@ func CheckSecretContent(name string) error {
 
 const doubleQuoteSpecialChars = "\\\n\r\"!$`"
 
+// DoubleQuoteEscape function
 func DoubleQuoteEscape(line string) string {
 	for _, c := range doubleQuoteSpecialChars {
 		toReplace := "\\" + string(c)

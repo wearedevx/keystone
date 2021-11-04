@@ -7,6 +7,8 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
+// Organizations function displays a list of organizations
+// withe ownership information
 func Organizations(organizations []models.Organization, user models.User) {
 	ui.Print("Organizations your are in:")
 	ui.Print("---")
@@ -26,10 +28,13 @@ func Organizations(organizations []models.Organization, user models.User) {
 	ui.Print(" 👑 : You own; P : private")
 }
 
+// OrganizationCreated function Message when organization is created
 func OrganizationCreated(organization models.Organization) {
 	ui.PrintSuccess("Organization %s has been created", organization.Name)
 }
 
+// ManageUrl function displays the link the user must follow to manage their
+// subscritption
 func ManageUrl(url string) {
 	ui.Print(
 		ui.RenderTemplate(
@@ -42,6 +47,8 @@ func ManageUrl(url string) {
 	)
 }
 
+// UpgradeUrl function displays a link the user must follow to upgrade their
+// organization
 func UpgradeUrl(url string) {
 	ui.Print(
 		ui.RenderTemplate(
@@ -54,6 +61,7 @@ func UpgradeUrl(url string) {
 	)
 }
 
+// OrganizationMembers function displays a list of orgnaiztion members
 func OrganizationMembers(members []models.ProjectMember) {
 	ui.Print(
 		"%d members are in projects that belong to this organization:\n",
@@ -65,6 +73,7 @@ func OrganizationMembers(members []models.ProjectMember) {
 	}
 }
 
+// OrganizationStatusUpdate function displays the organizaiton private status
 func OrganizationStatusUpdate(organization models.Organization) {
 	if organization.Private {
 		ui.PrintSuccess("Organization %s is now private", organization.Name)
@@ -73,6 +82,8 @@ func OrganizationStatusUpdate(organization models.Organization) {
 	}
 }
 
+// OrganizationAccessibleProjects function displays a list of projects
+// in an organization the user has access to
 func OrganizationAccessibleProjects(projects []models.Project) {
 	ui.Print(
 		"You have access to %d project(s) in this organization :\n",
@@ -84,10 +95,13 @@ func OrganizationAccessibleProjects(projects []models.Project) {
 	}
 }
 
+// OrganizationRenamed function Message when the organization was renamed
 func OrganizationRenamed(from, to string) {
 	ui.PrintSuccess("Organization %s has been renamed to %s", from, to)
 }
 
+// WarningFreeOrga function Message telling some things are not possible
+// for free organizaitons
 func WarningFreeOrga(roles []models.Role) {
 	if len(roles) == 1 {
 		ui.PrintStdErr(

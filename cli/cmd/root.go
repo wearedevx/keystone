@@ -27,6 +27,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/ui"
 
+	"github.com/wearedevx/keystone/cli/pkg/constants"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 )
 
@@ -45,12 +46,6 @@ var (
 var ctx *core.Context
 
 var CWD string
-
-var envList = []string{
-	"dev",
-	"staging",
-	"prod",
-}
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
@@ -94,6 +89,8 @@ func findCurrentCommand(args []string) string {
 	return ""
 }
 
+// Initialize function performs initialization logic before executing the
+// actual command
 func Initialize() {
 	if len(os.Args) <= 1 {
 		return
@@ -174,7 +171,7 @@ func Initialize() {
 	if checkEnvironment && !ctx.HasEnvironment(currentEnvironment) {
 		ctx.Init(models.Project{})
 		if currentEnvironment == "" {
-			ctx.SetCurrent("dev")
+			ctx.SetCurrent(string(constants.DEV))
 		}
 	}
 

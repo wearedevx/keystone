@@ -9,11 +9,13 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
+// EndScript function
 func EndScript() int {
 	// os.Kill
 	return 0
 }
 
+// GithubLoginSuccess function fakes a successfull login on github
 func GithubLoginSuccess() int {
 	time.Sleep(3000 * time.Millisecond)
 

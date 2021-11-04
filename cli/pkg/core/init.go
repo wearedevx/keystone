@@ -6,6 +6,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/utils"
+	"github.com/wearedevx/keystone/cli/pkg/constants"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
@@ -63,47 +64,47 @@ func (ctx *Context) Init(project models.Project) *Context {
 			return utils.CreateFileIfNotExists(ctx.CachedDotEnvPath(), "")
 		},
 		func() error {
-			return utils.CreateDirIfNotExist(ctx.CachedEnvironmentPath("dev"))
+			return utils.CreateDirIfNotExist(ctx.CachedEnvironmentPath(string(constants.DEV)))
 		},
 		func() error {
 			return utils.CreateDirIfNotExist(
-				ctx.CachedEnvironmentPath("staging"),
+				ctx.CachedEnvironmentPath(string(constants.STAGING)),
 			)
 		},
 		func() error {
-			return utils.CreateDirIfNotExist(ctx.CachedEnvironmentPath("prod"))
+			return utils.CreateDirIfNotExist(ctx.CachedEnvironmentPath(string(constants.PROD)))
 		},
 		func() error {
 			return utils.CreateFileIfNotExists(
-				ctx.CachedEnvironmentDotEnvPath("dev"),
+				ctx.CachedEnvironmentDotEnvPath(string(constants.DEV)),
 				"",
 			)
 		},
 		func() error {
 			return utils.CreateFileIfNotExists(
-				ctx.CachedEnvironmentDotEnvPath("staging"),
+				ctx.CachedEnvironmentDotEnvPath(string(constants.STAGING)),
 				"",
 			)
 		},
 		func() error {
 			return utils.CreateFileIfNotExists(
-				ctx.CachedEnvironmentDotEnvPath("prod"),
+				ctx.CachedEnvironmentDotEnvPath(string(constants.PROD)),
 				"",
 			)
 		},
 		func() error {
 			return utils.CreateDirIfNotExist(
-				ctx.CachedEnvironmentFilesPath("dev"),
+				ctx.CachedEnvironmentFilesPath(string(constants.DEV)),
 			)
 		},
 		func() error {
 			return utils.CreateDirIfNotExist(
-				ctx.CachedEnvironmentFilesPath("staging"),
+				ctx.CachedEnvironmentFilesPath(string(constants.STAGING)),
 			)
 		},
 		func() error {
 			return utils.CreateDirIfNotExist(
-				ctx.CachedEnvironmentFilesPath("prod"),
+				ctx.CachedEnvironmentFilesPath(string(constants.PROD)),
 			)
 		},
 		func() error {

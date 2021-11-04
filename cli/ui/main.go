@@ -12,32 +12,10 @@ type Printer interface {
 	PrintStdErr(message string, args ...interface{})
 }
 
-type EchoPrinter struct{}
-
 type UiPrinter struct{}
 
-func (ep *EchoPrinter) Print(messageString string, args ...interface{}) {
-	messageString = "echo " + "\"" + messageString + "\""
-
-	formatted := messageString
-	if len(args) > 0 {
-		formatted = aurora.Sprintf(messageString, args...)
-	}
-
-	fmt.Println(formatted)
-}
-
-func (ep *EchoPrinter) PrintStdErr(messageString string, args ...interface{}) {
-	messageString = "echo " + "\"" + messageString + "\""
-
-	formatted := messageString
-	if len(args) > 0 {
-		formatted = aurora.Sprintf(messageString, args...)
-	}
-
-	fmt.Println(formatted)
-}
-
+// Print method print utility with aurora color support
+// Mimics `fmt.Printf()`, but always adds a new line
 func (up *UiPrinter) Print(messageString string, args ...interface{}) {
 	formatted := messageString
 	if len(args) > 0 {
@@ -47,6 +25,7 @@ func (up *UiPrinter) Print(messageString string, args ...interface{}) {
 	fmt.Println(formatted)
 }
 
+// PrintStdErr method same as `Print()` but outputs to `stderr`
 func (up *UiPrinter) PrintStdErr(messageString string, args ...interface{}) {
 	formatted := messageString
 	if len(args) > 0 {
@@ -56,6 +35,7 @@ func (up *UiPrinter) PrintStdErr(messageString string, args ...interface{}) {
 	fmt.Fprintln(os.Stderr, formatted)
 }
 
+// PrintError function pretty-prints an error to stderr
 func PrintError(messageString string, args ...interface{}) {
 	formatted := messageString
 	if len(args) > 0 {
@@ -71,6 +51,7 @@ func PrintError(messageString string, args ...interface{}) {
 	fmt.Fprintln(os.Stderr, displayable)
 }
 
+// PrintSuccess function pretty prints a success message
 func PrintSuccess(messageString string, args ...interface{}) {
 
 	formatted := messageString
@@ -87,6 +68,7 @@ func PrintSuccess(messageString string, args ...interface{}) {
 	fmt.Println(displayable)
 }
 
+// PrintBox function prints in a box
 func PrintBox(messageString string, args ...interface{}) {
 	formatted := messageString
 	if len(args) > 0 {
@@ -96,6 +78,7 @@ func PrintBox(messageString string, args ...interface{}) {
 	fmt.Println(aurora.Green(Box(formatted)))
 }
 
+// PrintDim function prints dimmed
 func PrintDim(messageString string, args ...interface{}) {
 	colored := aurora.Gray(11, messageString)
 
@@ -107,6 +90,7 @@ func PrintDim(messageString string, args ...interface{}) {
 	fmt.Println(formatted)
 }
 
+// PrintStdErr function prints to stderr
 func PrintStdErr(messageString string, args ...interface{}) {
 	formatted := messageString
 	if len(args) > 0 {
@@ -116,6 +100,7 @@ func PrintStdErr(messageString string, args ...interface{}) {
 	fmt.Fprintln(os.Stderr, formatted)
 }
 
+// Print function prints
 func Print(messageString string, args ...interface{}) {
 	formatted := messageString
 	if len(args) > 0 {

@@ -92,6 +92,7 @@ func (ctx *Context) ListAllFiles(environmentName string) []FileDescriptor {
 	return result
 }
 
+// ListFiles method returns a list of all files in the keystone file
 func (ctx *Context) ListFiles() []keystonefile.FileKey {
 	if ctx.Err() != nil {
 		return make([]keystonefile.FileKey, 0)
@@ -107,6 +108,8 @@ func (ctx *Context) ListFiles() []keystonefile.FileKey {
 	return ksfile.Files
 }
 
+// ListCachedFilesForEnvironment method returns a list of all the files
+// present in the cache for the given environment
 func (ctx *Context) ListCachedFilesForEnvironment(
 	envname string,
 ) []keystonefile.FileKey {
@@ -161,6 +164,7 @@ func (ctx *Context) ListCachedFilesForEnvironment(
 	return files
 }
 
+// ListFilesFromCache method returns a list of the files present in the cache
 func (ctx *Context) ListFilesFromCache() []keystonefile.FileKey {
 	if ctx.Err() != nil {
 		return make([]keystonefile.FileKey, 0)
@@ -215,6 +219,7 @@ func (ctx *Context) ListFilesFromCache() []keystonefile.FileKey {
 	return fileKey
 }
 
+// AddFile method adds a file to keystone file and cache
 func (ctx *Context) AddFile(
 	file keystonefile.FileKey,
 	envContentMap map[string][]byte,
@@ -298,6 +303,7 @@ func (ctx *Context) fileBelongsToContext(filePath string) (belong bool) {
 	return strings.HasPrefix(fp, absWd)
 }
 
+// SetFile method changes the files content
 func (ctx *Context) SetFile(filePath string, content []byte) *Context {
 	if ctx.Err() != nil {
 		return ctx
@@ -372,6 +378,8 @@ func (ctx *Context) LocallyModifiedFiles(
 	return modified
 }
 
+// IsFileModified method indicates whether the local version, and the
+// in-cache version for the current environment of a file differ
 func (ctx *Context) IsFileModified(
 	filePath, environment string,
 ) (isModified bool) {
@@ -514,6 +522,8 @@ func (ctx *Context) FilesUseEnvironment(
 	return ctx
 }
 
+// RemoveFile method removes a file from the keystonefile.
+// `purge` also removes the file from the cache
 func (ctx *Context) RemoveFile(
 	filePath string,
 	force bool,
@@ -620,6 +630,7 @@ func (ctx *Context) HasFile(fileName string) bool {
 	return haveIt
 }
 
+// MarkFileRequired method changes the required status of a file
 func (ctx *Context) MarkFileRequired(
 	filePath string,
 	required bool,

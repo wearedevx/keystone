@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+// TestEncryptForUser function    
 func TestEncryptForUser(t *testing.T) {
 	// var user models.User = models.User{
 	// 	// Keys: models.KeyRing{

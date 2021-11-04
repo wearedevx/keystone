@@ -11,6 +11,7 @@ import (
 	"github.com/cossacklabs/themis/gothemis/message"
 )
 
+// EncryptMessage function encrypts a message with themis
 func EncryptMessage(
 	senderPrivateKey []byte,
 	recipientPublicKey []byte,
@@ -33,6 +34,7 @@ func EncryptMessage(
 	return p, nil
 }
 
+// DecryptMessage function decrypts a message with themis
 func DecryptMessage(
 	recipientPrivateKey []byte,
 	senderPublicKey []byte,

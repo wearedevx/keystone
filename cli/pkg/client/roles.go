@@ -10,6 +10,8 @@ type Roles struct {
 	r requester
 }
 
+// GetAll method returns all the roles available in project
+// identifiled by `projectID`
 func (c *Roles) GetAll(projectID string) ([]models.Role, error) {
 	var err error
 	var result models.GetRolesResponse

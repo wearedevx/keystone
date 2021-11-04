@@ -9,6 +9,7 @@ import (
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
+// DeviceList function Prints a list of devices
 func DeviceList(devices []models.Device) {
 	devStrings := []string{}
 
@@ -34,6 +35,7 @@ To revoke access to one of these devices, use:
 	)
 }
 
+// DeviceRevokeSuccess function Message when device is revoked
 func DeviceRevokeSuccess() {
 	ui.PrintSuccess(
 		"Device has been revoked and will no longer be updated with new secrets.",
