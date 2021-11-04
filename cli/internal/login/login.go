@@ -174,3 +174,4 @@ func selectAuthService(serviceName string) (auth.AuthService, error) {
 
 	return auth.GetAuthService(serviceName, client.ApiURL)
 }
+
