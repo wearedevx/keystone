@@ -52,9 +52,7 @@ func (s *LoginService) WaitForExternalLogin() *LoginService {
 }
 
 // LogIntoExisitingAccount method logs an existing user in
-func (s *LoginService) LogIntoExisitingAccount(
-	accountIndex int,
-) error {
+func (s *LoginService) LogIntoExisitingAccount(accountIndex int) {
 	config.SetCurrentAccount(accountIndex)
 
 	publicKey, _ := config.GetUserPublicKey()
@@ -64,20 +62,20 @@ func (s *LoginService) LogIntoExisitingAccount(
 		config.GetDeviceUID(),
 	)
 	if err != nil {
-		return err
+		s.err = err
+		return
 	}
 
 	config.SetAuthToken(jwtToken)
 	config.Write()
-
-	return nil
 }
 
 // CreateAccountAndLogin method creates a new user account and logs them in
-func (s *LoginService) CreateAccountAndLogin() error {
+func (s *LoginService) CreateAccountAndLogin() {
 	keyPair, err := keys.New(keys.TypeEC)
 	if err != nil {
-		return err
+		s.err = err
+		return
 	}
 
 	// Transfer credentials to the server
@@ -88,7 +86,8 @@ func (s *LoginService) CreateAccountAndLogin() error {
 		config.GetDeviceUID(),
 	)
 	if err != nil {
-		return err
+		s.err = err
+		return
 	}
 
 	// Save the user info in the local config
@@ -109,8 +108,6 @@ func (s *LoginService) CreateAccountAndLogin() error {
 	config.SetCurrentAccount(accountIndex)
 	config.SetAuthToken(jwtToken)
 	config.Write()
-
-	return nil
 }
 
 // PerformLogin method logs a user in, creating the account if necessary
@@ -118,6 +115,10 @@ func (ls *LoginService) PerformLogin(
 	currentAccount models.User,
 	accountIndex int,
 ) bool {
+	if ls.err != nil {
+		return false
+	}
+
 	if accountIndex >= 0 {
 		// Found an exiting matching account,
 		// log into it

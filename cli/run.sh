@@ -8,8 +8,8 @@ CONSTS_PKG="${BASE}/pkg/constants"
 AUTH_PKG="${BASE}/pkg/client/auth"
 
 API_FLAG="-X ${CLIENT_PKG}.ApiURL=$KSAPI_URL"
-AUTH_FLAG="-X '${AUTH_PKG}.authRedirectURL=$AUTH_PROXY'"
-VERSION_FLAG="-X '${CONSTS_PKG}.Version=$VERSION'"
+AUTH_FLAG="-X ${AUTH_PKG}.authRedirectURL=$AUTH_PROXY"
+VERSION_FLAG="-X ${CONSTS_PKG}.Version=$VERSION"
 
 GITHUB_CLIENT_ID_FLAG="-X ${AUTH_PKG}.githubClientId=$GITHUB_CLIENT_ID"
 GITHUB_CLIENT_SECRET_FLAG="-X ${AUTH_PKG}.githubClientSecret=$GITHUB_CLIENT_SECRET"
@@ -23,5 +23,11 @@ LDFLAGS="$API_FLAG \
   $GITHUB_CLIENT_SECRET_FLAG \
   $GITLAB_CLIENT_ID_FLAG \
   $GITLAB_CLIENT_SECRET_FLAG"
+
+echo "———————— BUILD FLAGS ————————"
+echo "-ldflags $LDFLAGS"
+echo "—————————————————————————————"
+echo ""
+echo ""
 
 go run -ldflags "$LDFLAGS" main.go --config="/tmp/keystone/config.yaml" "$@" 

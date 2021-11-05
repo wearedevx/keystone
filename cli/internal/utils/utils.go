@@ -73,7 +73,9 @@ type Closer interface {
 // Close function closes anything with a `Close()` method
 func Close(r Closer) {
 	if err := r.Close(); err != nil {
-		panic(err)
+		if !errors.Is(err, io.ErrUnexpectedEOF) {
+			panic(err)
+		}
 	}
 }
 

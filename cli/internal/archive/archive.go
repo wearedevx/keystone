@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -55,6 +56,7 @@ func Archive(source, target string) (err error) {
 	if err != nil {
 		return err
 	}
+	defer utils.Close(file)
 
 	_, err = io.Copy(file, gzipBuffer)
 	if err != nil {
@@ -83,22 +85,17 @@ func ArchiveWithPassphrase(source, target, passphrase string) (err error) {
 	return nil
 }
 
-// Extracts the .tar.gz file at `archivepath` into the `target` directory
-// uing `wd` as temporary directory to hold the `.tar` file
-func Extract(archivepath, wd, target string) (err error) {
-	err = UnGzip(archivepath, wd)
+// Extracts the contents of a tar.gz archive into the `target` directory
+func Extract(archive io.Reader, target string) (err error) {
+	tarArchive, err := UnGzip(archive)
 	if err != nil {
 		return err
 	}
 
-	temporaryArchivePath := path.Join(wd, ".keystone.tar")
-
-	err = Untar(temporaryArchivePath, target)
+	err = Untar(tarArchive, target)
 	if err != nil {
 		return err
 	}
-
-	err = os.Remove(temporaryArchivePath)
 
 	return err
 }
@@ -108,23 +105,12 @@ func Extract(archivepath, wd, target string) (err error) {
 // `target` is the directory where the archive will be extracted, and
 // `passphrase` is the passphrase used to decrypt.
 func ExtractWithPassphrase(archivepath, target, passphrase string) (err error) {
-	temporaryDir, err := ioutil.TempDir("", "ks-archive-*")
+	decrypted, err := crypto.DecryptFile(archivepath, passphrase)
 	if err != nil {
 		return err
 	}
 
-	temporaryFile := path.Join(temporaryDir, "decrypted.tar.gz")
-
-	if err = crypto.
-		DecryptFile(archivepath, temporaryFile, passphrase); err != nil {
-		return err
-	}
-
-	if err = Extract(temporaryFile, temporaryDir, target); err != nil {
-		return err
-	}
-
-	if err = os.RemoveAll(temporaryDir); err != nil {
+	if err = Extract(decrypted, target); err != nil {
 		return err
 	}
 
@@ -133,8 +119,6 @@ func ExtractWithPassphrase(archivepath, target, passphrase string) (err error) {
 
 // Tar creates a tar archive
 // source is a path to a directory to archive
-// target is a path to a directory to write the archive to.
-// The caller must ensure both paths are within the ctx.Wd
 func Tar(source string) (_ io.ReadWriter, err error) {
 	fileList := make([]utils.FileInfo, 0)
 	err = utils.DirWalk(source,
@@ -156,7 +140,7 @@ func Tar(source string) (_ io.ReadWriter, err error) {
 // the `fileList` may be optained through `utils.DirWalk()`
 // target is the path to the output tarball, without the file extension
 func TarFileList(fileList []utils.FileInfo) (_ io.ReadWriter, err error) {
-	var buffer = bytes.NewBuffer([]byte{})
+	buffer := bytes.NewBuffer([]byte{})
 
 	tarball := tar.NewWriter(buffer)
 	defer utils.Close(tarball)
@@ -180,19 +164,10 @@ func TarFileList(fileList []utils.FileInfo) (_ io.ReadWriter, err error) {
 	return buffer, err
 }
 
-// Untar extracts content from a tar archive
-// tarball is a path to the archive
-// target is a directory to write to
-// The caller must ensure target path in within ctx.Wd
-func Untar(tarball, target string) error {
-	/* #nosec */
-	reader, err := os.Open(tarball)
-	if err != nil {
-		return err
-	}
-	defer utils.Close(reader)
-
-	tarReader := tar.NewReader(reader)
+// Untar extracts content from a tar archive.
+// `target` is the path to a directory to write the extracted files to
+func Untar(tarball io.Reader, target string) error {
+	tarReader := tar.NewReader(tarball)
 
 	for {
 		header, err := tarReader.Next()
@@ -223,9 +198,7 @@ func Untar(tarball, target string) error {
 		}
 		defer utils.Close(file)
 
-		/* #nosec
-		 * Shouldn't we prevent decompression bombs?
-		 */
+		/* #nosec */
 		_, err = io.Copy(file, tarReader)
 		if err != nil {
 			return err
@@ -234,51 +207,38 @@ func Untar(tarball, target string) error {
 	return nil
 }
 
-// Gzip compresses a file with the gzip algorithm.
-// source is the orginal file to compress
-// target is the output
-// The caller must ensure both path are within ctx.Wd
+// Gzip compresses data with the gzip algorithm.
 func Gzip(reader io.Reader) (_ io.Reader, err error) {
-	out := bytes.NewBuffer([]byte{})
+	out := bytes.Buffer{}
 
-	archiver := gzip.NewWriter(out)
+	archiver := gzip.NewWriter(&out)
+	defer utils.Close(archiver)
 
 	/* #nosec
 	 * Should'n we check for decompression bomb?
 	 */
 	_, err = io.Copy(archiver, reader)
 
-	return out, err
+	return &out, err
 }
 
-// UnGzip uncompresses a gzip file
-// source is a path to the compressed file
-// target ia a path to a file to write the extracted contents to
-// Caller must ensure that the target path is withen ctx.Wd
-func UnGzip(source, target string) error {
+// UnGzip uncompresses gzipped data
+func UnGzip(source io.Reader) (io.Reader, error) {
 	/* #nosec */
-	reader, err := os.Open(source)
+	archive, err := gzip.NewReader(source)
 	if err != nil {
-		return err
-	}
-	defer utils.Close(reader)
-
-	archive, err := gzip.NewReader(reader)
-	if err != nil {
-		return err
+		return nil, err
 	}
 	defer utils.Close(archive)
 
-	target = filepath.Join(target, archive.Name)
-	writer, err := os.Create(target)
-	if err != nil {
-		return err
-	}
-	defer utils.Close(writer)
-
+	buffer := bytes.NewBuffer([]byte{})
 	/* #nosec
 	 * Shouldn't we check for decompression bomb?
 	 */
-	_, err = io.Copy(writer, archive)
-	return err
+	_, err = io.Copy(buffer, archive)
+	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
+		return nil, err
+	}
+
+	return buffer, nil
 }
