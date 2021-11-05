@@ -75,6 +75,10 @@ func GitHubCi(ctx *core.Context, name string, apiUrl string) CiService {
 // Name method returns the name of the service
 func (g *gitHubCiService) Name() string { return g.name }
 
+func (g *gitHubCiService) Usage() string {
+	return `See https://github.com/wearedevx/keystone-action to use them.`
+}
+
 // Type method returns the type of the service
 func (g *gitHubCiService) Type() CiServiceType { return GithubCI }
 
@@ -107,7 +111,7 @@ func (g *gitHubCiService) CheckSetup() CiService {
 	if len(g.servicesKeys["Owner"]) == 0 ||
 		len(g.servicesKeys["Project"]) == 0 ||
 		len(g.getApiKey()) == 0 {
-		g.err = ErrorMissinCiInformation
+		g.err = ErrorMissingCiInformation
 	}
 
 	return g

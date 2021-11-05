@@ -22,8 +22,8 @@ const (
 var availableServices map[CiServiceType]string
 
 var (
-	ErrorMissinCiInformation error = errors.New("missing CI information")
-	ErrorNoCIServiceWithName       = errors.New(
+	ErrorMissingCiInformation error = errors.New("missing CI information")
+	ErrorNoCIServiceWithName        = errors.New(
 		"no ci service with that name",
 	)
 	ErrorUnknownServiceType      = errors.New("unknown service type")
@@ -44,11 +44,14 @@ type CiService interface {
 	CleanSecret(environment string) CiService
 	CheckSetup() CiService
 	Error() error
+
+	Usage() string
 }
 
 func init() {
 	availableServices = map[CiServiceType]string{
 		GithubCI: "GitHub CI",
+		GitlabCI: "Gitlab CI",
 	}
 }
 
@@ -79,6 +82,9 @@ func GetCiService(
 	switch CiServiceType(service.Type) {
 	case GithubCI:
 		c = GitHubCi(ctx, serviceName, apiUrl)
+
+	case GitlabCI:
+		c = GitLabCi(ctx, serviceName, apiUrl)
 
 	default:
 		err = fmt.Errorf(
@@ -121,6 +127,8 @@ func PickCiService(
 	switch CiServiceType(s.Type) {
 	case GithubCI:
 		return GitHubCi(ctx, name, apiUrl), nil
+	case GitlabCI:
+		return GitLabCi(ctx, name, apiUrl), nil
 	default:
 		return nil, ErrorInvalidServiceType
 	}

@@ -64,7 +64,7 @@ ks ci send --env prod
 			exitIfErr(err)
 
 			if err = ciService.CheckSetup().Error(); err != nil {
-				if errors.Is(err, ci.ErrorMissinCiInformation) {
+				if errors.Is(err, ci.ErrorMissingCiInformation) {
 					err = kserrors.MissingCIInformation(serviceName, nil)
 				}
 
@@ -78,7 +78,11 @@ ks ci send --env prod
 			}
 			exitIfErr(err)
 
-			display.CiSecretSent(ciService.Name(), currentEnvironment)
+			display.CiSecretSent(
+				ciService.Name(),
+				currentEnvironment,
+				ciService.Usage(),
+			)
 		}
 	},
 }
