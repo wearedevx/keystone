@@ -41,6 +41,7 @@ func (r *Repo) findDeletedDevice(
 func (r *Repo) undeleteOrCreateDevices(
 	user *models.User,
 ) *Repo {
+	fmt.Printf("LS -> pkg/repo/users.go:42 -> user: %+v\n", user)
 	if r.err != nil {
 		return r
 	}
@@ -98,6 +99,7 @@ func (r *Repo) GetOrCreateUser(user *models.User) IRepo {
 	if r.err == nil {
 		// Undelete devices using data coming from the CLI
 		// NOTE: Should we not update foundUser Device array here?
+		user.ID = foundUser.ID
 		r.undeleteOrCreateDevices(user)
 
 		*user = foundUser
@@ -105,6 +107,7 @@ func (r *Repo) GetOrCreateUser(user *models.User) IRepo {
 		user.UserID = user.Username + "@" + string(user.AccountType)
 
 		r.err = db.Omit("Devices").Create(&user).Error
+		fmt.Printf("LS -> pkg/repo/users.go:107 -> user: %+v\n", user)
 		if r.err != nil {
 			return r
 		}
