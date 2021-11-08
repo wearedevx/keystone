@@ -3,6 +3,7 @@ package ci
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -36,7 +37,7 @@ var (
 
 type CiService interface {
 	Name() string
-	Type() CiServiceType
+	Type() string
 	Setup() CiService
 	GetOptions() map[string]string
 
@@ -79,7 +80,9 @@ func GetCiService(
 		return nil, ErrorNoCIServiceWithName
 	}
 
-	switch CiServiceType(service.Type) {
+	t := strings.Split(service.Type, "_")[0]
+
+	switch CiServiceType(t) {
 	case GithubCI:
 		c = GitHubCi(ctx, serviceName, apiUrl)
 
