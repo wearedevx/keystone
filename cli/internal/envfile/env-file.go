@@ -165,6 +165,16 @@ func (f *EnvFile) SetData(data map[string]string) *EnvFile {
 	return f
 }
 
+// Get method returns the value of the key
+func (f *EnvFile) Get(key string) (string, bool) {
+	if f.Err() == nil {
+		value, ok := f.data[key]
+		return value, ok
+	}
+
+	return "", false
+}
+
 // Adds a key-value pair to the .env file
 func (f *EnvFile) Set(key string, value string) *EnvFile {
 	if f.Err() == nil {

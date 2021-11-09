@@ -48,7 +48,7 @@ ks login ––with=github`,
 			exit(nil)
 		}
 
-		sp := spinner.Spinner(" ").Start()
+		sp := spinner.Spinner("").Start()
 
 		var url, name string
 		ls := login.NewLoginService(serviceName).

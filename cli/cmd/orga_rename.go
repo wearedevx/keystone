@@ -36,7 +36,7 @@ var renameCmd = &cobra.Command{
 		organizationName := args[0]
 		newName := args[1]
 
-		sp := spinner.Spinner(" ")
+		sp := spinner.Spinner("")
 		sp.Start()
 
 		c, err := client.NewKeystoneClient()

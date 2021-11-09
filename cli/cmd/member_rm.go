@@ -63,7 +63,7 @@ of the secrets and files.
 
 		projectID := ctx.GetProjectID()
 
-		sp := spinner.Spinner(" Checking users exist...")
+		sp := spinner.Spinner("Checking users exist...")
 		sp.Start()
 		r, err := c.Users().CheckUsersExist(args)
 		sp.Stop()
@@ -94,7 +94,7 @@ of the secrets and files.
 			exit(nil)
 		}
 
-		sp = spinner.Spinner(" Removing members...")
+		sp = spinner.Spinner("Removing members...")
 		sp.Start()
 		err = c.Project(projectID).RemoveMembers(membersToRevoke)
 		sp.Stop()

@@ -11,19 +11,15 @@ import (
 	"strings"
 )
 
-// func GetEnv(varname string, fallback string) string {
-// 	if value, ok := os.LookupEnv(varname); ok {
-// 		return value
-// 	}
-
-// 	return fallback
-// }
-
 // fileExists checks if a file exists and is not a directory before we
 // try using it to prevent further errors.
 func FileExists(filename string) bool {
 	info, err := os.Lstat(filename)
 	if os.IsNotExist(err) {
+		return false
+	}
+	if err != nil {
+		fmt.Fprint(os.Stderr, err.Error())
 		return false
 	}
 	return !info.IsDir()
