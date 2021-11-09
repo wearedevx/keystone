@@ -1,18 +1,14 @@
 package ci
 
 import (
-	"bytes"
 	"encoding/base64"
 	"fmt"
 	"io"
-	"path/filepath"
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/archive"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
-	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
@@ -183,12 +179,18 @@ func (g *gitlabCiService) PushSecret(
 		return g
 	}
 
-	archive := g.getArchiveBuffer(environment)
-	if g.err != nil {
+	archive, err := getArchiveBuffer(g.ctx, environment)
+	if err != nil {
+		g.err = err
 		return g
 	}
 
-	splits, err := splitString(archive, SLOT_SIZE, N_SLOTS)
+	str, err := base64encode(archive)
+	if err != nil {
+		return g
+	}
+
+	splits, err := splitString(str, SLOT_SIZE, N_SLOTS)
 	if err != nil {
 		g.err = err
 		return g
@@ -353,65 +355,6 @@ func (g *gitlabCiService) initClient() {
 	g.client, g.err = gitlab.NewClient(string(g.apiKey))
 }
 
-func (g *gitlabCiService) getFileList(environmentName string) []utils.FileInfo {
-	if g.err != nil {
-		return nil
-	}
-
-	fileList := make([]utils.FileInfo, 0)
-	source := g.ctx.DotKeystonePath()
-	prefix := filepath.Join(".keystone", "cache", environmentName)
-
-	err := utils.DirWalk(source,
-		func(info utils.FileInfo) error {
-			if strings.HasPrefix(info.Path, prefix) ||
-				info.Path == ".keystone" ||
-				info.Path == filepath.Join(".keystone", "cache") {
-				fileList = append(fileList, info)
-			}
-
-			return nil
-		})
-	if err != nil {
-		g.err = err
-		return nil
-	}
-
-	return fileList
-}
-
-func (g *gitlabCiService) getArchiveBuffer(environmentName string) string {
-	if g.err != nil {
-		return ""
-	}
-
-	fileList := g.getFileList(environmentName)
-	if g.err != nil {
-		return ""
-	}
-
-	buffer, err := archive.TarFileList(fileList)
-	if err != nil {
-		g.err = err
-		return ""
-	}
-
-	gzipBuffer, err := archive.Gzip(buffer)
-	if err != nil {
-		g.err = err
-		return ""
-	}
-
-	sb := bytes.NewBuffer([]byte{})
-	_, err = io.Copy(sb, gzipBuffer)
-	if err != nil {
-		g.err = err
-		return ""
-	}
-
-	return base64.StdEncoding.EncodeToString(sb.Bytes())
-}
-
 func slot(environmentName string, i int) string {
 	return fmt.Sprintf(
 		"KEYSTONE_%s_SLOT_%d",
@@ -460,4 +403,17 @@ func splitString(s string, chunkSize int, nChunks int) ([]string, error) {
 	chunks[c] = lastChunk
 
 	return chunks, nil
+}
+
+func base64encode(reader io.Reader) (string, error) {
+	sb := new(strings.Builder)
+
+	_, err := io.Copy(sb, reader)
+	if err != nil {
+		return "", err
+	}
+
+	s := base64.StdEncoding.EncodeToString([]byte(sb.String()))
+
+	return s, err
 }

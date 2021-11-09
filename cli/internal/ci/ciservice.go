@@ -14,8 +14,7 @@ import (
 type CiServiceType string
 
 const (
-	StubCI   CiServiceType = "stub-ci"
-	GithubCI CiServiceType = "github-ci"
+	StubCI CiServiceType = "stub-ci"
 )
 
 // A map of available service types and their display name.
@@ -38,6 +37,7 @@ var (
 type CiService interface {
 	Name() string
 	Type() string
+	Usage() string
 	Setup() CiService
 	GetOptions() map[string]string
 
@@ -46,16 +46,19 @@ type CiService interface {
 	CheckSetup() CiService
 	Error() error
 
-	Usage() string
 }
 
 func init() {
 	availableServices = map[CiServiceType]string{
-		GithubCI: "GitHub CI",
-		GitlabCI: "Gitlab CI",
+		GithubCI:  "GitHub CI",
+		GitlabCI:  "Gitlab CI",
+		GenericCI: "Generic CI",
 	}
 }
 
+// GetCiService function returns an instance of CiService.
+// The service name should be coming from config file, and will be used
+// to determine the type of service to instanciate.
 func GetCiService(
 	serviceName string,
 	ctx *core.Context,
@@ -88,6 +91,9 @@ func GetCiService(
 
 	case GitlabCI:
 		c = GitLabCi(ctx, serviceName, apiUrl)
+
+	case GenericCI:
+		c = GenericCi(ctx, serviceName)
 
 	default:
 		err = fmt.Errorf(
@@ -132,6 +138,8 @@ func PickCiService(
 		return GitHubCi(ctx, name, apiUrl), nil
 	case GitlabCI:
 		return GitLabCi(ctx, name, apiUrl), nil
+	case GenericCI:
+		return GenericCi(ctx, name), nil
 	default:
 		return nil, ErrorInvalidServiceType
 	}

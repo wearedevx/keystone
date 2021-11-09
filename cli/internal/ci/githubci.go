@@ -24,6 +24,8 @@ var (
 	githubClientSecret string
 )
 
+const GithubCI CiServiceType = "github-ci"
+
 type ServicesKeys map[string]string
 
 type ApiKey string
