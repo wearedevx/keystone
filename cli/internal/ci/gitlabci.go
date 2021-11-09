@@ -42,7 +42,7 @@ const (
 	N_SLOTS   = 5
 )
 
-type gitLabCi struct {
+type gitlabCiService struct {
 	err                 error
 	name                string
 	apiUrl              string
@@ -54,6 +54,8 @@ type gitLabCi struct {
 	nSlots              int
 }
 
+// configServiceName function returns the key to find the ApiKey
+// in the configuration file
 func configServiceName(baseUrl string) string {
 	domain := strings.TrimPrefix(baseUrl, "https://")
 	domain = strings.TrimPrefix(domain, "http://")
@@ -62,6 +64,7 @@ func configServiceName(baseUrl string) string {
 	return fmt.Sprintf("%s_%s", GitlabCI, domain)
 }
 
+// GitLabCi function return a `CiService` that works with the GitLab API
 func GitLabCi(ctx *core.Context, name string, apiUrl string) CiService {
 	kf := keystonefile.KeystoneFile{}
 	kf.Load(ctx.Wd)
@@ -72,7 +75,7 @@ func GitLabCi(ctx *core.Context, name string, apiUrl string) CiService {
 		configServiceName(savedService.Options[OPTION_KEY_BASE_URL]),
 	)
 
-	ciService := &gitLabCi{
+	ciService := &gitlabCiService{
 		err:    nil,
 		name:   name,
 		apiUrl: apiUrl,
@@ -91,9 +94,11 @@ func GitLabCi(ctx *core.Context, name string, apiUrl string) CiService {
 }
 
 // Name method returns the name of the service
-func (g *gitLabCi) Name() string { return g.name }
+func (g *gitlabCiService) Name() string { return g.name }
 
-func (g *gitLabCi) Usage() string {
+// Usage method returns a usage string that will be displayed
+// to the user
+func (g *gitlabCiService) Usage() string {
 	slots := make([]string, g.nSlots)
 
 	for i := range slots {
@@ -127,7 +132,7 @@ default:
 }
 
 // Type method returns the type of the service
-func (g *gitLabCi) Type() string {
+func (g *gitlabCiService) Type() string {
 	baseUrl := g.options.BaseUrl
 
 	return configServiceName(baseUrl)
@@ -135,7 +140,7 @@ func (g *gitLabCi) Type() string {
 
 // Setup method starts th ci service setu process, asking
 // the user information through prompts
-func (g *gitLabCi) Setup() CiService {
+func (g *gitlabCiService) Setup() CiService {
 	if g.err != nil {
 		return g
 	}
@@ -154,7 +159,7 @@ func (g *gitLabCi) Setup() CiService {
 }
 
 // GetOptions method returns the service options
-func (g *gitLabCi) GetOptions() map[string]string {
+func (g *gitlabCiService) GetOptions() map[string]string {
 	return map[string]string{
 		OPTION_KEY_BASE_URL: g.options.BaseUrl,
 		OPTION_KEY_PROJECT:  g.options.Project,
@@ -163,7 +168,7 @@ func (g *gitLabCi) GetOptions() map[string]string {
 
 // PushSecret method sends a "Message" (that's a completed encrypted environment)
 // to GitLab as one project variable
-func (g *gitLabCi) PushSecret(
+func (g *gitlabCiService) PushSecret(
 	message models.MessagePayload,
 	environment string,
 ) CiService {
@@ -221,7 +226,7 @@ func (g *gitLabCi) PushSecret(
 	return g
 }
 
-func (g *gitLabCi) hasVariable(key string) bool {
+func (g *gitlabCiService) hasVariable(key string) bool {
 	variable, _, _ := g.client.ProjectVariables.GetVariable(
 		g.options.Project,
 		key,
@@ -230,7 +235,7 @@ func (g *gitLabCi) hasVariable(key string) bool {
 	return variable != nil
 }
 
-func (g *gitLabCi) createVariable(key string, value string) {
+func (g *gitlabCiService) createVariable(key string, value string) {
 	if len(value) == 0 {
 		return
 	}
@@ -249,7 +254,7 @@ func (g *gitLabCi) createVariable(key string, value string) {
 	}
 }
 
-func (g *gitLabCi) updateVariable(key string, value string) {
+func (g *gitlabCiService) updateVariable(key string, value string) {
 	_, _, err := g.client.ProjectVariables.UpdateVariable(
 		g.options.Project,
 		key,
@@ -264,7 +269,7 @@ func (g *gitLabCi) updateVariable(key string, value string) {
 	}
 }
 
-func (g *gitLabCi) deleteVariable(key string) {
+func (g *gitlabCiService) deleteVariable(key string) {
 	_, err := g.client.ProjectVariables.RemoveVariable(
 		g.options.Project,
 		key,
@@ -276,7 +281,7 @@ func (g *gitLabCi) deleteVariable(key string) {
 
 // CleanSecret method remove all the secrets for the given environment
 // from the CI service
-func (g *gitLabCi) CleanSecret(environment string) CiService {
+func (g *gitlabCiService) CleanSecret(environment string) CiService {
 	if g.err != nil {
 		return g
 	}
@@ -300,7 +305,7 @@ func (g *gitLabCi) CleanSecret(environment string) CiService {
 }
 
 // CheckSetup method verifies the user submitted information is valid
-func (g *gitLabCi) CheckSetup() CiService {
+func (g *gitlabCiService) CheckSetup() CiService {
 	if g.err != nil {
 		return g
 	}
@@ -315,11 +320,11 @@ func (g *gitLabCi) CheckSetup() CiService {
 }
 
 // Error method returns the last error encountered
-func (g *gitLabCi) Error() error {
+func (g *gitlabCiService) Error() error {
 	return g.err
 }
 
-func (g *gitLabCi) askForBaseUrl() string {
+func (g *gitlabCiService) askForBaseUrl() string {
 	original := g.options.BaseUrl
 
 	if original == "" {
@@ -331,12 +336,12 @@ func (g *gitLabCi) askForBaseUrl() string {
 	return b
 }
 
-func (g *gitLabCi) askForPersonalAccessToken() string {
+func (g *gitlabCiService) askForPersonalAccessToken() string {
 	t := prompts.StringInput("Gitlab Personal Access Token:", string(g.apiKey))
 	return t
 }
 
-func (g *gitLabCi) askForProjectName() string {
+func (g *gitlabCiService) askForProjectName() string {
 	p := prompts.StringInput(
 		"Gitlab project (namespace/project_path):",
 		g.options.Project,
@@ -344,11 +349,11 @@ func (g *gitLabCi) askForProjectName() string {
 	return p
 }
 
-func (g *gitLabCi) initClient() {
+func (g *gitlabCiService) initClient() {
 	g.client, g.err = gitlab.NewClient(string(g.apiKey))
 }
 
-func (g *gitLabCi) getFileList(environmentName string) []utils.FileInfo {
+func (g *gitlabCiService) getFileList(environmentName string) []utils.FileInfo {
 	if g.err != nil {
 		return nil
 	}
@@ -375,7 +380,7 @@ func (g *gitLabCi) getFileList(environmentName string) []utils.FileInfo {
 	return fileList
 }
 
-func (g *gitLabCi) getArchiveBuffer(environmentName string) string {
+func (g *gitlabCiService) getArchiveBuffer(environmentName string) string {
 	if g.err != nil {
 		return ""
 	}
