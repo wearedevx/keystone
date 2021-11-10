@@ -82,8 +82,12 @@ run-test:
 	go run -tags test -ldflags "$(LDFLAGS)" main.go
 
 run:
-	gow run -ldflags "$(LDFLAGS)" main.go
+	reflex \
+		-s -- \
+		sh -c 'go generate && go run -ldflags "$(LDFLAGS)" main.go'
 
 run-debug:
-	./debug-live-reload.sh
-	# dlv --listen=:40000 --headless=true --log=true --log-output=debugger,debuglineerr,gdbwire,lldbout,rpc --api-version=2 --accept-multiclient exec ./server
+	reflex \
+		-R server \
+		-s -- \
+		sh -c "make build-debug && dlv --listen=:40000 --headless=true --api-version=2 --accept-multiclient --log exec --continue ./server"
