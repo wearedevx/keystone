@@ -98,6 +98,7 @@ func (r *Repo) GetOrCreateUser(user *models.User) IRepo {
 	if r.err == nil {
 		// Undelete devices using data coming from the CLI
 		// NOTE: Should we not update foundUser Device array here?
+		user.ID = foundUser.ID
 		r.undeleteOrCreateDevices(user)
 
 		*user = foundUser

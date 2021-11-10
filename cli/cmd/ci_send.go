@@ -7,6 +7,7 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
+	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
@@ -43,7 +44,10 @@ ks ci send --env prod
 		mustNotHaveMissingSecrets(environment)
 		mustNotHaveMissingFiles(environment)
 
-		if !prompts.ConfirmSendEnvironmentToCiService(environment.Name) {
+		if !prompts.ConfirmSendEnvironmentToCiService(
+			environment.Name,
+			skipPrompts,
+		) {
 			exit(nil)
 		}
 
@@ -64,21 +68,27 @@ ks ci send --env prod
 			exitIfErr(err)
 
 			if err = ciService.CheckSetup().Error(); err != nil {
-				if errors.Is(err, ci.ErrorMissinCiInformation) {
+				if errors.Is(err, ci.ErrorMissingCiInformation) {
 					err = kserrors.MissingCIInformation(serviceName, nil)
 				}
 
 				exit(err)
 			}
+			sp := spinner.Spinner("Sending environment " + currentEnvironment + " to " + serviceDef.Name + "...").Start()
 
 			if err = ciService.
 				PushSecret(message, currentEnvironment).
 				Error(); err != nil {
 				err = kserrors.CouldNotSendToCIService(err)
 			}
+			sp.Stop()
 			exitIfErr(err)
 
-			display.CiSecretSent(ciService.Name(), currentEnvironment)
+			display.CiSecretSent(
+				ciService.Name(),
+				currentEnvironment,
+				ciService.Usage(),
+			)
 		}
 	},
 }

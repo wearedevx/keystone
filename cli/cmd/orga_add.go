@@ -23,7 +23,7 @@ Organzation names must be unique and composed of only alphanumeric characters,
 		var err error
 		organizationName := args[0]
 
-		sp := spinner.Spinner(" ")
+		sp := spinner.Spinner("")
 		sp.Start()
 
 		c, err := client.NewKeystoneClient()

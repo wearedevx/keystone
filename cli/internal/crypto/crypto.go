@@ -1,8 +1,10 @@
 package crypto
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"io/ioutil"
 
 	"github.com/cossacklabs/themis/gothemis/cell"
@@ -83,28 +85,28 @@ func EncryptFile(filepath, passphrase string) (encrypted []byte, err error) {
 // `target` is the path to output the decrypted content
 // `passphrase` is the user-provided passphrase
 // It returns the decrypted content and an error
-func DecryptFile(filepath, target, passphrase string) (err error) {
+func DecryptFile(filepath, passphrase string) (_ io.Reader, err error) {
 	contents, err := ioutil.ReadFile(filepath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	scell, err := cell.SealWithPassphrase(passphrase)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	decrypted, err := scell.Decrypt([]byte(contents), nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	decrypted, err = base64.StdEncoding.DecodeString(string(decrypted))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = ioutil.WriteFile(target, decrypted, 0o600)
+	buffer := bytes.NewBuffer(decrypted)
 
-	return err
+	return buffer, err
 }
