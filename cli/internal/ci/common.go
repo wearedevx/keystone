@@ -2,14 +2,11 @@ package ci
 
 import (
 	"bytes"
-	"encoding/base64"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
-	"regexp"
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -19,23 +16,6 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 )
-
-var pathToVarnameRegexp *regexp.Regexp
-
-func init() {
-	pathToVarnameRegexp = regexp.MustCompile(`[^\w]`)
-}
-func pathToVarname(in string) string {
-	inb := []byte(in)
-	sep := []byte("_")
-
-	r := pathToVarnameRegexp.ReplaceAll(inb, sep)
-	s := string(r)
-
-	s = strings.ToUpper(s)
-
-	return s
-}
 
 func getArchiveBuffer(
 	ctx *core.Context,
