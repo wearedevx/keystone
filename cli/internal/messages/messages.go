@@ -135,7 +135,7 @@ func (s *messageService) fetchNewMessages(
 		return
 	}
 
-	sp := spinner.Spinner(" Syncing data...")
+	sp := spinner.Spinner("Syncing data...")
 	sp.Start()
 
 	projectID := s.ctx.GetProjectID()
@@ -262,7 +262,7 @@ func (s *messageService) SendEnvironments(
 func (s *messageService) sendMessageAndUpdateEnvironment(
 	messagesToWrite models.MessagesToWritePayload,
 ) *messageService {
-	sp := spinner.Spinner(" Sending secrets...")
+	sp := spinner.Spinner("Sending secrets...")
 	sp.Start()
 
 	result, err := s.client.Messages().SendMessages(messagesToWrite)

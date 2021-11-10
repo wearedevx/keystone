@@ -6,12 +6,4 @@ keystone.yaml
 ks
 
 config.dev
-.env1
-.env2
-.env3
-.env4
-ks_temp/test.txt
-file
-tutu/titi/tyty/azrrrrrrz
-
-TestFile
+.vscode/**/*

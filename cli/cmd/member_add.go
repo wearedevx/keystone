@@ -120,7 +120,7 @@ ks member add --from-file team.yaml
 		}
 		exitIfErr(err)
 
-		sp := spinner.Spinner(" ").Start()
+		sp := spinner.Spinner("").Start()
 
 		err = c.Project(projectID).AddMembers(memberRoles)
 		sp.Stop()

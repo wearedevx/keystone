@@ -3,6 +3,7 @@ package ci
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -13,8 +14,7 @@ import (
 type CiServiceType string
 
 const (
-	StubCI   CiServiceType = "stub-ci"
-	GithubCI CiServiceType = "github-ci"
+	StubCI CiServiceType = "stub-ci"
 )
 
 // A map of available service types and their display name.
@@ -22,8 +22,8 @@ const (
 var availableServices map[CiServiceType]string
 
 var (
-	ErrorMissinCiInformation error = errors.New("missing CI information")
-	ErrorNoCIServiceWithName       = errors.New(
+	ErrorMissingCiInformation error = errors.New("missing CI information")
+	ErrorNoCIServiceWithName        = errors.New(
 		"no ci service with that name",
 	)
 	ErrorUnknownServiceType      = errors.New("unknown service type")
@@ -36,7 +36,8 @@ var (
 
 type CiService interface {
 	Name() string
-	Type() CiServiceType
+	Type() string
+	Usage() string
 	Setup() CiService
 	GetOptions() map[string]string
 
@@ -44,14 +45,20 @@ type CiService interface {
 	CleanSecret(environment string) CiService
 	CheckSetup() CiService
 	Error() error
+
 }
 
 func init() {
 	availableServices = map[CiServiceType]string{
-		GithubCI: "GitHub CI",
+		GithubCI:  "GitHub CI",
+		GitlabCI:  "Gitlab CI",
+		GenericCI: "Generic CI",
 	}
 }
 
+// GetCiService function returns an instance of CiService.
+// The service name should be coming from config file, and will be used
+// to determine the type of service to instanciate.
 func GetCiService(
 	serviceName string,
 	ctx *core.Context,
@@ -76,9 +83,17 @@ func GetCiService(
 		return nil, ErrorNoCIServiceWithName
 	}
 
-	switch CiServiceType(service.Type) {
+	t := strings.Split(service.Type, "_")[0]
+
+	switch CiServiceType(t) {
 	case GithubCI:
 		c = GitHubCi(ctx, serviceName, apiUrl)
+
+	case GitlabCI:
+		c = GitLabCi(ctx, serviceName, apiUrl)
+
+	case GenericCI:
+		c = GenericCi(ctx, serviceName)
 
 	default:
 		err = fmt.Errorf(
@@ -121,6 +136,10 @@ func PickCiService(
 	switch CiServiceType(s.Type) {
 	case GithubCI:
 		return GitHubCi(ctx, name, apiUrl), nil
+	case GitlabCI:
+		return GitLabCi(ctx, name, apiUrl), nil
+	case GenericCI:
+		return GenericCi(ctx, name), nil
 	default:
 		return nil, ErrorInvalidServiceType
 	}

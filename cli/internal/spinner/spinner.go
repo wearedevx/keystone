@@ -2,6 +2,7 @@ package spinner
 
 import (
 	"os"
+	"strings"
 	"time"
 
 	"github.com/briandowns/spinner"
@@ -24,6 +25,20 @@ func init() {
 	noSpin = v == "true"
 }
 
+func buildClearString(message string) string {
+	sb := new(strings.Builder)
+	// Moves the cursor to the beginning of the line
+	sb.WriteRune('\r')
+	// Replaces the whole message with whitespaces
+	for range message {
+		sb.WriteRune(' ')
+	}
+	// Moves the cursor the beginning of the line again
+	sb.WriteRune('\r')
+
+	return sb.String()
+}
+
 // Provides a pointer to a struct implementing SpinnerInterface
 func Spinner(message string) SpinnerInterface {
 	s := spinner.New(
@@ -32,8 +47,8 @@ func Spinner(message string) SpinnerInterface {
 		spinner.WithWriter(os.Stderr),
 	)
 
-	s.Suffix = message
-	s.FinalMSG = "\r"
+	s.Suffix = " " + message
+	s.FinalMSG = buildClearString(s.Suffix)
 
 	return &spin{
 		inner: s,

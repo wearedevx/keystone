@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -14,11 +15,12 @@ import (
 
 // restoreCmd represents the restore command
 var restoreCmd = &cobra.Command{
-	Use:   "restore",
+	Use:   "restore <path to archive>",
 	Short: "Restores secrets and files from keystone created backup",
 	Long: `Restores secrets and files from keystone created backup.
 This will override all the data you have stored locally.`,
-	Args: cobra.ExactArgs(1),
+	Example: "ks restore keystone-backup-project-163492022.tar.gz",
+	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
 		if len(ctx.AccessibleEnvironments) < 3 {
 			exit(kserrors.RestoreDenied(nil))
@@ -37,6 +39,8 @@ This will override all the data you have stored locally.`,
 
 		if !skipPrompts {
 			if !prompts.ConfirmDotKeystonDirRemoval() {
+				fmt.Println("srietn")
+
 				exit(nil)
 			}
 		}

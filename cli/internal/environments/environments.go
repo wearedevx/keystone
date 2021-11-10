@@ -57,7 +57,7 @@ func (s *environmentService) GetAccessibleEnvironments() []models.Environment {
 	}
 	projectID := s.ctx.GetProjectID()
 
-	sp := spinner.Spinner(" ")
+	sp := spinner.Spinner("")
 	sp.Start()
 
 	accessibleEnvironments, err := s.client.Project(projectID).

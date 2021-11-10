@@ -18,7 +18,7 @@ var privateCmd = &cobra.Command{
 		var err error
 		organizationName := args[0]
 
-		sp := spinner.Spinner(" ")
+		sp := spinner.Spinner("")
 		sp.Start()
 
 		c, err := client.NewKeystoneClient()

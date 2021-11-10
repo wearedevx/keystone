@@ -77,7 +77,7 @@ ks member set-role sandra@github`,
 		// Auth check
 		c, err := client.NewKeystoneClient()
 		exitIfErr(err)
-		sp := spinner.Spinner(" ")
+		sp := spinner.Spinner("")
 		sp.Start()
 
 		projectID := ctx.GetProjectID()

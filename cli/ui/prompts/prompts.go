@@ -193,7 +193,11 @@ This cannot be undone.`,
 
 // ConfirmSendEnvironmentToCiService function asks confirmation to send
 // environment to CI service
-func ConfirmSendEnvironmentToCiService(environmentName string) bool {
+func ConfirmSendEnvironmentToCiService(environmentName string, skipPrompts bool) bool {
+	if skipPrompts {
+		return true
+	}
+
 	ui.Print(
 		"You are about to send the '%s' environment to your CI services.",
 		environmentName,
