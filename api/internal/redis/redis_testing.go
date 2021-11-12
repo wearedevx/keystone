@@ -16,6 +16,10 @@ func NewRedis() *Redis {
 	return new(Redis)
 }
 
+func (r *Redis) SetupFixtures(fixtures map[string]string) {
+	fakeRedis = fixtures
+}
+
 func (r *Redis) Err() error {
 	return r.err
 }

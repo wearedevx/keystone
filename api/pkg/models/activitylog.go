@@ -13,7 +13,7 @@ import (
 )
 
 type ActivityLog struct {
-	ID            uint        `json:"id"             gorm:"primaryKey"`
+	ID            uint        `json:"id" gorm:"primaryKey"`
 	UserID        *uint       `json:"user_id"`
 	User          User        `json:"user"`
 	ProjectID     *uint       `json:"project_id"`
@@ -147,51 +147,65 @@ type ActionFilter string
 
 const (
 	ActionFilterGetRoles                     ActionFilter = "GetRoles"
-	ActionFilterPostUser                     ActionFilter = "PostUser"
-	ActionFilterPostUserToken                ActionFilter = "PostUserToken"
-	ActionFilterPostLoginRequest             ActionFilter = "PostLoginRequest"
-	ActionFilterGetLoginRequest              ActionFilter = "GetLoginRequest"
-	ActionFilterGetUserKeys                  ActionFilter = "GetUserKeys"
-	ActionFilterGetDevices                   ActionFilter = "GetDevices"
-	ActionFilterDeleteDevice                 ActionFilter = "DeleteDevice"
+	ActionFilterDoUsersExist                 ActionFilter = "DoUsersExist"
+	ActionFilterPutMemberSetRole             ActionFilter = "PutMemberSetRole"
 	ActionFilterPostProject                  ActionFilter = "PostProject"
+	ActionFilterGetProjects                  ActionFilter = "GetProjects"
 	ActionFilterGetProjectMembers            ActionFilter = "GetProjectMembers"
 	ActionFilterPostProjectMembers           ActionFilter = "PostProjectMembers"
 	ActionFilterDeleteProjectsMembers        ActionFilter = "DeleteProjectsMembers"
 	ActionFilterGetAccessibleEnvironments    ActionFilter = "GetAccessibleEnvironments"
 	ActionFilterDeleteProject                ActionFilter = "DeleteProject"
+	ActionFilterGetProjectsOrganization      ActionFilter = "GetProjectsOrganization"
+	ActionFilterGetDevices                   ActionFilter = "GetDevices"
+	ActionFilterDeleteDevice                 ActionFilter = "DeleteDevice"
+	ActionFilterGetOrganizations             ActionFilter = "GetOrganizations"
+	ActionFilterPostOrganization             ActionFilter = "PostOrganization"
 	ActionFilterGetEnvironmentPublicKeys     ActionFilter = "GetEnvironmentPublicKeys"
+	ActionFilterPostInvite                   ActionFilter = "PostInvite"
 	ActionFilterGetMessagesFromProjectByUser ActionFilter = "GetMessagesFromProjectByUser"
 	ActionFilterWriteMessages                ActionFilter = "WriteMessages"
 	ActionFilterDeleteMessage                ActionFilter = "DeleteMessage"
-	ActionFilterPostInvite                   ActionFilter = "PostInvite"
-	ActionFilterDoUsersExist                 ActionFilter = "DoUsersExist"
-	ActionFilterPutMemberSetRole             ActionFilter = "PutMemberSetRole"
+	ActionFilterPostSubscription             ActionFilter = "PostSubscription"
+	ActionFilterGetPollSubscriptionSuccess   ActionFilter = "GetPollSubscriptionSuccess"
+	ActionFilterManageSubscription           ActionFilter = "ManageSubscription"
+	ActionFilterPostUser                     ActionFilter = "PostUser"
+	ActionFilterPostUserToken                ActionFilter = "PostUserToken"
+	ActionFilterPostLoginRequest             ActionFilter = "PostLoginRequest"
+	ActionFilterGetLoginRequest              ActionFilter = "GetLoginRequest"
+	ActionFilterGetUserKeys                  ActionFilter = "GetUserKeys"
 )
 
 func (af ActionFilter) Validate() (ok bool) {
 	switch af {
 	case ActionFilterGetRoles,
-		ActionFilterPostUser,
-		ActionFilterPostUserToken,
-		ActionFilterPostLoginRequest,
-		ActionFilterGetLoginRequest,
-		ActionFilterGetUserKeys,
-		ActionFilterGetDevices,
-		ActionFilterDeleteDevice,
+		ActionFilterDoUsersExist,
+		ActionFilterPutMemberSetRole,
 		ActionFilterPostProject,
+		ActionFilterGetProjects,
 		ActionFilterGetProjectMembers,
 		ActionFilterPostProjectMembers,
 		ActionFilterDeleteProjectsMembers,
 		ActionFilterGetAccessibleEnvironments,
 		ActionFilterDeleteProject,
+		ActionFilterGetProjectsOrganization,
+		ActionFilterGetDevices,
+		ActionFilterDeleteDevice,
+		ActionFilterGetOrganizations,
+		ActionFilterPostOrganization,
 		ActionFilterGetEnvironmentPublicKeys,
+		ActionFilterPostInvite,
 		ActionFilterGetMessagesFromProjectByUser,
 		ActionFilterWriteMessages,
 		ActionFilterDeleteMessage,
-		ActionFilterPostInvite,
-		ActionFilterDoUsersExist,
-		ActionFilterPutMemberSetRole:
+		ActionFilterPostSubscription,
+		ActionFilterGetPollSubscriptionSuccess,
+		ActionFilterManageSubscription,
+		ActionFilterPostUser,
+		ActionFilterPostUserToken,
+		ActionFilterPostLoginRequest,
+		ActionFilterGetLoginRequest,
+		ActionFilterGetUserKeys:
 		return true
 	default:
 		return false
@@ -221,7 +235,7 @@ type GetLogsOptions struct {
 	Actions      []ActionFilter      `json:"actions"`
 	Environments []EnvironmentFilter `json:"environments"`
 	Users        []string            `json:"users"`
-	Limit        uint64              `json:"limit"        default:"200"`
+	Limit        uint64              `json:"limit" default:"200"`
 }
 
 func NewGetLogsOption() *GetLogsOptions {
@@ -266,10 +280,7 @@ func (o *GetLogsOptions) SetEnvironments(environments string) *GetLogsOptions {
 
 	for _, environment := range strings.Split(environments, ",") {
 		if e := EnvironmentFilter(strings.TrimSpace(environment)); e.Validate() {
-			o.Environments = append(
-				o.Environments,
-				EnvironmentFilter(environment),
-			)
+			o.Environments = append(o.Environments, EnvironmentFilter(environment))
 		}
 	}
 
