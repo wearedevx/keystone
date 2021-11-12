@@ -6,9 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
+	"path"
 	"strings"
 
-	"github.com/google/go-github/v32/github"
+	"github.com/google/go-github/v40/github"
 	"github.com/jamesruan/sodium"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
@@ -37,7 +39,11 @@ type gitHubCiService struct {
 	ctx          *core.Context
 	servicesKeys ServicesKeys
 	apiKey       ApiKey
+	environment  string
 	client       *github.Client
+	pk           *github.PublicKey
+	repo         *github.Repository
+	sentFiles    []string
 }
 
 var (
@@ -78,7 +84,24 @@ func GitHubCi(ctx *core.Context, name string, apiUrl string) CiService {
 func (g *gitHubCiService) Name() string { return g.name }
 
 func (g *gitHubCiService) Usage() string {
-	return `See https://github.com/wearedevx/keystone-action to use them.`
+
+	return ui.RenderTemplate(
+		"github-ci-usage",
+		`Secrets will be available in the {{ .Environment }} environment.
+To make use of files, add the following step in your jobs (it should go right after the Checkout step):
+
+      - name: Load Secrets
+        uses: wearedevx/keystone-action@v2
+        with:
+          files: |-
+            {{ range .Files }}${{"{{"}} secrets.{{ . }} {{"}}"}}
+            {{ end }}
+`,
+		map[string]interface{}{
+			"Environment": g.environment,
+			"Files":       g.sentFiles,
+		},
+	)
 }
 
 // Type method returns the type of the service
@@ -121,6 +144,12 @@ func (g *gitHubCiService) CheckSetup() CiService {
 
 // PushSecret sends a "Message" (that's a complete encrypted environment)
 // to GitHub as one repository Secret
+// Secrets will be sent as secrets to the GitHub repository.
+// Files will receive a different treatment:
+//   - an uppercase snakecase name will be derived from the path
+//   - the content will be base64 encoded
+//   - the actual path is prepended to the content, separated by a #
+// TODO: the # separator might be problematic ?
 func (g *gitHubCiService) PushSecret(
 	message models.MessagePayload,
 	environment string,
@@ -129,86 +158,14 @@ func (g *gitHubCiService) PushSecret(
 		return g
 	}
 
-	g.initClient()
+	g.environment = environment
 
-	var payload string
-
-	g.err = message.Serialize(&payload)
-	if g.err != nil {
-		return g
-	}
-
-	publicKey, resp, err := g.client.Actions.GetRepoPublicKey(
-		context.Background(),
-		g.servicesKeys["Owner"],
-		g.servicesKeys["Project"],
-	)
-
-	if resp.StatusCode == 403 {
-		g.err = ErrorGithubCIPermissionDenied
-		return g
-	}
-
-	if resp.StatusCode == 404 {
-		g.err = ErrorGithubCINoSuchRepository
-		return g
-	}
-
-	if err != nil {
-		g.err = err
-		return g
-	}
-
-	data, err := base64.StdEncoding.DecodeString(publicKey.GetKey())
-	if err != nil {
-		g.err = err
-		return g
-	}
-
-	boxPK := sodium.BoxPublicKey{
-		Bytes: sodium.Bytes(data),
-	}
-
-	slots, err := g.sliceMessageInParts(payload)
-	if err != nil {
-		g.err = err
-		return g
-	}
-
-	for i, slot := range slots {
-		encryptedValue := sodium.Bytes(slot).SealedBox(boxPK)
-
-		base64data := base64.StdEncoding.EncodeToString(encryptedValue)
-
-		encryptedSecret := &github.EncryptedSecret{
-			Name: fmt.Sprintf(
-				"KEYSTONE_%s_SLOT_%o",
-				strings.ToUpper(environment),
-				i+1,
-			),
-			KeyID:          publicKey.GetKeyID(),
-			EncryptedValue: base64data,
-		}
-
-		resp, err := g.client.Actions.CreateOrUpdateRepoSecret(
-			context.Background(),
-			g.servicesKeys["Owner"],
-			g.servicesKeys["Project"],
-			encryptedSecret,
-		)
-
-		if resp.StatusCode == 401 {
-			g.err = ErrorGithubCIPermissionDenied
-			continue
-		}
-
-		if err != nil {
-			g.err = err
-			continue
-		}
-	}
-
-	return g
+	return g.
+		initClient().
+		createEnvironment().
+		getGithubPublicKey().
+		sendEnvironmentSecrets().
+		sendEnvironmentFiles()
 }
 
 // CleanSecret method remove all the secrets for the given environment
@@ -218,26 +175,16 @@ func (g *gitHubCiService) CleanSecret(environment string) CiService {
 		return g
 	}
 
-	g.initClient()
+	g.environment = environment
 
-	_, err := g.client.Actions.DeleteRepoSecret(
-		context.Background(),
-		g.servicesKeys["Owner"],
-		g.servicesKeys["Project"],
-		fmt.Sprintf("KEYSTONE_%s_SLOT_1", strings.ToUpper(environment)),
-	)
-	if err != nil {
-		if strings.Contains(err.Error(), "404") {
-			g.err = ErrorNoSecretsForEnvironment
-		} else {
-			g.err = err
-		}
-	}
+	g.initClient().
+		cleanSecrets().
+		cleanFiles()
 
 	return g
 }
 
-func (g *gitHubCiService) initClient() {
+func (g *gitHubCiService) initClient() *gitHubCiService {
 	context := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: string(g.apiKey)},
@@ -247,6 +194,15 @@ func (g *gitHubCiService) initClient() {
 	client := github.NewClient(tc)
 
 	g.client = client
+
+	options := g.getOptions()
+	g.repo, _, g.err = g.client.Repositories.Get(
+		context,
+		options["Owner"],
+		options["Project"],
+	)
+
+	return g
 }
 
 func (g *gitHubCiService) getOptions() ServicesKeys {
@@ -374,29 +330,244 @@ func (g *gitHubCiService) Error() error {
 	return g.err
 }
 
-func (g *gitHubCiService) sliceMessageInParts(
-	message string,
-) ([]string, error) {
-	slots := make([]string, 5)
-
-	// Add spaces to message to make it divisible by 5 (number of slots)
-	for len(message)%5 != 0 {
-		message += " "
-	}
-	slotSize := (len(message) / 5)
-
-	var err error
-
-	// 64Kb is maximum size for a slot in github
-	if slotSize*(4/3) > 64000 { // base64 encoding make 4 bytes out of 3
-		err = ErrorGithubCITooLarge
+func (g *gitHubCiService) getGithubPublicKey() *gitHubCiService {
+	if g.err != nil {
+		return g
 	}
 
-	slots[0] = message[0:slotSize]
-	slots[1] = message[slotSize : slotSize*2]
-	slots[2] = message[slotSize*2 : slotSize*3]
-	slots[3] = message[slotSize*3 : slotSize*4]
-	slots[4] = message[slotSize*4 : slotSize*5]
+	publicKey, resp, err := g.client.Actions.GetEnvPublicKey(
+		context.Background(),
+		int(*g.repo.ID),
+		g.environment,
+	)
+	switch {
+	case resp.StatusCode == 403:
+		g.err = ErrorGithubCIPermissionDenied
+		return g
 
-	return slots, err
+	case resp.StatusCode == 404:
+		g.err = ErrorGithubCINoSuchRepository
+		return g
+
+	case err != nil:
+		g.err = err
+		return g
+	}
+
+	g.pk = publicKey
+
+	return g
+}
+
+func (g *gitHubCiService) encryptSecret(
+	key, value string,
+	secret *github.EncryptedSecret,
+) *gitHubCiService {
+	publicKey, err := base64.StdEncoding.DecodeString(g.pk.GetKey())
+	if err != nil {
+		g.err = err
+		return g
+	}
+
+	bpk := sodium.BoxPublicKey{
+		Bytes: sodium.Bytes(publicKey),
+	}
+
+	encryptedValue := sodium.Bytes(value).SealedBox(bpk)
+	base64data := base64.StdEncoding.EncodeToString(encryptedValue)
+
+	*secret = github.EncryptedSecret{
+		Name:           key,
+		KeyID:          g.pk.GetKeyID(),
+		EncryptedValue: base64data,
+	}
+
+	return g
+}
+
+func (g *gitHubCiService) sendSecret(
+	secret *github.EncryptedSecret,
+	environment string,
+) *gitHubCiService {
+	resp, err := g.client.Actions.CreateOrUpdateEnvSecret(
+		context.Background(),
+		int(*g.repo.ID),
+		environment,
+		secret,
+	)
+	switch {
+	case resp.StatusCode == 401:
+		g.err = ErrorGithubCIPermissionDenied
+		return g
+
+	case err != nil:
+		g.err = err
+		return g
+	}
+
+	return g
+}
+
+func (g *gitHubCiService) createEnvironment() *gitHubCiService {
+	g.client.Repositories.CreateUpdateEnvironment(
+		context.Background(),
+		g.servicesKeys["Owner"],
+		g.servicesKeys["Project"],
+		g.environment,
+		&github.CreateUpdateEnvironment{},
+	)
+
+	return g
+}
+
+func (g *gitHubCiService) sendEnvironmentSecrets() *gitHubCiService {
+	if g.err != nil {
+		return g
+	}
+
+	secrets := g.ctx.ListSecrets()
+
+	for _, secret := range secrets {
+		value, ok := secret.Values[core.EnvironmentName(g.environment)]
+		if !ok && secret.Required {
+			// TODO: have a better error handling
+			g.err = fmt.Errorf("missing required secret: %s", string(value))
+			break
+		}
+
+		encryptedSecret := github.EncryptedSecret{}
+		if g.
+			encryptSecret(secret.Name, string(value), &encryptedSecret).
+			sendSecret(&encryptedSecret, g.environment).
+			err != nil {
+			break
+		}
+
+	}
+
+	return g
+}
+
+// TODO: error out if file is required and not present or empty
+func (g *gitHubCiService) sendEnvironmentFiles() *gitHubCiService {
+	if g.err != nil {
+		return g
+	}
+
+	files := g.ctx.ListFiles()
+
+	g.sentFiles = make([]string, 0)
+
+	filecachepath := g.ctx.CachedEnvironmentFilesPath(g.environment)
+	for _, file := range files {
+		fullpath := path.Join(filecachepath, file.Path)
+		freader, err := os.Open(fullpath)
+		if err != nil {
+			g.err = err
+			break
+		}
+
+		contents, err := base64encode(freader)
+		if err != nil {
+			break
+		}
+
+		// file var name, uses the path to create an uppercase snakecase name
+		key := pathToVarname(file.Path)
+		// prepend the path, separated with a #
+		value := fmt.Sprintf("%s#%s", file.Path, contents)
+
+		encryptedSecret := github.EncryptedSecret{}
+		if g.
+			encryptSecret(key, value, &encryptedSecret).
+			sendSecret(&encryptedSecret, g.environment).
+			err != nil {
+			break
+		}
+
+		g.sentFiles = append(g.sentFiles, key)
+	}
+
+	return g
+}
+
+// hasSecret method returns true if the secret exists for the given environment
+func (g *gitHubCiService) hasSecret(secret string) bool {
+	if g.err != nil {
+		return false
+	}
+
+	s, _, err := g.client.Actions.GetEnvSecret(
+		context.Background(),
+		int(*g.repo.ID),
+		g.environment,
+		secret,
+	)
+
+	switch {
+	case s != nil:
+		return true
+
+	case err != nil && strings.Contains(err.Error(), "404"):
+		return false
+
+	default:
+		g.err = err
+		return false
+	}
+}
+
+// deleteSecret method removes one secret from the remote
+func (g *gitHubCiService) deleteSecret(secret string) *gitHubCiService {
+	if g.err != nil {
+		return g
+	}
+
+	_, err := g.client.Actions.DeleteEnvSecret(
+		context.Background(),
+		int(*g.repo.ID),
+		g.environment,
+		secret,
+	)
+	g.err = err
+
+	return g
+}
+
+// cleanSecrets method removes all the secrets on the remote for the given
+// environment
+func (g *gitHubCiService) cleanSecrets() *gitHubCiService {
+	if g.err != nil {
+		return g
+	}
+
+	secrets := g.ctx.ListSecrets()
+	for _, secret := range secrets {
+		key := secret.Name
+
+		if g.hasSecret(key) {
+			g.deleteSecret(key)
+		}
+	}
+
+	return g
+}
+
+// cleanFiles method removes all the files secrets on the remote for the given
+// envrionment
+func (g *gitHubCiService) cleanFiles() *gitHubCiService {
+	if g.err != nil {
+		return g
+	}
+
+	files := g.ctx.ListFiles()
+	for _, file := range files {
+		key := pathToVarname(file.Path)
+
+		if g.hasSecret(key) {
+			g.deleteSecret(key)
+		}
+	}
+
+	return g
 }

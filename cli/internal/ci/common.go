@@ -2,11 +2,14 @@ package ci
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/wearedevx/keystone/cli/internal/archive"
@@ -15,6 +18,23 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 )
+
+var pathToVarnameRegexp *regexp.Regexp
+
+func init() {
+	pathToVarnameRegexp = regexp.MustCompile(`[^\w]`)
+}
+func pathToVarname(in string) string {
+	inb := []byte(in)
+	sep := []byte("_")
+
+	r := pathToVarnameRegexp.ReplaceAll(inb, sep)
+	s := string(r)
+
+	s = strings.ToUpper(s)
+
+	return s
+}
 
 func getArchiveBuffer(
 	ctx *core.Context,
@@ -165,4 +185,63 @@ func getFileList(
 	}
 
 	return fileList, nil
+}
+
+func slot(environmentName string, i int) string {
+	return fmt.Sprintf(
+		"KEYSTONE_%s_SLOT_%d",
+		strings.ToUpper(environmentName),
+		i+1,
+	)
+}
+
+func splitString(s string, chunkSize int, nChunks int) ([]string, error) {
+	chunks := make([]string, nChunks)
+
+	if chunkSize >= len(s) {
+		chunks[0] = s
+		return chunks, nil
+	}
+
+	c := 0
+	currentLen := 0
+	currentStart := 0
+
+	for i := range s {
+		if currentLen == chunkSize {
+			chunks[c] = s[currentStart:i]
+			currentLen = 0
+			currentStart = i
+
+			c += 1
+
+			if c == len(chunks)-1 {
+				break
+			}
+		}
+
+		currentLen++
+	}
+
+	lastChunk := s[currentStart:]
+	if len(lastChunk) > chunkSize {
+		return nil, fmt.Errorf("keystone archive too big: %d", len(s))
+	}
+
+	chunks[c] = lastChunk
+
+	return chunks, nil
+}
+
+func base64encode(reader io.Reader) (string, error) {
+	sb := new(strings.Builder)
+
+	_, err := io.Copy(sb, reader)
+	if err != nil {
+		return "", err
+	}
+
+	s := base64.StdEncoding.EncodeToString([]byte(sb.String()))
+
+	return s, err
 }
