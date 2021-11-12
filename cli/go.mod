@@ -12,9 +12,9 @@ require (
 	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/google/go-github/v32 v32.1.0
-	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/go-github/v40 v40.0.0
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/jamesruan/sodium v0.0.0-20181216154042-9620b83ffeae
 	github.com/jedib0t/go-pretty/v6 v6.2.4
 	github.com/juju/ansiterm v0.0.0-20210706145210-9283cdf370b5 // indirect
