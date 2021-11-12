@@ -97,3 +97,7 @@ func (r *Redis) Delete(key string) IRedis {
 
 	return r
 }
+
+// For tests only, this is a no-op
+func (r *Redis) SetupFixtures(_ map[string]string) {
+}
