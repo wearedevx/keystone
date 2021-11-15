@@ -131,7 +131,6 @@ func (r *Repo) GetOrCreateProject(project *models.Project) IRepo {
 
 // ProjectGetMembers returns all members of a project with
 // their role
-// TODO: implement paid role restrictions
 func (r *Repo) ProjectGetMembers(
 	project *models.Project,
 	members *[]models.ProjectMember,

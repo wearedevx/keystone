@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/wearedevx/keystone/api/internal/emailer"
+	"github.com/wearedevx/keystone/api/pkg/message"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	. "github.com/wearedevx/keystone/api/pkg/repo"
 	"gorm.io/gorm"
@@ -223,7 +224,7 @@ func (f *FakeRepo) ListProjectMembers(
 	panic("not implemented")
 }
 
-func (f *FakeRepo) ProjectAddMembers(_ Project, _ []MemberRole) IRepo {
+func (f *FakeRepo) ProjectAddMembers(_ Project, _ []MemberRole, _ User) IRepo {
 	panic("not implemented")
 }
 
@@ -257,6 +258,158 @@ func (f *FakeRepo) SetNewVersionID(_ *Environment) error {
 
 func (f *FakeRepo) WriteMessage(_ User, _ Message) IRepo {
 	panic("not implemented")
+}
+
+func (f *FakeRepo) CheckMembersAreInProject(_ Project, _ []string) ([]string, error) {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) DeleteAllProjectMembers(project *Project) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) DeleteProject(project *Project) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) DeleteProjectsEnvironments(project *Project) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetActivityLogs(projectID string, options GetLogsOptions, logs *[]ActivityLog) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetMessage(message *Message) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetProjectsOrganization(_ string, _ *Organization) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) OrganizationCountMembers(_ *Organization, _ *int64) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetUserByEmail(_ string, _ *[]User) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) IsMemberOfProject(_ *Project, _ *ProjectMember) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) MessageService() *message.MessageService {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) ProjectGetAdmins(project *Project, members *[]ProjectMember) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) ProjectIsMemberAdmin(project *Project, member *ProjectMember) bool {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) SaveActivityLog(al *ActivityLog) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetDevices(_ uint, _ *[]Device) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetDevice(device *Device) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetDeviceByUserID(userID uint, device *Device) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) UpdateDeviceLastUsedAt(deviceUID string) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) RevokeDevice(userID uint, deviceUID string) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetAdminsFromUserProjects(userID uint, adminProjectsMap *map[string][]string) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) CreateOrganization(orga *Organization) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) UpdateOrganization(orga *Organization) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) OrganizationSetCustomer(organization *Organization, customer string) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) OrganizationSetSubscription(organization *Organization, subscription string) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetOrganization(orga *Organization) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetOrganizations(userID uint, result *[]Organization) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetOwnedOrganizationByName(userID uint, name string, orgas *[]Organization) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetOrganizationByName(userID uint, name string, orga *[]Organization) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetOrganizationProjects(_ *Organization, _ *[]Project) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetOrganizationMembers(orgaID uint, result *[]ProjectMember) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) IsUserOwnerOfOrga(_ *User, _ *Organization) (bool, error) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) IsProjectOrganizationPaid(_ string) (bool, error) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) CreateCheckoutSession(_ *CheckoutSession) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetCheckoutSession(_ string, _ *CheckoutSession) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) UpdateCheckoutSession(_ *CheckoutSession) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) DeleteCheckoutSession(_ *CheckoutSession) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) OrganizationSetPaid(organization *Organization, paid bool) IRepo {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FakeRepo) GetUserProjects(userID uint, projects *[]Project) IRepo {
+	panic("not implemented") // TODO: Implement
 }
 
 func getRoleByEnvironmentTypeAndRole(
@@ -421,7 +574,7 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 		"prod":    environmentProd,
 	}
 
-	var rightsMatrix map[string]map[string]rw = map[string]map[string]rw{
+	rightsMatrix := map[string]map[string]rw{
 		"dev": {
 			"dev":     {true, true},
 			"staging": {false, false},
