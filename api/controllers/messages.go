@@ -172,22 +172,31 @@ func WriteMessages(
 		if len(clientMessage.Payload) == 0 {
 			status = http.StatusBadRequest
 			err = apierrors.ErrorEmptyPayload()
+			response = nil
+			goto done
+		}
+		environment := models.Environment{
+			EnvironmentID: clientMessage.EnvironmentID,
+		}
+		if err = Repo.
+			GetEnvironment(&environment).
+			Err(); err != nil {
+			status = http.StatusNotFound
+			response = nil
 			goto done
 		}
 
 		// - gather information for the checks
 		projectMember := models.ProjectMember{
-			UserID: clientMessage.RecipientID,
-		}
-		environment := models.Environment{
-			EnvironmentID: clientMessage.EnvironmentID,
+			UserID:    clientMessage.RecipientID,
+			ProjectID: environment.ProjectID,
 		}
 
 		if err = Repo.
 			GetProjectMember(&projectMember).
-			GetEnvironment(&environment).
 			Err(); err != nil {
 			status = http.StatusNotFound
+			response = nil
 			goto done
 		}
 
@@ -255,6 +264,7 @@ func WriteMessages(
 				clientMessage.EnvironmentID,
 			).
 			Err(); err != nil {
+			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToDeleteResource(err)
 			break
 		}
@@ -268,8 +278,9 @@ func WriteMessages(
 				status = http.StatusNotFound
 			} else {
 				status = http.StatusInternalServerError
-				err = apierrors.ErrorNoDevice()
 			}
+			err = apierrors.ErrorNoDevice()
+			response = nil
 
 			goto done
 		}
@@ -284,6 +295,7 @@ func WriteMessages(
 		}
 
 		if err = Repo.WriteMessage(user, *messageToWrite).Err(); err != nil {
+			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToWriteMessage(err)
 			break
 		}
@@ -294,6 +306,7 @@ func WriteMessages(
 				messageToWrite.Uuid,
 				clientMessage.Payload,
 			); err != nil {
+			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToWriteMessage(err)
 		}
 
@@ -423,7 +436,9 @@ func DeleteExpiredMessages(
 		return Repo.Err()
 	})
 	if err != nil {
+		fmt.Printf("[Error] Removing expired messages: %+v\n", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 
 	http.Error(w, "OK", http.StatusOK)
@@ -477,9 +492,13 @@ func AlertMessagesWillExpire(
 	})
 
 	if err != nil {
+        fmt.Printf("[Error] Sending Expiration Emails: %+v\n", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
 	} else if len(errors) > 0 {
+        fmt.Printf("[Error] Sending Expiration Emails: %+v\n", errors)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
 	}
 
 	http.Error(w, "OK", http.StatusOK)

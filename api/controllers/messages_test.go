@@ -2,10 +2,13 @@ package controllers
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"reflect"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/bxcodec/faker/v3"
 	"github.com/julienschmidt/httprouter"
@@ -163,7 +166,7 @@ func findMessages(
 }
 
 func TestGetMessagesFromProjectByUser(t *testing.T) {
-	project, users, messages := seedMessages()
+	project, users, messages := seedMessages(true)
 	defer teardownMessages(project, users, messages)
 
 	devEnvironment := findEnv(project, "dev")
@@ -439,6 +442,13 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 }
 
 func TestWriteMessages(t *testing.T) {
+	project, users, messages := seedMessages(true)
+	defer teardownMessages(project, users, messages)
+
+	devEnvironment := findEnv(project, "dev")
+	// stagingEnvironment := findEnv(project, "staging")
+	prodEnvironment := findEnv(project, "prod")
+
 	type args struct {
 		in0  router.Params
 		body io.ReadCloser
@@ -448,11 +458,217 @@ func TestWriteMessages(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		want       router.Serde
+		want       *models.GetEnvironmentsResponse
 		wantStatus int
-		wantErr    bool
+		wantErr    string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "writes a message",
+			args: args{
+				in0: router.Params{},
+				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+                {
+                    "messages": [
+                        {
+                            "payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+                            "sender_device_uid": "%s",
+                            "recipient_device_id": %d,
+                            "userid": "%s",
+                            "recipient_id": %d,
+                            "environment_id": "%s",
+                            "update_environment_version": true
+                        }
+                    ]
+                }
+                `,
+					users["admin"].Devices[0].UID,
+					users["devops"].Devices[0].ID,
+					users["admin"].UserID,
+					users["devops"].ID,
+					devEnvironment.EnvironmentID,
+				))),
+				Repo: repo.NewRepo(),
+				user: users["admin"],
+			},
+			want: &models.GetEnvironmentsResponse{
+				Environments: []models.Environment{
+					*devEnvironment,
+				},
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    "",
+		},
+		{
+			name: "bad request",
+			args: args{
+				in0:  router.Params{},
+				body: io.NopCloser(bytes.NewBufferString("not serializable")),
+				Repo: repo.NewRepo(),
+				user: users["admin"],
+			},
+			want:       nil,
+			wantStatus: http.StatusBadRequest,
+			wantErr:    "bad request: invalid character 'o' in literal null (expecting 'u')",
+		},
+		{
+			name: "empty payload",
+			args: args{
+				in0: router.Params{},
+				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+                {
+                    "messages": [
+                        {
+                            "payload": "",
+                            "sender_device_uid": "%s",
+                            "recipient_device_id": %d,
+                            "userid": "%s",
+                            "recipient_id": %d,
+                            "environment_id": "%s",
+                            "update_environment_version": true
+                        }
+                    ]
+                }
+                `,
+					users["admin"].Devices[0].UID,
+					users["devops"].Devices[0].ID,
+					users["admin"].UserID,
+					users["devops"].ID,
+					devEnvironment.EnvironmentID,
+				))),
+				Repo: repo.NewRepo(),
+				user: users["admin"],
+			},
+			want:       nil,
+			wantStatus: http.StatusBadRequest,
+			wantErr:    "empty payload cannot be written",
+		},
+		{
+			name: "no such environment",
+			args: args{
+				in0: router.Params{},
+				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+                {
+                    "messages": [
+                        {
+                            "payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+                            "sender_device_uid": "%s",
+                            "recipient_device_id": %d,
+                            "userid": "%s",
+                            "recipient_id": %d,
+                            "environment_id": "that is not an environment id",
+                            "update_environment_version": true
+                        }
+                    ]
+                }
+                `,
+					users["admin"].Devices[0].UID,
+					users["devops"].Devices[0].ID,
+					users["admin"].UserID,
+					users["devops"].ID,
+				))),
+				Repo: repo.NewRepo(),
+				user: users["admin"],
+			},
+			want:       nil,
+			wantStatus: http.StatusNotFound,
+			wantErr:    "not found",
+		},
+		{
+			name: "no such recipient",
+			args: args{
+				in0: router.Params{},
+				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+                {
+                    "messages": [
+                        {
+                            "payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+                            "sender_device_uid": "%s",
+                            "recipient_device_id": %d,
+                            "userid": "%s",
+                            "recipient_id": 1290380294890348,
+                            "environment_id": "%s",
+                            "update_environment_version": true
+                        }
+                    ]
+                }
+                `,
+					users["admin"].Devices[0].UID,
+					users["devops"].Devices[0].ID,
+					users["admin"].UserID,
+					devEnvironment.EnvironmentID,
+				))),
+				Repo: repo.NewRepo(),
+				user: users["admin"],
+			},
+			want:       nil,
+			wantStatus: http.StatusNotFound,
+			wantErr:    "not found",
+		},
+		{
+			name: "recipient cannot write or write",
+			args: args{
+				in0: router.Params{},
+				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+                {
+                    "messages": [
+                        {
+                            "payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+                            "sender_device_uid": "%s",
+                            "recipient_device_id": %d,
+                            "userid": "%s",
+                            "recipient_id": %d,
+                            "environment_id": "%s",
+                            "update_environment_version": true
+                        }
+                    ]
+                }
+                `,
+					users["admin"].Devices[0].UID,
+					users["developer"].Devices[0].ID,
+					users["admin"].UserID,
+					users["developer"].ID,
+					prodEnvironment.EnvironmentID,
+				))),
+				Repo: repo.NewRepo(),
+				user: users["admin"],
+			},
+			want: &models.GetEnvironmentsResponse{
+				Environments: []models.Environment{},
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    "",
+		},
+		{
+			name: "sender device not found",
+			args: args{
+				in0: router.Params{},
+				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+                {
+                    "messages": [
+                        {
+                            "payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+                            "sender_device_uid": "this is not a device",
+                            "recipient_device_id": %d,
+                            "userid": "%s",
+                            "recipient_id": %d,
+                            "environment_id": "%s",
+                            "update_environment_version": true
+                        }
+                    ]
+                }
+                `,
+					users["developer"].Devices[0].ID,
+					users["admin"].UserID,
+					users["developer"].ID,
+					devEnvironment.EnvironmentID,
+				))),
+				Repo: repo.NewRepo(),
+				user: users["admin"],
+			},
+			want:       nil,
+			wantStatus: http.StatusNotFound,
+			wantErr:    "no device",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -462,7 +678,7 @@ func TestWriteMessages(t *testing.T) {
 				tt.args.Repo,
 				tt.args.user,
 			)
-			if (err != nil) != tt.wantErr {
+			if err.Error() != tt.wantErr {
 				t.Errorf(
 					"WriteMessages() error = %v, wantErr %v",
 					err,
@@ -470,21 +686,52 @@ func TestWriteMessages(t *testing.T) {
 				)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("WriteMessages() got = %v, want %v", got, tt.want)
-			}
 			if gotStatus != tt.wantStatus {
 				t.Errorf(
 					"WriteMessages() gotStatus = %v, want %v",
 					gotStatus,
 					tt.wantStatus,
 				)
+				return
+			}
+
+			if tt.want == nil {
+				if got.(*models.GetEnvironmentsResponse) != nil {
+					t.Errorf("WriteMessages() got = %v, want nil", got)
+				}
+				return
+			}
+
+			gotResponse := got.(*models.GetEnvironmentsResponse)
+			gotEnvironments := gotResponse.Environments
+			wantEnvironments := tt.want.Environments
+			gotLen := len(gotEnvironments)
+			wantLen := len(wantEnvironments)
+			if gotLen != wantLen {
+				t.Errorf("WriteMessages() got = %v, want %v", got, tt.want)
+				return
+			}
+
+			for index, wantEnvironment := range wantEnvironments {
+				gotEnvironment := gotEnvironments[index]
+				if gotEnvironment.EnvironmentID != wantEnvironment.EnvironmentID {
+					t.Errorf("WriteMessages() got = %v, want %v", got, tt.want)
+				}
+				if gotEnvironment.VersionID == wantEnvironment.VersionID {
+					t.Errorf(
+						"WriteMessages() got VersionID %v want a different one",
+						gotEnvironment.VersionID,
+					)
+				}
 			}
 		})
 	}
 }
 
 func TestDeleteMessage(t *testing.T) {
+	project, users, messages := seedMessages(false)
+	defer teardownMessages(project, users, messages)
+
 	type args struct {
 		params router.Params
 		in1    io.ReadCloser
@@ -494,11 +741,26 @@ func TestDeleteMessage(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		want       router.Serde
+		want       *GenericResponse
 		wantStatus int
-		wantErr    bool
+		wantErr    string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "deletes a message",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"messageID": strconv.Itoa(int(messages[0].ID)),
+				}),
+				in1:  nil,
+				Repo: repo.NewRepo(),
+				user: models.User{},
+			},
+			want: &GenericResponse{
+				Success: true,
+			},
+			wantStatus: http.StatusNoContent,
+			wantErr:    "",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -508,7 +770,7 @@ func TestDeleteMessage(t *testing.T) {
 				tt.args.Repo,
 				tt.args.user,
 			)
-			if (err != nil) != tt.wantErr {
+			if err.Error() != tt.wantErr {
 				t.Errorf(
 					"DeleteMessage() error = %v, wantErr %v",
 					err,
@@ -516,13 +778,91 @@ func TestDeleteMessage(t *testing.T) {
 				)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("DeleteMessage() got = %v, want %v", got, tt.want)
-			}
 			if gotStatus != tt.wantStatus {
 				t.Errorf(
 					"DeleteMessage() gotStatus = %v, want %v",
 					gotStatus,
+					tt.wantStatus,
+				)
+				return
+			}
+
+			gotResponse := got.(*GenericResponse)
+			if !reflect.DeepEqual(gotResponse, tt.want) {
+				t.Errorf("DeleteMessage() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDeleteExpiredMessages(t *testing.T) {
+	messages := seedExpiredMessages()
+	defer teardownExpiredMessages(messages)
+
+	type args struct {
+		w   http.ResponseWriter
+		r   *http.Request
+		in2 httprouter.Params
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+		wantBody   string
+	}{
+		{
+			name: "deletes the messages",
+			args: args{
+				w: &fakeHttpResponse{
+					header: map[string][]string{},
+					body:   nil,
+					status: 0,
+				},
+				r: &http.Request{
+					Header: map[string][]string{
+						"X-Ks-Ttl": {"a very long secret header"},
+					},
+				},
+				in2: []httprouter.Param{},
+			},
+			wantStatus: http.StatusOK,
+			wantBody:   "OK\n",
+		},
+		{
+			name: "auth failure",
+			args: args{
+				w: &fakeHttpResponse{
+					header: map[string][]string{},
+					body:   nil,
+					status: 0,
+				},
+				r: &http.Request{
+					Header: map[string][]string{
+						"X-Ks-Ttl": {"a very bad secret header"},
+					},
+				},
+				in2: []httprouter.Param{},
+			},
+			wantStatus: http.StatusUnauthorized,
+			wantBody:   "Unauthorized\n",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			DeleteExpiredMessages(tt.args.w, tt.args.r, tt.args.in2)
+			resp := tt.args.w.(*fakeHttpResponse)
+			body := resp.BodyString()
+			if body != tt.wantBody {
+				t.Errorf(
+					"DeleteExpiredMessages() got body %v, want %v",
+					body,
+					tt.wantBody,
+				)
+			}
+			if resp.status != tt.wantStatus {
+				t.Errorf(
+					"DeleteExpiredMessages() got status %v, want %v",
+					resp.status,
 					tt.wantStatus,
 				)
 			}
@@ -530,45 +870,76 @@ func TestDeleteMessage(t *testing.T) {
 	}
 }
 
-func TestDeleteExpiredMessages(t *testing.T) {
-	type args struct {
-		w   http.ResponseWriter
-		r   *http.Request
-		in2 httprouter.Params
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			DeleteExpiredMessages(tt.args.w, tt.args.r, tt.args.in2)
-		})
-	}
-}
-
 func TestAlertMessagesWillExpire(t *testing.T) {
+	messages := seedSoonToExpireMessages()
+	defer teardownExpiredMessages(messages)
+
 	type args struct {
 		w   http.ResponseWriter
 		r   *http.Request
 		in2 httprouter.Params
 	}
 	tests := []struct {
-		name string
-		args args
+		name       string
+		args       args
+		wantStatus int
+		wantBody   string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "alerts messages will expire",
+			args: args{
+				w: &fakeHttpResponse{
+					header: map[string][]string{},
+					body:   nil,
+					status: http.StatusOK,
+				},
+				r: &http.Request{
+					Header: map[string][]string{
+						"X-Ks-Ttl": {"a very long secret header"},
+					},
+				},
+				in2: []httprouter.Param{},
+			},
+			wantStatus: http.StatusOK,
+			wantBody:   "OK\n",
+		},
+		{
+			name: "auth failure",
+			args: args{
+				w: &fakeHttpResponse{
+					header: map[string][]string{},
+					body:   nil,
+					status: http.StatusOK,
+				},
+				r: &http.Request{
+					Header: map[string][]string{
+						"X-Ks-Ttl": {"a very bad secret header"},
+					},
+				},
+				in2: []httprouter.Param{},
+			},
+			wantStatus: http.StatusUnauthorized,
+			wantBody:   "Unauthorized\n",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			AlertMessagesWillExpire(tt.args.w, tt.args.r, tt.args.in2)
+			resp := tt.args.w.(*fakeHttpResponse)
+			gotBody := resp.BodyString()
+
+			if resp.status != tt.wantStatus {
+				t.Errorf("AlertMessagesWillExpire() got status = %v, want %v", resp.status, tt.wantStatus)
+			}
+
+			if gotBody != tt.wantBody {
+				t.Errorf("AlertMessagesWillExpire() got = %v, want %v", gotBody, tt.wantBody)
+			}
 		})
 	}
 }
 
-func seedMessages() (
+func seedMessages(paid bool) (
 	project models.Project,
 	users map[string]models.User,
 	messages []models.Message,
@@ -579,8 +950,18 @@ func seedMessages() (
 		faker.FakeData(&project)
 		db.Save(&project)
 
+		orga := models.Organization{}
+		db.Where("id = ?", project.OrganizationID).First(&orga)
+		if paid {
+			orga.Paid = true
+			db.Save(&orga)
+		}
+
 		roles := make([]models.Role, 0)
 		db.Find(&roles)
+
+		adminRole := models.Role{}
+		db.Where("name = ?", "admin").First(&adminRole)
 
 		environmentTypes := make([]models.EnvironmentType, 3)
 		db.Find(&environmentTypes)
@@ -620,10 +1001,15 @@ func seedMessages() (
 			db.Model(&user).Association("Devices").Append(&device)
 			user.Devices = []models.Device{device}
 
+			roleID := role.ID
+			if !orga.Paid {
+				roleID = adminRole.ID
+			}
+
 			projectMember := models.ProjectMember{
 				UserID:    user.ID,
 				ProjectID: project.ID,
-				RoleID:    role.ID,
+				RoleID:    roleID,
 			}
 
 			db.Save(&projectMember)
@@ -685,4 +1071,136 @@ func teardownMessages(
 
 		return nil
 	})
+}
+
+func seedExpiredMessages() []models.Message {
+	messages := []models.Message{}
+
+	new(repo.Repo).GetDb().Transaction(func(db *gorm.DB) error {
+		for i := 0; i < 10; i++ {
+			message := models.Message{}
+			faker.FakeData(&message)
+
+			db.Save(&message)
+			message.CreatedAt = time.Now().Add(-7 * 24 * time.Hour)
+			db.Save(&message)
+
+			messages = append(messages, message)
+		}
+
+		return db.Error
+	})
+
+	return messages
+}
+
+func teardownExpiredMessages(messages []models.Message) {
+	new(repo.Repo).GetDb().Transaction(func(db *gorm.DB) error {
+		db.Delete(messages)
+		return db.Error
+	})
+}
+
+func seedSoonToExpireMessages() []models.Message {
+	messages := []models.Message{}
+
+	new(repo.Repo).GetDb().Transaction(func(db *gorm.DB) error {
+		for i := 0; i < 10; i++ {
+			message := models.Message{}
+			faker.FakeData(&message)
+
+			db.Save(&message)
+			message.CreatedAt = time.Now().Add(-6 * 24 * time.Hour)
+			db.Save(&message)
+
+			messages = append(messages, message)
+		}
+
+		return db.Error
+	})
+
+	return messages
+}
+
+type fakeHttpResponse struct {
+	header http.Header // map[string][]string
+	body   io.ReadWriter
+	status int `default:"200"`
+}
+
+func (fhr *fakeHttpResponse) BodyString() string {
+	b := fhr.body.(*bytes.Buffer)
+
+	return b.String()
+}
+
+// Header returns the header map that will be sent by
+// WriteHeader. The Header map also is the mechanism with which
+// Handlers can set HTTP trailers.
+//
+// Changing the header map after a call to WriteHeader (or
+// Write) has no effect unless the modified headers are
+// trailers.
+//
+// There are two ways to set Trailers. The preferred way is to
+// predeclare in the headers which trailers you will later
+// send by setting the "Trailer" header to the names of the
+// trailer keys which will come later. In this case, those
+// keys of the Header map are treated as if they were
+// trailers. See the example. The second way, for trailer
+// keys not known to the Handler until after the first Write,
+// is to prefix the Header map keys with the TrailerPrefix
+// constant value. See TrailerPrefix.
+//
+// To suppress automatic response headers (such as "Date"), set
+// their value to nil.
+func (fhr *fakeHttpResponse) Header() http.Header {
+	return fhr.header
+}
+
+// Write writes the data to the connection as part of an HTTP reply.
+//
+// If WriteHeader has not yet been called, Write calls
+// WriteHeader(http.StatusOK) before writing the data. If the Header
+// does not contain a Content-Type line, Write adds a Content-Type set
+// to the result of passing the initial 512 bytes of written data to
+// DetectContentType. Additionally, if the total size of all written
+// data is under a few KB and there are no Flush calls, the
+// Content-Length header is added automatically.
+//
+// Depending on the HTTP protocol version and the client, calling
+// Write or WriteHeader may prevent future reads on the
+// Request.Body. For HTTP/1.x requests, handlers should read any
+// needed request body data before writing the response. Once the
+// headers have been flushed (due to either an explicit Flusher.Flush
+// call or writing enough data to trigger a flush), the request body
+// may be unavailable. For HTTP/2 requests, the Go HTTP server permits
+// handlers to continue to read the request body while concurrently
+// writing the response. However, such behavior may not be supported
+// by all HTTP/2 clients. Handlers should read before writing if
+// possible to maximize compatibility.
+func (fhr *fakeHttpResponse) Write(contents []byte) (int, error) {
+	if fhr.body == nil {
+		fhr.body = bytes.NewBuffer(contents)
+		return len(contents), nil
+	} else {
+		return fhr.body.Write(contents)
+	}
+}
+
+// WriteHeader sends an HTTP response header with the provided
+// status code.
+//
+// If WriteHeader is not called explicitly, the first call to Write
+// will trigger an implicit WriteHeader(http.StatusOK).
+// Thus explicit calls to WriteHeader are mainly used to
+// send error codes.
+//
+// The provided code must be a valid HTTP 1xx-5xx status code.
+// Only one header may be written. Go does not currently
+// support sending user-defined 1xx informational headers,
+// with the exception of 100-continue response header that the
+// Server sends automatically when the Request.Body is read.
+func (fhr *fakeHttpResponse) WriteHeader(statusCode int) {
+	fhr.status = statusCode
 }

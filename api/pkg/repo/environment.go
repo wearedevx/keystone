@@ -76,7 +76,7 @@ func (repo *Repo) SetNewVersionID(environment *models.Environment) error {
 	newVersionID := uuid.NewV4().String()
 	repo.err = repo.GetDb().
 		Model(&models.Environment{}).
-		Where(environment).
+		Where(*environment).
 		Update("version_id", newVersionID).
 		Error
 	environment.VersionID = newVersionID

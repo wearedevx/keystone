@@ -22,6 +22,15 @@ type Repo struct {
 	messages *message.MessageService
 }
 
+const (
+	DialectPostgres = iota
+	DialectSQLite
+)
+
+type Dialect int
+
+var dialect Dialect = DialectSQLite
+
 var db *gorm.DB
 
 func autoMigrate() error {
@@ -55,6 +64,10 @@ func (repo *Repo) GetDb() *gorm.DB {
 	return db
 }
 
+func (repo *Repo) GetDialect() Dialect {
+	return dialect
+}
+
 func (repo *Repo) notFoundAsBool(call func() error) (bool, error) {
 	var err error
 	found := false
@@ -84,7 +97,6 @@ func Transaction(fn func(IRepo) error) error {
 			messages: message.NewMessageService(),
 		}
 		return fn(repo)
-
 	})
 	return err
 }

@@ -86,16 +86,19 @@ func (repo *Repo) DeleteMessage(messageID uint, userID uint) IRepo {
 }
 
 // Deletes all messages older than a week
+// TODO: avoid SQL dialect spicific features
 func (repo *Repo) DeleteExpiredMessages() IRepo {
 	if repo.err != nil {
 		return repo
 	}
 
-	// Per project message deletion
-	// NOTE: DELETE FROM ... USING ... is Postgres specific
-	repo.err = repo.GetDb().
-		Exec(
-			`DELETE
+	switch dialect {
+	case DialectPostgres:
+		// Per project message deletion
+		// NOTE: ::interval is postgres specitfic
+		repo.err = repo.GetDb().
+			Exec(
+				`DELETE
 FROM messages m
 WHERE 
 	m.id IN (
@@ -104,12 +107,34 @@ WHERE
 		JOIN projects p ON p.id = e.project_id
 		WHERE mm.created_at < now() - (p.ttl || ' days')::interval
 	);`,
-		).
-		Error
+			).
+			Error
+
+	case DialectSQLite:
+		// Per project message deletion
+		// NOTE:  is postgres specitfic
+		// This is for the tests only
+		repo.err = repo.GetDb().
+			Exec(
+				`DELETE
+FROM messages
+WHERE 
+	messages.id IN (
+		SELECT mm.id FROM messages mm
+		JOIN environments e ON e.environment_id = mm.environment_id
+		JOIN projects p ON p.id = e.project_id
+		WHERE mm.created_at < date('now', '-' || p.ttl || ' days')
+	);`,
+			).
+			Error
+	}
 
 	return repo
 }
 
+// GetGroupedMessagesWillExpireByUser method  returns messages that are going
+// to expire soon, group by user database id
+// TODO: avoid using dialect specific features
 func (repo *Repo) GetGroupedMessagesWillExpireByUser(
 	groupedMessageUser *map[uint]emailer.GroupedMessagesUser,
 ) IRepo {
@@ -119,19 +144,37 @@ func (repo *Repo) GetGroupedMessagesWillExpireByUser(
 
 	messages := []models.Message{}
 
-	repo.err = repo.
-		GetDb().
-		Model(&models.Message{}).
-		Joins("inner join environments on messages.environment_id = environments.environment_id").
-		Joins("inner join projects on environments.project_id = projects.id").
-		Where("date_trunc('day', messages.created_at) < date_trunc('day', now() - (projects.ttl - projects.days_before_ttl_expiry - 1 || ' days')::interval)").
-		Where("date_trunc('day', messages.created_at) > date_trunc('day', now() - (projects.ttl - projects.days_before_ttl_expiry + 1 || ' days')::interval)").
-		Preload("Sender").
-		Preload("Recipient").
-		Preload("Environment").
-		Preload("Environment.Project").
-		Find(&messages).
-		Error
+	switch dialect {
+	case DialectPostgres:
+		repo.err = repo.
+			GetDb().
+			Model(&models.Message{}).
+			Joins("inner join environments on messages.environment_id = environments.environment_id").
+			Joins("inner join projects on environments.project_id = projects.id").
+			Where("date_trunc('day', messages.created_at) < date_trunc('day', now() - (projects.ttl - projects.days_before_ttl_expiry - 1 || ' days')::interval)").
+			Where("date_trunc('day', messages.created_at) > date_trunc('day', now() - (projects.ttl - projects.days_before_ttl_expiry + 1 || ' days')::interval)").
+			Preload("Sender").
+			Preload("Recipient").
+			Preload("Environment").
+			Preload("Environment.Project").
+			Find(&messages).
+			Error
+
+	case DialectSQLite:
+		repo.err = repo.
+			GetDb().
+			Model(&models.Message{}).
+			Joins("inner join environments on messages.environment_id = environments.environment_id").
+			Joins("inner join projects on environments.project_id = projects.id").
+			Where("date(messages.created_at, 'start_of_day') < date('now', 'start_of_day', '-' || projects.ttl - projects.days_before_ttl_expiry - 1 || ' days')").
+			Where("date(messages.created_at, 'start_of_day') > date('now', 'start_of_day', '-' || projects.ttl - projects.days_before_ttl_expiry + 1 || ' days')").
+			Preload("Sender").
+			Preload("Recipient").
+			Preload("Environment").
+			Preload("Environment.Project").
+			Find(&messages).
+			Error
+	}
 
 	if repo.Err() != nil {
 		return repo

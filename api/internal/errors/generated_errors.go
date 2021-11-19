@@ -13,7 +13,7 @@ func ErrorPermissionDenied() error {
 }
 
 func ErrorEmptyPayload() error {
-	return newError("empty payload cannot be wrtten", nil)
+	return newError("empty payload cannot be written", nil)
 }
 
 func ErrorFailedToCreateResource(cause error) error {

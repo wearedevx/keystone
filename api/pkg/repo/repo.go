@@ -19,6 +19,15 @@ type Repo struct {
 	messages *message.MessageService
 }
 
+const (
+	DialectPostgres = iota
+	DialectSQLite
+)
+
+type Dialect int
+
+var dialect Dialect = DialectPostgres
+
 var db *gorm.DB
 
 var (
@@ -96,6 +105,10 @@ func (repo *Repo) Err() error {
 
 func (repo *Repo) GetDb() *gorm.DB {
 	return db
+}
+
+func (repo *Repo) GetDialect() Dialect {
+	return dialect
 }
 
 func (repo *Repo) MessageService() *message.MessageService {
