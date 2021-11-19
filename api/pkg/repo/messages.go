@@ -29,7 +29,7 @@ func (gr *MessagesPayload) Serialize(out *string) error {
 }
 
 func (repo *Repo) GetMessagesForUserOnEnvironment(
-	publicKey models.Device,
+	device models.Device,
 	environment models.Environment,
 	message *models.Message,
 ) IRepo {
@@ -40,7 +40,7 @@ func (repo *Repo) GetMessagesForUserOnEnvironment(
 	repo.err = repo.GetDb().
 		Model(&models.Message{}).
 		Preload("Sender").
-		Where("recipient_device_id = ? AND environment_id = ?", publicKey.ID, environment.EnvironmentID).
+		Where("recipient_device_id = ? AND environment_id = ?", device.ID, environment.EnvironmentID).
 		First(&message).
 		Error
 

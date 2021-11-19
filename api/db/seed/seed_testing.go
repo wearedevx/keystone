@@ -3,13 +3,58 @@
 package seed
 
 import (
-	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/api/pkg/repo"
+	"fmt"
+	"gorm.io/gorm"
 )
 
-func SeedRoles() error {
-	Repo := new(repo.Repo)
+func Seed(db *gorm.DB) (err error) {
+	fmt.Println("Seed")
 
+	err = db.Exec(sql).Error
+	if err != nil {
+		panic(err)
+	}
+	return nil
+}
+
+var sql = `
+insert or ignore into roles
+(id, name,        can_add_member, parent_id, created_at,        updated_at)
+values 
+(1,  "admin",     true,           null,      current_timestamp, current_timestamp),
+(2,  "devops",    true,           1,         current_timestamp, current_timestamp),
+(3,  "lead-dev",  true,           2,         current_timestamp, current_timestamp),
+(4,  "developer", false,          3,         current_timestamp, current_timestamp);
+
+insert or ignore into environment_types
+(id, name,      created_at,        updated_at)
+values
+(1,  "dev",     current_timestamp, current_timestamp),
+(2,  "staging", current_timestamp, current_timestamp),
+(3,  "prod",    current_timestamp, current_timestamp);
+
+insert or ignore into roles_environment_types
+(id, role_id, environment_type_id, name, read,  write, created_at,        updated_at)
+values
+-- admin
+(1,  1,       1,                   "",   true,  true,  current_timestamp, current_timestamp),
+(2,  1,       2,                   "",   true,  true,  current_timestamp, current_timestamp),
+(3,  1,       3,                   "",   true,  true,  current_timestamp, current_timestamp),
+-- devops
+(4,  2,       1,                   "",   true,  true,  current_timestamp, current_timestamp),
+(5,  2,       2,                   "",   true,  true,  current_timestamp, current_timestamp),
+(6,  2,       3,                   "",   true,  true,  current_timestamp, current_timestamp),
+-- lead-dev
+(7,  3,       1,                   "",   true,  true,  current_timestamp, current_timestamp),
+(8,  3,       2,                   "",   false, false, current_timestamp, current_timestamp),
+(9,  3,       3,                   "",   false, false, current_timestamp, current_timestamp),
+-- dev
+(10, 4,       1,                   "",   true,  true,  current_timestamp, current_timestamp),
+(11, 4,       2,                   "",   false, false, current_timestamp, current_timestamp),
+(12, 4,       3,                   "",   false, false, current_timestamp, current_timestamp);
+`
+
+/* func seedRoles(Repo repo.IRepo) error {
 	devRole := models.Role{Name: "developer"}
 	leadDevRole := models.Role{Name: "lead-dev", CanAddMember: true}
 	devopsRole := models.Role{Name: "devops", CanAddMember: true}
@@ -143,5 +188,7 @@ func SeedRoles() error {
 		return err
 	}
 
+	fmt.Println("Things are seeded ?")
+
 	return nil
-}
+} */

@@ -12,6 +12,7 @@ core/tests/
 .keystone
 
 config/test/test.go
+cover.out
 
 api/keystone-server-credentials.json
 

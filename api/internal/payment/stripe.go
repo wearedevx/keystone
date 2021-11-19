@@ -1,5 +1,3 @@
-// +build !test
-
 package payment
 
 import (
@@ -12,13 +10,6 @@ import (
 	"time"
 
 	stripe "github.com/stripe/stripe-go/v72"
-	portalsession "github.com/stripe/stripe-go/v72/billingportal/session"
-	"github.com/stripe/stripe-go/v72/checkout/session"
-	"github.com/stripe/stripe-go/v72/customer"
-	"github.com/stripe/stripe-go/v72/invoice"
-	"github.com/stripe/stripe-go/v72/sub"
-	"github.com/stripe/stripe-go/v72/usagerecord"
-	"github.com/stripe/stripe-go/v72/webhook"
 	"github.com/wearedevx/keystone/api/internal/constants"
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
@@ -91,7 +82,7 @@ func (sp *stripePayment) StartCheckout(
 			Email: stripe.String(email),
 		}
 
-		cus, err = customer.New(&customerParams)
+		cus, err = newCustomer(&customerParams)
 		if err != nil {
 			goto done
 		}
@@ -106,7 +97,7 @@ func (sp *stripePayment) StartCheckout(
 		strconv.FormatUint(uint64(organization.ID), 10),
 	)
 
-	ses, err = session.New(&sessionParams)
+	ses, err = newSession(&sessionParams)
 	if err != nil {
 		goto done
 	}
@@ -129,7 +120,7 @@ func (sp *stripePayment) GetManagementLink(
 		ReturnURL: stripe.String(fmt.Sprintf("https://%s/", constants.Domain)),
 	}
 
-	ps, err := portalsession.New(params)
+	ps, err := newPortalSession(params)
 	if err != nil {
 		return "", err
 	}
@@ -155,7 +146,7 @@ func (sp *stripePayment) HandleEvent(
 		goto done
 	}
 
-	event, err = webhook.ConstructEvent(
+	event, err = constructWebhookEvent(
 		b,
 		r.Header.Get("Stripe-Signature"),
 		stripeWebhookSecret,
@@ -246,7 +237,7 @@ func (sp *stripePayment) GetSubscription(
 	var s *stripe.Subscription
 	var seats int
 
-	s, err = sub.Get(string(subscriptionID), &stripe.SubscriptionParams{
+	s, err = getSubscription(string(subscriptionID), &stripe.SubscriptionParams{
 		Params: stripe.Params{
 			Expand: []*string{
 				stripe.String("customer"),
@@ -283,7 +274,7 @@ func stripeGetSeats(subscriptionID string) (seats int, err error) {
 
 	params.AddExpand("subscription")
 
-	inv, err = invoice.GetNext(&params)
+	inv, err = getNextInvoice(&params)
 	if err != nil {
 		goto done
 	}
@@ -326,7 +317,7 @@ func (sp *stripePayment) UpdateSubscription(
 	var s *stripe.Subscription
 	var urParams *stripe.UsageRecordParams
 
-	s, err = sub.Get(string(subscriptionID), &params)
+	s, err = getSubscription(string(subscriptionID), &params)
 	if err != nil {
 		goto done
 	}
@@ -340,7 +331,7 @@ func (sp *stripePayment) UpdateSubscription(
 			Action: stripe.String(string(stripe.UsageRecordActionSet)),
 		}
 
-		_, err = usagerecord.New(urParams)
+		_, err = newUsageRecord(urParams)
 	}
 
 done:
@@ -351,7 +342,7 @@ done:
 func (sp *stripePayment) CancelSubscription(
 	subscriptionID SubscriptionID,
 ) (err error) {
-	_, err = sub.Cancel(string(subscriptionID), nil)
+	_, err = cancelSubscription(string(subscriptionID), nil)
 	if err != nil {
 		return err
 	}

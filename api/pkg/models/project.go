@@ -54,6 +54,16 @@ func (p *Project) Serialize(out *string) (err error) {
 	return err
 }
 
+func (p *Project) GetEnvironment(environmentName string) *Environment {
+	for _, e := range p.Environments {
+		if e.Name == environmentName {
+			return &e
+		}
+	}
+
+	return nil
+}
+
 // API Types
 
 type AddVariablePayload struct {

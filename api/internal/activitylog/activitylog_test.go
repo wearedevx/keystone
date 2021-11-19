@@ -95,6 +95,7 @@ func Test_activityLogger_Save(t *testing.T) {
 	type args struct {
 		err error
 	}
+	fakeRepo := new(FakeRepo)
 	tests := []struct {
 		name   string
 		fields fields
@@ -105,10 +106,13 @@ func Test_activityLogger_Save(t *testing.T) {
 			name: "saves an activity log",
 			fields: fields{
 				err:  nil,
-				repo: new(FakeRepo),
+				repo: fakeRepo,
 			},
 			args: args{},
-			want: nil,
+			want: &activityLogger{
+				nil,
+				fakeRepo,
+			},
 		},
 		{
 			name: "does not save a plain error",
@@ -117,7 +121,10 @@ func Test_activityLogger_Save(t *testing.T) {
 				repo: new(FakeRepo),
 			},
 			args: args{},
-			want: nil,
+			want: &activityLogger{
+				nil,
+				fakeRepo,
+			},
 		},
 	}
 	for _, tt := range tests {

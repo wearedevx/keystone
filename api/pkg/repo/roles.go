@@ -85,6 +85,10 @@ func (r *Repo) GetChildrenRoles(role models.Role, roles *[]models.Role) IRepo {
 
 	var current models.Role
 	for ok := true; ok; current, ok = q.pop() {
+		// FIXME: how come we can have empty structs here?
+		if current.ID == 0 {
+			continue
+		}
 		toAdd = make([]models.Role, 0)
 
 		for _, dbRole := range allRoles {

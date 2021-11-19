@@ -160,7 +160,7 @@ func (pm *RemoveMembersResponse) Serialize(out *string) (err error) {
 }
 
 type CheckMembersResponse struct {
-	Success bool   `json:"success"`
+	Success bool   `json:"success" default:"true"`
 	Error   string `json:"error"`
 }
 

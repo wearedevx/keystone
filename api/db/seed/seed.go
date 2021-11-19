@@ -2,6 +2,6 @@
 
 package seed
 
-func SeedRoles() error {
+func Seed() error {
 	return nil
 }

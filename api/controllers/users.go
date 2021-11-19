@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/wearedevx/keystone/api/internal/activitylog"
 	apierrors "github.com/wearedevx/keystone/api/internal/errors"
@@ -176,7 +177,7 @@ func PostUserToken(
 		}
 
 		log.User = user
-		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID)
+		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID, time.Now())
 
 		if err != nil {
 			msg = "Internal Server Error"

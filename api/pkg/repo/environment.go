@@ -52,6 +52,10 @@ func (repo *Repo) GetEnvironmentsByProjectUUID(
 	projectUUID string,
 	foundEnvironments *[]models.Environment,
 ) IRepo {
+	if repo.err != nil {
+		return repo
+	}
+
 	var project models.Project
 	repo.err = repo.GetDb().
 		Model(&models.Project{}).

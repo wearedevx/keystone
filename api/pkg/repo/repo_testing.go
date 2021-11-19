@@ -8,6 +8,7 @@ import (
 	"path"
 
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
+	"github.com/wearedevx/keystone/api/db/seed"
 	"github.com/wearedevx/keystone/api/pkg/message"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	"gorm.io/driver/sqlite"
@@ -31,6 +32,8 @@ func autoMigrate() error {
 		&Project{},
 		&ProjectMember{},
 		&Secret{},
+		&Roles{},
+		&EnvironmentType{},
 		&RolesEnvironmentType{},
 		&User{},
 		&Device{},
@@ -86,6 +89,14 @@ func Transaction(fn func(IRepo) error) error {
 	return err
 }
 
+func NewRepo() *Repo {
+	return &Repo{
+		err:      nil,
+		tx:       db,
+		messages: message.NewMessageService(),
+	}
+}
+
 func init() {
 	dbFilePath := path.Join(os.TempDir(), "keystone_gorm.db")
 
@@ -102,4 +113,6 @@ func init() {
 	if err != nil {
 		// ignore... make the tests fail if there is an output
 	}
+
+	seed.Seed(db)
 }

@@ -25,8 +25,8 @@ import (
 var Redis *redis.Redis
 
 type GenericResponse struct {
-	Success bool  `json:"success"`
-	Error   error `json:"error"`
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
 }
 
 func (gr *GenericResponse) Deserialize(in io.Reader) error {
@@ -50,14 +50,11 @@ func GetMessagesFromProjectByUser(
 	user models.User,
 ) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
-	response := GenericResponse{
-		Success: false,
-	}
 
 	projectID := params.Get("projectID")
 	deviceUID := params.Get("device")
 	project := models.Project{UUID: projectID}
-	publicKey := models.Device{}
+	device := models.Device{}
 	var environments []models.Environment
 	result := models.GetMessageByEnvironmentResponse{
 		Environments: map[string]models.GetMessageResponse{},
@@ -68,15 +65,14 @@ func GetMessagesFromProjectByUser(
 	}
 
 	// Get publicKey by device name to send message to current user device
-	publicKey.UID = deviceUID
+	device.UID = deviceUID
 
 	if err = Repo.
 		GetProject(&project).
-		GetDeviceByUserID(user.ID, &publicKey).
+		GetDeviceByUserID(user.ID, &device).
 		GetEnvironmentsByProjectUUID(projectID, &environments).
 		Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
-			response.Error = err
 			status = http.StatusNotFound
 			goto done
 		}
@@ -96,7 +92,6 @@ func GetMessagesFromProjectByUser(
 		can, err = rights.
 			CanUserReadEnvironment(Repo, user.ID, project.ID, &environment)
 		if err != nil {
-			response.Error = err
 			status = http.StatusNotFound
 			err = apierrors.ErrorFailedToGetPermission(err)
 			goto done
@@ -106,12 +101,10 @@ func GetMessagesFromProjectByUser(
 			curr := models.GetMessageResponse{}
 			if err = Repo.
 				GetMessagesForUserOnEnvironment(
-					publicKey,
+					device,
 					environment,
 					&curr.Message,
 				).Err(); err != nil {
-				response.Error = err
-				response.Success = false
 				status = http.StatusBadRequest
 				err = apierrors.ErrorFailedToGetResource(err)
 				goto done
@@ -348,7 +341,7 @@ func DeleteMessage(
 	id, err := strconv.ParseUint(messageID, 10, 64)
 	if err != nil {
 		response.Success = false
-		response.Error = err
+		response.Error = err.Error()
 		err = nil
 
 		goto done
@@ -363,7 +356,7 @@ func DeleteMessage(
 			status = http.StatusNotFound
 			goto done
 		}
-		response.Error = err
+		response.Error = err.Error()
 		response.Success = false
 		err = apierrors.ErrorFailedToDeleteResource(err)
 

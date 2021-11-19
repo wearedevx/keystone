@@ -1,6 +1,6 @@
 package main
 
-// go:generate go run ./generators/errors.go
+//go:generate go run ./generators/errors.go
 
 import (
 	"log"
@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/wearedevx/keystone/api/db/seed"
 	"github.com/wearedevx/keystone/api/routes"
 )
 
@@ -19,10 +18,10 @@ func (h *baseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	err := seed.SeedRoles()
-	if err != nil {
-		panic(err)
-	}
+	// err := seed.Seed()
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	// Use PORT environment variable, or default to 8080.
 	port := "9001"

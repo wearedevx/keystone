@@ -48,7 +48,7 @@ func (r *Repo) GetActivityLogs(
 	var l = make([]models.ActivityLog, options.Limit)
 	r.err = req.
 		Where("projects.uuid = ?", projectID).
-		Order("created_at DESC").
+		Order("activity_logs.created_at DESC").
 		Limit(int(options.Limit)).
 		Preload(clause.Associations).
 		Find(&l).

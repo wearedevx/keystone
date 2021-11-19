@@ -119,6 +119,14 @@ func (repo *Repo) notFoundAsBool(call func() error) (bool, error) {
 	return found, err
 }
 
+func NewRepo() *Repo {
+	return &Repo{
+		err:      nil,
+		tx:       db,
+		messages: message.NewMessageService(),
+	}
+}
+
 func init() {
 	var err error
 
