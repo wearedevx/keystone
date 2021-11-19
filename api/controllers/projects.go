@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -25,7 +26,7 @@ func PostProject(
 		Action: "PostProject",
 	}
 
-	project := models.Project{}
+	project := &models.Project{}
 	orga := models.Organization{}
 
 	if err = project.Deserialize(body); err != nil {
@@ -33,12 +34,20 @@ func PostProject(
 		err = apierrors.ErrorBadRequest(err)
 		goto done
 	}
+	if project.OrganizationID == 0 {
+		err = repo.ErrorNotFound
+		status = http.StatusNotFound
+		project = nil
+		goto done
+	}
+
+	orga.ID = project.OrganizationID
 
 	project.UserID = user.ID
 
 	if err = Repo.
-		GetOrCreateProject(&project).
-		GetProjectsOrganization(project.UUID, &orga).
+		GetOrCreateProject(project).
+		GetOrganization(&orga).
 		Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
@@ -68,6 +77,7 @@ func PostProject(
 			RoleID:    role.ID,
 		}
 
+		// TODO: use repo specific function for that
 		if err = Repo.GetDb().Save(&orgaOwner).Error; err != nil {
 			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToCreateResource(err)
@@ -76,13 +86,15 @@ func PostProject(
 
 	project.User = user
 	project.UserID = user.ID
+	project.Organization = orga
+	project.OrganizationID = orga.ID
 
 	if project.ID != 0 {
 		log.ProjectID = &project.ID
 	}
 
 done:
-	return &project, status, log.SetError(err)
+	return project, status, log.SetError(err)
 }
 
 func GetProjects(
@@ -105,6 +117,7 @@ func GetProjects(
 		status = http.StatusInternalServerError
 		err = apierrors.ErrorFailedToGetResource(err)
 	}
+	fmt.Printf("LS -> controllers/projects.go:115 -> user.ID: %+v\n", user.ID)
 
 	return &result, status, log.SetError(err)
 }

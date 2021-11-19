@@ -23,7 +23,7 @@ func (r *Repo) createProject(project *models.Project) IRepo {
 		Name: "admin",
 	}
 
-	r.err = db.Create(project).Error
+	r.err = db.Omit("Organization").Omit("User").Create(project).Error
 
 	r.GetRole(&role)
 

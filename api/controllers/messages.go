@@ -436,7 +436,7 @@ func DeleteExpiredMessages(
 		return Repo.Err()
 	})
 	if err != nil {
-		fmt.Printf("[Error] Removing expired messages: %+v\n", err)
+		fmt.Printf("[ERROR] Removing expired messages: %+v\n", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -492,11 +492,11 @@ func AlertMessagesWillExpire(
 	})
 
 	if err != nil {
-        fmt.Printf("[Error] Sending Expiration Emails: %+v\n", err)
+        fmt.Printf("[ERROR] Sending Expiration Emails: %+v\n", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
         return
 	} else if len(errors) > 0 {
-        fmt.Printf("[Error] Sending Expiration Emails: %+v\n", errors)
+        fmt.Printf("[ERROR] Sending Expiration Emails: %+v\n", errors)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
         return
 	}

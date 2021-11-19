@@ -11,14 +11,14 @@ import (
 )
 
 type Environment struct {
-	ID                uint            `json:"id"                  gorm:"primaryKey"`
-	Name              string          `json:"name"                gorm:"not null"`
+	ID                uint            `json:"id"                  gorm:"primaryKey" faker:"-"`
+	Name              string          `json:"name"                gorm:"not null"   faker:"oneof: dev, staging, prod"`
 	EnvironmentTypeID uint            `json:"environment_type_id"`
-	EnvironmentType   EnvironmentType `json:"environment_type"`
+	EnvironmentType   EnvironmentType `json:"environment_type"                      faker:"-"`
 	ProjectID         uint            `json:"project_id"`
-	Project           Project         `json:"project"`
-	VersionID         string          `json:"version_id"`
-	EnvironmentID     string          `json:"environment_id"`
+	Project           Project         `json:"project"                               faker:"-"`
+	VersionID         string          `json:"version_id"                            faker:"word,unique"`
+	EnvironmentID     string          `json:"environment_id"                        faker:"word,unique"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
