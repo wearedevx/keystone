@@ -90,7 +90,12 @@ func GetMessagesFromProjectByUser(
 		log.Environment = environment
 
 		can, err = rights.
-			CanUserReadEnvironment(Repo, user.ID, project.ID, &environment)
+			CanUserReadEnvironment(
+				Repo,
+				user.ID,
+				project.ID,
+				&environment,
+			)
 		if err != nil {
 			status = http.StatusNotFound
 			err = apierrors.ErrorFailedToGetPermission(err)
@@ -206,7 +211,10 @@ func WriteMessages(
 		// If organization has not paid and there is no admin in the project,
 		// messages cannot be written
 		has, err = rights.
-			HasOrganizationNotPaidAndHasNonAdmin(Repo, environment.Project)
+			HasOrganizationNotPaidAndHasNonAdmin(
+				Repo,
+				environment.Project,
+			)
 
 		if err != nil {
 			status = http.StatusInternalServerError
@@ -327,7 +335,10 @@ func WriteMessages(
 		}
 
 		// Change environment version id.
-		response.Environments = append(response.Environments, environment)
+		response.Environments = append(
+			response.Environments,
+			environment,
+		)
 	}
 
 done:
@@ -437,7 +448,11 @@ func DeleteExpiredMessages(
 	})
 	if err != nil {
 		fmt.Printf("[ERROR] Removing expired messages: %+v\n", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(
+			w,
+			"Internal Server Error",
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -470,7 +485,9 @@ func AlertMessagesWillExpire(
 
 	// Actual work
 	err := repo.Transaction(func(Repo repo.IRepo) error {
-		groupedMessageUser := make(map[uint]emailer.GroupedMessagesUser)
+		groupedMessageUser := make(
+			map[uint]emailer.GroupedMessagesUser,
+		)
 
 		Repo.GetGroupedMessagesWillExpireByUser(&groupedMessageUser)
 
@@ -492,13 +509,17 @@ func AlertMessagesWillExpire(
 	})
 
 	if err != nil {
-        fmt.Printf("[ERROR] Sending Expiration Emails: %+v\n", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-        return
+		fmt.Printf("[ERROR] Sending Expiration Emails: %+v\n", err)
+		http.Error(
+			w,
+			"Internal Server Error",
+			http.StatusInternalServerError,
+		)
+		return
 	} else if len(errors) > 0 {
-        fmt.Printf("[ERROR] Sending Expiration Emails: %+v\n", errors)
+		fmt.Printf("[ERROR] Sending Expiration Emails: %+v\n", errors)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-        return
+		return
 	}
 
 	http.Error(w, "OK", http.StatusOK)
