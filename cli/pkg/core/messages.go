@@ -152,7 +152,7 @@ func (ctx *Context) SaveMessages(
 		)
 		secretChanges := GetSecretsChanges(localSecrets, PayloadContent.Secrets)
 
-		if err := ctx.handleSecretChanges(PayloadContent, environmentName); err != nil {
+		if err := ctx.handleSecretChanges(PayloadContent, environmentName).Err(); err != nil {
 			return changes
 		}
 

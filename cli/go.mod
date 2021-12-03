@@ -18,7 +18,6 @@ require (
 	github.com/jamesruan/sodium v0.0.0-20181216154042-9620b83ffeae
 	github.com/jedib0t/go-pretty/v6 v6.2.4
 	github.com/juju/ansiterm v0.0.0-20210706145210-9283cdf370b5 // indirect
-	github.com/lib/pq v1.10.2 // indirect
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/manifoldco/promptui v0.8.0
@@ -32,13 +31,10 @@ require (
 	github.com/wearedevx/keystone/api v0.0.0-20210921142643-b2caacffdfdb
 	github.com/xanzy/go-gitlab v0.51.1
 	go.uber.org/zap v1.18.1 // indirect
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/net v0.0.0-20210928044308-7d9f5e0b762b // indirect
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
-	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	gopkg.in/yaml.v2 v2.4.0
-	gorm.io/gorm v1.21.15 // indirect
 )
 
 replace github.com/wearedevx/keystone/api => ../api
