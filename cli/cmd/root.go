@@ -16,6 +16,8 @@ limitations under the License.
 package cmd
 
 import (
+	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 
@@ -41,6 +43,7 @@ var (
 	currentEnvironment string
 	quietOutput        bool
 	skipPrompts        bool
+	debug              bool
 )
 
 var ctx *core.Context
@@ -178,6 +181,11 @@ func Initialize() {
 	if checkLogin && !config.IsLoggedIn() {
 		exit(kserrors.MustBeLoggedIn(nil))
 	}
+
+	log.SetOutput(ioutil.Discard)
+	if debug {
+		log.SetOutput(os.Stderr)
+	}
 }
 
 func init() {
@@ -196,6 +204,9 @@ func init() {
 	// setCmd.PersistentFlags().String("foo", "", "A help for foo")
 	RootCmd.PersistentFlags().
 		BoolVarP(&quietOutput, "quiet", "q", false, "make the output machine readable")
+
+	RootCmd.PersistentFlags().
+		BoolVar(&debug, "debug", false, "debug output")
 
 	RootCmd.PersistentFlags().
 		StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.config/keystone/keystone.yaml)")
