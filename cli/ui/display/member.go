@@ -23,8 +23,8 @@ func MembersAdded() {
 	ui.Print(ui.RenderTemplate("added members", `
 {{ OK }} {{ "Members Added" | green }}
 
-To send secrets and files to new member, use "member add" command.
-  $ ks member send-env --all-env <member-id>
+To send secrets and files to new member, use "env send" command.
+  $ ks env send
 `, nil))
 }
 
