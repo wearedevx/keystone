@@ -82,8 +82,8 @@ run-test:
 	go run -tags test -ldflags "$(LDFLAGS)" main.go
 
 test:
-	rm "${TMPDIR}/keystone_gorm.db"
-	touch "${TMPDIR}/keystone_gorm.db"
+	if [ -f "${TMPDIR}keystone_gorm.db" ]; then rm "${TMPDIR}keystone_gorm.db"; fi
+	touch "${TMPDIR}keystone_gorm.db"
 	go test -tags test -coverprofile cover.out.tmp ./...
 	cat cover.out.tmp | grep -v "generated_" | grep -v "_testing" > cover.out
 	rm cover.out.tmp
