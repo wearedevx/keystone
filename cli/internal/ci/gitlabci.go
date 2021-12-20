@@ -1,11 +1,12 @@
 package ci
 
 import (
-	"encoding/base64"
 	"fmt"
-	"io"
+	"os"
+	"path"
 	"strings"
 
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -39,15 +40,15 @@ const (
 )
 
 type gitlabCiService struct {
-	err                 error
-	name                string
-	apiUrl              string
-	ctx                 *core.Context
-	apiKey              ApiKey
-	client              *gitlab.Client
-	options             GitlabOptions
-	lastEnvironmentSent string
-	nSlots              int
+	err           error
+	name          string
+	apiUrl        string
+	ctx           *core.Context
+	apiKey        ApiKey
+	client        *gitlab.Client
+	options       GitlabOptions
+	environment   string
+	fileVariables []string
 }
 
 // configServiceName function returns the key to find the ApiKey
@@ -82,8 +83,8 @@ func GitLabCi(ctx *core.Context, name string, apiUrl string) CiService {
 			BaseUrl: savedService.Options[OPTION_KEY_BASE_URL],
 			Project: savedService.Options[OPTION_KEY_PROJECT],
 		},
-		lastEnvironmentSent: "",
-		nSlots:              1,
+		environment:   "",
+		fileVariables: []string{},
 	}
 
 	return ciService
@@ -95,34 +96,19 @@ func (g *gitlabCiService) Name() string { return g.name }
 // Usage method returns a usage string that will be displayed
 // to the user
 func (g *gitlabCiService) Usage() string {
-	slots := make([]string, g.nSlots)
-
-	for i := range slots {
-		slots[i] = slot(g.lastEnvironmentSent, i)
-	}
-
 	return ui.RenderTemplate(
 		"gitlab-ci-usage",
 		`To use them in your pipeline, add the following job in your gitlab-ci.yml:
 
 default:
   before_script:
-    - |
-      archive="\{{ range .Slots}}
-      ${{.}}\{{end}}
-      "
-    - echo -n $archive | base64 -d > keystone.tar.gz
-    - tar -xzf keystone.tar.gz; rm keystone.tar.gz
-    - unset archive;
-    - set -o allexport; source .keystone/cache/{{ .Environment }}/.env; set +o allexport
-    - |
-      if [ "$(ls -A .keystone/cache/{{ .Environment }}/files)" ]; then
-        cp -R .keystone/cache/{{ .Environment }}/files/* ./;
-      fi
+    {{ range .FileVariables }}- mkdir -p $(dirname ${ {{- . -}} %#*})
+    - echo "${ {{- . -}} #*#}" | base64 -d > ${ {{- . -}} %#*}
+    {{end}}
 `,
 		map[string]interface{}{
-			"Slots":       slots,
-			"Environment": g.lastEnvironmentSent,
+			"FileVariables": g.fileVariables,
+			"Environment":   g.environment,
 		},
 	)
 }
@@ -172,66 +158,32 @@ func (g *gitlabCiService) PushSecret(
 		return g
 	}
 
-	var err error
+	g.environment = environment
 
-	g.initClient()
-	if g.err != nil {
-		return g
-	}
-
-	archive, err := getArchiveBuffer(g.ctx, environment)
-	if err != nil {
-		g.err = err
-		return g
-	}
-
-	str, err := base64encode(archive)
-	if err != nil {
-		return g
-	}
-
-	splits, err := splitString(str, SLOT_SIZE, N_SLOTS)
-	if err != nil {
-		g.err = err
-		return g
-	}
-
-	nslots := 0
-
-	for i, split := range splits {
-		key := slot(environment, i)
-		remoteHasVariable := g.hasVariable(key)
-		hasContent := len(split) > 0
-
-		if hasContent {
-			nslots++
-		}
-
-		switch {
-		case remoteHasVariable && hasContent:
-			g.updateVariable(key, split)
-		case remoteHasVariable && !hasContent:
-			g.deleteVariable(key)
-		case !remoteHasVariable:
-			g.createVariable(key, split)
-		}
-
-		if err != nil {
-			g.err = err
-			return g
-		}
-	}
-
-	g.lastEnvironmentSent = environment
-	g.nSlots = nslots
+	g.initClient().
+		createEnvironment().
+		sendEnvironmentSecrets().
+		sendEnvironmentFiles()
 
 	return g
+}
+
+func (g *gitlabCiService) environmentScopeOption() func(*retryablehttp.Request) error {
+	return func(req *retryablehttp.Request) error {
+		query := req.URL.Query()
+		query.Add("filter[environment_scope]", g.environment)
+
+		req.URL.RawQuery = query.Encode()
+
+		return nil
+	}
 }
 
 func (g *gitlabCiService) hasVariable(key string) bool {
 	variable, _, _ := g.client.ProjectVariables.GetVariable(
 		g.options.Project,
 		key,
+		g.environmentScopeOption(),
 	)
 
 	return variable != nil
@@ -242,14 +194,16 @@ func (g *gitlabCiService) createVariable(key string, value string) {
 		return
 	}
 
+	options := &gitlab.CreateProjectVariableOptions{
+		Key:              gitlab.String(key),
+		Value:            gitlab.String(value),
+		VariableType:     gitlab.VariableType("env_var"),
+		EnvironmentScope: gitlab.String(g.environment),
+	}
+
 	_, _, err := g.client.ProjectVariables.CreateVariable(
 		g.options.Project,
-		&gitlab.CreateProjectVariableOptions{
-			Key:          gitlab.String(key),
-			Value:        gitlab.String(value),
-			VariableType: gitlab.VariableType("env_var"),
-			Masked:       gitlab.Bool(true),
-		},
+		options,
 	)
 	if err != nil {
 		g.err = err
@@ -261,9 +215,9 @@ func (g *gitlabCiService) updateVariable(key string, value string) {
 		g.options.Project,
 		key,
 		&gitlab.UpdateProjectVariableOptions{
-			Value:        gitlab.String(value),
-			VariableType: gitlab.VariableType("env_var"),
-			Masked:       gitlab.Bool(true),
+			Value:            gitlab.String(value),
+			VariableType:     gitlab.VariableType("env_var"),
+			EnvironmentScope: gitlab.String(g.environment),
 		},
 	)
 	if err != nil {
@@ -271,14 +225,17 @@ func (g *gitlabCiService) updateVariable(key string, value string) {
 	}
 }
 
-func (g *gitlabCiService) deleteVariable(key string) {
+func (g *gitlabCiService) deleteVariable(key string) *gitlabCiService {
 	_, err := g.client.ProjectVariables.RemoveVariable(
 		g.options.Project,
 		key,
+		g.environmentScopeOption(),
 	)
 	if err != nil {
 		g.err = err
 	}
+
+	return g
 }
 
 // CleanSecret method remove all the secrets for the given environment
@@ -288,20 +245,11 @@ func (g *gitlabCiService) CleanSecret(environment string) CiService {
 		return g
 	}
 
-	g.initClient()
-	if g.err != nil {
-		return g
-	}
+	g.environment = environment
 
-	for i := range make([]int, 5) {
-		key := slot(environment, i)
-
-		if g.hasVariable(key) {
-			if g.deleteVariable(key); g.err != nil {
-				return g
-			}
-		}
-	}
+	g.initClient().
+		cleanSecrets().
+		cleanFiles()
 
 	return g
 }
@@ -351,69 +299,141 @@ func (g *gitlabCiService) askForProjectName() string {
 	return p
 }
 
-func (g *gitlabCiService) initClient() {
+func (g *gitlabCiService) initClient() *gitlabCiService {
 	g.client, g.err = gitlab.NewClient(string(g.apiKey))
+
+	return g
 }
 
-func slot(environmentName string, i int) string {
-	return fmt.Sprintf(
-		"KEYSTONE_%s_SLOT_%d",
-		strings.ToUpper(environmentName),
-		i+1,
+func (g *gitlabCiService) createEnvironment() *gitlabCiService {
+	environments, _, err := g.client.Environments.ListEnvironments(
+		g.options.Project,
+		&gitlab.ListEnvironmentsOptions{
+			Name: gitlab.String(g.environment),
+		},
 	)
+	if err != nil {
+		g.err = err
+		return g
+	}
+
+	if len(environments) == 0 {
+		_, _, err := g.client.Environments.CreateEnvironment(
+			g.options.Project,
+			&gitlab.CreateEnvironmentOptions{
+				Name: gitlab.String(g.environment),
+			},
+		)
+		if err != nil {
+			g.err = err
+		}
+	}
+
+	return g
 }
 
-func splitString(s string, chunkSize int, nChunks int) ([]string, error) {
-	if len(s) == 0 {
-		return nil, nil
+func (g *gitlabCiService) createOrUpdateVariable(
+	key, value string,
+) *gitlabCiService {
+	if g.err != nil {
+		return g
 	}
 
-	chunks := make([]string, nChunks)
-
-	if chunkSize >= len(s) {
-		chunks[0] = s
-		return chunks, nil
+	if g.hasVariable(key) {
+		g.updateVariable(key, value)
+	} else {
+		g.createVariable(key, value)
 	}
 
-	c := 0
-	currentLen := 0
-	currentStart := 0
+	return g
+}
 
-	for i := range s {
-		if currentLen == chunkSize {
-			chunks[c] = s[currentStart:i]
-			currentLen = 0
-			currentStart = i
+func (g *gitlabCiService) sendEnvironmentSecrets() *gitlabCiService {
+	if g.err != nil {
+		return g
+	}
 
-			c += 1
+	secrets := g.ctx.ListSecrets()
 
-			if c == len(chunks)-1 {
-				break
-			}
+	for _, secret := range secrets {
+		key := secret.Name
+		value, ok := secret.Values[core.EnvironmentName(g.environment)]
+		if !ok && secret.Required {
+			g.err = fmt.Errorf("required secret is missing %s", key)
+			break
 		}
 
-		currentLen++
+		if g.createOrUpdateVariable(key, string(value)).err != nil {
+			break
+		}
 	}
 
-	lastChunk := s[currentStart:]
-	if len(lastChunk) > chunkSize {
-		return nil, fmt.Errorf("keystone archive too big: %d", len(s))
-	}
-
-	chunks[c] = lastChunk
-
-	return chunks, nil
+	return g
 }
 
-func base64encode(reader io.Reader) (string, error) {
-	sb := new(strings.Builder)
-
-	_, err := io.Copy(sb, reader)
-	if err != nil {
-		return "", err
+func (g *gitlabCiService) sendEnvironmentFiles() *gitlabCiService {
+	if g.err != nil {
+		return g
 	}
 
-	s := base64.StdEncoding.EncodeToString([]byte(sb.String()))
+	files := g.ctx.ListFiles()
+	filecachepath := g.ctx.CachedEnvironmentFilesPath(g.environment)
 
-	return s, err
+	for _, file := range files {
+		fullpath := path.Join(filecachepath, file.Path)
+		f, err := os.Open(fullpath)
+		if err != nil {
+			g.err = err
+			break
+		}
+
+		contents, err := base64encode(f)
+		if err != nil {
+			g.err = err
+			break
+		}
+
+		key := pathToVarname(file.Path)
+		value := fmt.Sprintf("%s#%s", file.Path, contents)
+
+		g.createOrUpdateVariable(key, value)
+
+		g.fileVariables = append(g.fileVariables, key)
+	}
+
+	return g
+}
+
+func (g *gitlabCiService) cleanSecrets() *gitlabCiService {
+	if g.err != nil {
+		return g
+	}
+
+	secrets := g.ctx.ListSecrets()
+	for _, secret := range secrets {
+		key := secret.Name
+
+		if g.hasVariable(key) {
+			g.deleteVariable(key)
+		}
+	}
+	return g
+}
+
+func (g *gitlabCiService) cleanFiles() *gitlabCiService {
+	if g.err != nil {
+		return g
+	}
+
+	files := g.ctx.ListFiles()
+	for _, file := range files {
+		key := pathToVarname(file.Path)
+
+		if g.hasVariable(key) {
+			g.deleteVariable(key)
+		}
+
+	}
+
+	return g
 }
