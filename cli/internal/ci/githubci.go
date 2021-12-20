@@ -29,6 +29,11 @@ var (
 
 const GithubCI CiServiceType = "github-ci"
 
+const (
+	GithubCINbSlots    = 5
+	GithubCISLotLength = 64 * 1024
+)
+
 type ServicesKeys map[string]string
 
 type ApiKey string
@@ -164,10 +169,8 @@ func (g *gitHubCiService) PushSecret(
 
 	return g.
 		initClient().
-		createEnvironment().
 		getGithubPublicKey().
-		sendEnvironmentSecrets().
-		sendEnvironmentFiles()
+		sendSlot(message)
 }
 
 // CleanSecret method remove all the secrets for the given environment
@@ -408,7 +411,30 @@ func (g *gitHubCiService) encryptSecret(
 	return g
 }
 
-func (g *gitHubCiService) sendSecret(
+func (g *gitHubCiService) sendSlot(message models.MessagePayload) *gitHubCiService {
+	slots, err := makeSlots(message, GithubCINbSlots, GithubCISLotLength)
+	if err != nil {
+		g.err = err
+		return g
+	}
+
+	for i, slot := range slots {
+		s := slotName(g.environment, i)
+		encryptedSecret := github.EncryptedSecret{}
+
+		g.
+			encryptSecret(s, slot, &encryptedSecret).
+			sendRepoSecret(&encryptedSecret)
+
+		if g.err != nil {
+			return g
+		}
+	}
+
+	return g
+}
+
+func (g *gitHubCiService) sendEnvironmentSecret(
 	secret *github.EncryptedSecret,
 	environment string,
 ) *gitHubCiService {
@@ -420,12 +446,40 @@ func (g *gitHubCiService) sendSecret(
 	)
 	switch {
 	case resp.StatusCode == 401 || resp.StatusCode == 403:
-		g.log.Printf("Permission Denied on sendSecret: %d, %v\n", resp.StatusCode, err)
+		g.log.Printf("Permission Denied on sendEnvironmentSecret: %d, %v\n", resp.StatusCode, err)
 		g.err = ErrorGithubCIPermissionDenied
 		return g
 
 	case err != nil:
-		g.log.Printf("Error on sendSecret: %d, %v\n", resp.StatusCode, err)
+		g.log.Printf("Error on sendEnvironmentSecret: %d, %v\n", resp.StatusCode, err)
+		g.err = err
+		return g
+	}
+
+	return g
+}
+
+func (g *gitHubCiService) sendRepoSecret(
+	secret *github.EncryptedSecret,
+) *gitHubCiService {
+	options := g.getOptions()
+	owner := options["Owner"]
+	repo := options["Project"]
+
+	resp, err := g.client.Actions.CreateOrUpdateRepoSecret(
+		context.Background(),
+		owner,
+		repo,
+		secret,
+	)
+	switch {
+	case resp.StatusCode == 401 || resp.StatusCode == 403:
+		g.log.Printf("Permission Denied on sendRepoSecret: %d, %v\n", resp.StatusCode, err)
+		g.err = ErrorGithubCIPermissionDenied
+		return g
+
+	case err != nil:
+		g.log.Printf("Error on sendRepoSecret: %d, %v\n", resp.StatusCode, err)
 		g.err = err
 		return g
 	}
@@ -475,7 +529,7 @@ func (g *gitHubCiService) sendEnvironmentSecrets() *gitHubCiService {
 		encryptedSecret := github.EncryptedSecret{}
 		if g.
 			encryptSecret(secret.Name, string(value), &encryptedSecret).
-			sendSecret(&encryptedSecret, g.environment).
+			sendEnvironmentSecret(&encryptedSecret, g.environment).
 			err != nil {
 			break
 		}
@@ -521,7 +575,7 @@ func (g *gitHubCiService) sendEnvironmentFiles() *gitHubCiService {
 		encryptedSecret := github.EncryptedSecret{}
 		if g.
 			encryptSecret(key, value, &encryptedSecret).
-			sendSecret(&encryptedSecret, g.environment).
+			sendEnvironmentSecret(&encryptedSecret, g.environment).
 			err != nil {
 			break
 		}
