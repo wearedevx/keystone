@@ -81,6 +81,7 @@ ks ci send --env prod
 				Error(); err != nil {
 				err = kserrors.CouldNotSendToCIService(err)
 			}
+
 			sp.Stop()
 			exitIfErr(err)
 
