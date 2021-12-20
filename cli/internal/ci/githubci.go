@@ -412,6 +412,10 @@ func (g *gitHubCiService) encryptSecret(
 }
 
 func (g *gitHubCiService) sendSlot(message models.MessagePayload) *gitHubCiService {
+	if g.err != nil {
+		return g
+	}
+
 	slots, err := makeSlots(message, GithubCINbSlots, GithubCISLotLength)
 	if err != nil {
 		g.err = err
