@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -117,7 +116,6 @@ func GetProjects(
 		status = http.StatusInternalServerError
 		err = apierrors.ErrorFailedToGetResource(err)
 	}
-	fmt.Printf("LS -> controllers/projects.go:115 -> user.ID: %+v\n", user.ID)
 
 	return &result, status, log.SetError(err)
 }

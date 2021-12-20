@@ -159,9 +159,9 @@ func TestPostProject(t *testing.T) {
 }
 
 func TestGetProjects(t *testing.T) {
-	user, _, projects := seedManyProjectsForOneUser()
-	// defer teardownUserAndOrganization(user, organization)
-	// defer teardownManyProjects(projects)
+	user, organization, projects := seedManyProjectsForOneUser()
+	defer teardownUserAndOrganization(user, organization)
+	defer teardownManyProjects(projects)
 
 	type args struct {
 		in0  router.Params
@@ -177,7 +177,7 @@ func TestGetProjects(t *testing.T) {
 		wantErr    string
 	}{
 		{
-			name: "",
+			name: "gets projects for the user",
 			args: args{
 				in0:  router.Params{},
 				in1:  nil,
@@ -225,6 +225,17 @@ func TestGetProjects(t *testing.T) {
 				return
 			}
 
+			gotIds := make([]uint, len(gotResponse.Projects))
+			wantIds := make([]uint, len(tt.want.Projects))
+
+			for i, p := range gotResponse.Projects {
+				gotIds[i] = p.UserID
+			}
+
+			for i, p := range tt.want.Projects {
+				wantIds[i] = p.UserID
+			}
+
 			gotProjects := gotResponse.Projects
 			if len(gotProjects) != len(tt.want.Projects) {
 				t.Errorf(
@@ -249,6 +260,28 @@ func TestGetProjects(t *testing.T) {
 }
 
 func TestGetProjectsMembers(t *testing.T) {
+	Repo := repo.NewRepo()
+	users := make([]models.User, 5)
+
+	for i := 1; i < 5; i++ {
+		user, organization := seedSingleUser()
+		users[i] = user
+		defer teardownUserAndOrganization(user, organization)
+	}
+
+	user, org, project := seedOneProjectForOneUser()
+	defer teardownProject(project)
+	defer teardownUserAndOrganization(user, org)
+	users[0] = user
+
+	roles := testsGetRoles()
+
+	projectMembers := make([]models.ProjectMember, 5)
+	for i := 1; i < 5; i++ {
+		projectMembers[i] = seedProjectMember(project, users[i], roles["developer"])
+		defer teardownProjectMember(projectMembers[i])
+	}
+
 	type args struct {
 		params router.Params
 		in1    io.ReadCloser
@@ -258,11 +291,26 @@ func TestGetProjectsMembers(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		want       router.Serde
+		want       *models.GetMembersResponse
 		wantStatus int
 		wantErr    bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "gets project members",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				in1:  nil,
+				Repo: Repo,
+				user: user,
+			},
+			want: &models.GetMembersResponse{
+				Members: projectMembers,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -280,15 +328,44 @@ func TestGetProjectsMembers(t *testing.T) {
 				)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetProjectsMembers() got = %v, want %v", got, tt.want)
-			}
 			if gotStatus != tt.wantStatus {
 				t.Errorf(
 					"GetProjectsMembers() gotStatus = %v, want %v",
 					gotStatus,
 					tt.wantStatus,
 				)
+				return
+			}
+
+			gotResponse := got.(*models.GetMembersResponse)
+
+			if len(gotResponse.Members) != len(tt.want.Members) {
+				t.Errorf(
+					"GetProjectMembers() got Members = %v, want %v",
+					gotResponse.Members,
+					tt.want.Members,
+				)
+				return
+			}
+
+			for _, wantMember := range tt.want.Members {
+				found := false
+
+				for _, gotMember := range gotResponse.Members {
+					if gotMember.ID == wantMember.ID {
+						found = true
+						break
+					}
+				}
+
+				if !found {
+					t.Errorf(
+						"GetProjectMembers() member not found = %v in %v",
+						wantMember,
+						gotResponse.Members,
+					)
+					return
+				}
 			}
 		})
 	}
@@ -568,6 +645,78 @@ func teardownUserAndOrganization(
 	})
 }
 
+func seedOneProjectForOneUser() (user models.User, organization models.Organization, project models.Project) {
+	user, organization = seedSingleUser()
+	faker.FakeData(&project)
+	project.UserID = user.ID
+	project.User = user
+
+	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		db.Save(&project)
+
+		return db.Error
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	return user, organization, project
+}
+
+func testsGetRoles() map[string]models.Role {
+	r := make(map[string]models.Role)
+
+	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		roles := []models.Role{}
+		db.Find(&roles)
+
+		for _, n := range roles {
+			r[n.Name] = n
+		}
+
+		return db.Error
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	return r
+}
+
+func seedProjectMember(project models.Project, user models.User, role models.Role) (projectMember models.ProjectMember) {
+	projectMember = models.ProjectMember{
+		ProjectID: project.ID,
+		Project:   project,
+		UserID:    user.ID,
+		User:      user,
+		RoleID:    role.ID,
+		Role:      role,
+	}
+
+	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		fmt.Printf("ProjectMember User: %d, Project: %d\n", user.ID, project.ID)
+		return db.Save(&projectMember).Error
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	return projectMember
+}
+
+func teardownProjectMember(projectMember models.ProjectMember) {
+	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		return db.Delete("id = ?", projectMember.ID).Error
+	})
+
+	if err != nil {
+		panic(err)
+	}
+}
+
 func seedManyProjectsForOneUser() (user models.User, organization models.Organization, projects []models.Project) {
 	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
 		user, organization = seedSingleUser()
@@ -594,6 +743,12 @@ func seedManyProjectsForOneUser() (user models.User, organization models.Organiz
 			projects[i] = project
 		}
 
+		db.Joins(
+			"inner join project_members pm on pm.user_id = ? and pm.project_id = projects.ID",
+			user.ID,
+		).
+			Find(&projects)
+
 		return db.Error
 	})
 
@@ -602,6 +757,10 @@ func seedManyProjectsForOneUser() (user models.User, organization models.Organiz
 	}
 
 	return user, organization, projects
+}
+
+func teardownProject(project models.Project) {
+	teardownManyProjects([]models.Project{project})
 }
 
 func teardownManyProjects(projects []models.Project) {
@@ -614,6 +773,7 @@ func teardownManyProjects(projects []models.Project) {
 			)
 		}
 		db.Delete(projects)
+
 		return db.Error
 	})
 }
