@@ -13,6 +13,7 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func TestPostProject(t *testing.T) {
@@ -277,10 +278,13 @@ func TestGetProjectsMembers(t *testing.T) {
 	roles := testsGetRoles()
 
 	projectMembers := make([]models.ProjectMember, 5)
-	for i := 1; i < 5; i++ {
+	for i := 0; i < 5; i++ {
 		projectMembers[i] = seedProjectMember(project, users[i], roles["developer"])
 		defer teardownProjectMember(projectMembers[i])
 	}
+
+	externalUser, externalOrganization := seedSingleUser()
+	defer teardownUserAndOrganization(externalUser, externalOrganization)
 
 	type args struct {
 		params router.Params
@@ -293,7 +297,7 @@ func TestGetProjectsMembers(t *testing.T) {
 		args       args
 		want       *models.GetMembersResponse
 		wantStatus int
-		wantErr    bool
+		wantErr    string
 	}{
 		{
 			name: "gets project members",
@@ -309,7 +313,33 @@ func TestGetProjectsMembers(t *testing.T) {
 				Members: projectMembers,
 			},
 			wantStatus: http.StatusOK,
-			wantErr:    false,
+			wantErr:    "",
+		},
+		{
+			name: "not found if project does not exist",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": "not a valid project id",
+				}),
+				in1:  nil,
+				Repo: Repo,
+				user: user,
+			},
+			want:       &models.GetMembersResponse{},
+			wantStatus: http.StatusNotFound,
+			wantErr:    "not found",
+		},
+		{
+			name: "not found if user is not a member of the project",
+			args: args{
+				params: router.ParamsFrom(map[string]string{"projectID": project.UUID}),
+				in1:    nil,
+				Repo:   Repo,
+				user:   externalUser,
+			},
+			want:       &models.GetMembersResponse{},
+			wantStatus: http.StatusNotFound,
+			wantErr:    "not found",
 		},
 	}
 	for _, tt := range tests {
@@ -320,7 +350,7 @@ func TestGetProjectsMembers(t *testing.T) {
 				tt.args.Repo,
 				tt.args.user,
 			)
-			if (err != nil) != tt.wantErr {
+			if err.Error() != tt.wantErr {
 				t.Errorf(
 					"GetProjectsMembers() error = %v, wantErr %v",
 					err,
@@ -372,6 +402,18 @@ func TestGetProjectsMembers(t *testing.T) {
 }
 
 func TestPostProjectsMembers(t *testing.T) {
+	userToAdd, organizationToAdd := seedSingleUser()
+	defer teardownUserAndOrganization(userToAdd, organizationToAdd)
+
+	user, organization, project := seedOneProjectForOneUser()
+	defer teardownUserAndOrganization(user, organization)
+	defer teardownProject(project)
+
+	roles := testsGetRoles()
+
+	pm := seedProjectMember(project, user, roles["admin"])
+	defer teardownProjectMember(pm)
+
 	type args struct {
 		params router.Params
 		body   io.ReadCloser
@@ -381,11 +423,34 @@ func TestPostProjectsMembers(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		want       router.Serde
+		want       *models.AddMembersResponse
 		wantStatus int
-		wantErr    bool
+		wantErr    string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "adds a project member",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+  "Members": [
+		{
+			"MemberID": "%s",
+			"RoleID": %d
+		}
+  ]
+}`, userToAdd.UserID, roles["developer"].ID))),
+				Repo: repo.NewRepo(),
+				user: user,
+			},
+			want: &models.AddMembersResponse{
+				Success: true,
+				Error:   "",
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    "",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -395,7 +460,7 @@ func TestPostProjectsMembers(t *testing.T) {
 				tt.args.Repo,
 				tt.args.user,
 			)
-			if (err != nil) != tt.wantErr {
+			if err.Error() != tt.wantErr {
 				t.Errorf(
 					"PostProjectsMembers() error = %v, wantErr %v",
 					err,
@@ -696,8 +761,14 @@ func seedProjectMember(project models.Project, user models.User, role models.Rol
 	}
 
 	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
-		fmt.Printf("ProjectMember User: %d, Project: %d\n", user.ID, project.ID)
-		return db.Save(&projectMember).Error
+		return db.
+			Model(&models.ProjectMember{}).
+			Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "user_id"}, {Name: "project_id"}},
+				DoUpdates: clause.AssignmentColumns([]string{"role_id"}),
+			}).
+			Save(&projectMember).
+			Error
 	})
 
 	if err != nil {
@@ -709,7 +780,10 @@ func seedProjectMember(project models.Project, user models.User, role models.Rol
 
 func teardownProjectMember(projectMember models.ProjectMember) {
 	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
-		return db.Delete("id = ?", projectMember.ID).Error
+		return db.
+			Model(&models.ProjectMember{}).
+			Delete("id = ?", projectMember.ID).
+			Error
 	})
 
 	if err != nil {
