@@ -92,22 +92,25 @@ func GitHubCi(ctx *core.Context, name string, apiUrl string) CiService {
 func (g *gitHubCiService) Name() string { return g.name }
 
 func (g *gitHubCiService) Usage() string {
+	slots := make([]string, GithubCINbSlots)
+
+	for i := range slots {
+		slots[i] = slotName(g.environment, i)
+	}
+
 	return ui.RenderTemplate(
 		"github-ci-usage",
-		`Secrets will be available in the {{ .Environment }} environment.
-To make use of files, add the following step in your jobs (it should go right after the Checkout step):
+		`To make use of secret and files, add the following step in your jobs (it should go right after the Checkout step):
 
       - name: Load Secrets
-        uses: wearedevx/keystone-action@v2
+        uses: wearedevx/keystone-action@main
         with:
-          files: |-
-            {{ range .Files }}${{"{{"}} secrets.{{ . }} {{"}}"}}
-            {{ end }}
+          {{ range $index, $slot := . }}keystone_slot_{{ add $index 1 }}:  ${{ "{{" }} secrets.{{ $slot }} {{ "}}" }}
+          {{ end }}
+
+Secrets will be available as environment variables, and files will be created
 `,
-		map[string]interface{}{
-			"Environment": g.environment,
-			"Files":       g.sentFiles,
-		},
+		slots,
 	)
 }
 
