@@ -357,10 +357,14 @@ func (g *gitHubCiService) getGithubPublicKey() *gitHubCiService {
 		return g
 	}
 
-	publicKey, resp, err := g.client.Actions.GetEnvPublicKey(
+	options := g.getOptions()
+	owner := options["Owner"]
+	repo := options["Project"]
+
+	publicKey, resp, err := g.client.Actions.GetRepoPublicKey(
 		context.Background(),
-		int(*g.repo.ID),
-		g.environment,
+		owner,
+		repo,
 	)
 
 	switch {
