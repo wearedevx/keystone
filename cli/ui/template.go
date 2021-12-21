@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -63,6 +64,9 @@ var functions template.FuncMap = template.FuncMap{
 		}
 
 		return strings.Join(indented, "\n")
+	},
+	"add": func(a, b int) string {
+		return strconv.Itoa(a + b)
 	},
 	"black": func(p string) string {
 		return au.Black(p).String()

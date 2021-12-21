@@ -106,7 +106,7 @@ func (g *gitHubCiService) Usage() string {
         uses: wearedevx/keystone-action@main
         with:
 				{{ range $index, $slot := . }}
-					keystone_slot_${{ $index + 1 }}:  ${{ "{{" }} secrets.${{ $slot }} ${{ "}}" }}{{ end }}
+					keystone_slot_{{ add $index 1 }}:  ${{ "{{" }} secrets.${{ $slot }} {{ "}}" }}{{ end }}
 
 Secrets will be available as environment variables, and files will be created
 `,
