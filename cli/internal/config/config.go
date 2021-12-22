@@ -241,3 +241,19 @@ func Logout() {
 	SetAuthToken("")
 	Write()
 }
+
+func AddHook(command string) {
+	viper.Set("hook", command)
+}
+
+func GetHook() (string, bool) {
+	if command := viper.GetString("hook"); command != "" {
+		return command, true
+	}
+
+	return "", false
+}
+
+func RemoveHook() {
+	AddHook("")
+}
