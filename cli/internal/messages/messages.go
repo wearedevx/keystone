@@ -85,6 +85,8 @@ func (s *messageService) GetMessages() core.ChangesByEnvironment {
 	messagesIds := getMessagesIds(messagesByEnvironment)
 	s.DeleteMessages(messagesIds)
 
+	core.RunHookPostFetch(s.ctx, changes)
+
 	return changes
 }
 
@@ -256,7 +258,11 @@ func (s *messageService) SendEnvironments(
 		messagesToWrite.Messages = append(messagesToWrite.Messages, messages...)
 	}
 
-	return s.sendMessageAndUpdateEnvironment(messagesToWrite)
+	s.sendMessageAndUpdateEnvironment(messagesToWrite)
+
+	core.RunHookPostSend(s.ctx)
+
+	return s
 }
 
 func (s *messageService) sendMessageAndUpdateEnvironment(

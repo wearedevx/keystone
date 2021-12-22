@@ -29,14 +29,11 @@ var (
 
 const GithubCI CiServiceType = "github-ci"
 
-<<<<<<< HEAD
-=======
 const (
 	GithubCINbSlots    = 5
 	GithubCISLotLength = 64 * 1024
 )
 
->>>>>>> develop
 type ServicesKeys map[string]string
 
 type ApiKey string
