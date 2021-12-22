@@ -81,6 +81,10 @@ ks ci send --env prod
 				Error(); err != nil {
 				err = kserrors.CouldNotSendToCIService(err)
 			}
+<<<<<<< HEAD
+=======
+
+>>>>>>> develop
 			sp.Stop()
 			exitIfErr(err)
 

@@ -96,7 +96,6 @@ func (g *gitlabCiService) Name() string { return g.name }
 // Usage method returns a usage string that will be displayed
 // to the user
 func (g *gitlabCiService) Usage() string {
-
 	return ui.RenderTemplate(
 		"gitlab-ci-usage",
 		`To use them in your pipeline, add the following job in your gitlab-ci.yml:

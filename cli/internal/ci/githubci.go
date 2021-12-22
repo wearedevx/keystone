@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 	"path"
@@ -28,12 +29,21 @@ var (
 
 const GithubCI CiServiceType = "github-ci"
 
+<<<<<<< HEAD
+=======
+const (
+	GithubCINbSlots    = 5
+	GithubCISLotLength = 64 * 1024
+)
+
+>>>>>>> develop
 type ServicesKeys map[string]string
 
 type ApiKey string
 
 type gitHubCiService struct {
 	err          error
+	log          *log.Logger
 	name         string
 	apiUrl       string
 	ctx          *core.Context
@@ -67,6 +77,7 @@ func GitHubCi(ctx *core.Context, name string, apiUrl string) CiService {
 
 	ciService := &gitHubCiService{
 		err:    nil,
+		log:    log.New(log.Writer(), "[GitHubCI]", 0),
 		name:   name,
 		apiUrl: apiUrl,
 		ctx:    ctx,
@@ -84,23 +95,24 @@ func GitHubCi(ctx *core.Context, name string, apiUrl string) CiService {
 func (g *gitHubCiService) Name() string { return g.name }
 
 func (g *gitHubCiService) Usage() string {
+	slots := make([]string, GithubCINbSlots)
+
+	for i := range slots {
+		slots[i] = slotName(g.environment, i)
+	}
 
 	return ui.RenderTemplate(
 		"github-ci-usage",
-		`Secrets will be available in the {{ .Environment }} environment.
-To make use of files, add the following step in your jobs (it should go right after the Checkout step):
+		`To make use of secret and files, add the following step in your jobs (it should go right after the Checkout step):
 
       - name: Load Secrets
-        uses: wearedevx/keystone-action@v2
+        uses: wearedevx/keystone-action@main
         with:
-          files: |-
-            {{ range .Files }}${{"{{"}} secrets.{{ . }} {{"}}"}}
-            {{ end }}
+          {{ range $index, $slot := . }}keystone_slot_{{ add $index 1 }}:  ${{ "{{" }} secrets.{{ $slot }} {{ "}}" }}
+          {{ end }}
+Secrets will be available as environment variables, and files will be created
 `,
-		map[string]interface{}{
-			"Environment": g.environment,
-			"Files":       g.sentFiles,
-		},
+		slots,
 	)
 }
 
@@ -162,10 +174,8 @@ func (g *gitHubCiService) PushSecret(
 
 	return g.
 		initClient().
-		createEnvironment().
 		getGithubPublicKey().
-		sendEnvironmentSecrets().
-		sendEnvironmentFiles()
+		sendSlot(message)
 }
 
 // CleanSecret method remove all the secrets for the given environment
@@ -191,15 +201,20 @@ func (g *gitHubCiService) initClient() *gitHubCiService {
 	)
 	tc := oauth2.NewClient(context, ts)
 
-	client := github.NewClient(tc)
-
-	g.client = client
+	g.client = github.NewClient(tc)
 
 	options := g.getOptions()
 	g.repo, _, g.err = g.client.Repositories.Get(
 		context,
 		options["Owner"],
 		options["Project"],
+	)
+
+	g.log.Printf(
+		"Initializing GitHub CI client for project %s/%s with PAT %s\n",
+		options["Owner"],
+		options["Project"],
+		string(g.apiKey),
 	)
 
 	return g
@@ -228,11 +243,15 @@ func (g *gitHubCiService) setKeys(servicesKeys ServicesKeys) CiService {
 
 func (g *gitHubCiService) getApiKey() ApiKey {
 	apiKey := config.GetServiceApiKey(string(g.Type()))
+	g.log.Printf("Got PAT from config: %s\n", apiKey)
+
 	return ApiKey(apiKey)
 }
 
 func (g *gitHubCiService) setApiKey(apiKey ApiKey) {
 	g.apiKey = apiKey
+	g.log.Printf("Set PAT: %s\n", apiKey)
+
 	config.SetServiceApiKey(string(g.Type()), string(apiKey))
 	config.Write()
 }
@@ -247,6 +266,7 @@ func (g *gitHubCiService) askForRepoUrl() CiService {
 
 	if serviceOptions["Owner"] != "" && serviceOptions["Project"] != "" {
 		serviceUrl = "https://github.com/" + serviceOptions["Owner"] + "/" + serviceOptions["Project"]
+		g.log.Printf("Existing Repo in service options: %sv\n", serviceUrl)
 	}
 
 	urlIsValid := false
@@ -256,6 +276,10 @@ func (g *gitHubCiService) askForRepoUrl() CiService {
 			"GitHub repository URL",
 			serviceUrl,
 		)
+
+		// url.URL will say the url is invalid if it ends with a slash ?
+		serviceUrl = strings.TrimSuffix(serviceUrl, "/")
+		g.log.Printf("User input service url: %s\n", serviceUrl)
 
 		u, err := new(url.URL).Parse(serviceUrl)
 		if err != nil {
@@ -276,6 +300,7 @@ This caused by: {{ .Cause }}`,
 		parts := strings.Split(p, "/")
 
 		if (len(parts) != 2) || (u.Hostname() != "github.com") {
+			g.log.Printf("parts (length: %d): %+v, %s\n", len(parts), parts, u.Hostname())
 			ui.Print(ui.RenderTemplate(
 				"not-a-github-url",
 				`{{ "Warning" | yellow }} This is not a valid github URL`,
@@ -303,6 +328,8 @@ This caused by: {{ .Cause }}`,
 
 	serviceOptions["Owner"] = owner
 	serviceOptions["Project"] = project
+
+	log.Printf("got service options from URL: %+v\n", serviceOptions)
 
 	g.setKeys(serviceOptions)
 
@@ -335,21 +362,29 @@ func (g *gitHubCiService) getGithubPublicKey() *gitHubCiService {
 		return g
 	}
 
-	publicKey, resp, err := g.client.Actions.GetEnvPublicKey(
+	options := g.getOptions()
+	owner := options["Owner"]
+	repo := options["Project"]
+
+	publicKey, resp, err := g.client.Actions.GetRepoPublicKey(
 		context.Background(),
-		int(*g.repo.ID),
-		g.environment,
+		owner,
+		repo,
 	)
+
 	switch {
 	case resp.StatusCode == 403:
+		g.log.Printf("Permission Denied on getGithubPublicKey: %d, %v\n", resp.StatusCode, err)
 		g.err = ErrorGithubCIPermissionDenied
 		return g
 
 	case resp.StatusCode == 404:
+		g.log.Printf("No Such Repository on getGithubPublicKey: %d, %v\n", resp.StatusCode, err)
 		g.err = ErrorGithubCINoSuchRepository
 		return g
 
 	case err != nil:
+		g.log.Printf("Error on getGithubPublicKey: %d, %v\n", resp.StatusCode, err)
 		g.err = err
 		return g
 	}
@@ -385,7 +420,34 @@ func (g *gitHubCiService) encryptSecret(
 	return g
 }
 
-func (g *gitHubCiService) sendSecret(
+func (g *gitHubCiService) sendSlot(message models.MessagePayload) *gitHubCiService {
+	if g.err != nil {
+		return g
+	}
+
+	slots, err := makeSlots(message, GithubCINbSlots, GithubCISLotLength)
+	if err != nil {
+		g.err = err
+		return g
+	}
+
+	for i, slot := range slots {
+		s := slotName(g.environment, i)
+		encryptedSecret := github.EncryptedSecret{}
+
+		g.
+			encryptSecret(s, slot, &encryptedSecret).
+			sendRepoSecret(&encryptedSecret)
+
+		if g.err != nil {
+			return g
+		}
+	}
+
+	return g
+}
+
+func (g *gitHubCiService) sendEnvironmentSecret(
 	secret *github.EncryptedSecret,
 	environment string,
 ) *gitHubCiService {
@@ -396,11 +458,41 @@ func (g *gitHubCiService) sendSecret(
 		secret,
 	)
 	switch {
-	case resp.StatusCode == 401:
+	case resp.StatusCode == 401 || resp.StatusCode == 403:
+		g.log.Printf("Permission Denied on sendEnvironmentSecret: %d, %v\n", resp.StatusCode, err)
 		g.err = ErrorGithubCIPermissionDenied
 		return g
 
 	case err != nil:
+		g.log.Printf("Error on sendEnvironmentSecret: %d, %v\n", resp.StatusCode, err)
+		g.err = err
+		return g
+	}
+
+	return g
+}
+
+func (g *gitHubCiService) sendRepoSecret(
+	secret *github.EncryptedSecret,
+) *gitHubCiService {
+	options := g.getOptions()
+	owner := options["Owner"]
+	repo := options["Project"]
+
+	resp, err := g.client.Actions.CreateOrUpdateRepoSecret(
+		context.Background(),
+		owner,
+		repo,
+		secret,
+	)
+	switch {
+	case resp.StatusCode == 401 || resp.StatusCode == 403:
+		g.log.Printf("Permission Denied on sendRepoSecret: %d, %v\n", resp.StatusCode, err)
+		g.err = ErrorGithubCIPermissionDenied
+		return g
+
+	case err != nil:
+		g.log.Printf("Error on sendRepoSecret: %d, %v\n", resp.StatusCode, err)
 		g.err = err
 		return g
 	}
@@ -409,13 +501,25 @@ func (g *gitHubCiService) sendSecret(
 }
 
 func (g *gitHubCiService) createEnvironment() *gitHubCiService {
-	g.client.Repositories.CreateUpdateEnvironment(
+	_, resp, err := g.client.Repositories.CreateUpdateEnvironment(
 		context.Background(),
 		g.servicesKeys["Owner"],
 		g.servicesKeys["Project"],
 		g.environment,
 		&github.CreateUpdateEnvironment{},
 	)
+
+	switch {
+	case resp.StatusCode == 401 || resp.StatusCode == 403:
+		g.log.Printf("Permission Denied on createEnvironment: %d, %v\n", resp.StatusCode, err)
+		g.err = ErrorGithubCIPermissionDenied
+		return g
+
+	case err != nil:
+		g.log.Printf("Error on createEnvironment: %d, %v\n", resp.StatusCode, err)
+		g.err = err
+		return g
+	}
 
 	return g
 }
@@ -438,7 +542,7 @@ func (g *gitHubCiService) sendEnvironmentSecrets() *gitHubCiService {
 		encryptedSecret := github.EncryptedSecret{}
 		if g.
 			encryptSecret(secret.Name, string(value), &encryptedSecret).
-			sendSecret(&encryptedSecret, g.environment).
+			sendEnvironmentSecret(&encryptedSecret, g.environment).
 			err != nil {
 			break
 		}
@@ -460,15 +564,19 @@ func (g *gitHubCiService) sendEnvironmentFiles() *gitHubCiService {
 
 	filecachepath := g.ctx.CachedEnvironmentFilesPath(g.environment)
 	for _, file := range files {
+		g.log.Printf("Sending file with path: %s\n", file.Path)
+
 		fullpath := path.Join(filecachepath, file.Path)
 		freader, err := os.Open(fullpath)
 		if err != nil {
+			g.log.Printf("Error opening %s\n", fullpath)
 			g.err = err
 			break
 		}
 
 		contents, err := base64encode(freader)
 		if err != nil {
+			g.log.Printf("Error base64 encoding file %s\n", fullpath)
 			break
 		}
 
@@ -480,7 +588,7 @@ func (g *gitHubCiService) sendEnvironmentFiles() *gitHubCiService {
 		encryptedSecret := github.EncryptedSecret{}
 		if g.
 			encryptSecret(key, value, &encryptedSecret).
-			sendSecret(&encryptedSecret, g.environment).
+			sendEnvironmentSecret(&encryptedSecret, g.environment).
 			err != nil {
 			break
 		}
@@ -497,7 +605,7 @@ func (g *gitHubCiService) hasSecret(secret string) bool {
 		return false
 	}
 
-	s, _, err := g.client.Actions.GetEnvSecret(
+	s, resp, err := g.client.Actions.GetEnvSecret(
 		context.Background(),
 		int(*g.repo.ID),
 		g.environment,
@@ -508,10 +616,12 @@ func (g *gitHubCiService) hasSecret(secret string) bool {
 	case s != nil:
 		return true
 
-	case err != nil && strings.Contains(err.Error(), "404"):
+	case err != nil && resp.StatusCode == 404:
+		g.log.Printf("Secret %s not found\n", secret)
 		return false
 
 	default:
+		g.log.Printf("Error trying to figure out if %s exists %v\n", secret, err)
 		g.err = err
 		return false
 	}
@@ -530,6 +640,10 @@ func (g *gitHubCiService) deleteSecret(secret string) *gitHubCiService {
 		secret,
 	)
 	g.err = err
+
+	if err != nil {
+		g.log.Printf("Error trying to delete secret %s %v\n", secret, err)
+	}
 
 	return g
 }

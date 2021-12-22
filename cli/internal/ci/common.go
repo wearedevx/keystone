@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/cli/internal/archive"
 	"github.com/wearedevx/keystone/cli/internal/envfile"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -187,12 +188,27 @@ func getFileList(
 	return fileList, nil
 }
 
-func slot(environmentName string, i int) string {
+func slotName(environmentName string, i int) string {
 	return fmt.Sprintf(
 		"KEYSTONE_%s_SLOT_%d",
 		strings.ToUpper(environmentName),
 		i+1,
 	)
+}
+
+func makeSlots(message models.MessagePayload, nbSlots, slotLength int) ([]string, error) {
+	var str string
+	err := message.Serialize(&str)
+	if err != nil {
+		return nil, err
+	}
+
+	slots, err := splitString(str, slotLength, nbSlots)
+	if err != nil {
+		return nil, err
+	}
+
+	return slots, nil
 }
 
 func splitString(s string, chunkSize int, nChunks int) ([]string, error) {

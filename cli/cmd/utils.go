@@ -245,7 +245,7 @@ func cleanPathArgument(
 	filePathClean := filepath.Clean(filePathInCwd)
 
 	if !strings.HasPrefix(filePathClean, wd) {
-		return "", fmt.Errorf("file %s not in project", filePath)
+		return "", fmt.Errorf("file %s not in project", filePathArg)
 	}
 
 	filePath = strings.TrimPrefix(filePathClean, ctx.Wd)
