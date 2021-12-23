@@ -4,20 +4,21 @@ package seed
 
 import (
 	"fmt"
+
 	"gorm.io/gorm"
 )
 
 func Seed(db *gorm.DB) (err error) {
 	fmt.Println("Seed")
 
-	err = db.Exec(sql).Error
+	err = db.Exec(Sql).Error
 	if err != nil {
 		panic(err)
 	}
 	return nil
 }
 
-var sql = `
+const Sql = `
 insert or ignore into roles
 (id, name,        can_add_member, parent_id, created_at,        updated_at)
 values 
