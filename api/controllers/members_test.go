@@ -308,19 +308,19 @@ func seedMembers(
 		organization := models.Organization{}
 		faker.FakeData(&organization)
 		organization.Paid = paid
-		db.Save(&organization)
+		db.Create(&organization)
 
 		faker.FakeData(&project)
 		project.OrganizationID = organization.ID
 		project.Organization = organization
-		db.Save(&project)
+		db.Create(&project)
 
 		for roleName, user := range users {
 			role := roleWithName(roleName)
 			faker.FakeData(&user)
-			db.Save(&user)
+			db.Create(&user)
 
-			db.Save(&models.ProjectMember{
+			db.Create(&models.ProjectMember{
 				ProjectID: project.ID,
 				UserID:    user.ID,
 				RoleID:    role.ID,
@@ -337,7 +337,7 @@ func seedMembers(
 
 func teardownMembers(project models.Project, users map[string]models.User) {
 	new(repo.Repo).GetDb().Transaction(func(db *gorm.DB) error {
-		db.Begin().
+		db.
 			Exec("delete from project_members where project_id = ?", project.ID).
 			Exec(`
             delete from projects where id = ?;

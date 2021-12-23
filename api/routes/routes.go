@@ -29,7 +29,7 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	)
 	router.POST(
 		"/projects/:projectID/members",
-		AuthedHandler(PostProjectsMembers),
+		AuthedHandler(PostProjectMembers),
 	)
 	router.DELETE(
 		"/projects/:projectID/members",

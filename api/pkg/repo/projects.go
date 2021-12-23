@@ -180,15 +180,14 @@ func (r *Repo) ProjectIsMemberAdmin(
 	}
 
 	err := r.GetDb().
-		Joins(
-			"inner join users as u on u.id = ?",
+		Joins("inner join users as u on u.id = project_members.user_id").
+		Joins("inner join roles as r on role_id = r.id").
+		Where(
+			"project_id = ? AND project_members.user_id = ? AND r.name = ?",
+			project.ID,
 			member.UserID,
-		).
-		Joins(
-			"inner join roles as r on role_id = r.id and r.name = ?",
 			"admin",
 		).
-		Where("project_id = ?", project.ID).
 		First(member).
 		Error
 	if err != nil {
@@ -457,7 +456,10 @@ func (r *Repo) GetProjectsOrganization(
 
 	organization.ID = project.OrganizationID
 
-	r.GetDb().First(&organization)
+	r.GetDb().
+		Model(organization).
+		Where("id = ?", project.OrganizationID).
+		First(organization)
 
 	return r
 }

@@ -950,13 +950,13 @@ func seedMessages(paid bool) (
 
 	new(repo.Repo).GetDb().Transaction(func(db *gorm.DB) error {
 		faker.FakeData(&project)
-		db.Save(&project)
+		db.Create(&project)
 
 		orga := models.Organization{}
 		db.Where("id = ?", project.OrganizationID).First(&orga)
 		if paid {
 			orga.Paid = true
-			db.Save(&orga)
+			db.Create(&orga)
 		}
 
 		roles := make([]models.Role, 0)
@@ -979,7 +979,7 @@ func seedMessages(paid bool) (
 				VersionID:         faker.UUIDHyphenated(),
 				EnvironmentID:     faker.UUIDHyphenated(),
 			}
-			db.Save(&env)
+			db.Create(&env)
 
 			switch e.Name {
 			case "dev":
@@ -994,11 +994,11 @@ func seedMessages(paid bool) (
 		for _, role := range roles {
 			user := models.User{}
 			faker.FakeData(&user)
-			db.Save(&user)
+			db.Create(&user)
 
 			device := models.Device{}
 			faker.FakeData(&device)
-			db.Save(&device)
+			db.Create(&device)
 
 			db.Model(&user).Association("Devices").Append(&device)
 			user.Devices = []models.Device{device}
@@ -1014,7 +1014,7 @@ func seedMessages(paid bool) (
 				RoleID:    roleID,
 			}
 
-			db.Save(&projectMember)
+			db.Create(&projectMember)
 			users[role.Name] = user
 		}
 
@@ -1036,7 +1036,7 @@ func seedMessages(paid bool) (
 				SenderDeviceID:    adminUser.Devices[0].ID,
 			}
 
-			db.Save(&message)
+			db.Create(&message)
 
 			messages = append(messages, message)
 		}
@@ -1083,7 +1083,7 @@ func seedExpiredMessages() []models.Message {
 			message := models.Message{}
 			faker.FakeData(&message)
 
-			db.Save(&message)
+			db.Create(&message)
 			message.CreatedAt = time.Now().Add(-7 * 24 * time.Hour)
 			db.Save(&message)
 
@@ -1111,7 +1111,7 @@ func seedSoonToExpireMessages() []models.Message {
 			message := models.Message{}
 			faker.FakeData(&message)
 
-			db.Save(&message)
+			db.Create(&message)
 			message.CreatedAt = time.Now().Add(-6 * 24 * time.Hour)
 			db.Save(&message)
 

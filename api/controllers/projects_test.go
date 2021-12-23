@@ -13,7 +13,6 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 func TestPostProject(t *testing.T) {
@@ -277,11 +276,8 @@ func TestGetProjectsMembers(t *testing.T) {
 
 	roles := testsGetRoles()
 
-	projectMembers := make([]models.ProjectMember, 5)
-	for i := 0; i < 5; i++ {
-		projectMembers[i] = seedProjectMember(project, users[i], roles["developer"])
-		defer teardownProjectMember(projectMembers[i])
-	}
+	projectMembers := seedProjectMembers(project, users, roles["developer"])
+	defer teardownProjectMembers(projectMembers)
 
 	externalUser, externalOrganization := seedSingleUser()
 	defer teardownUserAndOrganization(externalUser, externalOrganization)
@@ -405,14 +401,31 @@ func TestPostProjectsMembers(t *testing.T) {
 	userToAdd, organizationToAdd := seedSingleUser()
 	defer teardownUserAndOrganization(userToAdd, organizationToAdd)
 
-	user, organization, project := seedOneProjectForOneUser()
-	defer teardownUserAndOrganization(user, organization)
-	defer teardownProject(project)
+	adminToAdd, arganizationToAdd := seedSingleUser()
+	defer teardownUserAndOrganization(adminToAdd, arganizationToAdd)
+
+	addedUser, addedOrganization := seedSingleUser()
+	defer teardownUserAndOrganization(addedUser, addedOrganization)
+
+	paidUser, paidOrganization, paidProject := seedOneProjectForOneUser()
+	testsSetOrganisationPaid(&paidOrganization)
+	defer teardownUserAndOrganization(paidUser, paidOrganization)
+	defer teardownProject(paidProject)
+
+	freeUser, freeOrganization, freeProject := seedOneProjectForOneUser()
+	defer teardownUserAndOrganization(freeUser, freeOrganization)
+	defer teardownProject(freeProject)
 
 	roles := testsGetRoles()
 
-	pm := seedProjectMember(project, user, roles["admin"])
-	defer teardownProjectMember(pm)
+	paidProjectMember := seedProjectMember(paidProject, paidUser, roles["admin"])
+	defer teardownProjectMember(paidProjectMember)
+
+	existingMember := seedProjectMember(paidProject, addedUser, roles["developer"])
+	defer teardownProjectMember(existingMember)
+
+	freeProjectMember := seedProjectMember(freeProject, freeUser, roles["admin"])
+	defer teardownProjectMember(freeProjectMember)
 
 	type args struct {
 		params router.Params
@@ -431,7 +444,7 @@ func TestPostProjectsMembers(t *testing.T) {
 			name: "adds a project member",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
-					"projectID": project.UUID,
+					"projectID": paidProject.UUID,
 				}),
 				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
   "Members": [
@@ -442,7 +455,7 @@ func TestPostProjectsMembers(t *testing.T) {
   ]
 }`, userToAdd.UserID, roles["developer"].ID))),
 				Repo: repo.NewRepo(),
-				user: user,
+				user: paidUser,
 			},
 			want: &models.AddMembersResponse{
 				Success: true,
@@ -451,10 +464,119 @@ func TestPostProjectsMembers(t *testing.T) {
 			wantStatus: http.StatusOK,
 			wantErr:    "",
 		},
+		{
+			name: "bad request if no project id",
+			args: args{
+				params: router.ParamsFrom(map[string]string{}),
+				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+  "Members": [
+		{
+			"MemberID": "%s",
+			"RoleID": %d
+		}
+  ]
+}`, userToAdd.UserID, roles["developer"].ID))),
+				Repo: repo.NewRepo(),
+				user: paidUser,
+			},
+			want:       &models.AddMembersResponse{},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    "bad request",
+		},
+		{
+			name: "not found if bad project_id",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": "not a real project id",
+				}),
+				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+  "Members": [
+		{
+			"MemberID": "%s",
+			"RoleID": %d
+		}
+  ]
+}`, userToAdd.UserID, roles["developer"].ID))),
+				Repo: repo.NewRepo(),
+				user: paidUser,
+			},
+			want:       &models.AddMembersResponse{},
+			wantStatus: http.StatusNotFound,
+			wantErr:    "not found",
+		},
+		{
+			name: "ask for upgrade if organization is free and pm is not admin",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": freeProject.UUID,
+				}),
+				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+  "Members": [
+		{
+			"MemberID": "%s",
+			"RoleID": %d
+		}
+  ]
+}`, userToAdd.UserID, roles["developer"].ID))),
+				Repo: repo.NewRepo(),
+				user: freeUser,
+			},
+			want:       &models.AddMembersResponse{},
+			wantStatus: http.StatusForbidden,
+			wantErr:    "needs upgrade",
+		},
+		{
+			name: "conflict if user already in project",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": paidProject.UUID,
+				}),
+				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+  "Members": [
+		{
+			"MemberID": "%s",
+			"RoleID": %d
+		}
+  ]
+}`, addedUser.UserID, roles["developer"].ID))),
+				Repo: repo.NewRepo(),
+				user: paidUser,
+			},
+			want: &models.AddMembersResponse{
+				Success: false,
+				Error:   "user already in project",
+			},
+			wantStatus: http.StatusConflict,
+			wantErr:    "member already in project",
+		},
+		{
+			name: "developer user cannot add admin user",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": paidProject.UUID,
+				}),
+				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+		  "Members": [
+				{
+					"MemberID": "%s",
+					"RoleID": %d
+				}
+			]
+		}`, adminToAdd.UserID, roles["admin"].ID))),
+				Repo: repo.NewRepo(),
+				user: addedUser,
+			},
+			want: &models.AddMembersResponse{
+				Success: false,
+				Error:   "permission denied",
+			},
+			wantStatus: http.StatusForbidden,
+			wantErr:    "permission denied",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, gotStatus, err := PostProjectsMembers(
+			got, gotStatus, err := PostProjectMembers(
 				tt.args.params,
 				tt.args.body,
 				tt.args.Repo,
@@ -487,6 +609,33 @@ func TestPostProjectsMembers(t *testing.T) {
 }
 
 func TestDeleteProjectsMembers(t *testing.T) {
+	adminUser, adminOrganization, project := seedOneProjectForOneUser()
+	defer teardownUserAndOrganization(adminUser, adminOrganization)
+	defer teardownProject(project)
+
+	userToRemove, orgToRemove := seedSingleUser()
+	defer teardownUserAndOrganization(userToRemove, orgToRemove)
+
+	userOtherToRemove, orgOtherToRemove := seedSingleUser()
+	defer teardownUserAndOrganization(userOtherToRemove, orgOtherToRemove)
+
+	userNotAdmin, orgNotAdmin := seedSingleUser()
+	defer teardownUserAndOrganization(userNotAdmin, orgNotAdmin)
+
+	roles := testsGetRoles()
+
+	memberAdmin := seedProjectMember(project, adminUser, roles["admin"])
+	defer teardownProjectMember(memberAdmin)
+
+	memberToRemove := seedProjectMember(project, userToRemove, roles["developer"])
+	defer teardownProjectMember(memberToRemove)
+
+	memberOtherToRemove := seedProjectMember(project, userOtherToRemove, roles["developer"])
+	defer teardownProjectMember(memberOtherToRemove)
+
+	memberNotAdmin := seedProjectMember(project, userNotAdmin, roles["developer"])
+	defer teardownProjectMember(memberNotAdmin)
+
 	type args struct {
 		params router.Params
 		body   io.ReadCloser
@@ -496,11 +645,96 @@ func TestDeleteProjectsMembers(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		want       router.Serde
+		want       *models.RemoveMembersResponse
 		wantStatus int
-		wantErr    bool
+		wantErr    string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "removes a member",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: io.NopCloser(
+					bytes.NewBufferString(fmt.Sprintf(`{
+  "Members": ["%s"]
+}`,
+						userToRemove.UserID,
+					))),
+				Repo: repo.NewRepo(),
+				user: adminUser,
+			},
+			want: &models.RemoveMembersResponse{
+				Success: true,
+				Error:   "",
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    "",
+		},
+		{
+			name: "fails because no such project",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": "this is not a project",
+				}),
+				body: io.NopCloser(
+					bytes.NewBufferString(fmt.Sprintf(`{
+  "Members": ["%s"]
+}`,
+						userToRemove.UserID,
+					))),
+				Repo: repo.NewRepo(),
+				user: adminUser,
+			},
+			want: &models.RemoveMembersResponse{
+				Success: false,
+				Error:   "No such project",
+			},
+			wantStatus: http.StatusNotFound,
+			wantErr:    "not found",
+		},
+		{
+			name: "fails because not priviledged enough",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: io.NopCloser(
+					bytes.NewBufferString(fmt.Sprintf(`{
+  "Members": ["%s"]
+}`,
+						userOtherToRemove.UserID,
+					))),
+				Repo: repo.NewRepo(),
+				user: userNotAdmin,
+			},
+			want: &models.RemoveMembersResponse{
+				Success: false,
+				Error:   "permission denied",
+			},
+			wantStatus: http.StatusForbidden,
+			wantErr:    "permission denied",
+		},
+		{
+			name: "fails because members not in project",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: io.NopCloser(
+					bytes.NewBufferString(`{
+  "Members": ["not@member", "me@neither"]
+}`)),
+				Repo: repo.NewRepo(),
+				user: adminUser,
+			},
+			want: &models.RemoveMembersResponse{
+				Success: false,
+				Error:   "not a member",
+			},
+			wantStatus: http.StatusConflict,
+			wantErr:    "not a member",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -510,7 +744,7 @@ func TestDeleteProjectsMembers(t *testing.T) {
 				tt.args.Repo,
 				tt.args.user,
 			)
-			if (err != nil) != tt.wantErr {
+			if err.Error() != tt.wantErr {
 				t.Errorf(
 					"DeleteProjectsMembers() error = %v, wantErr %v",
 					err,
@@ -683,18 +917,22 @@ func TestGetProjectsOrganization(t *testing.T) {
 }
 
 func seedSingleUser() (user models.User, organization models.Organization) {
-	repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
 		faker.FakeData(&user)
-		db.Save(&user)
+		db.Create(&user)
 
 		faker.FakeData(&organization)
 		organization.UserID = user.ID
 		organization.User = user
 
-		db.Save(&organization)
+		db.Create(&organization)
 
 		return db.Error
 	})
+
+	if err != nil {
+		panic(err)
+	}
 
 	return user, organization
 }
@@ -715,9 +953,11 @@ func seedOneProjectForOneUser() (user models.User, organization models.Organizat
 	faker.FakeData(&project)
 	project.UserID = user.ID
 	project.User = user
+	project.OrganizationID = organization.ID
+	project.Organization = organization
 
 	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
-		db.Save(&project)
+		db.Create(&project)
 
 		return db.Error
 	})
@@ -727,6 +967,17 @@ func seedOneProjectForOneUser() (user models.User, organization models.Organizat
 	}
 
 	return user, organization, project
+}
+
+func testsSetOrganisationPaid(organization *models.Organization) {
+	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		organization.Paid = true
+		return db.Save(organization).Error
+	})
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 func testsGetRoles() map[string]models.Role {
@@ -751,23 +1002,20 @@ func testsGetRoles() map[string]models.Role {
 }
 
 func seedProjectMember(project models.Project, user models.User, role models.Role) (projectMember models.ProjectMember) {
-	projectMember = models.ProjectMember{
-		ProjectID: project.ID,
-		Project:   project,
-		UserID:    user.ID,
-		User:      user,
-		RoleID:    role.ID,
-		Role:      role,
-	}
 
 	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		projectMember := models.ProjectMember{
+			ProjectID: project.ID,
+			Project:   project,
+			UserID:    user.ID,
+			User:      user,
+			RoleID:    role.ID,
+			Role:      role,
+		}
+
 		return db.
 			Model(&models.ProjectMember{}).
-			Clauses(clause.OnConflict{
-				Columns:   []clause.Column{{Name: "user_id"}, {Name: "project_id"}},
-				DoUpdates: clause.AssignmentColumns([]string{"role_id"}),
-			}).
-			Save(&projectMember).
+			Create(&projectMember).
 			Error
 	})
 
@@ -776,6 +1024,35 @@ func seedProjectMember(project models.Project, user models.User, role models.Rol
 	}
 
 	return projectMember
+}
+
+func seedProjectMembers(project models.Project, users []models.User, role models.Role) []models.ProjectMember {
+	pms := make([]models.ProjectMember, len(users))
+
+	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		for idx, user := range users {
+			projectMember := models.ProjectMember{
+				ProjectID: project.ID,
+				Project:   project,
+				UserID:    user.ID,
+				User:      user,
+				RoleID:    role.ID,
+				Role:      role,
+			}
+			pms[idx] = projectMember
+		}
+
+		return db.
+			Model(&models.ProjectMember{}).
+			Create(&pms).
+			Error
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	return pms
 }
 
 func teardownProjectMember(projectMember models.ProjectMember) {
@@ -788,6 +1065,11 @@ func teardownProjectMember(projectMember models.ProjectMember) {
 
 	if err != nil {
 		panic(err)
+	}
+}
+func teardownProjectMembers(projectMembers []models.ProjectMember) {
+	for _, m := range projectMembers {
+		teardownProjectMember(m)
 	}
 }
 
@@ -803,10 +1085,10 @@ func seedManyProjectsForOneUser() (user models.User, organization models.Organiz
 			project.OrganizationID = organization.ID
 			project.Organization = organization
 
-			if err := db.Save(&project).Error; err != nil {
+			if err := db.Create(&project).Error; err != nil {
 				return err
 			}
-			if err := db.Save(&models.ProjectMember{
+			if err := db.Create(&models.ProjectMember{
 				UserID:    user.ID,
 				ProjectID: project.ID,
 				RoleID:    4,
@@ -842,7 +1124,7 @@ func teardownManyProjects(projects []models.Project) {
 		for _, project := range projects {
 			db.Delete(
 				&models.ProjectMember{},
-				"where project_id = ?",
+				"project_id = ?",
 				project.ID,
 			)
 		}

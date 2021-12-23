@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -164,7 +165,7 @@ done:
 	return &result, status, log.SetError(err)
 }
 
-func PostProjectsMembers(
+func PostProjectMembers(
 	params router.Params,
 	body io.ReadCloser,
 	Repo repo.IRepo,
@@ -195,6 +196,17 @@ func PostProjectsMembers(
 		goto done
 	}
 
+	if err = Repo.GetProjectByUUID(projectID, &project).Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusNotFound
+		} else {
+			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
+		}
+
+		goto done
+	}
+
 	if err = Repo.
 		GetProjectsOrganization(projectID, &organization).
 		Err(); err != nil {
@@ -216,17 +228,6 @@ func PostProjectsMembers(
 				goto done
 			}
 		}
-	}
-
-	if err = Repo.GetProjectByUUID(projectID, &project).Err(); err != nil {
-		if errors.Is(err, repo.ErrorNotFound) {
-			status = http.StatusNotFound
-		} else {
-			status = http.StatusInternalServerError
-			err = apierrors.ErrorFailedToGetResource(err)
-		}
-
-		goto done
 	}
 
 	log.ProjectID = &project.ID
@@ -310,7 +311,7 @@ func DeleteProjectsMembers(
 	projectID := params.Get("projectID")
 	input := models.RemoveMembersPayload{}
 	result := models.RemoveMembersResponse{}
-	var can, userIsAdmin bool
+	var can /* , userIsAdmin */ bool
 	var areInProjects []string
 	var seats int64
 
@@ -340,21 +341,27 @@ func DeleteProjectsMembers(
 	log.ProjectID = &project.ID
 
 	// Prevent users that are not admin on the project from deleting it
-	userIsAdmin = Repo.ProjectIsMemberAdmin(
-		&project,
-		&models.ProjectMember{UserID: user.ID},
-	)
-	if err = Repo.Err(); err != nil || !userIsAdmin {
-		if err != nil {
-			apierrors.ErrorUnknown(err)
-		}
-
-		status = http.StatusNotFound
-
-		goto done
-	}
+	// This is a strange piece of code
+	// userIsAdmin = Repo.ProjectIsMemberAdmin(
+	// 	&project,
+	// 	&models.ProjectMember{UserID: user.ID},
+	// )
+	// if err = Repo.Err(); err != nil || !userIsAdmin {
+	// 	if err != nil {
+	// 		err = apierrors.ErrorUnknown(err)
+	// 		result.Error = err.Error()
+	// 	} else {
+	// 		result.Error = "must be admin to remove members"
+	// 	}
+	//
+	// 	status = http.StatusNotFound
+	//
+	// 	goto done
+	// }
 
 	areInProjects, err = Repo.CheckMembersAreInProject(project, input.Members)
+	fmt.Printf("LS -> controllers/projects.go:361 -> areInProjects: %+v\n", areInProjects)
+	fmt.Printf("LS -> controllers/projects.go:361 -> input.Members: %+v\n", input.Members)
 	if err != nil {
 		status = http.StatusInternalServerError
 		err = apierrors.ErrorUnknown(err)
