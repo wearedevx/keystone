@@ -534,6 +534,13 @@ func (f *FakeRepo) GetOrganizations(
 	panic("not implemented")
 }
 
+func (f *FakeRepo) GetOwnedOrganizations(
+	userID uint,
+	result *[]models.Organization,
+) repo.IRepo {
+	panic("not implemented")
+}
+
 func (f *FakeRepo) GetOwnedOrganizationByName(
 	userID uint,
 	name string,

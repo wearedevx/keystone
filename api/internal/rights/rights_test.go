@@ -485,6 +485,10 @@ func (f *FakeRepo) GetOrganizations(userID uint, result *[]Organization) IRepo {
 	panic("not implemented")
 }
 
+func (f *FakeRepo) GetOwnedOrganizations(userID uint, result *[]Organization) IRepo {
+	panic("not implemented")
+}
+
 func (f *FakeRepo) GetOwnedOrganizationByName(
 	userID uint,
 	name string,
