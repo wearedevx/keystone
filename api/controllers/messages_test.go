@@ -1052,12 +1052,16 @@ func teardownMessages(
 	users map[string]models.User,
 	messages []models.Message,
 ) {
-	new(repo.Repo).GetDb().Transaction(func(db *gorm.DB) error {
-		db.Delete(messages)
-		db.Delete(project.Environments)
+	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		db.Delete(&messages)
+		db.Delete(&project.Environments)
+
+		if db.Error != nil {
+			return db.Error
+		}
 
 		for _, user := range users {
-			db.Model(&user).Association("Devices").Delete(user.Devices)
+			db.Model(&user).Association("Devices").Delete(&user.Devices)
 			db.Delete(
 				&models.ProjectMember{},
 				"user_id = ? and project_id = ?",
@@ -1073,6 +1077,10 @@ func teardownMessages(
 
 		return nil
 	})
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 func seedExpiredMessages() []models.Message {

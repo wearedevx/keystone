@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -340,28 +339,7 @@ func DeleteProjectsMembers(
 
 	log.ProjectID = &project.ID
 
-	// Prevent users that are not admin on the project from deleting it
-	// This is a strange piece of code
-	// userIsAdmin = Repo.ProjectIsMemberAdmin(
-	// 	&project,
-	// 	&models.ProjectMember{UserID: user.ID},
-	// )
-	// if err = Repo.Err(); err != nil || !userIsAdmin {
-	// 	if err != nil {
-	// 		err = apierrors.ErrorUnknown(err)
-	// 		result.Error = err.Error()
-	// 	} else {
-	// 		result.Error = "must be admin to remove members"
-	// 	}
-	//
-	// 	status = http.StatusNotFound
-	//
-	// 	goto done
-	// }
-
 	areInProjects, err = Repo.CheckMembersAreInProject(project, input.Members)
-	fmt.Printf("LS -> controllers/projects.go:361 -> areInProjects: %+v\n", areInProjects)
-	fmt.Printf("LS -> controllers/projects.go:361 -> input.Members: %+v\n", input.Members)
 	if err != nil {
 		status = http.StatusInternalServerError
 		err = apierrors.ErrorUnknown(err)
@@ -512,6 +490,8 @@ func GetAccessibleEnvironments(
 	Repo repo.IRepo,
 	user models.User,
 ) (_ router.Serde, status int, err error) {
+	status = http.StatusOK
+
 	result := models.GetEnvironmentsResponse{
 		Environments: make([]models.Environment, 0),
 	}
@@ -578,9 +558,37 @@ func DeleteProject(
 
 	projectId := params.Get("projectID")
 	var project models.Project
+	var userIsAdmin bool
+
+	if err = Repo.
+		GetProjectByUUID(projectId, &project).
+		Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusNotFound
+			goto done
+		}
+
+		err = apierrors.ErrorUnknown(err)
+		status = http.StatusInternalServerError
+		goto done
+	}
+
+	// Prevent users that are not admin on the project from deleting it
+	userIsAdmin = Repo.ProjectIsMemberAdmin(
+		&project,
+		&models.ProjectMember{UserID: user.ID},
+	)
+	if err = Repo.Err(); err != nil || !userIsAdmin {
+		if err != nil {
+			err = apierrors.ErrorUnknown(err)
+		}
+
+		status = http.StatusNotFound
+
+		goto done
+	}
 
 	Repo.
-		GetProjectByUUID(projectId, &project).
 		DeleteAllProjectMembers(&project).
 		DeleteProjectsEnvironments(&project).
 		DeleteProject(&project)
@@ -592,6 +600,7 @@ func DeleteProject(
 		err = apierrors.ErrorFailedToDeleteResource(err)
 	}
 
+done:
 	return nil, status, log.SetError(err)
 }
 
@@ -601,7 +610,7 @@ func GetProjectsOrganization(
 	Repo repo.IRepo,
 	user models.User,
 ) (_ router.Serde, status int, err error) {
-	status = http.StatusAccepted
+	status = http.StatusOK
 	log := models.ActivityLog{
 		UserID: &user.ID,
 		Action: "GetProjectsOrganization",

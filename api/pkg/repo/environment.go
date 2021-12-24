@@ -56,16 +56,10 @@ func (repo *Repo) GetEnvironmentsByProjectUUID(
 		return repo
 	}
 
-	var project models.Project
-	repo.err = repo.GetDb().
-		Model(&models.Project{}).
-		Where("uuid = ?", projectUUID).
-		First(&project).
-		Error
-
 	repo.err = repo.GetDb().
 		Model(&models.Environment{}).
-		Where("project_id = ?", project.ID).
+		Joins("inner join projects p on p.id = project_id").
+		Where("p.uuid = ?", projectUUID).
 		Find(&foundEnvironments).
 		Error
 

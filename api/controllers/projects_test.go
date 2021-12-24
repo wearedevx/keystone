@@ -20,6 +20,7 @@ func TestPostProject(t *testing.T) {
 	defer teardownUserAndOrganization(user, organization)
 
 	projectName := faker.Sentence()
+	defer teardownProjectWithName(projectName)
 
 	type args struct {
 		in0  router.Params
@@ -771,6 +772,39 @@ func TestDeleteProjectsMembers(t *testing.T) {
 }
 
 func TestGetAccessibleEnvironments(t *testing.T) {
+	adminUser, adminOrg, project := seedOneProjectForOneUser()
+	defer teardownUserAndOrganization(adminUser, adminOrg)
+	defer teardownProject(project)
+
+	environments := seedEnvironments(project)
+	defer teardownEnvironments(environments)
+
+	envByName := make(map[string]models.Environment)
+	for _, environment := range environments {
+		envByName[environment.Name] = environment
+	}
+
+	devopsUser, devopsOrg := seedSingleUser()
+	defer teardownUserAndOrganization(devopsUser, devopsOrg)
+
+	leadDevUser, leadDevOrg := seedSingleUser()
+	defer teardownUserAndOrganization(leadDevUser, leadDevOrg)
+
+	developerUser, developerOrg := seedSingleUser()
+	defer teardownUserAndOrganization(developerUser, developerOrg)
+
+	roles := testsGetRoles()
+
+	adminMember := seedProjectMember(project, adminUser, roles["admin"])
+	devopsMember := seedProjectMember(project, devopsUser, roles["devops"])
+	leadDevMember := seedProjectMember(project, leadDevUser, roles["lead-dev"])
+	developerMember := seedProjectMember(project, developerUser, roles["developer"])
+
+	defer teardownProjectMember(adminMember)
+	defer teardownProjectMember(devopsMember)
+	defer teardownProjectMember(leadDevMember)
+	defer teardownProjectMember(developerMember)
+
 	type args struct {
 		params router.Params
 		in1    io.ReadCloser
@@ -780,11 +814,98 @@ func TestGetAccessibleEnvironments(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		want       router.Serde
+		want       *models.GetEnvironmentsResponse
 		wantStatus int
-		wantErr    bool
+		wantErr    string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "all environments for admin user",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				in1:  nil,
+				Repo: repo.NewRepo(),
+				user: adminUser,
+			},
+			want: &models.GetEnvironmentsResponse{
+				Environments: []models.Environment{
+					envByName["prod"],
+					envByName["staging"],
+					envByName["dev"]},
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    "",
+		},
+		{
+			name: "fails if bad project id",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": "not a real project id",
+				}),
+				in1:  nil,
+				Repo: repo.NewRepo(),
+				user: adminUser,
+			},
+			want: &models.GetEnvironmentsResponse{
+				Environments: []models.Environment{},
+			},
+			wantStatus: http.StatusNotFound,
+			wantErr:    "not found",
+		},
+		{
+			name: "all environments for devops user",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				in1:  nil,
+				Repo: repo.NewRepo(),
+				user: devopsUser,
+			},
+			want: &models.GetEnvironmentsResponse{
+				Environments: []models.Environment{
+					envByName["prod"],
+					envByName["staging"],
+					envByName["dev"]},
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    "",
+		},
+		{
+			name: "dev environment for lead-dev user",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				in1:  nil,
+				Repo: repo.NewRepo(),
+				user: leadDevUser,
+			},
+			want: &models.GetEnvironmentsResponse{
+				Environments: []models.Environment{
+					envByName["dev"]},
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    "",
+		},
+		{
+			name: "dev environment for dev user",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				in1:  nil,
+				Repo: repo.NewRepo(),
+				user: developerUser,
+			},
+			want: &models.GetEnvironmentsResponse{
+				Environments: []models.Environment{
+					envByName["dev"]},
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    "",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -794,7 +915,7 @@ func TestGetAccessibleEnvironments(t *testing.T) {
 				tt.args.Repo,
 				tt.args.user,
 			)
-			if (err != nil) != tt.wantErr {
+			if err.Error() != tt.wantErr {
 				t.Errorf(
 					"GetAccessibleEnvironments() error = %v, wantErr %v",
 					err,
@@ -802,25 +923,70 @@ func TestGetAccessibleEnvironments(t *testing.T) {
 				)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf(
-					"GetAccessibleEnvironments() got = %v, want %v",
-					got,
-					tt.want,
-				)
-			}
 			if gotStatus != tt.wantStatus {
 				t.Errorf(
 					"GetAccessibleEnvironments() gotStatus = %v, want %v",
 					gotStatus,
 					tt.wantStatus,
 				)
+				return
+			}
+
+			gotResponse := got.(*models.GetEnvironmentsResponse)
+
+			if len(gotResponse.Environments) != len(tt.want.Environments) {
+				t.Errorf(
+					"GetAccessibleEnvironments() got = %v, want %v",
+					gotResponse,
+					tt.want,
+				)
+				return
+			}
+
+			for _, wantEnvironment := range tt.want.Environments {
+				found := false
+
+				for _, gotEnvironment := range gotResponse.Environments {
+					if gotEnvironment.ID == wantEnvironment.ID {
+						found = true
+						break
+					}
+				}
+
+				if !found {
+					t.Errorf(
+						"GetAccessibleEnvironments() got = %v, want %v",
+						gotResponse,
+						tt.want,
+					)
+					return
+				}
 			}
 		})
 	}
 }
 
 func TestDeleteProject(t *testing.T) {
+	userOk, orgOk, projectOk := seedOneProjectForOneUser()
+	userKo, orgKo, projectKo := seedOneProjectForOneUser()
+	otherUser, otherOrg := seedSingleUser()
+	defer teardownUserAndOrganization(otherUser, otherOrg)
+	defer teardownUserAndOrganization(userOk, orgOk)
+	defer teardownUserAndOrganization(userKo, orgKo)
+	defer teardownProject(projectOk)
+	defer teardownProject(projectKo)
+
+	roles := testsGetRoles()
+
+	adminMember := seedProjectMember(projectOk, userOk, roles["admin"])
+	adminKoMember := seedProjectMember(projectKo, userKo, roles["admin"])
+	otherMember := seedProjectMember(projectOk, otherUser, roles["developer"])
+	otherKoMember := seedProjectMember(projectKo, otherUser, roles["developer"])
+	defer teardownProjectMember(otherKoMember)
+	defer teardownProjectMember(otherMember)
+	defer teardownProjectMember(adminKoMember)
+	defer teardownProjectMember(adminMember)
+
 	type args struct {
 		params router.Params
 		in1    io.ReadCloser
@@ -832,9 +998,50 @@ func TestDeleteProject(t *testing.T) {
 		args       args
 		want       router.Serde
 		wantStatus int
-		wantErr    bool
+		wantErr    string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "deletes a project",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": projectOk.UUID,
+				}),
+				in1:  nil,
+				Repo: repo.NewRepo(),
+				user: userOk,
+			},
+			want:       nil,
+			wantStatus: http.StatusNoContent,
+			wantErr:    "",
+		},
+		{
+			name: "fails because of bad project id",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": "not a real project id",
+				}),
+				in1:  nil,
+				Repo: repo.NewRepo(),
+				user: userOk,
+			},
+			want:       nil,
+			wantStatus: http.StatusNotFound,
+			wantErr:    "not found",
+		},
+		{
+			name: "only admins can delete a project",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": projectKo.UUID,
+				}),
+				in1:  nil,
+				Repo: repo.NewRepo(),
+				user: otherUser,
+			},
+			want:       nil,
+			wantStatus: http.StatusNotFound,
+			wantErr:    "",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -844,7 +1051,7 @@ func TestDeleteProject(t *testing.T) {
 				tt.args.Repo,
 				tt.args.user,
 			)
-			if (err != nil) != tt.wantErr {
+			if err.Error() != tt.wantErr {
 				t.Errorf(
 					"DeleteProject() error = %v, wantErr %v",
 					err,
@@ -867,6 +1074,10 @@ func TestDeleteProject(t *testing.T) {
 }
 
 func TestGetProjectsOrganization(t *testing.T) {
+	user, org, project := seedOneProjectForOneUser()
+	defer teardownUserAndOrganization(user, org)
+	defer teardownProject(project)
+
 	type args struct {
 		params router.Params
 		in1    io.ReadCloser
@@ -876,11 +1087,50 @@ func TestGetProjectsOrganization(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		want       router.Serde
+		want       *models.Organization
 		wantStatus int
-		wantErr    bool
+		wantErr    string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "gets the project organization",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				in1:  nil,
+				Repo: repo.NewRepo(),
+				user: user,
+			},
+			want:       &org,
+			wantStatus: http.StatusOK,
+			wantErr:    "",
+		},
+		{
+			name: "bad request if no project id",
+			args: args{
+				params: router.ParamsFrom(map[string]string{}),
+				in1:    nil,
+				Repo:   repo.NewRepo(),
+				user:   user,
+			},
+			want:       &models.Organization{},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    "bad request: no project id",
+		},
+		{
+			name: "not found if bad project id",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": "not a real project id",
+				}),
+				in1:  nil,
+				Repo: repo.NewRepo(),
+				user: user,
+			},
+			want:       &models.Organization{},
+			wantStatus: http.StatusNotFound,
+			wantErr:    "not found",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -890,7 +1140,7 @@ func TestGetProjectsOrganization(t *testing.T) {
 				tt.args.Repo,
 				tt.args.user,
 			)
-			if (err != nil) != tt.wantErr {
+			if err.Error() != tt.wantErr {
 				t.Errorf(
 					"GetProjectsOrganization() error = %v, wantErr %v",
 					err,
@@ -898,19 +1148,32 @@ func TestGetProjectsOrganization(t *testing.T) {
 				)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf(
-					"GetProjectsOrganization() got = %v, want %v",
-					got,
-					tt.want,
-				)
-			}
 			if gotStatus != tt.wantStatus {
 				t.Errorf(
 					"GetProjectsOrganization() gotStatus = %v, want %v",
 					gotStatus,
 					tt.wantStatus,
 				)
+				return
+			}
+
+			if tt.want != nil {
+				gotResponse := got.(*models.Organization)
+				if gotResponse.ID != tt.want.ID {
+					t.Errorf(
+						"GetProjectsOrganization() got = %v, want %v",
+						got,
+						tt.want,
+					)
+				}
+			} else {
+				if got != tt.want {
+					t.Errorf(
+						"GetProjectsOrganization() got = %v, want %v",
+						got,
+						tt.want,
+					)
+				}
 			}
 		})
 	}
@@ -967,6 +1230,29 @@ func seedOneProjectForOneUser() (user models.User, organization models.Organizat
 	}
 
 	return user, organization, project
+}
+
+func teardownProjectWithName(projectName string) {
+	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		project := models.Project{}
+		db.Where("name = ?", project.Name).First(&project)
+		if db.Error != nil {
+			return db.Error
+		}
+
+		db.Delete(&models.Environment{}, "project_id = ?", project.ID)
+		if db.Error != nil {
+			return db.Error
+		}
+
+		db.Delete(&project)
+
+		return db.Error
+	})
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 func testsSetOrganisationPaid(organization *models.Organization) {
@@ -1127,9 +1413,60 @@ func teardownManyProjects(projects []models.Project) {
 				"project_id = ?",
 				project.ID,
 			)
+			db.Delete(
+				&models.Environment{},
+				"project_id = ?",
+				project.ID,
+			)
 		}
+
 		db.Delete(projects)
 
 		return db.Error
 	})
+}
+
+func seedEnvironments(project models.Project) []models.Environment {
+	env := make([]models.Environment, 0)
+
+	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		envTypes := make([]models.EnvironmentType, 0)
+
+		if err := db.Find(&envTypes).Error; err != nil {
+			return err
+		}
+		env = make([]models.Environment, len(envTypes))
+
+		for i, t := range envTypes {
+			env[i] = models.Environment{
+				Name:              t.Name,
+				EnvironmentTypeID: t.ID,
+				EnvironmentType:   t,
+				ProjectID:         project.ID,
+				Project:           project,
+			}
+		}
+
+		db.Create(&env)
+
+		return db.Error
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	return env
+}
+
+func teardownEnvironments(environments []models.Environment) {
+	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		db.Delete(&environments)
+
+		return db.Error
+	})
+
+	if err != nil {
+		panic(err)
+	}
 }

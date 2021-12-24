@@ -370,4 +370,8 @@ func teardownActivityLogs(p models.Project, o models.Organization, u models.User
 		`delete from users where id = @user_id`,
 		sql.Named("user_id", p.ID),
 	)
+
+	if db.Error != nil {
+		panic(db.Error)
+	}
 }

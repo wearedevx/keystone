@@ -147,9 +147,9 @@ func seedPostInvite() (user, otherUser models.User, project models.Project) {
 	faker.FakeData(&otherUser)
 	faker.FakeData(&project)
 
-	db.Save(&project)
-	db.Save(&user)
-	db.Save(&otherUser)
+	db.Create(&project)
+	db.Create(&user)
+	db.Create(&otherUser)
 
 	projectMember = models.ProjectMember{
 		User:      user,
@@ -158,7 +158,7 @@ func seedPostInvite() (user, otherUser models.User, project models.Project) {
 		ProjectID: project.ID,
 		RoleID:    1, //admin
 	}
-	db.Save(&projectMember)
+	db.Create(&projectMember)
 
 	return user, otherUser, project
 }
