@@ -799,6 +799,22 @@ func TestGetOrganizationMembers(t *testing.T) {
 			wantStatus: http.StatusOK,
 			wantErr:    "",
 		},
+		{
+			name: "bad request if organization id is invalid",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"orgaID": "not a valid orga id",
+				}),
+				in1:  nil,
+				Repo: repo.NewRepo(),
+				user: user,
+			},
+			want: &models.GetMembersResponse{
+				Members: []models.ProjectMember{},
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    "bad request: strconv.ParseUint: parsing \"not a valid orga id\": invalid syntax",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
