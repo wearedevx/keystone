@@ -34,7 +34,8 @@ var dialect Dialect = DialectSQLite
 var db *gorm.DB
 
 func autoMigrate() error {
-	db.AutoMigrate(&LoginRequest{},
+	db.AutoMigrate(
+		&LoginRequest{},
 		&Environment{},
 		&EnvironmentUserSecret{},
 		&Message{},
@@ -48,7 +49,9 @@ func autoMigrate() error {
 		&Device{},
 		&UserDevice{},
 		&Organization{},
-		&ActivityLog{})
+		&ActivityLog{},
+		&CheckoutSession{},
+	)
 	return nil
 }
 

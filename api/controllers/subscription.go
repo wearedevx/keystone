@@ -149,9 +149,7 @@ func GetCheckoutSuccess(
 	w.Header().Add("Content-Length", strconv.Itoa(len(msg)))
 	w.Write([]byte(msg))
 
-	if status != http.StatusOK {
-		w.WriteHeader(status)
-	}
+	w.WriteHeader(status)
 }
 
 func GetCheckoutCancel(
@@ -299,6 +297,8 @@ func PostStripeWebhook(
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		http.Error(w, "", http.StatusOK)
 	}
 }
 
@@ -309,7 +309,7 @@ func ManageSubscription(
 	user models.User,
 ) (_ router.Serde, status int, err error) {
 	var url string
-	var result models.ManageSubscriptionResponse
+	var result *models.ManageSubscriptionResponse
 
 	status = http.StatusOK
 	log := models.ActivityLog{
@@ -325,8 +325,24 @@ func ManageSubscription(
 	if err = Repo.
 		GetOrganization(&organization).
 		Err(); err != nil {
-		status = http.StatusInternalServerError
-		err = apierrors.ErrorFailedToGetResource(err)
+		if errors.Is(repo.ErrorNotFound, err) {
+			status = http.StatusNotFound
+		} else {
+			status = http.StatusInternalServerError
+			err = apierrors.ErrorFailedToGetResource(err)
+		}
+		goto done
+	}
+
+	if organization.UserID != user.ID {
+		status = http.StatusForbidden
+		err = apierrors.ErrorPermissionDenied()
+		goto done
+	}
+
+	if !organization.Paid {
+		status = http.StatusForbidden
+		err = apierrors.ErrorNeedsUpgrade()
 		goto done
 	}
 
@@ -339,10 +355,11 @@ func ManageSubscription(
 		goto done
 	}
 
-	result = models.ManageSubscriptionResponse{
+	result = &models.ManageSubscriptionResponse{
 		Url: url,
 	}
 
 done:
-	return &result, status, log.SetError(err)
+	return result, status, log.SetError(err)
 }
+

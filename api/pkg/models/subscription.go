@@ -18,11 +18,11 @@ const (
 )
 
 type CheckoutSession struct {
-	ID        uint                  `json:"id"         gorm:"primaryKey"`
+	ID        uint                  `json:"id"         gorm:"primaryKey" faker:"-"`
 	SessionID string                `json:"session_id" gorm:"unique"`
-	Status    CheckoutSessionStatus `json:"status"     gorm:"default:pending" default:"pending"`
-	CreatedAt time.Time             `json:"created_at"`
-	UpdatedAt time.Time             `json:"updated_at"`
+	Status    CheckoutSessionStatus `json:"status"     gorm:"default:pending" default:"pending" faker:"-"`
+	CreatedAt time.Time             `json:"created_at" faker:"-"`
+	UpdatedAt time.Time             `json:"updated_at" faker:"-"`
 }
 
 func (pm *CheckoutSession) BeforeCreate(tx *gorm.DB) (err error) {
