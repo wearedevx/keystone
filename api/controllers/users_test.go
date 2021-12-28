@@ -1,39 +1,26 @@
 package controllers
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"reflect"
 	"testing"
 
+	"github.com/bxcodec/faker/v3"
 	"github.com/julienschmidt/httprouter"
 	"github.com/wearedevx/keystone/api/internal/router"
+	"gorm.io/gorm"
 
 	// . "github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
-func TestPostUser(t *testing.T) {
-	type args struct {
-		w   http.ResponseWriter
-		r   *http.Request
-		in2 httprouter.Params
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			PostUser(tt.args.w, tt.args.r, tt.args.in2)
-		})
-	}
-}
-
 func TestGetUser(t *testing.T) {
+	user, org := seedSingleUser()
+	defer teardownUserAndOrganization(user, org)
+
 	type args struct {
 		in0  router.Params
 		in1  io.ReadCloser
@@ -47,7 +34,18 @@ func TestGetUser(t *testing.T) {
 		want1   int
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "it works",
+			args: args{
+				in0:  router.Params{},
+				in1:  nil,
+				in2:  nil,
+				user: user,
+			},
+			want:    &user,
+			want1:   http.StatusOK,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -67,20 +65,73 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestPostUserToken(t *testing.T) {
+	device := seedOnlyDevice()
+	defer teardownOnlyDevice(device)
+
 	type args struct {
 		w   http.ResponseWriter
 		r   *http.Request
 		in2 httprouter.Params
 	}
 	tests := []struct {
-		name string
-		args args
+		name              string
+		args              args
+		wantStatus        int
+		wantAuthorization bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "it works",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{Body: io.NopCloser(bytes.NewBufferString(`
+							{
+								"AccountType": "github",
+								"Token": {
+									"access_token": "YSB0b2tlbg=="
+								},
+								"PublicKey": "YSB2ZXJ5IHB1YmxpYyBrZXk=",
+								"Device": "a-device",
+								"DeviceUID": "a-device-uid"
+							}`))},
+				in2: []httprouter.Param{}},
+			wantStatus:        http.StatusOK,
+			wantAuthorization: true,
+		},
+		{
+			name: "bad device name",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{Body: io.NopCloser(bytes.NewBufferString(`
+							{
+								"AccountType": "github",
+								"Token": {
+									"access_token": "YSB0b2tlbg=="
+								},
+								"PublicKey": "YSB2ZXJ5IHB1YmxpYyBrZXk=",
+								"Device": "is that such a bad device name ?",
+								"DeviceUID": "a-device-uid"
+							}`))},
+				in2: []httprouter.Param{}},
+			wantStatus:        http.StatusConflict,
+			wantAuthorization: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			PostUserToken(tt.args.w, tt.args.r, tt.args.in2)
+			got := tt.args.w.(*mockResponseWriter)
+
+			if got.status != tt.wantStatus {
+				t.Errorf("PostUserToken() got status %v, want %v", got.status, tt.wantStatus)
+				return
+			}
+
+			if tt.wantAuthorization {
+				if _, ok := got.headers["Authorization"]; !ok {
+					t.Error("PostUserToken() missing authorization header")
+					return
+				}
+			}
 		})
 	}
 }
@@ -94,9 +145,7 @@ func TestGetAuthRedirect(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-	}{
-		// TODO: Add test cases.
-	}
+	}{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			GetAuthRedirect(tt.args.w, tt.args.r, tt.args.in2)
@@ -172,5 +221,31 @@ func TestGetUserKeys(t *testing.T) {
 				t.Errorf("GetUserKeys() gotStatus = %v, want %v", gotStatus, tt.wantStatus)
 			}
 		})
+	}
+}
+
+func seedOnlyDevice() (device models.Device) {
+	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		faker.FakeData(&device)
+		db.Create(&device)
+
+		return db.Error
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	return device
+}
+
+func teardownOnlyDevice(device models.Device) {
+	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		db.Delete(&device)
+		return db.Error
+	})
+
+	if err != nil {
+		panic(err)
 	}
 }

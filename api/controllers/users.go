@@ -26,78 +26,78 @@ import (
 )
 
 // postUser Gets or Creates a user
-func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	status := http.StatusOK
-	var responseBody bytes.Buffer
-	var err error
-
-	user := &models.User{}
-	var serializedUser string
-
-	err = repo.Transaction(func(Repo repo.IRepo) error {
-		alogger := activitylog.NewActivityLogger(Repo)
-		log := models.ActivityLog{
-			Action: "PostUser",
-		}
-		err = nil
-		status = http.StatusOK
-		msg := ""
-
-		if err = user.Deserialize(r.Body); err != nil {
-			status = http.StatusBadRequest
-			err = apierrors.ErrorBadRequest(err)
-			msg = err.Error()
-
-			goto done
-		}
-
-		if err = Repo.GetOrCreateUser(user).Err(); err != nil {
-			if errors.Is(err, repo.ErrorNotFound) {
-				status = http.StatusNotFound
-				err = repo.ErrorNotFound
-			} else {
-				status = http.StatusBadRequest
-			}
-			msg = err.Error()
-
-			goto done
-		}
-
-		if err = user.Serialize(&serializedUser); err != nil {
-			msg = "Internal Server Error"
-			status = http.StatusInternalServerError
-
-			goto done
-		}
-
-	done:
-		alogger.Save(log.SetError(err))
-
-		if err != nil {
-			http.Error(w, msg, status)
-		}
-
-		return err
-	})
-
-	if err == nil {
-		in := bytes.NewBufferString(serializedUser)
-		responseBody = *in
-
-		if responseBody.Len() > 0 {
-			w.Header().Add("Content-Type", "application/octet-stream")
-			w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
-			_, err := w.Write(responseBody.Bytes())
-			if err != nil {
-				fmt.Printf("err: %+v\n", err)
-				w.WriteHeader(500)
-				return
-			}
-		}
-
-		w.WriteHeader(status)
-	}
-}
+// func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+// 	status := http.StatusOK
+// 	var responseBody bytes.Buffer
+// 	var err error
+//
+// 	user := &models.User{}
+// 	var serializedUser string
+//
+// 	err = repo.Transaction(func(Repo repo.IRepo) error {
+// 		alogger := activitylog.NewActivityLogger(Repo)
+// 		log := models.ActivityLog{
+// 			Action: "PostUser",
+// 		}
+// 		err = nil
+// 		status = http.StatusOK
+// 		msg := ""
+//
+// 		if err = user.Deserialize(r.Body); err != nil {
+// 			status = http.StatusBadRequest
+// 			err = apierrors.ErrorBadRequest(err)
+// 			msg = err.Error()
+//
+// 			goto done
+// 		}
+//
+// 		if err = Repo.GetOrCreateUser(user).Err(); err != nil {
+// 			if errors.Is(err, repo.ErrorNotFound) {
+// 				status = http.StatusNotFound
+// 				err = repo.ErrorNotFound
+// 			} else {
+// 				status = http.StatusBadRequest
+// 			}
+// 			msg = err.Error()
+//
+// 			goto done
+// 		}
+//
+// 		if err = user.Serialize(&serializedUser); err != nil {
+// 			msg = "Internal Server Error"
+// 			status = http.StatusInternalServerError
+//
+// 			goto done
+// 		}
+//
+// 	done:
+// 		alogger.Save(log.SetError(err))
+//
+// 		if err != nil {
+// 			http.Error(w, msg, status)
+// 		}
+//
+// 		return err
+// 	})
+//
+// 	if err == nil {
+// 		in := bytes.NewBufferString(serializedUser)
+// 		responseBody = *in
+//
+// 		if responseBody.Len() > 0 {
+// 			w.Header().Add("Content-Type", "application/octet-stream")
+// 			w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
+// 			_, err := w.Write(responseBody.Bytes())
+// 			if err != nil {
+// 				fmt.Printf("err: %+v\n", err)
+// 				w.WriteHeader(500)
+// 				return
+// 			}
+// 		}
+//
+// 		w.WriteHeader(status)
+// 	}
+// }
 
 // getUser gets a user
 func GetUser(
@@ -130,7 +130,7 @@ func PostUserToken(
 		return
 	}
 
-	connector, err = authconnector.GetConnectoForAccountType(
+	connector, err = authconnector.GetConnectorForAccountType(
 		payload.AccountType,
 	)
 	if err != nil {
@@ -198,6 +198,8 @@ func PostUserToken(
 
 		if err != nil {
 			http.Error(w, msg, status)
+		} else {
+			w.WriteHeader(http.StatusOK)
 		}
 
 		return err
