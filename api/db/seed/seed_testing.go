@@ -3,14 +3,10 @@
 package seed
 
 import (
-	"fmt"
-
 	"gorm.io/gorm"
 )
 
 func Seed(db *gorm.DB) (err error) {
-	fmt.Println("Seed")
-
 	err = db.Exec(Sql).Error
 	if err != nil {
 		panic(err)
