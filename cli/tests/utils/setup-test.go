@@ -115,7 +115,7 @@ func CreateFakeUserWithUsername(
 		return err
 	}
 
-	token, err := jwt.MakeToken(user, deviceUID)
+	token, err := jwt.MakeToken(user, deviceUID, time.Now())
 	configDir := getConfigDir(env)
 	pathToKeystoneFile := path.Join(configDir, "keystone2.yaml")
 
@@ -191,7 +191,7 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	env.Setenv("USER_ID", user.UserID)
 	fmt.Printf("user.UserID: %+v\n", user.UserID)
 
-	token, err := jwt.MakeToken(user, deviceUID)
+	token, err := jwt.MakeToken(user, deviceUID, time.Now())
 	configDir := getConfigDir(env)
 	pathToKeystoneFile := path.Join(configDir, "keystone.yaml")
 
