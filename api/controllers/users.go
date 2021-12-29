@@ -196,8 +196,6 @@ func PostUserToken(
 
 		if err != nil {
 			http.Error(w, msg, status)
-		} else {
-			w.WriteHeader(http.StatusOK)
 		}
 
 		return err
@@ -213,6 +211,8 @@ func PostUserToken(
 
 		if _, err := w.Write(responseBody.Bytes()); err != nil {
 			fmt.Printf("err: %+v\n", err)
+		} else {
+			w.WriteHeader(http.StatusOK)
 		}
 	}
 }
