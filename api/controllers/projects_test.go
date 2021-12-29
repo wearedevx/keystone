@@ -1190,6 +1190,13 @@ func seedSingleUser() (user models.User, organization models.Organization) {
 
 		db.Create(&organization)
 
+		var device models.Device
+		faker.FakeData(&device)
+		db.Create(&device)
+
+		user.Devices = []models.Device{device}
+		db.Save(&user)
+
 		return db.Error
 	})
 
@@ -1205,6 +1212,12 @@ func teardownUserAndOrganization(
 	organization models.Organization,
 ) {
 	repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+		db.Delete(&models.UserDevice{}, "user_id = ?", user.ID)
+
+		for _, device := range user.Devices {
+			db.Delete(&device)
+		}
+
 		db.Delete(&user)
 		db.Delete(&organization)
 		return db.Error

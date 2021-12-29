@@ -40,16 +40,16 @@ func TestGetEnvironmentPublicKeys(t *testing.T) {
 				user: adminUser,
 			},
 			want: models.PublicKeys{
-				Keys: []models.UserPublicKeys{
+				Keys: []models.UserDevices{
 					{
-						UserID:     adminUser.ID,
-						UserUID:    adminUser.UserID,
-						PublicKeys: adminUser.Devices,
+						UserID:  adminUser.ID,
+						UserUID: adminUser.UserID,
+						Devices: adminUser.Devices,
 					},
 					{
-						UserID:     devUser.ID,
-						UserUID:    devUser.UserID,
-						PublicKeys: devUser.Devices,
+						UserID:  devUser.ID,
+						UserUID: devUser.UserID,
+						Devices: devUser.Devices,
 					},
 				},
 			},
@@ -67,7 +67,7 @@ func TestGetEnvironmentPublicKeys(t *testing.T) {
 				user: adminUser,
 			},
 			want: models.PublicKeys{
-				Keys: []models.UserPublicKeys{},
+				Keys: []models.UserDevices{},
 			},
 			wantStatus: http.StatusNotFound,
 			wantErr:    "not found",
@@ -83,7 +83,7 @@ func TestGetEnvironmentPublicKeys(t *testing.T) {
 				user: devUser,
 			},
 			want: models.PublicKeys{
-				Keys: []models.UserPublicKeys{},
+				Keys: []models.UserDevices{},
 			},
 			wantStatus: http.StatusForbidden,
 			wantErr:    "permission denied",

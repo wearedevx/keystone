@@ -12,12 +12,10 @@ import (
 
 	"github.com/wearedevx/keystone/api/internal/activitylog"
 	apierrors "github.com/wearedevx/keystone/api/internal/errors"
-	log "github.com/wearedevx/keystone/api/internal/utils/cloudlogger"
 	. "github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/jwt"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"gorm.io/gorm"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/wearedevx/keystone/api/internal/authconnector"
@@ -242,6 +240,7 @@ func GetAuthRedirect(
 	code := r.URL.Query().Get("code")
 
 	if len(temporaryCode) < 16 || len(code) == 0 {
+		fmt.Printf("[ERROR] Bad temporary code length: %v \n", temporaryCode)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
@@ -251,7 +250,7 @@ func GetAuthRedirect(
 		if err = Repo.Err(); err != nil {
 			code := http.StatusInternalServerError
 
-			if errors.Is(err, gorm.ErrRecordNotFound) {
+			if errors.Is(err, repo.ErrorNotFound) {
 				code = http.StatusNotFound
 			}
 
@@ -270,6 +269,8 @@ Thank you!`
 		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
 		if _, err := fmt.Fprint(w, response); err != nil {
 			fmt.Printf("err: %+v\n", err)
+		} else {
+			w.WriteHeader(http.StatusOK)
 		}
 	}
 }
@@ -317,6 +318,8 @@ func PostLoginRequest(
 		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
 		if _, err := fmt.Fprint(w, response); err != nil {
 			fmt.Printf("err: %+v\n", err)
+		} else {
+			w.WriteHeader(http.StatusOK)
 		}
 	}
 }
@@ -329,6 +332,7 @@ func GetLoginRequest(
 ) {
 	var response string
 	var err error
+	status := http.StatusOK
 
 	temporaryCode := r.URL.Query().Get("code")
 
@@ -342,22 +346,17 @@ func GetLoginRequest(
 		alog := models.ActivityLog{
 			Action: "GetLoginRequest",
 		}
-		var status int
 		var msg string
 
-		loginRequest, found := Repo.GetLoginRequest(temporaryCode)
+		loginRequest, _ := Repo.GetLoginRequest(temporaryCode)
 
 		if err = Repo.Err(); err != nil {
+			if errors.Is(err, repo.ErrorNotFound) {
+				status = http.StatusNotFound
+			} else {
+				status = http.StatusInternalServerError
+			}
 			msg = err.Error()
-			status = http.StatusInternalServerError
-
-			goto done
-		}
-
-		if !found {
-			log.Error(r, "Login Request not found with: `%s`", temporaryCode)
-			msg = "Not Found"
-			status = http.StatusNotFound
 
 			goto done
 		}
@@ -385,6 +384,8 @@ func GetLoginRequest(
 
 		if _, err := fmt.Fprint(w, response); err != nil {
 			fmt.Printf("err: %+v\n", err)
+		} else {
+			w.WriteHeader(status)
 		}
 	}
 }
@@ -401,9 +402,9 @@ func GetUserKeys(
 	}
 
 	targetUser := models.User{}
-	userPublicKeys := models.UserPublicKeys{
-		UserID:     0,
-		PublicKeys: make([]models.Device, 0),
+	userDevices := models.UserDevices{
+		UserID:  0,
+		Devices: make([]models.Device, 0),
 	}
 
 	userID := params.Get("userID")
@@ -425,10 +426,10 @@ func GetUserKeys(
 			err = apierrors.ErrorFailedToDeleteResource(err)
 		}
 	} else {
-		userPublicKeys.UserID = targetUser.ID
-		userPublicKeys.PublicKeys = targetUser.Devices
+		userDevices.UserID = targetUser.ID
+		userDevices.Devices = targetUser.Devices
 	}
 
 done:
-	return &userPublicKeys, status, log.SetError(err)
+	return &userDevices, status, log.SetError(err)
 }

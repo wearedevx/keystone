@@ -13,7 +13,7 @@ import (
 )
 
 type LoginRequest struct {
-	ID            uint      `json:"id"             gorm:"primaryKey"`
+	ID            uint      `json:"id"             gorm:"primaryKey" faker:"-"`
 	TemporaryCode string    `json:"temporary_code" gorm:"not null"`
 	AuthCode      string    `json:"auth_code"`
 	Answered      bool      `json:"answered"       gorm:"default:false"`

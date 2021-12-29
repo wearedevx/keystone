@@ -21,7 +21,7 @@ func GetEnvironmentPublicKeys(
 ) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
 	result := models.PublicKeys{
-		Keys: make([]models.UserPublicKeys, 0),
+		Keys: make([]models.UserDevices, 0),
 	}
 
 	envID := params.Get("envID")
