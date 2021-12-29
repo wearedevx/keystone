@@ -60,11 +60,19 @@ func TestMessageService_GetMessageByUuid(t *testing.T) {
 			m.redis.SetupFixtures(tt.fixtures)
 			got, err := m.GetMessageByUuid(tt.args.uuid)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("MessageService.GetMessageByUuid() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf(
+					"MessageService.GetMessageByUuid() error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MessageService.GetMessageByUuid() = %v, want %v", got, tt.want)
+				t.Errorf(
+					"MessageService.GetMessageByUuid() = %v, want %v",
+					got,
+					tt.want,
+				)
 			}
 		})
 	}
@@ -96,7 +104,11 @@ func TestMessageService_WriteMessageWithUuid(t *testing.T) {
 			m := NewMessageService()
 			m.redis.SetupFixtures(tt.fixtures)
 			if err := m.WriteMessageWithUuid(tt.args.uuid, tt.args.value); (err != nil) != tt.wantErr {
-				t.Errorf("MessageService.WriteMessageWithUuid() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf(
+					"MessageService.WriteMessageWithUuid() error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
 			}
 		})
 	}
@@ -128,10 +140,17 @@ func TestMessageService_DeleteMessageWithUuid(t *testing.T) {
 			m := NewMessageService()
 			m.redis.SetupFixtures(tt.fixtures)
 			if err := m.DeleteMessageWithUuid(tt.args.uuid); (err != nil) != tt.wantErr {
-				t.Errorf("MessageService.DeleteMessageWithUuid() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf(
+					"MessageService.DeleteMessageWithUuid() error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
 			}
 			if _, ok := tt.fixtures[tt.args.uuid]; ok {
-				t.Errorf("MessageService.DeleteMessageWithUuid() still has uuid %v", tt.args.uuid)
+				t.Errorf(
+					"MessageService.DeleteMessageWithUuid() still has uuid %v",
+					tt.args.uuid,
+				)
 			}
 		})
 	}
