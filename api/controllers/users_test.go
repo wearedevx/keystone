@@ -102,7 +102,6 @@ func TestPostUserToken(t *testing.T) {
 							}`))},
 				in2: []httprouter.Param{},
 			},
-			wantStatus:        http.StatusOK,
 			wantAuthorization: true,
 		},
 		{
@@ -207,7 +206,6 @@ func TestGetAuthRedirect(t *testing.T) {
 				},
 				in2: []httprouter.Param{},
 			},
-			wantStatus: http.StatusOK,
 			wantResponse: `You have been successfully authenticated.
 You may now return to your terminal and start using Keystone.
 
@@ -284,7 +282,6 @@ func TestPostLoginRequest(t *testing.T) {
 				in1: &http.Request{},
 				in2: []httprouter.Param{},
 			},
-			wantStatus: http.StatusOK,
 		},
 	}
 	for _, tt := range tests {

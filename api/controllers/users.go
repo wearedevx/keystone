@@ -211,8 +211,6 @@ func PostUserToken(
 
 		if _, err := w.Write(responseBody.Bytes()); err != nil {
 			fmt.Printf("err: %+v\n", err)
-		} else {
-			w.WriteHeader(http.StatusOK)
 		}
 	}
 }
@@ -269,8 +267,6 @@ Thank you!`
 		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
 		if _, err := fmt.Fprint(w, response); err != nil {
 			fmt.Printf("err: %+v\n", err)
-		} else {
-			w.WriteHeader(http.StatusOK)
 		}
 	}
 }
@@ -318,8 +314,6 @@ func PostLoginRequest(
 		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
 		if _, err := fmt.Fprint(w, response); err != nil {
 			fmt.Printf("err: %+v\n", err)
-		} else {
-			w.WriteHeader(http.StatusOK)
 		}
 	}
 }
