@@ -9,7 +9,7 @@ errors:
     value: permission denied
     has_cause: false
   - symbol: ErrorEmptyPayload 
-    value: empty payload cannot be wrtten
+    value: empty payload cannot be written
     has_cause: false
   - symbol: ErrorFailedToCreateResource 
     value: failed to create resource

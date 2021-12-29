@@ -21,14 +21,14 @@ type customClaims struct {
 	jwt.StandardClaims
 }
 
-func MakeToken(user models.User, deviceUID string) (string, error) {
+func MakeToken(user models.User, deviceUID string, when time.Time) (string, error) {
 	salt := []byte(salt)
 
 	claims := customClaims{
 		DeviceUID: deviceUID,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(30 * 24 * time.Hour).Unix(),
-			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: when.Add(30 * 24 * time.Hour).Unix(),
+			IssuedAt:  when.Unix(),
 			Issuer:    "keystone",
 			Subject:   user.UserID,
 		},

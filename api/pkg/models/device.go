@@ -10,15 +10,15 @@ import (
 )
 
 type Device struct {
-	ID         uint      `json:"id"           gorm:"primaryKey"`
-	PublicKey  []byte    `json:"public_key"   gorm:"type:bytea"`
-	Name       string    `json:"name"`
-	UID        string    `json:"uid"`
-	Users      []User    `json:"users"        gorm:"many2many:user_devices;"`
-	LastUsedAt time.Time `json:"last_used_at"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
-	DeletedAt  gorm.DeletedAt
+	ID         uint           `json:"id"           gorm:"primaryKey" faker:"-"`
+	PublicKey  []byte         `json:"public_key"   gorm:"type:bytea"`
+	Name       string         `json:"name"`
+	UID        string         `json:"uid" faker:"uuid_hyphenated"`
+	Users      []User         `json:"users"        gorm:"many2many:user_devices;" faker:"-"`
+	LastUsedAt time.Time      `json:"last_used_at"`
+	CreatedAt  time.Time      `json:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
+	DeletedAt  gorm.DeletedAt `json:"-" faker:"-"`
 }
 
 func (pm *Device) BeforeCreate(tx *gorm.DB) (err error) {

@@ -94,14 +94,14 @@ type LoginPayload struct {
 	DeviceUID   string
 }
 
-type UserPublicKeys struct {
-	UserID     uint     `json:"user_id"`
-	UserUID    string   `json:"user_uid"` // UserID as string (e.g: toto@github)
-	PublicKeys []Device `json:"publick_keys" gorm:"many2many:user_devices"`
+type UserDevices struct {
+	UserID  uint     `json:"user_id"`
+	UserUID string   `json:"user_uid"` // UserID as string (e.g: toto@github)
+	Devices []Device `json:"publick_keys" gorm:"many2many:user_devices"`
 }
 
 type PublicKeys struct {
-	Keys []UserPublicKeys `json:"keys"`
+	Keys []UserDevices `json:"keys"`
 }
 
 func (p *PublicKeys) Deserialize(in io.Reader) error {
@@ -137,11 +137,11 @@ func (u *User) Serialize(out *string) (err error) {
 	return err
 }
 
-func (upk *UserPublicKeys) Deserialize(in io.Reader) error {
+func (upk *UserDevices) Deserialize(in io.Reader) error {
 	return json.NewDecoder(in).Decode(upk)
 }
 
-func (upk UserPublicKeys) Serialize(out *string) (err error) {
+func (upk UserDevices) Serialize(out *string) (err error) {
 	var sb strings.Builder
 
 	err = json.NewEncoder(&sb).Encode(upk)

@@ -2,17 +2,22 @@ package rights
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/wearedevx/keystone/api/internal/emailer"
+	"github.com/wearedevx/keystone/api/pkg/message"
 	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/repo"
 	. "github.com/wearedevx/keystone/api/pkg/repo"
 	"gorm.io/gorm"
 )
 
 var (
-	fakeRoles    []Role
-	fakeUserRole map[string]string
+	fakeRoles                 []Role
+	fakeUserRole              map[uint]string
+	fakeEnvironmentTypes      []EnvironmentType
+	fakeRolesEnvironmentTypes []RolesEnvironmentType
 )
 
 func initFakeRoles() {
@@ -52,11 +57,75 @@ func initFakeRoles() {
 }
 
 func initFakeUserRoles() {
-	fakeUserRole = map[string]string{
-		"dev":    "developer",
-		"lead":   "lead developer",
-		"devops": "devops",
-		"admin":  "admin",
+	fakeUserRole = map[uint]string{
+		1: "developer",
+		2: "lead developer",
+		3: "devops",
+		4: "admin",
+	}
+}
+
+func initFakeEnvironmentTypes() {
+	fakeEnvironmentTypes = []EnvironmentType{
+		{
+			ID:   1,
+			Name: "dev",
+		},
+		{
+			ID:   2,
+			Name: "staging",
+		},
+		{
+			ID:   3,
+			Name: "prod",
+		},
+	}
+}
+
+func initFakeRolesEnvironmentTypes() {
+	fakeRolesEnvironmentTypes = []RolesEnvironmentType{}
+
+	matrix := [][]struct {
+		read  bool
+		write bool
+	}{
+		{ // role dev
+			{true, true},   // dev
+			{false, false}, // staging
+			{false, false}, // prod
+		},
+		{ // role lead dev
+			{true, true},   // dev
+			{false, false}, // staging
+			{false, false}, // prod
+		},
+		{ // role devops
+			{true, true}, // dev
+			{true, true}, // staging
+			{true, true}, // prod
+		},
+		{ // role admin
+			{true, true}, // dev
+			{true, true}, // staging
+			{true, true}, // prod
+		},
+	}
+
+	for n, line := range matrix {
+		for m, r := range line {
+			fakeRolesEnvironmentTypes = append(fakeRolesEnvironmentTypes,
+				RolesEnvironmentType{
+					ID:                uint(len(fakeRolesEnvironmentTypes) + 1),
+					RoleID:            fakeRoles[n].ID,
+					Role:              fakeRoles[n],
+					EnvironmentTypeID: fakeEnvironmentTypes[m].ID,
+					EnvironmentType:   fakeEnvironmentTypes[m],
+					Name:              "",
+					Read:              r.read,
+					Write:             r.write,
+				},
+			)
+		}
 	}
 }
 
@@ -64,9 +133,13 @@ func initFakeUserRoles() {
 func init() {
 	initFakeRoles()
 	initFakeUserRoles()
+	initFakeEnvironmentTypes()
+	initFakeRolesEnvironmentTypes()
 }
 
-type FakeRepo struct{}
+type FakeRepo struct {
+	err error
+}
 
 func (f *FakeRepo) CreateEnvironment(_ *Environment) IRepo {
 	panic("not implemented")
@@ -223,7 +296,7 @@ func (f *FakeRepo) ListProjectMembers(
 	panic("not implemented")
 }
 
-func (f *FakeRepo) ProjectAddMembers(_ Project, _ []MemberRole) IRepo {
+func (f *FakeRepo) ProjectAddMembers(_ Project, _ []MemberRole, _ User) IRepo {
 	panic("not implemented")
 }
 
@@ -259,65 +332,239 @@ func (f *FakeRepo) WriteMessage(_ User, _ Message) IRepo {
 	panic("not implemented")
 }
 
+func (f *FakeRepo) CheckMembersAreInProject(
+	_ Project,
+	_ []string,
+) ([]string, error) {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) DeleteAllProjectMembers(project *Project) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) DeleteProject(project *Project) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) DeleteProjectsEnvironments(project *Project) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetActivityLogs(
+	projectID string,
+	options GetLogsOptions,
+	logs *[]ActivityLog,
+) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetMessage(message *Message) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetProjectsOrganization(
+	projectuuid string,
+	orga *Organization,
+) IRepo {
+	*orga = Organization{
+		ID:             0,
+		Name:           "organization-namel",
+		Paid:           false,
+		Private:        false,
+		CustomerID:     "",
+		SubscriptionID: "",
+		UserID:         0,
+		User: User{
+			ID:            0,
+			AccountType:   "",
+			UserID:        "",
+			ExtID:         "",
+			Username:      "",
+			Fullname:      "",
+			Email:         "",
+			CreatedAt:     time.Now(),
+			UpdatedAt:     time.Now(),
+			Devices:       []Device{},
+			Organizations: []Organization{},
+		},
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	return f
+}
+
+func (f *FakeRepo) OrganizationCountMembers(_ *Organization, _ *int64) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetUserByEmail(_ string, _ *[]User) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) IsMemberOfProject(_ *Project, _ *ProjectMember) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) MessageService() *message.MessageService {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) ProjectGetAdmins(
+	project *Project,
+	members *[]ProjectMember,
+) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) ProjectIsMemberAdmin(
+	project *Project,
+	member *ProjectMember,
+) bool {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) SaveActivityLog(al *ActivityLog) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetDevices(_ uint, _ *[]Device) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetDevice(device *Device) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetDeviceByUserID(userID uint, device *Device) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) UpdateDeviceLastUsedAt(deviceUID string) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) RevokeDevice(userID uint, deviceUID string) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetAdminsFromUserProjects(
+	userID uint,
+	adminProjectsMap *map[string][]string,
+) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) CreateOrganization(orga *Organization) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) UpdateOrganization(orga *Organization) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) OrganizationSetCustomer(
+	organization *Organization,
+	customer string,
+) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) OrganizationSetSubscription(
+	organization *Organization,
+	subscription string,
+) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetOrganization(orga *Organization) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetOrganizations(userID uint, result *[]Organization) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetOwnedOrganizations(userID uint, result *[]Organization) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetOwnedOrganizationByName(
+	userID uint,
+	name string,
+	orgas *[]Organization,
+) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetOrganizationByName(
+	userID uint,
+	name string,
+	orga *[]Organization,
+) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetOrganizationProjects(
+	_ *Organization,
+	_ *[]Project,
+) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetOrganizationMembers(
+	orgaID uint,
+	result *[]ProjectMember,
+) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) IsUserOwnerOfOrga(_ *User, _ *Organization) (bool, error) {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) IsProjectOrganizationPaid(_ string) (bool, error) {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) CreateCheckoutSession(_ *CheckoutSession) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetCheckoutSession(_ string, _ *CheckoutSession) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) UpdateCheckoutSession(_ *CheckoutSession) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) DeleteCheckoutSession(_ *CheckoutSession) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) OrganizationSetPaid(
+	organization *Organization,
+	paid bool,
+) IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) GetUserProjects(userID uint, projects *[]Project) IRepo {
+	panic("not implemented")
+}
+
 func getRoleByEnvironmentTypeAndRole(
-	environmentType *EnvironmentType,
-	role *Role,
+	environmentTypeID uint,
+	roleID uint,
 ) RolesEnvironmentType {
-	switch {
-	case environmentType.Name == "dev" && (role.Name == "developer" || role.Name == "lead developer"):
-		return RolesEnvironmentType{
-			Read:  true,
-			Write: true,
-		}
-	case environmentType.Name == "staging" && (role.Name == "developer" || role.Name == "lead developer"):
-		return RolesEnvironmentType{
-			Read:  false,
-			Write: false,
-		}
-	case environmentType.Name == "prod" && (role.Name == "developer" || role.Name == "lead developer"):
-		return RolesEnvironmentType{
-			Read:  false,
-			Write: false,
-		}
-
-	case environmentType.Name == "dev" && role.Name == "devops":
-		return RolesEnvironmentType{
-			Read:  true,
-			Write: true,
-		}
-	case environmentType.Name == "staging" && role.Name == "devops":
-		return RolesEnvironmentType{
-			Read:  true,
-			Write: true,
-		}
-	case environmentType.Name == "prod" && role.Name == "devops":
-		return RolesEnvironmentType{
-			Read:  false,
-			Write: false,
-		}
-
-	case environmentType.Name == "dev" && role.Name == "admin":
-		return RolesEnvironmentType{
-			Read:  true,
-			Write: true,
-		}
-	case environmentType.Name == "staging" && role.Name == "admin":
-		return RolesEnvironmentType{
-			Read:  true,
-			Write: true,
-		}
-	case environmentType.Name == "prod" && role.Name == "admin":
-		return RolesEnvironmentType{
-			Read:  true,
-			Write: true,
-		}
-
-	default:
-		return RolesEnvironmentType{
-			Read:  false,
-			Write: false,
+	for _, re := range fakeRolesEnvironmentTypes {
+		if re.RoleID == roleID && re.EnvironmentTypeID == environmentTypeID {
+			return re
 		}
 	}
+
+	return RolesEnvironmentType{}
 }
 
 func findRole(role *Role) {
@@ -333,8 +580,8 @@ func findRole(role *Role) {
 	*role = fakeRoles[4]
 }
 
-func getRoleByUsername(userName string) (role Role) {
-	roleName, ok := fakeUserRole[userName]
+func getRoleByUserID(userID uint) (role Role) {
+	roleName, ok := fakeUserRole[userID]
 	if !ok {
 		roleName = "nothing"
 	}
@@ -346,25 +593,27 @@ func getRoleByUsername(userName string) (role Role) {
 }
 
 func (fakeRepo *FakeRepo) Err() error {
-	return nil
+	return fakeRepo.err
 }
 
 func (fakeRepo *FakeRepo) GetRolesEnvironmentType(
 	rolesEnvironmentType *RolesEnvironmentType,
 ) IRepo {
 	*rolesEnvironmentType = getRoleByEnvironmentTypeAndRole(
-		&rolesEnvironmentType.EnvironmentType,
-		&rolesEnvironmentType.Role,
+		rolesEnvironmentType.EnvironmentTypeID,
+		rolesEnvironmentType.RoleID,
 	)
+	if rolesEnvironmentType.ID == 0 {
+		fakeRepo.err = repo.ErrorNotFound
+	}
 
 	return fakeRepo
 }
 
 func (fakeRepo *FakeRepo) GetProjectMember(projectMember *ProjectMember) IRepo {
-	role := getRoleByUsername(projectMember.User.Username)
-	*projectMember = ProjectMember{
-		Role: role,
-	}
+	role := getRoleByUserID(projectMember.UserID)
+	projectMember.RoleID = role.ID
+	projectMember.Role = role
 
 	return fakeRepo
 }
@@ -377,6 +626,8 @@ func (fakeRepo *FakeRepo) GetInvitableRoles(role Role, roles *[]Role) IRepo {
 
 func (fakeRepo *FakeRepo) GetChildrenRoles(role Role, roles *[]Role) IRepo {
 	switch role.ID {
+	case 4:
+		*roles = []Role{fakeRoles[0], fakeRoles[1], fakeRoles[2]}
 	case 3:
 		*roles = []Role{fakeRoles[0], fakeRoles[1]}
 
@@ -399,20 +650,41 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 	fakeRepo := &FakeRepo{}
 	project := &Project{}
 
-	userDev := &User{Username: "dev"}
-	userLeadDev := &User{Username: "lead"}
-	userDevops := &User{Username: "devops"}
-	userAdmin := &User{Username: "admin"}
+	userDev := &User{ID: 1, Username: "dev", UserID: "dev"}
+	userLeadDev := &User{ID: 2, Username: "lead", UserID: "lead"}
+	userDevops := &User{ID: 3, Username: "devops", UserID: "devops"}
+	userAdmin := &User{ID: 4, Username: "admin", UserID: "admin"}
 
-	environmentDev := &Environment{Name: "dev"}
-	environmentStaging := &Environment{Name: "staging"}
-	environmentProd := &Environment{Name: "prod"}
+	environmentDev := &Environment{
+		Name:              "dev",
+		EnvironmentTypeID: 1,
+		EnvironmentType: EnvironmentType{
+			ID:   1,
+			Name: "dev",
+		},
+	}
+	environmentStaging := &Environment{
+		Name:              "staging",
+		EnvironmentTypeID: 2,
+		EnvironmentType: EnvironmentType{
+			ID:   2,
+			Name: "staging",
+		},
+	}
+	environmentProd := &Environment{
+		Name:              "prod",
+		EnvironmentTypeID: 3,
+		EnvironmentType: EnvironmentType{
+			ID:   3,
+			Name: "prod",
+		},
+	}
 
 	users := map[string]*User{
-		"dev":    userDev,
-		"lead":   userLeadDev,
-		"devops": userDevops,
-		"admin":  userAdmin,
+		"developer":      userDev,
+		"lead developer": userLeadDev,
+		"devops":         userDevops,
+		"admin":          userAdmin,
 	}
 
 	environments := map[string]*Environment{
@@ -421,13 +693,13 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 		"prod":    environmentProd,
 	}
 
-	var rightsMatrix map[string]map[string]rw = map[string]map[string]rw{
-		"dev": {
+	rightsMatrix := map[string]map[string]rw{
+		"developer": {
 			"dev":     {true, true},
 			"staging": {false, false},
 			"prod":    {false, false},
 		},
-		"lead": {
+		"lead developer": {
 			"dev":     {true, true},
 			"staging": {false, false},
 			"prod":    {false, false},
@@ -435,7 +707,7 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 		"devops": {
 			"dev":     {true, true},
 			"staging": {true, true},
-			"prod":    {false, false},
+			"prod":    {true, true},
 		},
 		"admin": {
 			"dev":     {true, true},
@@ -485,54 +757,54 @@ func TestUserCanSetMemberRole(t *testing.T) {
 	fakeRepo := FakeRepo{}
 	project := Project{}
 
-	userDev := User{Username: "dev"}
-	userLeadDev := User{Username: "lead"}
-	userDevops := User{Username: "devops"}
-	userAdmin := User{Username: "admin"}
+	userDev := &User{ID: 1, Username: "dev", UserID: "dev"}
+	userLeadDev := &User{ID: 2, Username: "lead", UserID: "lead"}
+	userDevops := &User{ID: 3, Username: "devops", UserID: "devops"}
+	userAdmin := &User{ID: 4, Username: "admin", UserID: "admin"}
 
-	users := map[string]User{
+	users := map[string]*User{
 		"dev":    userDev,
 		"lead":   userLeadDev,
 		"devops": userDevops,
 		"admin":  userAdmin,
 	}
 
-	rightsMatrix := map[string]map[string]bool{
+	rightsMatrix := map[string]map[*User]bool{
 		"dev": {
-			"dev":    false,
-			"lead":   false,
-			"devops": false,
-			"admin":  false,
+			userDev:     false,
+			userLeadDev: false,
+			userDevops:  false,
+			userAdmin:   false,
 		},
 		"lead": {
-			"dev":    true,
-			"lead":   true,
-			"devops": false,
-			"admin":  false,
+			userDev:     true,
+			userLeadDev: true,
+			userDevops:  false,
+			userAdmin:   false,
 		},
 		"devops": {
-			"dev":    true,
-			"lead":   true,
-			"devops": true,
-			"admin":  false,
+			userDev:     true,
+			userLeadDev: true,
+			userDevops:  true,
+			userAdmin:   false,
 		},
 		"admin": {
-			"dev":    true,
-			"lead":   true,
-			"devops": true,
-			"admin":  true,
+			userDev:     true,
+			userLeadDev: true,
+			userDevops:  true,
+			userAdmin:   true,
 		},
 	}
 
 	for name, user := range users {
 		for otherName, otherUser := range users {
-			expectation := rightsMatrix[name][otherName]
-			role := getRoleByUsername(otherName)
+			expectation := rightsMatrix[name][otherUser]
+			role := getRoleByUserID(otherUser.ID)
 
 			canSetMemberRole, _ := CanUserSetMemberRole(
 				&fakeRepo,
-				user,
-				otherUser,
+				*user,
+				*otherUser,
 				role,
 				project,
 			)

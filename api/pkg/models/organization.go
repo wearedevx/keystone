@@ -10,12 +10,12 @@ import (
 )
 
 type Organization struct {
-	ID             uint      `json:"id"              gorm:"primaryKey"`
+	ID             uint      `json:"id"              gorm:"primaryKey" faker:"-"`
 	Name           string    `json:"name"            gorm:"unique"`
-	Paid           bool      `json:"paid"`
-	Private        bool      `json:"private"`
-	CustomerID     string    `json:"customer_id"`
-	SubscriptionID string    `json:"subscription_id"`
+	Paid           bool      `json:"paid" faker:"-"`
+	Private        bool      `json:"private" faker:"-"`
+	CustomerID     string    `json:"customer_id" faker:""`
+	SubscriptionID string    `json:"subscription_id" faker:""`
 	UserID         uint      `json:"user_id"`
 	User           User      `json:"user"`
 	CreatedAt      time.Time `json:"created_at"`

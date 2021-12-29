@@ -14,7 +14,11 @@ func (repo *Repo) GetProjectMember(projectMember *models.ProjectMember) IRepo {
 
 	repo.err = repo.GetDb().
 		Preload("Role").
-		Where(projectMember).
+		Where(
+			"project_id = ? AND user_id = ?",
+			projectMember.ProjectID,
+			projectMember.UserID,
+		).
 		First(projectMember).
 		Error
 

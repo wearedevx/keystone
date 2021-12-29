@@ -25,11 +25,11 @@ func (repo *Repo) GetLoginRequest(code string) (models.LoginRequest, bool) {
 	lr := models.LoginRequest{}
 
 	if repo.Err() == nil {
-		repo.err = repo.GetDb().Where(
-			&models.LoginRequest{
-				TemporaryCode: code,
-			},
-		).First(&lr).Error
+		repo.err = repo.
+			GetDb().
+			Where("temporary_code = ?", code).
+			First(&lr).
+			Error
 	}
 
 	return lr, repo.err == nil

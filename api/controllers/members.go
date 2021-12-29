@@ -24,7 +24,9 @@ func DoUsersExist(
 	user models.User,
 ) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
-	response := &models.CheckMembersResponse{}
+	response := &models.CheckMembersResponse{
+		Success: true,
+	}
 	payload := &models.CheckMembersPayload{}
 	log := models.ActivityLog{
 		UserID: &user.ID,
@@ -153,33 +155,4 @@ func PutMembersSetRole(
 
 done:
 	return response, status, log.SetError(err)
-}
-
-func checkUserCanChangeMember(
-	Repo repo.IRepo,
-	user models.User,
-	project models.Project,
-	other models.User,
-) (can bool, err error) {
-	projectMember := models.ProjectMember{
-		UserID:    user.ID,
-		ProjectID: project.ID,
-	}
-	otherProjectMember := models.ProjectMember{
-		UserID:    other.ID,
-		ProjectID: project.ID,
-	}
-
-	if err = Repo.
-		GetProjectMember(&projectMember).
-		GetProjectMember(&otherProjectMember).
-		Err(); err != nil {
-		return false, err
-	}
-
-	return rights.CanRoleAddRole(
-		Repo,
-		projectMember.Role,
-		otherProjectMember.Role,
-	)
 }

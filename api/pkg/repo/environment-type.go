@@ -1,10 +1,10 @@
 package repo
 
 import (
-	. "github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
-func (repo *Repo) CreateEnvironmentType(envType *EnvironmentType) IRepo {
+func (repo *Repo) CreateEnvironmentType(envType *models.EnvironmentType) IRepo {
 	if repo.err != nil {
 		return repo
 	}
@@ -14,7 +14,7 @@ func (repo *Repo) CreateEnvironmentType(envType *EnvironmentType) IRepo {
 	return repo
 }
 
-func (repo *Repo) GetEnvironmentType(envType *EnvironmentType) IRepo {
+func (repo *Repo) GetEnvironmentType(envType *models.EnvironmentType) IRepo {
 	if repo.err != nil {
 		return repo
 	}
@@ -24,7 +24,7 @@ func (repo *Repo) GetEnvironmentType(envType *EnvironmentType) IRepo {
 	return repo
 }
 
-func (repo *Repo) GetOrCreateEnvironmentType(envType *EnvironmentType) IRepo {
+func (repo *Repo) GetOrCreateEnvironmentType(envType *models.EnvironmentType) IRepo {
 	if repo.err != nil {
 		return repo
 	}

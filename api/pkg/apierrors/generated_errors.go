@@ -6,7 +6,7 @@ var (
 	ErrorUnknown                       error = errors.New("unknown")
 	ErrorBadRequest                    error = errors.New("bad request")
 	ErrorPermissionDenied              error = errors.New("permission denied")
-	ErrorEmptyPayload                  error = errors.New("empty payload cannot be wrtten")
+	ErrorEmptyPayload                  error = errors.New("empty payload cannot be written")
 	ErrorFailedToCreateResource        error = errors.New("failed to create resource")
 	ErrorFailedToGetResource           error = errors.New("failed to get")
 	ErrorFailedToUpdateResource        error = errors.New("failed to update")

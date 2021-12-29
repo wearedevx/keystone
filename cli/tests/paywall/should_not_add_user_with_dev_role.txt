@@ -1,7 +1,5 @@
 # Init a project
 
-exec echo $USER_ID
-
 ks init add-member-project  -o $USER_ID
 
 

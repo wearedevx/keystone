@@ -81,13 +81,22 @@ install:
 run-test:
 	go run -tags test -ldflags "$(LDFLAGS)" main.go
 
+test:
+	if [ -f "${TMPDIR}keystone_gorm.db" ]; then rm "${TMPDIR}keystone_gorm.db"; fi
+	touch "${TMPDIR}keystone_gorm.db"
+	go test -tags test -coverprofile cover.out.tmp ./...
+	cat cover.out.tmp | grep -v "generated_" | grep -v "_testing" > cover.out
+	rm cover.out.tmp
+
 run:
 	reflex \
+		-R generated \
 		-s -- \
 		sh -c 'go generate && go run -ldflags "$(LDFLAGS)" main.go'
 
 run-debug:
 	reflex \
 		-R server \
+		-R generated \
 		-s -- \
 		sh -c "make build-debug && dlv --listen=:40000 --headless=true --api-version=2 --accept-multiclient --log exec --continue ./server"

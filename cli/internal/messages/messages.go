@@ -173,7 +173,7 @@ func (s *messageService) decryptMessages(
 	for environmentName, environment := range byEnvironment.Environments {
 		msg := environment.Message
 		if msg.Sender.UserID != "" && len(msg.Payload) > 0 {
-			upks, e := s.client.Users().GetUserPublicKey(msg.Sender.UserID)
+			udevices, e := s.client.Users().GetUserKeys(msg.Sender.UserID)
 			if e != nil {
 				return kserrors.CouldNotDecryptMessages(
 					fmt.Sprintf(
@@ -184,7 +184,7 @@ func (s *messageService) decryptMessages(
 				)
 			}
 
-			if len(upks.PublicKeys) == 0 {
+			if len(udevices.Devices) == 0 {
 				return kserrors.CouldNotDecryptMessages(
 					fmt.Sprintf(
 						"User %s has no public keys",
@@ -194,7 +194,7 @@ func (s *messageService) decryptMessages(
 				)
 			}
 
-			if len(upks.PublicKeys) == 0 {
+			if len(udevices.Devices) == 0 {
 				return kserrors.CouldNotDecryptMessages(
 					fmt.Sprintf("User %s has no public keys", msg.Sender.UserID),
 					nil,
@@ -202,7 +202,7 @@ func (s *messageService) decryptMessages(
 			}
 
 			var udevice models.Device
-			for _, device := range upks.PublicKeys {
+			for _, device := range udevices.Devices {
 				if device.ID == msg.SenderDeviceID {
 					udevice = device
 				}
@@ -331,13 +331,13 @@ func (s *messageService) SendEnvironmentsToOneMember(
 			return s
 		}
 
-		var recipientPublicKeys models.UserPublicKeys
+		var recipientDevices models.UserDevices
 		found := false
 
 		for _, upk := range userPublicKeys.Keys {
 			if upk.UserUID == member {
-				recipientPublicKeys.PublicKeys = upk.PublicKeys
-				recipientPublicKeys.UserID = upk.UserID
+				recipientDevices.Devices = upk.Devices
+				recipientDevices.UserID = upk.UserID
 				found = true
 			}
 		}
@@ -356,12 +356,12 @@ func (s *messageService) SendEnvironmentsToOneMember(
 			return s
 		}
 
-		for _, recipientPublicKey := range recipientPublicKeys.PublicKeys {
+		for _, recipientPublicKey := range recipientDevices.Devices {
 			message, err := s.prepareMessage(
 				senderPrivateKey,
 				environment,
 				recipientPublicKey,
-				recipientPublicKeys.UserID,
+				recipientDevices.UserID,
 				PayloadContent,
 			)
 			if err != nil {
@@ -431,15 +431,15 @@ func (s *messageService) prepareMessages(
 	}
 
 	// Create one message per user
-	for _, userPublicKey := range userPublicKeys.Keys {
-		for _, userDevice := range userPublicKey.PublicKeys {
+	for _, userDevices := range userPublicKeys.Keys {
+		for _, devices := range userDevices.Devices {
 			// Do send to current device !!!
 			// And all others also of course
 			message, err := s.prepareMessage(
 				senderPrivateKey,
 				environment,
-				userDevice,
-				userPublicKey.UserID,
+				devices,
+				userDevices.UserID,
 				PayloadContent,
 			)
 			if err != nil {

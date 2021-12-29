@@ -37,10 +37,10 @@ func (u *Users) GetEnvironmentPublicKeys(
 	return result, err
 }
 
-// GetUserPublicKey method returns the public key of a specific user
-func (u *Users) GetUserPublicKey(
+// GetUserKeys method returns the public key of a specific user
+func (u *Users) GetUserKeys(
 	userID string,
-) (result models.UserPublicKeys, err error) {
+) (result models.UserDevices, err error) {
 	err = u.r.get("/users/"+userID+"/key", &result, nil)
 
 	return result, err

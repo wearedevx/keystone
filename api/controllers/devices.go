@@ -11,7 +11,7 @@ import (
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
-// Returns a List of Roles
+// GetDevices function returns the list of devices for a user
 func GetDevices(
 	_ router.Params,
 	_ io.ReadCloser,
@@ -29,18 +29,14 @@ func GetDevices(
 	}
 
 	if err = Repo.GetDevices(user.ID, &result.Devices).Err(); err != nil {
-		if errors.Is(err, repo.ErrorNotFound) {
-			status = http.StatusNotFound
-			err = apierrors.ErrorNoDevice()
-		} else {
-			status = http.StatusInternalServerError
-			err = apierrors.ErrorFailedToGetResource(err)
-		}
+		status = http.StatusInternalServerError
+		err = apierrors.ErrorFailedToGetResource(err)
 	}
 
 	return &result, status, log.SetError(err)
 }
 
+// DeleteDevice function deletes a device
 func DeleteDevice(
 	params router.Params,
 	_ io.ReadCloser,

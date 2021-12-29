@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"io"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -22,6 +23,9 @@ type ProjectMember struct {
 }
 
 func (pm *ProjectMember) BeforeCreate(tx *gorm.DB) (err error) {
+	if pm.UserID == 15 && pm.ProjectID == 4 {
+		debug.PrintStack()
+	}
 	pm.CreatedAt = time.Now()
 	pm.UpdatedAt = time.Now()
 
@@ -160,7 +164,7 @@ func (pm *RemoveMembersResponse) Serialize(out *string) (err error) {
 }
 
 type CheckMembersResponse struct {
-	Success bool   `json:"success"`
+	Success bool   `json:"success" default:"true"`
 	Error   string `json:"error"`
 }
 
