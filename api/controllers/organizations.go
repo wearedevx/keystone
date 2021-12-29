@@ -56,6 +56,16 @@ func GetOrganizations(
 				Err()
 		}
 
+	case organizationName == "" && owned:
+		method = func() error {
+			return Repo.
+				GetOwnedOrganizations(
+					user.ID,
+					&result.Organizations,
+				).
+				Err()
+		}
+
 	default:
 		method = func() error {
 			return Repo.
@@ -85,38 +95,43 @@ func PostOrganization(
 	Repo repo.IRepo,
 	user models.User,
 ) (_ router.Serde, status int, err error) {
-	status = http.StatusOK
+	status = http.StatusCreated
 	log := models.ActivityLog{
 		UserID: &user.ID,
 		Action: "PostOrganization",
 	}
 
-	orga := models.Organization{}
+	orga := &models.Organization{}
 
 	if err = orga.Deserialize(body); err != nil {
 		status = http.StatusBadRequest
 		err = apierrors.ErrorBadRequest(err)
+		orga = nil
 		goto done
 	}
 
 	orga.UserID = user.ID
+	orga.Paid = false
 
-	if err = Repo.CreateOrganization(&orga).Err(); err != nil {
+	if err = Repo.CreateOrganization(orga).Err(); err != nil {
 		switch {
 		case errors.Is(err, repo.ErrorBadName):
 			status = http.StatusBadRequest
 			err = apierrors.ErrorBadOrganizationName()
+			orga = nil
 		case errors.Is(err, repo.ErrorNameTaken):
 			status = http.StatusConflict
 			err = apierrors.ErrorOrganizationNameAlreadyTaken()
+			orga = nil
 		default:
 			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToCreateResource(err)
+			orga = nil
 		}
 	}
 
 done:
-	return &orga, status, log.SetError(err)
+	return orga, status, log.SetError(err)
 }
 
 func UpdateOrganization(
@@ -132,15 +147,31 @@ func UpdateOrganization(
 	}
 
 	var isOwner bool
-	orga := models.Organization{}
+	var orga *models.Organization = &models.Organization{}
+	inputOrga := models.Organization{}
 
-	if err = orga.Deserialize(body); err != nil {
+	if err = inputOrga.Deserialize(body); err != nil {
 		status = http.StatusBadRequest
 		err = apierrors.ErrorBadRequest(err)
+		orga = nil
 		goto done
 	}
 
-	isOwner, err = Repo.IsUserOwnerOfOrga(&user, &orga)
+	orga.ID = inputOrga.ID
+	if err = Repo.GetOrganization(orga).Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusNotFound
+			orga = nil
+			goto done
+		}
+	}
+
+	if orga.Name != inputOrga.Name && inputOrga.Name != "" {
+		orga.Name = inputOrga.Name
+	}
+	orga.Private = inputOrga.Private
+
+	isOwner, err = Repo.IsUserOwnerOfOrga(&user, orga)
 
 	switch {
 	case err != nil:
@@ -149,24 +180,28 @@ func UpdateOrganization(
 	case !isOwner:
 		status = http.StatusForbidden
 		err = apierrors.ErrorNotOrganizationOwner()
+		orga = nil
 	default:
-		if err = Repo.UpdateOrganization(&orga).Err(); err != nil {
+		if err = Repo.UpdateOrganization(orga).Err(); err != nil {
 			if errors.Is(err, repo.ErrorBadName) {
-				status = http.StatusForbidden
+				status = http.StatusBadRequest
 				err = apierrors.ErrorBadOrganizationName()
+				orga = nil
 
 			} else if errors.Is(err, repo.ErrorNameTaken) {
 				status = http.StatusConflict
 				err = apierrors.ErrorOrganizationNameAlreadyTaken()
+				orga = nil
 			} else {
 				status = http.StatusInternalServerError
 				err = apierrors.ErrorFailedToUpdateResource(err)
+				orga = nil
 			}
 		}
 	}
 
 done:
-	return &orga, status, log.SetError(err)
+	return orga, status, log.SetError(err)
 }
 
 func GetOrganizationProjects(

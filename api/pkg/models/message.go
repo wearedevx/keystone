@@ -11,13 +11,13 @@ import (
 )
 
 type Message struct {
-	ID                uint        `json:"id"                  gorm:"primaryKey"`
+	ID                uint        `json:"id"                  gorm:"primaryKey"               faker:"-"`
 	Payload           []byte      `                           gorm:"-"`
-	Sender            User        `json:"sender"`
+	Sender            User        `json:"sender"                                              faker:"-"`
 	SenderID          uint        `json:"sender_id"`
-	Recipient         User        `json:"recipient"`
+	Recipient         User        `json:"recipient"                                           faker:"-"`
 	RecipientID       uint        `json:"recipient_id"`
-	Environment       Environment `json:"environment"         gorm:"References:EnvironmentID"`
+	Environment       Environment `json:"environment"         gorm:"References:EnvironmentID" faker:"-"`
 	EnvironmentID     string      `json:"environment_id"`
 	Uuid              string      `json:"uuid"`
 	RecipientDeviceID uint        `json:"recipient_device_id"`
@@ -76,7 +76,7 @@ type MessageToWritePayload struct {
 	UserID                   string `json:"userid"`
 	RecipientID              uint   `json:"recipient_id"`
 	EnvironmentID            string `json:"environment_id"`
-	UpdateEnvironmentVersion bool   `json:"update_environment_id"`
+	UpdateEnvironmentVersion bool   `json:"update_environment_version"`
 }
 
 type MessagesToWritePayload struct {

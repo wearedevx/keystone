@@ -23,7 +23,7 @@ func (r *Repo) createProject(project *models.Project) IRepo {
 		Name: "admin",
 	}
 
-	r.err = db.Create(project).Error
+	r.err = db.Omit("Organization").Omit("User").Create(project).Error
 
 	r.GetRole(&role)
 
@@ -131,7 +131,6 @@ func (r *Repo) GetOrCreateProject(project *models.Project) IRepo {
 
 // ProjectGetMembers returns all members of a project with
 // their role
-// TODO: implement paid role restrictions
 func (r *Repo) ProjectGetMembers(
 	project *models.Project,
 	members *[]models.ProjectMember,
@@ -181,15 +180,14 @@ func (r *Repo) ProjectIsMemberAdmin(
 	}
 
 	err := r.GetDb().
-		Joins(
-			"inner join users as u on u.id = ?",
+		Joins("inner join users as u on u.id = project_members.user_id").
+		Joins("inner join roles as r on role_id = r.id").
+		Where(
+			"project_id = ? AND project_members.user_id = ? AND r.name = ?",
+			project.ID,
 			member.UserID,
-		).
-		Joins(
-			"inner join roles as r on role_id = r.id and r.name = ?",
 			"admin",
 		).
-		Where("project_id = ?", project.ID).
 		First(member).
 		Error
 	if err != nil {
@@ -433,7 +431,12 @@ func (r *Repo) DeleteProject(project *models.Project) IRepo {
 }
 
 func (r *Repo) GetUserProjects(userID uint, projects *[]models.Project) IRepo {
-	if err := r.GetDb().Joins("left join project_members pm on projects.ID = pm.project_id").Where("pm.user_id = ?", userID).Find(&projects).Error; err != nil {
+	if err := r.
+		GetDb().
+		Joins("inner join project_members pm on projects.ID = pm.project_id").
+		Where("pm.user_id = ?", userID).
+		Find(&projects).
+		Error; err != nil {
 		r.err = err
 	}
 
@@ -453,7 +456,10 @@ func (r *Repo) GetProjectsOrganization(
 
 	organization.ID = project.OrganizationID
 
-	r.GetDb().First(&organization)
+	r.GetDb().
+		Model(organization).
+		Where("id = ?", project.OrganizationID).
+		First(organization)
 
 	return r
 }

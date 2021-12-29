@@ -39,6 +39,22 @@ func newParams(req *http.Request, params httprouter.Params) Params {
 	}
 }
 
+func ParamsFrom(data map[string]string) Params {
+	urlParams := httprouter.Params{}
+
+	for k, v := range data {
+		urlParams = append(urlParams, httprouter.Param{
+			Key:   k,
+			Value: v,
+		})
+	}
+
+	return Params{
+		urlParams: urlParams,
+		urlQuery:  url.Values{},
+	}
+}
+
 func (p Params) Get(key string) string {
 	if v := p.urlParams.ByName(key); v != "" {
 		return v
@@ -82,8 +98,8 @@ func AuthedHandler(handler Handler) httprouter.Handle {
 				message := err.Error()
 
 				if errors.Is(err, repo.ErrorNotFound) {
-					status = http.StatusNotFound
-					message = fmt.Sprintf("No user with id: %s", userID)
+					status = http.StatusUnauthorized
+					message = ""
 				}
 
 				http.Error(dw, message, status)

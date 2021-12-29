@@ -15,7 +15,7 @@ import (
 func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router := httprouter.New()
 
-	router.POST("/", PostUser)
+	// router.POST("/", PostUser)
 	router.GET("/healthcheck", GetHealthCheck)
 	router.GET("/", AuthedHandler(GetUser))
 
@@ -29,7 +29,7 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	)
 	router.POST(
 		"/projects/:projectID/members",
-		AuthedHandler(PostProjectsMembers),
+		AuthedHandler(PostProjectMembers),
 	)
 	router.DELETE(
 		"/projects/:projectID/members",

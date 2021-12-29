@@ -17,15 +17,19 @@ func (repo *Repo) CreateRoleEnvironmentType(
 }
 
 func (repo *Repo) GetOrCreateRoleEnvType(
-	rolesEnvironmentType *models.RolesEnvironmentType,
+	ret *models.RolesEnvironmentType,
 ) IRepo {
 	if repo.err != nil {
 		return repo
 	}
 
 	repo.err = repo.GetDb().
-		Where(*rolesEnvironmentType).
-		FirstOrCreate(rolesEnvironmentType).
+		Where(
+			"role_id = ? and environment_type_id = ?",
+			ret.RoleID,
+			ret.EnvironmentTypeID,
+		).
+		FirstOrCreate(ret).
 		Error
 
 	return repo

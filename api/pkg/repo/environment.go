@@ -52,16 +52,14 @@ func (repo *Repo) GetEnvironmentsByProjectUUID(
 	projectUUID string,
 	foundEnvironments *[]models.Environment,
 ) IRepo {
-	var project models.Project
-	repo.err = repo.GetDb().
-		Model(&models.Project{}).
-		Where("uuid = ?", projectUUID).
-		First(&project).
-		Error
+	if repo.err != nil {
+		return repo
+	}
 
 	repo.err = repo.GetDb().
 		Model(&models.Environment{}).
-		Where("project_id = ?", project.ID).
+		Joins("inner join projects p on p.id = project_id").
+		Where("p.uuid = ?", projectUUID).
 		Find(&foundEnvironments).
 		Error
 
@@ -72,7 +70,7 @@ func (repo *Repo) SetNewVersionID(environment *models.Environment) error {
 	newVersionID := uuid.NewV4().String()
 	repo.err = repo.GetDb().
 		Model(&models.Environment{}).
-		Where(environment).
+		Where(*environment).
 		Update("version_id", newVersionID).
 		Error
 	environment.VersionID = newVersionID
@@ -118,8 +116,8 @@ func (repo *Repo) GetEnvironmentPublicKeys(
 
 		for i, pk := range publicKeys.Keys {
 			if pk.UserID == UserID {
-				publicKeys.Keys[i].PublicKeys = append(
-					pk.PublicKeys,
+				publicKeys.Keys[i].Devices = append(
+					pk.Devices,
 					models.Device{
 						PublicKey: PublicKey,
 						Name:      DeviceName,
@@ -132,9 +130,9 @@ func (repo *Repo) GetEnvironmentPublicKeys(
 		}
 
 		if !found {
-			publicKeys.Keys = append(publicKeys.Keys, models.UserPublicKeys{
+			publicKeys.Keys = append(publicKeys.Keys, models.UserDevices{
 				UserID: UserID,
-				PublicKeys: []models.Device{
+				Devices: []models.Device{
 					{
 						PublicKey: PublicKey,
 						Name:      DeviceName,

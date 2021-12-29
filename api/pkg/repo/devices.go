@@ -158,6 +158,7 @@ func (r *Repo) AddNewDevice(
 		return r
 	}
 
+	// TODO: #119 sending emails should not be done in the repo package
 	for adminEmail, projectList := range adminProjectsMap {
 		// Send mail to admins of user projects
 		e, err := emailer.NewDeviceAdminMail(userName, projectList, device.Name)

@@ -25,8 +25,8 @@ import (
 var Redis *redis.Redis
 
 type GenericResponse struct {
-	Success bool  `json:"success"`
-	Error   error `json:"error"`
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
 }
 
 func (gr *GenericResponse) Deserialize(in io.Reader) error {
@@ -50,14 +50,11 @@ func GetMessagesFromProjectByUser(
 	user models.User,
 ) (_ router.Serde, status int, err error) {
 	status = http.StatusOK
-	response := GenericResponse{
-		Success: false,
-	}
 
 	projectID := params.Get("projectID")
 	deviceUID := params.Get("device")
 	project := models.Project{UUID: projectID}
-	publicKey := models.Device{}
+	device := models.Device{}
 	var environments []models.Environment
 	result := models.GetMessageByEnvironmentResponse{
 		Environments: map[string]models.GetMessageResponse{},
@@ -68,15 +65,14 @@ func GetMessagesFromProjectByUser(
 	}
 
 	// Get publicKey by device name to send message to current user device
-	publicKey.UID = deviceUID
+	device.UID = deviceUID
 
 	if err = Repo.
 		GetProject(&project).
-		GetDeviceByUserID(user.ID, &publicKey).
+		GetDeviceByUserID(user.ID, &device).
 		GetEnvironmentsByProjectUUID(projectID, &environments).
 		Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
-			response.Error = err
 			status = http.StatusNotFound
 			goto done
 		}
@@ -94,9 +90,13 @@ func GetMessagesFromProjectByUser(
 		log.Environment = environment
 
 		can, err = rights.
-			CanUserReadEnvironment(Repo, user.ID, project.ID, &environment)
+			CanUserReadEnvironment(
+				Repo,
+				user.ID,
+				project.ID,
+				&environment,
+			)
 		if err != nil {
-			response.Error = err
 			status = http.StatusNotFound
 			err = apierrors.ErrorFailedToGetPermission(err)
 			goto done
@@ -106,12 +106,10 @@ func GetMessagesFromProjectByUser(
 			curr := models.GetMessageResponse{}
 			if err = Repo.
 				GetMessagesForUserOnEnvironment(
-					publicKey,
+					device,
 					environment,
 					&curr.Message,
 				).Err(); err != nil {
-				response.Error = err
-				response.Success = false
 				status = http.StatusBadRequest
 				err = apierrors.ErrorFailedToGetResource(err)
 				goto done
@@ -179,22 +177,31 @@ func WriteMessages(
 		if len(clientMessage.Payload) == 0 {
 			status = http.StatusBadRequest
 			err = apierrors.ErrorEmptyPayload()
+			response = nil
+			goto done
+		}
+		environment := models.Environment{
+			EnvironmentID: clientMessage.EnvironmentID,
+		}
+		if err = Repo.
+			GetEnvironment(&environment).
+			Err(); err != nil {
+			status = http.StatusNotFound
+			response = nil
 			goto done
 		}
 
 		// - gather information for the checks
 		projectMember := models.ProjectMember{
-			UserID: clientMessage.RecipientID,
-		}
-		environment := models.Environment{
-			EnvironmentID: clientMessage.EnvironmentID,
+			UserID:    clientMessage.RecipientID,
+			ProjectID: environment.ProjectID,
 		}
 
 		if err = Repo.
 			GetProjectMember(&projectMember).
-			GetEnvironment(&environment).
 			Err(); err != nil {
 			status = http.StatusNotFound
+			response = nil
 			goto done
 		}
 
@@ -204,7 +211,10 @@ func WriteMessages(
 		// If organization has not paid and there is no admin in the project,
 		// messages cannot be written
 		has, err = rights.
-			HasOrganizationNotPaidAndHasNonAdmin(Repo, environment.Project)
+			HasOrganizationNotPaidAndHasNonAdmin(
+				Repo,
+				environment.Project,
+			)
 
 		if err != nil {
 			status = http.StatusInternalServerError
@@ -262,6 +272,7 @@ func WriteMessages(
 				clientMessage.EnvironmentID,
 			).
 			Err(); err != nil {
+			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToDeleteResource(err)
 			break
 		}
@@ -275,8 +286,9 @@ func WriteMessages(
 				status = http.StatusNotFound
 			} else {
 				status = http.StatusInternalServerError
-				err = apierrors.ErrorNoDevice()
 			}
+			err = apierrors.ErrorNoDevice()
+			response = nil
 
 			goto done
 		}
@@ -291,6 +303,7 @@ func WriteMessages(
 		}
 
 		if err = Repo.WriteMessage(user, *messageToWrite).Err(); err != nil {
+			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToWriteMessage(err)
 			break
 		}
@@ -301,6 +314,7 @@ func WriteMessages(
 				messageToWrite.Uuid,
 				clientMessage.Payload,
 			); err != nil {
+			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToWriteMessage(err)
 		}
 
@@ -321,7 +335,10 @@ func WriteMessages(
 		}
 
 		// Change environment version id.
-		response.Environments = append(response.Environments, environment)
+		response.Environments = append(
+			response.Environments,
+			environment,
+		)
 	}
 
 done:
@@ -348,7 +365,7 @@ func DeleteMessage(
 	id, err := strconv.ParseUint(messageID, 10, 64)
 	if err != nil {
 		response.Success = false
-		response.Error = err
+		response.Error = err.Error()
 		err = nil
 
 		goto done
@@ -363,7 +380,7 @@ func DeleteMessage(
 			status = http.StatusNotFound
 			goto done
 		}
-		response.Error = err
+		response.Error = err.Error()
 		response.Success = false
 		err = apierrors.ErrorFailedToDeleteResource(err)
 
@@ -430,7 +447,13 @@ func DeleteExpiredMessages(
 		return Repo.Err()
 	})
 	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		fmt.Printf("[ERROR] Removing expired messages: %+v\n", err)
+		http.Error(
+			w,
+			"Internal Server Error",
+			http.StatusInternalServerError,
+		)
+		return
 	}
 
 	http.Error(w, "OK", http.StatusOK)
@@ -462,7 +485,9 @@ func AlertMessagesWillExpire(
 
 	// Actual work
 	err := repo.Transaction(func(Repo repo.IRepo) error {
-		groupedMessageUser := make(map[uint]emailer.GroupedMessagesUser)
+		groupedMessageUser := make(
+			map[uint]emailer.GroupedMessagesUser,
+		)
 
 		Repo.GetGroupedMessagesWillExpireByUser(&groupedMessageUser)
 
@@ -484,9 +509,17 @@ func AlertMessagesWillExpire(
 	})
 
 	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		fmt.Printf("[ERROR] Sending Expiration Emails: %+v\n", err)
+		http.Error(
+			w,
+			"Internal Server Error",
+			http.StatusInternalServerError,
+		)
+		return
 	} else if len(errors) > 0 {
+		fmt.Printf("[ERROR] Sending Expiration Emails: %+v\n", errors)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 
 	http.Error(w, "OK", http.StatusOK)

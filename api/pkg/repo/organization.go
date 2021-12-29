@@ -35,6 +35,10 @@ func (r *Repo) GetOrganizationByName(
 		Find(&orgas).
 		Error
 
+	if len(*orgas) == 0 {
+		r.err = gorm.ErrRecordNotFound
+	}
+
 	return r
 }
 
@@ -53,6 +57,10 @@ func (r *Repo) GetOwnedOrganizationByName(
 		Where("organizations.name = ?", name).
 		Find(&orgas).
 		Error
+
+	if len(*orgas) == 0 {
+		r.err = gorm.ErrRecordNotFound
+	}
 
 	return r
 }
@@ -93,7 +101,7 @@ func (r *Repo) GetOrganization(orga *models.Organization) IRepo {
 	}
 
 	r.err = r.GetDb().
-		Where(&orga).
+		Where(*orga).
 		Preload("User").
 		First(&orga).
 		Error
@@ -199,6 +207,23 @@ func (r *Repo) GetOrganizations(
 		r.err = err
 		return r
 	}
+
+	return r
+}
+
+func (r *Repo) GetOwnedOrganizations(
+	userID uint,
+	orgas *[]models.Organization,
+) IRepo {
+	if r.err != nil {
+		return r
+	}
+
+	r.err = r.GetDb().
+		Preload("User").
+		Where("organizations.user_id = ?", userID).
+		Find(&orgas).
+		Error
 
 	return r
 }

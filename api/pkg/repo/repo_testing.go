@@ -8,6 +8,7 @@ import (
 	"path"
 
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
+	"github.com/wearedevx/keystone/api/db/seed"
 	"github.com/wearedevx/keystone/api/pkg/message"
 	. "github.com/wearedevx/keystone/api/pkg/models"
 	"gorm.io/driver/sqlite"
@@ -21,22 +22,36 @@ type Repo struct {
 	messages *message.MessageService
 }
 
+const (
+	DialectPostgres = iota
+	DialectSQLite
+)
+
+type Dialect int
+
+var dialect Dialect = DialectSQLite
+
 var db *gorm.DB
 
 func autoMigrate() error {
-	db.AutoMigrate(&LoginRequest{},
+	db.AutoMigrate(
+		&LoginRequest{},
 		&Environment{},
 		&EnvironmentUserSecret{},
 		&Message{},
 		&Project{},
 		&ProjectMember{},
 		&Secret{},
+		&Roles{},
+		&EnvironmentType{},
 		&RolesEnvironmentType{},
 		&User{},
 		&Device{},
 		&UserDevice{},
 		&Organization{},
-		&ActivityLog{})
+		&ActivityLog{},
+		&CheckoutSession{},
+	)
 	return nil
 }
 
@@ -50,6 +65,10 @@ func (repo *Repo) Err() error {
 
 func (repo *Repo) GetDb() *gorm.DB {
 	return db
+}
+
+func (repo *Repo) GetDialect() Dialect {
+	return dialect
 }
 
 func (repo *Repo) notFoundAsBool(call func() error) (bool, error) {
@@ -81,9 +100,16 @@ func Transaction(fn func(IRepo) error) error {
 			messages: message.NewMessageService(),
 		}
 		return fn(repo)
-
 	})
 	return err
+}
+
+func NewRepo() *Repo {
+	return &Repo{
+		err:      nil,
+		tx:       db,
+		messages: message.NewMessageService(),
+	}
 }
 
 func init() {
@@ -102,4 +128,6 @@ func init() {
 	if err != nil {
 		// ignore... make the tests fail if there is an output
 	}
+
+	seed.Seed(db)
 }

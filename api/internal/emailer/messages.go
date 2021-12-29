@@ -365,7 +365,7 @@ func InviteMail(
 	email = &Email{
 		FromEmail: KEYSTONE_MAIL,
 		FromName:  inviter.GetName(),
-		Subject:   "Your are invited to join a Keystone project",
+		Subject:   "You are invited to join a Keystone project",
 		HtmlBody:  html,
 		TextBody:  text,
 	}
@@ -383,9 +383,9 @@ func AddedMail(
 	}
 
 	email = &Email{
-		FromEmail: inviter.Email,
+		FromEmail: KEYSTONE_MAIL,
 		FromName:  inviter.GetName(),
-		Subject:   "Your are added to join a Keystone project",
+		Subject:   "You are added to a Keystone project",
 		HtmlBody:  html,
 		TextBody:  text,
 	}

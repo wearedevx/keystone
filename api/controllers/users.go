@@ -8,15 +8,14 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/wearedevx/keystone/api/internal/activitylog"
 	apierrors "github.com/wearedevx/keystone/api/internal/errors"
-	log "github.com/wearedevx/keystone/api/internal/utils/cloudlogger"
 	. "github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/jwt"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"gorm.io/gorm"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/wearedevx/keystone/api/internal/authconnector"
@@ -25,78 +24,78 @@ import (
 )
 
 // postUser Gets or Creates a user
-func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	status := http.StatusOK
-	var responseBody bytes.Buffer
-	var err error
-
-	user := &models.User{}
-	var serializedUser string
-
-	err = repo.Transaction(func(Repo repo.IRepo) error {
-		alogger := activitylog.NewActivityLogger(Repo)
-		log := models.ActivityLog{
-			Action: "PostUser",
-		}
-		err = nil
-		status = http.StatusOK
-		msg := ""
-
-		if err = user.Deserialize(r.Body); err != nil {
-			status = http.StatusBadRequest
-			err = apierrors.ErrorBadRequest(err)
-			msg = err.Error()
-
-			goto done
-		}
-
-		if err = Repo.GetOrCreateUser(user).Err(); err != nil {
-			if errors.Is(err, repo.ErrorNotFound) {
-				status = http.StatusNotFound
-				err = repo.ErrorNotFound
-			} else {
-				status = http.StatusBadRequest
-			}
-			msg = err.Error()
-
-			goto done
-		}
-
-		if err = user.Serialize(&serializedUser); err != nil {
-			msg = "Internal Server Error"
-			status = http.StatusInternalServerError
-
-			goto done
-		}
-
-	done:
-		alogger.Save(log.SetError(err))
-
-		if err != nil {
-			http.Error(w, msg, status)
-		}
-
-		return err
-	})
-
-	if err == nil {
-		in := bytes.NewBufferString(serializedUser)
-		responseBody = *in
-
-		if responseBody.Len() > 0 {
-			w.Header().Add("Content-Type", "application/octet-stream")
-			w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
-			_, err := w.Write(responseBody.Bytes())
-			if err != nil {
-				fmt.Printf("err: %+v\n", err)
-				w.WriteHeader(500)
-				return
-			}
-		}
-
-		w.WriteHeader(status)
-	}
-}
+// func PostUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+// 	status := http.StatusOK
+// 	var responseBody bytes.Buffer
+// 	var err error
+//
+// 	user := &models.User{}
+// 	var serializedUser string
+//
+// 	err = repo.Transaction(func(Repo repo.IRepo) error {
+// 		alogger := activitylog.NewActivityLogger(Repo)
+// 		log := models.ActivityLog{
+// 			Action: "PostUser",
+// 		}
+// 		err = nil
+// 		status = http.StatusOK
+// 		msg := ""
+//
+// 		if err = user.Deserialize(r.Body); err != nil {
+// 			status = http.StatusBadRequest
+// 			err = apierrors.ErrorBadRequest(err)
+// 			msg = err.Error()
+//
+// 			goto done
+// 		}
+//
+// 		if err = Repo.GetOrCreateUser(user).Err(); err != nil {
+// 			if errors.Is(err, repo.ErrorNotFound) {
+// 				status = http.StatusNotFound
+// 				err = repo.ErrorNotFound
+// 			} else {
+// 				status = http.StatusBadRequest
+// 			}
+// 			msg = err.Error()
+//
+// 			goto done
+// 		}
+//
+// 		if err = user.Serialize(&serializedUser); err != nil {
+// 			msg = "Internal Server Error"
+// 			status = http.StatusInternalServerError
+//
+// 			goto done
+// 		}
+//
+// 	done:
+// 		alogger.Save(log.SetError(err))
+//
+// 		if err != nil {
+// 			http.Error(w, msg, status)
+// 		}
+//
+// 		return err
+// 	})
+//
+// 	if err == nil {
+// 		in := bytes.NewBufferString(serializedUser)
+// 		responseBody = *in
+//
+// 		if responseBody.Len() > 0 {
+// 			w.Header().Add("Content-Type", "application/octet-stream")
+// 			w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
+// 			_, err := w.Write(responseBody.Bytes())
+// 			if err != nil {
+// 				fmt.Printf("err: %+v\n", err)
+// 				w.WriteHeader(500)
+// 				return
+// 			}
+// 		}
+//
+// 		w.WriteHeader(status)
+// 	}
+// }
 
 // getUser gets a user
 func GetUser(
@@ -129,7 +128,7 @@ func PostUserToken(
 		return
 	}
 
-	connector, err = authconnector.GetConnectoForAccountType(
+	connector, err = authconnector.GetConnectorForAccountType(
 		payload.AccountType,
 	)
 	if err != nil {
@@ -176,7 +175,7 @@ func PostUserToken(
 		}
 
 		log.User = user
-		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID)
+		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID, time.Now())
 
 		if err != nil {
 			msg = "Internal Server Error"
@@ -239,6 +238,7 @@ func GetAuthRedirect(
 	code := r.URL.Query().Get("code")
 
 	if len(temporaryCode) < 16 || len(code) == 0 {
+		fmt.Printf("[ERROR] Bad temporary code length: %v \n", temporaryCode)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
@@ -248,7 +248,7 @@ func GetAuthRedirect(
 		if err = Repo.Err(); err != nil {
 			code := http.StatusInternalServerError
 
-			if errors.Is(err, gorm.ErrRecordNotFound) {
+			if errors.Is(err, repo.ErrorNotFound) {
 				code = http.StatusNotFound
 			}
 
@@ -326,6 +326,7 @@ func GetLoginRequest(
 ) {
 	var response string
 	var err error
+	status := http.StatusOK
 
 	temporaryCode := r.URL.Query().Get("code")
 
@@ -339,22 +340,17 @@ func GetLoginRequest(
 		alog := models.ActivityLog{
 			Action: "GetLoginRequest",
 		}
-		var status int
 		var msg string
 
-		loginRequest, found := Repo.GetLoginRequest(temporaryCode)
+		loginRequest, _ := Repo.GetLoginRequest(temporaryCode)
 
 		if err = Repo.Err(); err != nil {
+			if errors.Is(err, repo.ErrorNotFound) {
+				status = http.StatusNotFound
+			} else {
+				status = http.StatusInternalServerError
+			}
 			msg = err.Error()
-			status = http.StatusInternalServerError
-
-			goto done
-		}
-
-		if !found {
-			log.Error(r, "Login Request not found with: `%s`", temporaryCode)
-			msg = "Not Found"
-			status = http.StatusNotFound
 
 			goto done
 		}
@@ -382,6 +378,8 @@ func GetLoginRequest(
 
 		if _, err := fmt.Fprint(w, response); err != nil {
 			fmt.Printf("err: %+v\n", err)
+		} else {
+			w.WriteHeader(status)
 		}
 	}
 }
@@ -398,9 +396,9 @@ func GetUserKeys(
 	}
 
 	targetUser := models.User{}
-	userPublicKeys := models.UserPublicKeys{
-		UserID:     0,
-		PublicKeys: make([]models.Device, 0),
+	userDevices := models.UserDevices{
+		UserID:  0,
+		Devices: make([]models.Device, 0),
 	}
 
 	userID := params.Get("userID")
@@ -422,10 +420,10 @@ func GetUserKeys(
 			err = apierrors.ErrorFailedToDeleteResource(err)
 		}
 	} else {
-		userPublicKeys.UserID = targetUser.ID
-		userPublicKeys.PublicKeys = targetUser.Devices
+		userDevices.UserID = targetUser.ID
+		userDevices.Devices = targetUser.Devices
 	}
 
 done:
-	return &userPublicKeys, status, log.SetError(err)
+	return &userDevices, status, log.SetError(err)
 }

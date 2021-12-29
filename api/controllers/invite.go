@@ -35,6 +35,19 @@ func PostInvite(
 		Action: "PostInvite",
 	}
 
+	var project = models.Project{Name: payload.ProjectName}
+	if err = Repo.GetProject(&project).Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusNotFound
+			err = apierrors.ErrorFailedToGetResource(err)
+			goto done
+		}
+
+		status = http.StatusInternalServerError
+		err = apierrors.ErrorFailedToGetResource(err)
+		goto done
+	}
+
 	// check if user exist
 	if err = Repo.GetUserByEmail(targetEmail, &targetUsers).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {

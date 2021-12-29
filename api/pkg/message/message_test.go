@@ -3,8 +3,6 @@ package message
 import (
 	"reflect"
 	"testing"
-
-	"github.com/wearedevx/keystone/api/internal/redis"
 )
 
 func TestNewMessageService(t *testing.T) {
@@ -58,11 +56,8 @@ func TestMessageService_GetMessageByUuid(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := &MessageService{
-				redis: redis.NewRedis(),
-			}
+			m := NewMessageService()
 			m.redis.SetupFixtures(tt.fixtures)
-
 			got, err := m.GetMessageByUuid(tt.args.uuid)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("MessageService.GetMessageByUuid() error = %v, wantErr %v", err, tt.wantErr)
@@ -98,11 +93,8 @@ func TestMessageService_WriteMessageWithUuid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := &MessageService{
-				redis: redis.NewRedis(),
-			}
+			m := NewMessageService()
 			m.redis.SetupFixtures(tt.fixtures)
-
 			if err := m.WriteMessageWithUuid(tt.args.uuid, tt.args.value); (err != nil) != tt.wantErr {
 				t.Errorf("MessageService.WriteMessageWithUuid() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -133,11 +125,8 @@ func TestMessageService_DeleteMessageWithUuid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := &MessageService{
-				redis: redis.NewRedis(),
-			}
+			m := NewMessageService()
 			m.redis.SetupFixtures(tt.fixtures)
-
 			if err := m.DeleteMessageWithUuid(tt.args.uuid); (err != nil) != tt.wantErr {
 				t.Errorf("MessageService.DeleteMessageWithUuid() error = %v, wantErr %v", err, tt.wantErr)
 			}

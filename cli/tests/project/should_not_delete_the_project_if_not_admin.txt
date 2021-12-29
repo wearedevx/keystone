@@ -1,3 +1,14 @@
 ! ks destroy -s
 
 stderr ' ERROR  Project  Does Not Exist'
+
+-- keystone.yaml --
+project_id: 0b546eb5-99a7-4e8e-adc1-9f0e38201b16
+name: cac90
+env:
+- key: ASRT
+  strict: true
+files:
+- path: test_file
+  strict: false
+ci_services: []
