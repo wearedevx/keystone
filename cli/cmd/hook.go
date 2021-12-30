@@ -17,8 +17,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
 // hookCmd represents the hook command
@@ -39,10 +38,10 @@ project.
 It is also unique (there can only be one hook).`,
 	Example: "ks hook",
 	Run: func(cmd *cobra.Command, args []string) {
-		if hook, ok := core.GetHook(); ok {
-			ui.Print(hook.Command)
+		if hook, ok := ctx.GetHook(); ok {
+			display.HookCommand(hook.Command)
 		} else {
-			ui.Print("You have not registered a hook yet. To add one, try `ks hook add <path-to-a-script>`")
+			display.ThereIsNoHookYet()
 		}
 	},
 }
