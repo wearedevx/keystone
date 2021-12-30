@@ -35,8 +35,6 @@ func send(email *Email) (err error) {
 		)
 	}
 
-	fmt.Printf("### EMAIL SENT TO %s ###\n", email.To)
-
 	for _, response := range responses {
 		if response.Status == "rejected" {
 			fmt.Printf(
