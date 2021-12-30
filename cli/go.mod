@@ -31,7 +31,6 @@ require (
 	github.com/wearedevx/keystone/api v0.0.0-20210921142643-b2caacffdfdb
 	github.com/xanzy/go-gitlab v0.51.1
 	go.uber.org/zap v1.18.1 // indirect
-	golang.org/x/net v0.0.0-20210928044308-7d9f5e0b762b // indirect
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	gopkg.in/yaml.v2 v2.4.0
