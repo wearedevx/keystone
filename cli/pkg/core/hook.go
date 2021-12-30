@@ -5,21 +5,23 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/wearedevx/keystone/cli/internal/config"
-	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
 type Hook struct {
+	ctx     *Context
 	Command string
 }
 
 var ErrorHookFailed = errors.New("hook failed")
 
-func (h *Hook) Run(ctx *Context) (err error) {
+// Run method executes the hook.
+// Note: it displays the output of the command to stdout in casse of success
+// and to stderr in case of failure
+func (h *Hook) Run() (err error) {
 	var output []byte
-	cacheDirPath := ctx.DotKeystonePath()
-	projectId := ctx.GetProjectID()
+	cacheDirPath := h.ctx.DotKeystonePath()
+	projectId := h.ctx.GetProjectID()
 
 	ui.PrintDim("Executing hook '%s'", h.Command)
 	output, err = exec.Command(h.Command, projectId, cacheDirPath).Output()
@@ -38,50 +40,4 @@ func (h *Hook) Run(ctx *Context) (err error) {
 	}
 
 	return err
-}
-
-func GetHook() (hook *Hook, ok bool) {
-	var command string
-
-	if command, ok = config.GetHook(); ok {
-		hook = &Hook{Command: command}
-	}
-
-	return hook, ok
-}
-
-func AddHook(command string) {
-	config.AddHook(command)
-	config.Write()
-}
-
-func RunHookPostFetch(ctx *Context, changes ChangesByEnvironment) {
-	if hook, ok := GetHook(); ok {
-		shouldRun := false
-
-		for _, c := range changes.Environments {
-			if !c.IsEmpty() && !c.IsSingleVersionChange() {
-				shouldRun = true
-			}
-		}
-
-		if shouldRun {
-			if utils.FileExists(hook.Command) {
-				hook.Run(ctx)
-			} else {
-				ui.PrintError("Command \"%s\" not found", hook.Command)
-			}
-		}
-	}
-}
-
-func RunHookPostSend(ctx *Context) {
-	if hook, ok := GetHook(); ok {
-
-		if utils.FileExists(hook.Command) {
-			hook.Run(ctx)
-		} else {
-			ui.PrintError("Command \"%s\" not found", hook.Command)
-		}
-	}
 }

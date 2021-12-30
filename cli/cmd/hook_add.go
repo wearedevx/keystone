@@ -20,8 +20,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/utils"
-	"github.com/wearedevx/keystone/cli/pkg/core"
-	"github.com/wearedevx/keystone/cli/ui"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -39,14 +38,8 @@ The it will be run when environments change.`,
 	Args:    cobra.ExactArgs(1),
 	Example: "ks hook add backup-secrets.sh",
 	Run: func(cmd *cobra.Command, args []string) {
-		if hook, ok := core.GetHook(); ok {
-			ui.Print(ui.RenderTemplate("hook overwrite",
-				`{{ CAREFUL }} {{ "Hook" | yellow }} {{ . | yellow }} {{ "will be overwritten" | yellow }}
-`,
-				hook.Command,
-			))
-
-			if !prompts.Confirm("Continue") {
+		if hook, ok := ctx.GetHook(); ok {
+			if !prompts.ConfirmHookOverwrite(hook) {
 				exit(nil)
 			}
 		}
@@ -56,13 +49,13 @@ The it will be run when environments change.`,
 		exitIfErr(err)
 
 		if !utils.FileExists(asAbsolutePath) {
-			ui.PrintError("%s does not exist", asAbsolutePath)
+			display.HookPathDoesNotExist(asAbsolutePath)
 			exit(nil)
 		}
 
-		core.AddHook(asAbsolutePath)
+		ctx.AddHook(asAbsolutePath)
 
-		ui.PrintSuccess("Hook added successfully")
+		display.HookAddedSuccessfully()
 	},
 }
 

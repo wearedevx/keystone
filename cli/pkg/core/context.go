@@ -229,3 +229,32 @@ func (c *Context) getCurrentEnvironmentId() string {
 func (c *Context) DotKeystonePath() string {
 	return path.Join(c.Wd, ".keystone")
 }
+
+// -- HOOKS
+func (c *Context) GetHook() (hook *Hook, ok bool) {
+	var command string
+
+	if command, ok = config.GetHook(); ok {
+		hook = &Hook{ctx: c, Command: command}
+	}
+
+	return hook, ok
+}
+
+func (c *Context) AddHook(command string) {
+	config.AddHook(command)
+	config.Write()
+}
+
+func (c *Context) RunHook() error {
+	if hook, ok := c.GetHook(); ok {
+
+		if utils.FileExists(hook.Command) {
+			hook.Run()
+		} else {
+			return fmt.Errorf("Command \"%s\" not found", hook.Command)
+		}
+	}
+
+	return nil
+}
