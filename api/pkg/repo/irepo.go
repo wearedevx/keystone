@@ -70,6 +70,7 @@ type IRepo interface {
 	SetNewVersionID(environment *models.Environment) error
 	WriteMessage(user models.User, message models.Message) IRepo
 	GetDevices(uint, *[]models.Device) IRepo
+	GetNewlyCreatedDevices(*[]models.Device) IRepo
 	GetDevice(device *models.Device) IRepo
 	GetDeviceByUserID(userID uint, device *models.Device) IRepo
 	UpdateDeviceLastUsedAt(deviceUID string) IRepo

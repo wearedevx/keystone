@@ -14,6 +14,7 @@ import (
 	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	. "github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/jwt"
+	"github.com/wearedevx/keystone/api/pkg/notification"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 
@@ -123,6 +124,8 @@ func PostUserToken(
 
 	var connector authconnector.AuthConnector
 
+	var adminProjectsMap map[string][]string
+
 	if err = json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
@@ -173,6 +176,12 @@ func PostUserToken(
 
 			goto done
 		}
+
+		if err := Repo.GetAdminsFromUserProjects(user.ID, &adminProjectsMap).Err(); err != nil {
+			return err
+		}
+
+		notification.SendEmailForNewDevices(Repo)
 
 		log.User = user
 		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID, time.Now())
