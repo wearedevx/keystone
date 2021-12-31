@@ -329,6 +329,14 @@ func (f *FakeRepo) GetProjectMember(_ *models.ProjectMember) repo.IRepo {
 	panic("not implemented")
 }
 
+func (f *FakeRepo) UsersInMemberRoles(mers []models.MemberRole) (map[string]models.User, []string) {
+	panic("not implemented")
+}
+
+func (r *FakeRepo) SetNewlyCreatedDevice(flag bool, deviceID uint, userID uint) repo.IRepo {
+	panic("not implemented")
+}
+
 func (f *FakeRepo) GetProjectsOrganization(
 	_ string,
 	_ *models.Organization,
@@ -476,6 +484,9 @@ func (f *FakeRepo) GetDevices(_ uint, _ *[]models.Device) repo.IRepo {
 }
 
 func (f *FakeRepo) GetDevice(device *models.Device) repo.IRepo {
+	panic("not implemented")
+}
+func (f *FakeRepo) GetNewlyCreatedDevices(_ *[]models.Device) repo.IRepo {
 	panic("not implemented")
 }
 

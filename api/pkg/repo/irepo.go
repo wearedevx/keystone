@@ -57,6 +57,8 @@ type IRepo interface {
 	ListProjectMembers(userIDList []string, projectMember *[]models.ProjectMember) IRepo
 	MessageService() *message.MessageService
 	ProjectAddMembers(models.Project, []models.MemberRole, models.User) IRepo
+	UsersInMemberRoles(mers []models.MemberRole) (map[string]models.User, []string)
+	SetNewlyCreatedDevice(flag bool, deviceID uint, userID uint) IRepo
 	ProjectGetAdmins(project *models.Project, members *[]models.ProjectMember) IRepo
 	ProjectIsMemberAdmin(project *models.Project, member *models.ProjectMember) bool
 	ProjectGetMembers(*models.Project, *[]models.ProjectMember) IRepo
@@ -70,6 +72,7 @@ type IRepo interface {
 	SetNewVersionID(environment *models.Environment) error
 	WriteMessage(user models.User, message models.Message) IRepo
 	GetDevices(uint, *[]models.Device) IRepo
+	GetNewlyCreatedDevices(*[]models.Device) IRepo
 	GetDevice(device *models.Device) IRepo
 	GetDeviceByUserID(userID uint, device *models.Device) IRepo
 	UpdateDeviceLastUsedAt(deviceUID string) IRepo

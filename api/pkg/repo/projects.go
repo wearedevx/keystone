@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
@@ -223,7 +222,7 @@ func (r *Repo) IsMemberOfProject(
 
 // From a list of MemberEnvironmentRole, fetches users from database
 // Returns the found Users and a slice of not found userIDs
-func (r *Repo) usersInMemberRoles(
+func (r *Repo) UsersInMemberRoles(
 	mers []models.MemberRole,
 ) (map[string]models.User, []string) {
 	// Figure out members that do not exist in db
@@ -258,7 +257,7 @@ func (r *Repo) ProjectAddMembers(
 	pms := make([]models.ProjectMember, 0)
 	db := r.GetDb()
 
-	users, notFounds := r.usersInMemberRoles(memberRoles)
+	users, notFounds := r.UsersInMemberRoles(memberRoles)
 
 	if len(notFounds) != 0 {
 		r.err = fmt.Errorf("users not found: %s", strings.Join(notFounds, ", "))
@@ -283,23 +282,6 @@ func (r *Repo) ProjectAddMembers(
 		Columns:   []clause.Column{{Name: "user_id"}, {Name: "project_id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"role_id"}),
 	}).Create(&pms).Error
-
-	if r.err == nil {
-		for _, memberRole := range memberRoles {
-			userEmail := users[memberRole.MemberID].Email
-			e, err := emailer.AddedMail(currentUser, project.Name)
-			if err != nil {
-				r.err = err
-				return r
-			}
-
-			if err = e.Send([]string{userEmail}); err != nil {
-				fmt.Printf("Project Add Member err: %+v\n", err)
-				r.err = err
-				return r
-			}
-		}
-	}
 
 	return r
 }

@@ -2,11 +2,9 @@ package repo
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"time"
 
-	"github.com/wearedevx/keystone/api/internal/emailer"
 	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"gorm.io/gorm"
@@ -50,6 +48,20 @@ func (r *Repo) GetDevices(userID uint, devices *[]models.Device) IRepo {
 		Joins("left join user_devices on user_devices.device_id = devices.id").
 		Joins("left join users on users.id = user_devices.user_id").
 		Where("users.id = ?", userID).
+		Find(devices).
+		Error
+
+	return r
+}
+func (r *Repo) GetNewlyCreatedDevices(devices *[]models.Device) IRepo {
+	if r.Err() != nil {
+		return r
+	}
+
+	r.err = r.GetDb().
+		Preload("Users").
+		Joins("left join user_devices on user_devices.device_id = devices.id").
+		Where("user_devices.newly_created = true").
 		Find(devices).
 		Error
 
@@ -115,9 +127,7 @@ func (r *Repo) RevokeDevice(userID uint, deviceUID string) IRepo {
 
 func (r *Repo) AddNewDevice(
 	device models.Device,
-	userID uint,
-	userName string,
-	userEmail string,
+	user models.User,
 ) IRepo {
 	db := r.GetDb()
 
@@ -139,7 +149,7 @@ func (r *Repo) AddNewDevice(
 		return r
 	}
 
-	userDevice := models.UserDevice{UserID: userID, DeviceID: device.ID}
+	userDevice := models.UserDevice{UserID: user.ID, DeviceID: device.ID, NewlyCreated: true}
 
 	err := db.SetupJoinTable(&models.User{}, "Devices", &models.UserDevice{})
 	if err != nil {
@@ -153,41 +163,13 @@ func (r *Repo) AddNewDevice(
 		return r
 	}
 
-	var adminProjectsMap map[string][]string
-	if err := r.GetAdminsFromUserProjects(userID, &adminProjectsMap).Err(); err != nil {
-		return r
-	}
+	return r
+}
 
-	// TODO: #119 sending emails should not be done in the repo package
-	for adminEmail, projectList := range adminProjectsMap {
-		// Send mail to admins of user projects
-		e, err := emailer.NewDeviceAdminMail(userName, projectList, device.Name)
-		if err != nil {
-			r.err = err
-			return r
-		}
+func (r *Repo) SetNewlyCreatedDevice(flag bool, deviceID uint, userID uint) IRepo {
 
-		if err = e.Send([]string{adminEmail}); err != nil {
-			fmt.Printf("Add New Device Admin Mail err: %+v\n", err)
-			r.err = err
-			return r
-		}
-	}
-
-	// Send mail to user
-	e, err := emailer.NewDeviceMail(device.Name, userName)
-	if err != nil {
+	if err := r.GetDb().Model(&models.UserDevice{}).Where("user_id = ? and device_id = ?", userID, deviceID).Update("newly_created", flag).Error; err != nil {
 		r.err = err
-		return r
 	}
-
-	if userEmail != "" {
-		if err = e.Send([]string{userEmail}); err != nil {
-			fmt.Printf("Add New Device User Mail err: %+v\n", err)
-			r.err = err
-			return r
-		}
-	}
-
 	return r
 }

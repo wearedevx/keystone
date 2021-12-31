@@ -299,6 +299,9 @@ func (f *FakeRepo) ListProjectMembers(
 func (f *FakeRepo) ProjectAddMembers(_ Project, _ []MemberRole, _ User) IRepo {
 	panic("not implemented")
 }
+func (f *FakeRepo) UsersInMemberRoles(mers []MemberRole) (map[string]User, []string) {
+	panic("not implemented")
+}
 
 func (f *FakeRepo) ProjectGetMembers(_ *Project, _ *[]ProjectMember) IRepo {
 	panic("not implemented")
@@ -394,6 +397,9 @@ func (f *FakeRepo) GetProjectsOrganization(
 	return f
 }
 
+func (r *FakeRepo) SetNewlyCreatedDevice(flag bool, deviceID uint, userID uint) repo.IRepo {
+	panic("not implemented")
+}
 func (f *FakeRepo) OrganizationCountMembers(_ *Organization, _ *int64) IRepo {
 	panic("not implemented")
 }
@@ -429,6 +435,9 @@ func (f *FakeRepo) SaveActivityLog(al *ActivityLog) IRepo {
 }
 
 func (f *FakeRepo) GetDevices(_ uint, _ *[]Device) IRepo {
+	panic("not implemented")
+}
+func (f *FakeRepo) GetNewlyCreatedDevices(_ *[]Device) IRepo {
 	panic("not implemented")
 }
 

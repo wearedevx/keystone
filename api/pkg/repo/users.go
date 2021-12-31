@@ -50,9 +50,7 @@ func (r *Repo) undeleteOrCreateDevices(
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				if err := r.AddNewDevice(
 					userDevice,
-					user.ID,
-					user.UserID,
-					user.Email,
+					*user,
 				).Err(); err != nil {
 					r.err = err
 					return r
@@ -114,9 +112,7 @@ func (r *Repo) GetOrCreateUser(user *models.User) IRepo {
 		for _, device := range user.Devices {
 			if err := r.AddNewDevice(
 				device,
-				user.ID,
-				user.UserID,
-				user.Email).
+				*user).
 				Err(); err != nil {
 				r.err = err
 				return r
