@@ -124,8 +124,6 @@ func PostUserToken(
 
 	var connector authconnector.AuthConnector
 
-	var adminProjectsMap map[string][]string
-
 	if err = json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
@@ -175,10 +173,6 @@ func PostUserToken(
 			}
 
 			goto done
-		}
-
-		if err := Repo.GetAdminsFromUserProjects(user.ID, &adminProjectsMap).Err(); err != nil {
-			return err
 		}
 
 		if err := notification.SendEmailForNewDevices(Repo); err != nil {
