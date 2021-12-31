@@ -329,6 +329,10 @@ func (f *FakeRepo) GetProjectMember(_ *models.ProjectMember) repo.IRepo {
 	panic("not implemented")
 }
 
+func (f *FakeRepo) UsersInMemberRoles(mers []models.MemberRole) (map[string]models.User, []string) {
+	panic("not implemented")
+}
+
 func (f *FakeRepo) GetProjectsOrganization(
 	_ string,
 	_ *models.Organization,

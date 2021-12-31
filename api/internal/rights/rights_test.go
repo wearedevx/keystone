@@ -299,6 +299,9 @@ func (f *FakeRepo) ListProjectMembers(
 func (f *FakeRepo) ProjectAddMembers(_ Project, _ []MemberRole, _ User) IRepo {
 	panic("not implemented")
 }
+func (f *FakeRepo) UsersInMemberRoles(mers []MemberRole) (map[string]User, []string) {
+	panic("not implemented")
+}
 
 func (f *FakeRepo) ProjectGetMembers(_ *Project, _ *[]ProjectMember) IRepo {
 	panic("not implemented")
