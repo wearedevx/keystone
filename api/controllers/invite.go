@@ -2,14 +2,13 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 
-	"github.com/wearedevx/keystone/api/internal/emailer"
 	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/notification"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
@@ -23,8 +22,6 @@ func PostInvite(
 	if err = payload.Deserialize(body); err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-
-	targetEmail := payload.Email
 
 	targetUsers := []models.User{}
 	result := &models.GetInviteResponse{}
@@ -49,21 +46,11 @@ func PostInvite(
 	}
 
 	// check if user exist
-	if err = Repo.GetUserByEmail(targetEmail, &targetUsers).Err(); err != nil {
+	if err = Repo.GetUserByEmail(payload.Email, &targetUsers).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
-			var email *emailer.Email
-
-			email, err = emailer.InviteMail(user, payload.ProjectName)
+			err = notification.SendInvitationEmail(user, payload)
 			if err != nil {
 				status = http.StatusInternalServerError
-				err = apierrors.ErrorFailedToCreateMailContent(err)
-				goto done
-			}
-
-			if err = email.Send([]string{targetEmail}); err != nil {
-				fmt.Printf("Invite Mail err: %+v\n", err)
-				status = http.StatusInternalServerError
-				err = apierrors.ErrorFailedToSendMail(err)
 				goto done
 			}
 		}

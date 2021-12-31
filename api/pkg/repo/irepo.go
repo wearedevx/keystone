@@ -57,6 +57,7 @@ type IRepo interface {
 	ListProjectMembers(userIDList []string, projectMember *[]models.ProjectMember) IRepo
 	MessageService() *message.MessageService
 	ProjectAddMembers(models.Project, []models.MemberRole, models.User) IRepo
+	UsersInMemberRoles(mers []models.MemberRole) (map[string]models.User, []string)
 	ProjectGetAdmins(project *models.Project, members *[]models.ProjectMember) IRepo
 	ProjectIsMemberAdmin(project *models.Project, member *models.ProjectMember) bool
 	ProjectGetMembers(*models.Project, *[]models.ProjectMember) IRepo
