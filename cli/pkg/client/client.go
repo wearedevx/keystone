@@ -9,5 +9,4 @@ type KeystoneClient interface {
 	Messages() *Messages
 	Devices() *Devices
 	Organizations() *Organizations
-	Logs() *Logs
 }

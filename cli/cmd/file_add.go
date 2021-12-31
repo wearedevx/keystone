@@ -54,6 +54,7 @@ ks file add -s ./credentials.json`,
 		var err error
 
 		ctx.MustHaveEnvironment(currentEnvironment)
+		mustFetchMessages()
 
 		filePath, err := cleanPathArgument(args[0], ctx.Wd)
 		exitIfErr(err)

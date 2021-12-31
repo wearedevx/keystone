@@ -2,7 +2,7 @@ package client
 
 import (
 	"fmt"
-	"strconv"
+	"log"
 
 	"github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -16,7 +16,8 @@ const (
 )
 
 type Organizations struct {
-	r requester
+	log *log.Logger
+	r   requester
 }
 
 // GetAll method returns all the organizations the user is a member of
@@ -49,6 +50,8 @@ func (c *Organizations) GetByName(
 		params["owned"] = "1"
 	}
 
+	c.log.Printf("Getting organizations with params %v\n", params)
+
 	err = c.r.get("/organizations", &result, params)
 
 	if err != nil {
@@ -73,6 +76,10 @@ func (c *Organizations) CreateOrganization(
 	var result models.Organization
 	payload := models.Organization{Name: organizationName, Private: private}
 
+	var s string
+	payload.Serialize(&s)
+	c.log.Printf("Create organization payload %s\n", s)
+
 	err = c.r.post("/organizations", &payload, &result, nil)
 
 	return result, err
@@ -84,6 +91,10 @@ func (c *Organizations) UpdateOrganization(
 ) (models.Organization, error) {
 	var err error
 	var result models.Organization
+
+	var s string
+	organization.Serialize(&s)
+	c.log.Printf("Update organization payload %s\n", s)
 
 	err = c.r.put("/organizations", &organization, &result, nil)
 
@@ -146,9 +157,12 @@ func (c *Organizations) GetProjects(
 ) ([]models.Project, error) {
 	var err error
 	var result models.GetProjectsResponse
-	orgaIDString := strconv.FormatUint(uint64(orga.ID), 10)
 
-	err = c.r.get("/organizations/"+orgaIDString+"/projects", &result, nil)
+	err = c.r.get(
+		fmt.Sprintf("/organizations/%d/projects", orga.ID),
+		&result,
+		nil,
+	)
 
 	return result.Projects, err
 }
@@ -159,9 +173,11 @@ func (c *Organizations) GetMembers(
 ) ([]models.ProjectMember, error) {
 	var err error
 	var result models.GetMembersResponse
-	orgaIDString := strconv.FormatUint(uint64(orga.ID), 10)
 
-	err = c.r.get("/organizations/"+orgaIDString+"/members", &result, nil)
-
+	err = c.r.get(
+		fmt.Sprintf("/organizations/%d/members", orga.ID),
+		&result,
+		nil,
+	)
 	return result.Members, err
 }

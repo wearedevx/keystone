@@ -1,6 +1,8 @@
 package client
 
 import (
+	"log"
+
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/errors"
 )
@@ -26,49 +28,48 @@ func NewKeystoneClient() (KeystoneClient, *errors.Error) {
 // Roles method returns an interface to interact with roles
 func (client *KeystoneClientImpl) Roles() *Roles {
 	return &Roles{
-		r: client.r,
+		log: log.New(log.Writer(), "[Roles] ", 0),
+		r:   client.r,
 	}
 }
 
 // Project method returns an interface to interact with projects
 func (client *KeystoneClientImpl) Project(projectId string) *Project {
 	return &Project{
-		r:  client.r,
-		id: projectId,
+		log: log.New(log.Writer(), "[Project] ", 0),
+		r:   client.r,
+		id:  projectId,
 	}
 }
 
 // Users method returns an interface to interact with users/members
 func (client *KeystoneClientImpl) Users() *Users {
 	return &Users{
-		r: client.r,
+		log: log.New(log.Writer(), "[Users] ", 0),
+		r:   client.r,
 	}
 }
 
 // Messages method returns an interface to interact with messages
 func (client *KeystoneClientImpl) Messages() *Messages {
 	return &Messages{
-		r: client.r,
+		log: log.New(log.Writer(), "[Messages] ", 0),
+		r:   client.r,
 	}
 }
 
 // Devices method returns an interface to interact with devices
 func (client *KeystoneClientImpl) Devices() *Devices {
 	return &Devices{
-		r: client.r,
+		log: log.New(log.Writer(), "[Devices] ", 0),
+		r:   client.r,
 	}
 }
 
 // Organizations method returns an interfaec to interact with organizations
 func (client *KeystoneClientImpl) Organizations() *Organizations {
 	return &Organizations{
-		r: client.r,
-	}
-}
-
-// Logs method returns an interface to interact with logs
-func (client *KeystoneClientImpl) Logs() *Logs {
-	return &Logs{
-		r: client.r,
+		log: log.New(log.Writer(), "[Organizations] ", 0),
+		r:   client.r,
 	}
 }

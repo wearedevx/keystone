@@ -1,6 +1,8 @@
 package login
 
 import (
+	"log"
+
 	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -11,6 +13,7 @@ import (
 )
 
 type LoginService struct {
+	log *log.Logger
 	err error
 	c   auth.AuthService
 }
@@ -19,7 +22,10 @@ type LoginService struct {
 func NewLoginService(serviceName string) *LoginService {
 	ls := new(LoginService)
 
+	ls.log = log.New(log.Writer(), "[Login] ", 0)
 	ls.c, ls.err = selectAuthService(serviceName)
+
+	ls.log.Printf("Selected %v\n", ls.c.Name())
 
 	return ls
 }
@@ -55,6 +61,8 @@ func (s *LoginService) WaitForExternalLogin() *LoginService {
 func (s *LoginService) LogIntoExisitingAccount(accountIndex int) {
 	config.SetCurrentAccount(accountIndex)
 
+	s.log.Printf("Loging into existing account %d", accountIndex)
+
 	publicKey, _ := config.GetUserPublicKey()
 	_, jwtToken, err := s.c.Finish(
 		publicKey,
@@ -78,17 +86,27 @@ func (s *LoginService) CreateAccountAndLogin() {
 		return
 	}
 
+	deviceName := config.GetDeviceName()
+	deviceUID := config.GetDeviceUID()
+
 	// Transfer credentials to the server
 	// Create (or get) the user info
 	user, jwtToken, err := s.c.Finish(
 		keyPair.Public.Value,
-		config.GetDeviceName(),
-		config.GetDeviceUID(),
+		deviceName,
+		deviceUID,
 	)
 	if err != nil {
 		s.err = err
 		return
 	}
+
+	s.log.Printf("Created account %s with device %s (%s), and public key %v\n",
+		user.UserID,
+		deviceName,
+		deviceUID,
+		keyPair.Public.Value,
+	)
 
 	// Save the user info in the local config
 	accountIndex := config.AddAccount(
@@ -149,6 +167,8 @@ func (s *LoginService) FindAccount(
 		if isAccount {
 			*current = i
 			*user = config.UserFromAccount(account)
+
+			s.log.Printf("Found account %d %s\n", i, user.UserID)
 			break
 		}
 	}
@@ -166,6 +186,8 @@ func (ls *LoginService) PromptDeviceName(skipPrompts bool) *LoginService {
 	deviceName := prompts.DeviceName(existingName, skipPrompts)
 	viper.Set("device", deviceName)
 
+	ls.log.Printf("Using device %s\n", deviceName)
+
 	return ls
 }
 
@@ -174,4 +196,3 @@ func selectAuthService(serviceName string) (auth.AuthService, error) {
 
 	return auth.GetAuthService(serviceName, client.ApiURL)
 }
-

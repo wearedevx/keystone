@@ -1,6 +1,7 @@
 package client
 
 import (
+	"log"
 	"strconv"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -8,7 +9,8 @@ import (
 )
 
 type Messages struct {
-	r requester
+	log *log.Logger
+	r   requester
 }
 
 type GenericResponse struct {
@@ -26,6 +28,11 @@ func (client *Messages) GetMessages(
 		Environments: map[string]models.GetMessageResponse{},
 	}
 	device := config.GetDeviceUID()
+	client.log.Printf(
+		"Getting messages for project %s, on device %s\n",
+		projectID, device,
+	)
+
 	err = client.r.get("/projects/"+projectID+"/messages/"+device, &result, nil)
 
 	return result, err

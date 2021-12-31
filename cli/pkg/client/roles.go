@@ -2,12 +2,14 @@ package client
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
 type Roles struct {
-	r requester
+	log *log.Logger
+	r   requester
 }
 
 // GetAll method returns all the roles available in project

@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"reflect"
 	"regexp"
@@ -16,12 +17,14 @@ import (
 
 type SecretService struct {
 	err error
+	log *log.Logger
 	ctx *core.Context
 }
 
 // NewSecretService function returns a new SecretService
 func NewSecretService(ctx *core.Context) *SecretService {
 	return &SecretService{
+		log: log.New(log.Writer(), "[Secrets] ", 0),
 		err: nil,
 		ctx: ctx,
 	}
@@ -34,11 +37,15 @@ func (ss *SecretService) Err() error {
 
 // IsSecretInCache method indicates wether `secretName` exists in cache.
 // also returns its values per environments if it does
-func (ss *SecretService) IsSecretInCache(secretName string) (inCache bool, _ map[core.EnvironmentName]core.SecretValue) {
+func (ss *SecretService) IsSecretInCache(
+	secretName string,
+) (inCache bool, _ map[core.EnvironmentName]core.SecretValue) {
 	{
+		ss.log.Printf("Checking if %s exists in cache\n", secretName)
 		var found core.Secret
 		values := make(map[core.EnvironmentName]core.SecretValue)
 		secrets := ss.ctx.ListSecretsFromCache()
+		ss.log.Printf("Among %d stored secrets\n", len(secrets))
 
 		for _, secret := range secrets {
 			if secret.Name == secretName {
@@ -49,7 +56,11 @@ func (ss *SecretService) IsSecretInCache(secretName string) (inCache bool, _ map
 		inCache = !reflect.ValueOf(found).IsZero()
 
 		if inCache {
+			ss.log.Println("CACHE HIT")
 			values = found.Values
+			ss.log.Printf("Cached values: %v", values)
+		} else {
+			ss.log.Println("CACHE MISS")
 		}
 
 		return inCache, values
@@ -102,11 +113,26 @@ func (ss *SecretService) SetValuesForEnvironments(
 					)
 					environmentValueMap[environment.Name] = strings.TrimSpace(newValue)
 				}
+
+				ss.log.Printf(
+					"Will set %v, as %v for environment %s\n",
+					secretName,
+					environmentValueMap[environment.Name],
+					environment.Name,
+				)
 			}
 
 		} else {
 			for _, environment := range environments {
-				environmentValueMap[environment.Name] = strings.TrimSpace(secretValue)
+				trimmed := strings.TrimSpace(secretValue)
+				environmentValueMap[environment.Name] = trimmed
+
+				ss.log.Printf(
+					"Will set %s, as %s for environment %s\n",
+					secretName,
+					trimmed,
+					environment.Name,
+				)
 			}
 		}
 
