@@ -11,7 +11,10 @@ import (
 // Send email to amdins and users for every new devices created
 func SendEmailForNewDevices(r repo.IRepo) error {
 	var newDevices []models.Device
-	r.GetNewlyCreatedDevices(&newDevices)
+	if err := r.GetNewlyCreatedDevices(&newDevices).Err(); err != nil {
+		return err
+	}
+
 	for _, device := range newDevices {
 		// Newly created devices only have one user
 		user := device.Users[0]
@@ -45,8 +48,7 @@ func SendEmailForNewDevices(r repo.IRepo) error {
 				return err
 			}
 		}
-		device.NewlyCreated = false
-		if err = r.GetDb().Save(&device).Error; err != nil {
+		if err = r.GetDb().Model(&models.UserDevice{}).Where("user_id = ? and device_id = ?", user.ID, device.ID).Update("newly_created", false).Error; err != nil {
 			return err
 		}
 	}

@@ -478,6 +478,9 @@ func (f *FakeRepo) GetDevices(_ uint, _ *[]models.Device) repo.IRepo {
 func (f *FakeRepo) GetDevice(device *models.Device) repo.IRepo {
 	panic("not implemented")
 }
+func (f *FakeRepo) GetNewlyCreatedDevices(_ *[]models.Device) repo.IRepo {
+	panic("not implemented")
+}
 
 func (f *FakeRepo) GetDeviceByUserID(
 	userID uint,

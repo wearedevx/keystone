@@ -181,7 +181,9 @@ func PostUserToken(
 			return err
 		}
 
-		notification.SendEmailForNewDevices(Repo)
+		if err := notification.SendEmailForNewDevices(Repo); err != nil {
+			return err
+		}
 
 		log.User = user
 		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID, time.Now())

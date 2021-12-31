@@ -431,6 +431,9 @@ func (f *FakeRepo) SaveActivityLog(al *ActivityLog) IRepo {
 func (f *FakeRepo) GetDevices(_ uint, _ *[]Device) IRepo {
 	panic("not implemented")
 }
+func (f *FakeRepo) GetNewlyCreatedDevices(_ *[]Device) IRepo {
+	panic("not implemented")
+}
 
 func (f *FakeRepo) GetDevice(device *Device) IRepo {
 	panic("not implemented")
