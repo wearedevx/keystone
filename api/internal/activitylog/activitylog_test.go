@@ -333,6 +333,10 @@ func (f *FakeRepo) UsersInMemberRoles(mers []models.MemberRole) (map[string]mode
 	panic("not implemented")
 }
 
+func (r *FakeRepo) SetNewlyCreatedDevice(flag bool, deviceID uint, userID uint) repo.IRepo {
+	panic("not implemented")
+}
+
 func (f *FakeRepo) GetProjectsOrganization(
 	_ string,
 	_ *models.Organization,
