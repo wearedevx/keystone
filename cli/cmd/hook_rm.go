@@ -18,6 +18,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/config"
+	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
 )
 
@@ -29,8 +30,12 @@ var hookRmCmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 	Example: "ks hook rm",
 	Run: func(cmd *cobra.Command, args []string) {
-		if prompts.Confirm("Remove the hook?") {
-			config.RemoveHook()
+		if hook, ok := ctx.GetHook(); ok {
+			if prompts.ConfirmHookRemoval(hook) {
+				config.RemoveHook()
+			}
+		} else {
+			display.ThereIsNoHookYet()
 		}
 	},
 }

@@ -85,9 +85,22 @@ func (s *messageService) GetMessages() core.ChangesByEnvironment {
 	messagesIds := getMessagesIds(messagesByEnvironment)
 	s.DeleteMessages(messagesIds)
 
-	core.RunHookPostFetch(s.ctx, changes)
+	if shouldRunHooks(changes) {
+		s.ctx.RunHook()
+	}
 
 	return changes
+}
+
+func shouldRunHooks(changes core.ChangesByEnvironment) (shouldRun bool) {
+	for _, c := range changes.Environments {
+		if !c.IsEmpty() && !c.IsSingleVersionChange() {
+			shouldRun = true
+			break
+		}
+	}
+
+	return shouldRun
 }
 
 // DeleteMessages deletes messages
@@ -260,7 +273,9 @@ func (s *messageService) SendEnvironments(
 
 	s.sendMessageAndUpdateEnvironment(messagesToWrite)
 
-	core.RunHookPostSend(s.ctx)
+	if err := s.ctx.RunHook(); err != nil {
+		ui.PrintError(err.Error())
+	}
 
 	return s
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
 
@@ -430,4 +431,29 @@ func SelectAuthService(serviceName string) string {
 	}
 
 	return serviceName
+}
+
+// ——— HOOK PROMPTS ——— //
+
+// ConfirmHookOverwrite function asks the user to confirm they want
+// to overwrite the hook
+func ConfirmHookOverwrite(hook *core.Hook) bool {
+	ui.Print(ui.RenderTemplate("hook overwrite",
+		`{{ CAREFUL }} {{ "Hook" | yellow }} {{ . | yellow }} {{ "will be overwritten" | yellow }}
+`,
+		hook.Command,
+	))
+
+	return Confirm("Continue")
+}
+
+func ConfirmHookRemoval(hook *core.Hook) bool {
+	ui.Print(ui.RenderTemplate("hook overwrite",
+		`{{ CAREFUL }} {{ "Hook" | yellow }} {{ . | yellow }} {{ "will be removed" | yellow }}
+It cannot be undone
+`,
+		hook.Command,
+	))
+
+	return Confirm("Continue")
 }

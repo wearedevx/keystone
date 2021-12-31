@@ -823,3 +823,70 @@ func TestUserCanSetMemberRole(t *testing.T) {
 		}
 	}
 }
+
+func TestCanUserAddMemberWithRole(t *testing.T) {
+	fakeRepo := FakeRepo{}
+	project := Project{}
+
+	userDev := &User{ID: 1, Username: "dev", UserID: "dev"}
+	userLeadDev := &User{ID: 2, Username: "lead", UserID: "lead"}
+	userDevops := &User{ID: 3, Username: "devops", UserID: "devops"}
+	userAdmin := &User{ID: 4, Username: "admin", UserID: "admin"}
+
+	users := map[string]*User{
+		"dev":    userDev,
+		"lead":   userLeadDev,
+		"devops": userDevops,
+		"admin":  userAdmin,
+	}
+
+	rightsMatrix := map[string]map[*User]bool{
+		"dev": {
+			userDev:     false,
+			userLeadDev: false,
+			userDevops:  false,
+			userAdmin:   false,
+		},
+		"lead": {
+			userDev:     true,
+			userLeadDev: true,
+			userDevops:  false,
+			userAdmin:   false,
+		},
+		"devops": {
+			userDev:     true,
+			userLeadDev: true,
+			userDevops:  true,
+			userAdmin:   false,
+		},
+		"admin": {
+			userDev:     true,
+			userLeadDev: true,
+			userDevops:  true,
+			userAdmin:   true,
+		},
+	}
+
+	for name, user := range users {
+		for otherName, otherUser := range users {
+			expectation := rightsMatrix[name][otherUser]
+			role := getRoleByUserID(otherUser.ID)
+
+			canSetMemberRole, _ := CanUserAddMemberWithRole(
+				&fakeRepo,
+				*user,
+				role,
+				project,
+			)
+
+			assert.Equal(
+				t,
+				expectation,
+				canSetMemberRole,
+				"Oops! User %s has unexpected role setting rights on user %s",
+				name,
+				otherName,
+			)
+		}
+	}
+}

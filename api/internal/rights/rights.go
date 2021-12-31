@@ -96,24 +96,6 @@ func CanUserWriteOnEnvironment(
 	)
 }
 
-func CanUserInviteOnEnvironment(
-	Repo repo.IRepo,
-	userID uint,
-	projectID uint,
-	environment *models.Environment,
-) (bool, error) {
-	return DoesUserHaveRightsOnEnvironment(
-		Repo,
-		userID,
-		projectID,
-		environment,
-		"invite",
-	)
-}
-
-// devops can invite on:
-// - dev
-
 // CanRoleAddRole tells if a user with a given role can add or set users
 // with an other role
 func CanRoleAddRole(
