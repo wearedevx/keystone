@@ -124,6 +124,8 @@ func PostUserToken(
 
 	var connector authconnector.AuthConnector
 
+	var newDevices []models.Device
+
 	if err = json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
@@ -175,8 +177,31 @@ func PostUserToken(
 			goto done
 		}
 
-		if err := notification.SendEmailForNewDevices(Repo); err != nil {
+		if err := Repo.GetNewlyCreatedDevices(&newDevices).Err(); err != nil {
 			return err
+		}
+
+		for _, device := range newDevices {
+			// Newly created devices only have one user
+			user := device.Users[0]
+
+			var adminProjectsMap map[string][]string
+			if err := Repo.GetAdminsFromUserProjects(user.ID, &adminProjectsMap).Err(); err != nil {
+				status = http.StatusInternalServerError
+				msg = err.Error()
+				goto done
+			}
+			if err := notification.SendEmailForNewDevices(device, adminProjectsMap, user); err != nil {
+				status = http.StatusInternalServerError
+				msg = err.Error()
+				goto done
+			}
+			if err := Repo.SetNewlyCreatedDevice(false, device.ID, user.ID).Err(); err != nil {
+				status = http.StatusInternalServerError
+				msg = err.Error()
+				goto done
+			}
+
 		}
 
 		log.User = user

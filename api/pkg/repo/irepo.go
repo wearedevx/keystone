@@ -58,6 +58,7 @@ type IRepo interface {
 	MessageService() *message.MessageService
 	ProjectAddMembers(models.Project, []models.MemberRole, models.User) IRepo
 	UsersInMemberRoles(mers []models.MemberRole) (map[string]models.User, []string)
+	SetNewlyCreatedDevice(flag bool, deviceID uint, userID uint) IRepo
 	ProjectGetAdmins(project *models.Project, members *[]models.ProjectMember) IRepo
 	ProjectIsMemberAdmin(project *models.Project, member *models.ProjectMember) bool
 	ProjectGetMembers(*models.Project, *[]models.ProjectMember) IRepo

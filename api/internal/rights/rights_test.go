@@ -397,6 +397,9 @@ func (f *FakeRepo) GetProjectsOrganization(
 	return f
 }
 
+func (r *FakeRepo) SetNewlyCreatedDevice(flag bool, deviceID uint, userID uint) repo.IRepo {
+	panic("not implemented")
+}
 func (f *FakeRepo) OrganizationCountMembers(_ *Organization, _ *int64) IRepo {
 	panic("not implemented")
 }

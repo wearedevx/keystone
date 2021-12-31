@@ -165,3 +165,11 @@ func (r *Repo) AddNewDevice(
 
 	return r
 }
+
+func (r *Repo) SetNewlyCreatedDevice(flag bool, deviceID uint, userID uint) IRepo {
+
+	if err := r.GetDb().Model(&models.UserDevice{}).Where("user_id = ? and device_id = ?", userID, deviceID).Update("newly_created", flag).Error; err != nil {
+		r.err = err
+	}
+	return r
+}
