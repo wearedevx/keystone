@@ -18,11 +18,6 @@ func (h *baseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// err := seed.Seed()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
 	// Use PORT environment variable, or default to 8080.
 	port := "9001"
 	if envPort := os.Getenv("PORT"); envPort != "" {
