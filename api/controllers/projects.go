@@ -11,6 +11,7 @@ import (
 	"github.com/wearedevx/keystone/api/internal/payment"
 	"github.com/wearedevx/keystone/api/internal/rights"
 	"github.com/wearedevx/keystone/api/internal/router"
+	"github.com/wearedevx/keystone/api/pkg/notification"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 )
 
@@ -264,6 +265,8 @@ func PostProjectMembers(
 
 	if can {
 		var seats int64
+		usersInMemberRoles, _ := Repo.UsersInMemberRoles(input.Members)
+
 		if err = Repo.
 			ProjectAddMembers(project, input.Members, user).
 			OrganizationCountMembers(&organization, &seats).
@@ -272,6 +275,7 @@ func PostProjectMembers(
 			err = apierrors.ErrorFailedToAddMembers(err)
 			result.Error = err.Error()
 		} else {
+			notification.SendAddedMemberEmail(input.Members, project, user, usersInMemberRoles)
 			result.Success = true
 
 			p := payment.NewStripePayment()

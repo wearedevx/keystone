@@ -12,6 +12,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	uuid "github.com/satori/go.uuid"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/api/pkg/notification"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 
 	"github.com/wearedevx/keystone/api/internal/constants"
@@ -482,7 +483,6 @@ func AlertMessagesWillExpire(
 	}
 
 	errors := []error{}
-
 	// Actual work
 	err := repo.Transaction(func(Repo repo.IRepo) error {
 		groupedMessageUser := make(
@@ -491,19 +491,7 @@ func AlertMessagesWillExpire(
 
 		Repo.GetGroupedMessagesWillExpireByUser(&groupedMessageUser)
 
-		// For each recipients, send message.
-		for _, groupedMessagesUser := range groupedMessageUser {
-			email, err := emailer.MessageWillExpireMail(
-				5,
-				groupedMessagesUser.Projects,
-			)
-			if err != nil {
-				errors = append(errors, err)
-			} else if err = email.Send([]string{groupedMessagesUser.Recipient.Email}); err != nil {
-				fmt.Printf("Message will expire mail err: %+v\n", err)
-				errors = append(errors, err)
-			}
-		}
+		notification.SendExpireMessageToUsers(groupedMessageUser, &errors)
 
 		return Repo.Err()
 	})
