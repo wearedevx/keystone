@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -24,12 +25,17 @@ const (
 )
 
 type requester struct {
+	log      *log.Logger
 	userID   string
 	jwtToken string
 }
 
 func newRequester(userID string, token string) requester {
-	return requester{userID: userID, jwtToken: token}
+	return requester{
+		userID:   userID,
+		jwtToken: token,
+		log:      log.New(log.Writer(), "[requester] ", 0),
+	}
 }
 
 func (r *requester) request(
@@ -63,6 +69,8 @@ func (r *requester) request(
 		return err
 	}
 	Url.RawQuery = queryParams.Encode()
+
+	r.log.Printf("http: %s %s", string(method), Url.String())
 
 	req, err := http.NewRequest(string(method), Url.String(), buf)
 	if err != nil {
