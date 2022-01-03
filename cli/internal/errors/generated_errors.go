@@ -241,7 +241,7 @@ If you want to override their changes, try again.
 Affected environments: {{ .AffectedEnvironments }}
 `,
 	"CannotAddFile": `
-{{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{- .Path | red }} {{- "'" | red }}
+{{ ERROR }} {{ .Name | red }} {{- ": \"" | red }} {{- .Path | red }} {{- "\"" | red }}
 This happened because: {{ .Cause }}
 `,
 	"CannotSetFile": `
