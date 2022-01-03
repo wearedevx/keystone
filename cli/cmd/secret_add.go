@@ -16,7 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/internal/secrets"
@@ -61,6 +60,11 @@ ks secret add PORT`,
 			secretValue = args[1]
 		}
 
+		// Fetch messages first, because, if something have changed,
+		// and we get the messages after, we throw an error and the user
+		// loses its input
+		mustFetchMessages()
+
 		err = utils.CheckSecretContent(secretName)
 		exitIfErr(err)
 
@@ -74,9 +78,6 @@ ks secret add PORT`,
 		}
 
 		if !useCache {
-			es := environments.NewEnvironmentService(ctx)
-			exitIfErr(es.Err())
-
 			environmentValueMap, err := secretService.SetValuesForEnvironments(
 				secretName,
 				secretValue,

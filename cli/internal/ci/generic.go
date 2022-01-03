@@ -2,6 +2,7 @@ package ci
 
 import (
 	"io"
+	"log"
 	"os"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -14,6 +15,7 @@ import (
 const GenericCI CiServiceType = "generic-ci"
 
 type genericCiService struct {
+	log                 *log.Logger
 	err                 error
 	name                string
 	ctx                 *core.Context
@@ -26,6 +28,7 @@ func GenericCi(ctx *core.Context, name string) CiService {
 	kf.Load(ctx.Wd)
 
 	return &genericCiService{
+		log:                 log.New(log.Writer(), "[GenericCi] ", 0),
 		err:                 nil,
 		name:                name,
 		ctx:                 ctx,
@@ -75,7 +78,6 @@ func (g *genericCiService) PushSecret(
 	message models.MessagePayload,
 	environment string,
 ) CiService {
-
 	archive, err := getArchiveBuffer(g.ctx, environment)
 	if err != nil {
 		g.err = err

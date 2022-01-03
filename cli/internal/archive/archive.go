@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -16,6 +17,12 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/crypto"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 )
+
+var l *log.Logger
+
+func init() {
+	l = log.New(log.Writer(), "[Archive] ", 0)
+}
 
 // GetBackupPath returns the path to file the backup archive will be written to
 func GetBackupPath(wd, projectName, backupName string) string {
@@ -42,15 +49,21 @@ func GetBackupPath(wd, projectName, backupName string) string {
 // `source` is a path to a directory to archive.
 // `target` is a path to the target `.tar.gz` file
 func Archive(source, target string) (err error) {
+	l.Printf("Archiving %s to %s\n", source, target)
+
 	tarBuffer, err := Tar(source)
 	if err != nil {
 		return err
 	}
 
+	l.Println("Tar OK")
+
 	gzipBuffer, err := Gzip(tarBuffer)
 	if err != nil {
 		return err
 	}
+
+	l.Println("Gzip OK")
 
 	file, err := os.Create(target)
 	if err != nil {
@@ -63,6 +76,8 @@ func Archive(source, target string) (err error) {
 		return err
 	}
 
+	l.Println("Write OK")
+
 	return nil
 }
 
@@ -73,10 +88,14 @@ func ArchiveWithPassphrase(source, target, passphrase string) (err error) {
 		return err
 	}
 
+	l.Printf("Encrypt with %s", passphrase)
+
 	encrypted, err := crypto.EncryptFile(target, passphrase)
 	if err != nil {
+		l.Fatalln("  FAIL")
 		return err
 	}
+	l.Println("  OK")
 
 	if err = ioutil.WriteFile(target, encrypted, 0o644); err != nil {
 		return err
@@ -87,16 +106,21 @@ func ArchiveWithPassphrase(source, target, passphrase string) (err error) {
 
 // Extracts the contents of a tar.gz archive into the `target` directory
 func Extract(archive io.Reader, target string) (err error) {
+	l.Printf("Extracting to %s", target)
+
 	tarArchive, err := UnGzip(archive)
 	if err != nil {
+		l.Println("  FAIL")
 		return err
 	}
 
 	err = Untar(tarArchive, target)
 	if err != nil {
+		l.Println("  FAIL")
 		return err
 	}
 
+	l.Println("  OK")
 	return err
 }
 
@@ -105,10 +129,14 @@ func Extract(archive io.Reader, target string) (err error) {
 // `target` is the directory where the archive will be extracted, and
 // `passphrase` is the passphrase used to decrypt.
 func ExtractWithPassphrase(archivepath, target, passphrase string) (err error) {
+	l.Printf("Decrypt with passsphrase %s", passphrase)
+
 	decrypted, err := crypto.DecryptFile(archivepath, passphrase)
 	if err != nil {
+		l.Println("  FAIL")
 		return err
 	}
+	l.Println("  OK")
 
 	if err = Extract(decrypted, target); err != nil {
 		return err
@@ -124,6 +152,7 @@ func Tar(source string) (_ io.ReadWriter, err error) {
 	err = utils.DirWalk(source,
 		func(info utils.FileInfo) error {
 			fileList = append(fileList, info)
+			l.Println(info.Path)
 
 			return nil
 		},
@@ -180,6 +209,8 @@ func Untar(tarball io.Reader, target string) error {
 		/* #nosec */
 		path := filepath.Join(target, header.Name)
 		info := header.FileInfo()
+		l.Println(path)
+
 		if info.IsDir() {
 			if err = os.MkdirAll(path, info.Mode()); err != nil {
 				return err

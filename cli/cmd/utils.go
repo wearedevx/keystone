@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	d "runtime/debug"
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/apierrors"
@@ -37,13 +38,21 @@ func exitIfErr(err error) {
 	}
 	if err != nil {
 		if display.Error(err) {
+			if debug {
+				fmt.Fprintln(os.Stderr, "\nStacktrace for the previous error:")
+				d.PrintStack()
+			}
 			os.Exit(1)
 		}
 	}
 }
 
 /// Get messages and print the changes
-func fetchMessages() (core.ChangesByEnvironment, messages.MessageService, *kserrors.Error) {
+func fetchMessages() (
+	core.ChangesByEnvironment,
+	messages.MessageService,
+	*kserrors.Error,
+) {
 	ms := messages.NewMessageService(ctx)
 	changes := ms.GetMessages()
 

@@ -2,12 +2,14 @@ package client
 
 import (
 	"errors"
+	"log"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
 type Devices struct {
-	r requester
+	log *log.Logger
+	r   requester
 }
 
 // GetAll method fetches and returns a list of all the user's devices

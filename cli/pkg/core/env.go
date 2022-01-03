@@ -29,8 +29,8 @@ const (
 )
 
 // Sets an env variable to keep track of across environments
-// [varname] is the name of the variable to set
-// [varvalue] maps environment to the varable value (key is environment name,
+// [secretName] is the name of the variable to set
+// [secretValue] maps environment to the varable value (key is environment name,
 // and value, the value of the variable in that environment)
 func (ctx *Context) AddSecret(
 	secretName string,
@@ -52,6 +52,7 @@ func (ctx *Context) AddSecret(
 		Err(); err != nil {
 		return ctx.setError(kserrors.FailedToUpdateKeystoneFile(err))
 	}
+	ctx.log.Printf("Added secret %s to keystonefile\n", secretName)
 
 	// Generate .env files in cache for each environment in map
 	for env, value := range secretValue {
@@ -59,6 +60,7 @@ func (ctx *Context) AddSecret(
 		if e != nil {
 			return ctx.setError(e)
 		}
+		ctx.log.Printf("Cached %s for env %s as %s\n", secretName, env, value)
 	}
 
 	// Copy the new .env for the current environment to .keystone/cache/.env
@@ -74,6 +76,7 @@ func (ctx *Context) AddSecret(
 	if err = utils.CopyFile(newDotEnv, destDotEnv); err != nil {
 		return ctx.setError(kserrors.CopyFailed(newDotEnv, destDotEnv, err))
 	}
+	ctx.log.Printf("New env file copied from %s to %s\n", newDotEnv, destDotEnv)
 
 	return ctx
 }
@@ -129,6 +132,7 @@ func (ctx *Context) RemoveSecret(secretName string, purge bool) *Context {
 		Err(); err != nil {
 		return ctx.setError(kserrors.FailedToUpdateKeystoneFile(err))
 	}
+	ctx.log.Printf("Removed %s from keystonefile\n", secretName)
 
 	if purge {
 		ctx.purgeSecret(secretName)
@@ -164,6 +168,11 @@ func (ctx *Context) purgeSecret(secretName string) *Context {
 		if err = dotEnv.Unset(secretName).Dump().Err(); err != nil {
 			return ctx.setError(kserrors.FailedToUpdateDotEnv(dotEnvPath, err))
 		}
+		ctx.log.Printf(
+			"Removed secret value for %s in %s environment\n",
+			secretName,
+			environment,
+		)
 	}
 
 	// Copy the new .env for the current environment to .keystone/cache/.env
@@ -217,6 +226,11 @@ func (ctx *Context) PurgeSecrets() *Context {
 			if yes, _ := ksfile.HasEnv(secretName); !yes {
 				dotEnv.Unset(secretName)
 			}
+			ctx.log.Printf(
+				"Removed secret value for %s in %s environment\n",
+				secretName,
+				environment,
+			)
 		}
 
 		if err = dotEnv.Dump().Err(); err != nil {
@@ -268,6 +282,8 @@ func (ctx *Context) SetSecret(
 	if err := dotEnv.Err(); err != nil {
 		return ctx.setError(kserrors.FailedToUpdateDotEnv(dotEnvPath, err))
 	}
+
+	ctx.log.Printf("Set secret %s to %s in env %s\n", secretName, secretValue, envName)
 
 	return ctx
 }

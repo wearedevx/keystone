@@ -229,7 +229,11 @@ func (ctx *Context) AddFile(
 	}
 
 	// Add file path to the keystone file
-	if err := new(keystonefile.KeystoneFile).Load(ctx.Wd).AddFile(file).Save().Err(); err != nil {
+	if err := new(keystonefile.KeystoneFile).
+		Load(ctx.Wd).
+		AddFile(file).
+		Save().
+		Err(); err != nil {
 		return ctx.setError(kserrors.FailedToUpdateKeystoneFile(err))
 	}
 

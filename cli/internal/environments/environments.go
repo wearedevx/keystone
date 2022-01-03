@@ -2,6 +2,7 @@ package environments
 
 import (
 	"errors"
+	"log"
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -16,6 +17,7 @@ import (
 var ErrorNoAccess = errors.New("has no access")
 
 type environmentService struct {
+	log    *log.Logger
 	err    *kserrors.Error
 	ctx    *core.Context
 	client client.KeystoneClient
@@ -36,6 +38,7 @@ func NewEnvironmentService(ctx *core.Context) EnvironmentService {
 	}
 
 	s := &environmentService{
+		log:    log.New(log.Writer(), "[Environments] ", 0),
 		err:    err,
 		ctx:    ctx,
 		client: ksc,

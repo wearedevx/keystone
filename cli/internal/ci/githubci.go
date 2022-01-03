@@ -74,7 +74,7 @@ func GitHubCi(ctx *core.Context, name string, apiUrl string) CiService {
 
 	ciService := &gitHubCiService{
 		err:    nil,
-		log:    log.New(log.Writer(), "[GitHubCI]", 0),
+		log:    log.New(log.Writer(), "[GitHubCI] ", 0),
 		name:   name,
 		apiUrl: apiUrl,
 		ctx:    ctx,

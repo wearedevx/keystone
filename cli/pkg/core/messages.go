@@ -106,9 +106,13 @@ func (ctx *Context) SaveMessages(
 	changes := ChangesByEnvironment{Environments: make(map[string]Changes)}
 	cachedLocalSecrets := ctx.ListSecretsFromCache()
 
+	ctx.log.Println("Saving Messages")
+
 	for environmentName, environment := range MessageByEnvironments.Environments {
 		// ——— Preparation work ———
 		PayloadContent := models.MessagePayload{}
+
+		ctx.log.Printf("-- Environment %s\n", environmentName)
 
 		// If the payload is empty, and the enviroment version has changed,
 		// signal the version change.
@@ -119,10 +123,15 @@ func (ctx *Context) SaveMessages(
 					Type: ChangeTypeVersion,
 				},
 			}
+			ctx.log.Printf(
+				"\tNew version %s, no payload\n",
+				environment.Environment.VersionID,
+			)
 
 			continue
 
 		case payloadIsEmpty(environment):
+			ctx.log.Println("\tNo payload")
 			continue
 		}
 
@@ -139,6 +148,8 @@ func (ctx *Context) SaveMessages(
 			environmentName,
 		)
 
+		ctx.log.Printf("\tFile Changes: %d\n", len(fileChanges))
+
 		if err := ctx.handleFileChanges(fileChanges, environmentName).Err(); err != nil {
 			return changes
 		}
@@ -152,6 +163,8 @@ func (ctx *Context) SaveMessages(
 		)
 		secretChanges := GetSecretsChanges(localSecrets, PayloadContent.Secrets)
 
+		ctx.log.Printf("\tSecrets Changes: %d\n", len(fileChanges))
+
 		if err := ctx.handleSecretChanges(PayloadContent, environmentName).Err(); err != nil {
 			return changes
 		}
@@ -162,6 +175,8 @@ func (ctx *Context) SaveMessages(
 		changes.Environments[environmentName] = environmentChanges
 
 		ctx.UpdateEnvironment(environment.Environment)
+
+		ctx.log.Println("-- DONE")
 	}
 
 	return changes
@@ -221,6 +236,8 @@ func (ctx *Context) handleFileChanges(
 		if err != nil {
 			ctx.err = kserrors.CannotRemoveDirectoryContents(filePath, err)
 		}
+
+		ctx.log.Printf("\t\tRemove %s\n", filePath)
 	}
 
 	if err := ctx.saveFilesChanges(fileChanges, environmentName); err != nil {
@@ -255,11 +272,13 @@ func (ctx *Context) handleSecretChanges(
 
 			if !found {
 				envFile.Unset(key)
+				ctx.log.Printf("\t\tRemoved %s", key)
 			}
 		}
 
 		for _, secret := range PayloadContent.Secrets {
 			envFile.Set(secret.Label, secret.Value)
+			ctx.log.Printf("\t\tSlt %s", secret.Label)
 		}
 
 		if err := envFile.Dump().Err(); err != nil {
@@ -421,6 +440,8 @@ func (ctx *Context) saveFilesChanges(
 			errorList = append(errorList, err.Error())
 			continue
 		}
+
+		ctx.log.Printf("\t\tSave file %s", cachedFilePath)
 	}
 
 	if len(errorList) > 0 {
