@@ -25,6 +25,10 @@ var pathToVarnameRegexp *regexp.Regexp
 func init() {
 	pathToVarnameRegexp = regexp.MustCompile(`[^\w]`)
 }
+
+// pathToVarname function turns a file path into a valid
+// environment variable name
+// Example: pathToVarname("src/config/cert.crt") == "SRC_CONFIG_CERT_CRT"
 func pathToVarname(in string) string {
 	inb := []byte(in)
 	sep := []byte("_")
@@ -196,7 +200,10 @@ func slotName(environmentName string, i int) string {
 	)
 }
 
-func makeSlots(message models.MessagePayload, nbSlots, slotLength int) ([]string, error) {
+func makeSlots(
+	message models.MessagePayload,
+	nbSlots, slotLength int,
+) ([]string, error) {
 	var str string
 	err := message.Serialize(&str)
 	if err != nil {

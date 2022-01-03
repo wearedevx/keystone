@@ -6,7 +6,6 @@ require (
 	github.com/briandowns/spinner v1.16.0
 	github.com/bxcodec/faker/v3 v3.6.0
 	github.com/cossacklabs/themis/gothemis v0.13.1
-	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
 	github.com/denormal/go-gitignore v0.0.0-20180930084346-ae8ad1d07817
 	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
@@ -22,7 +21,6 @@ require (
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/manifoldco/promptui v0.8.0
 	github.com/mattn/go-colorable v0.1.10 // indirect
-	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/rogpeppe/go-internal v1.8.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.2.1

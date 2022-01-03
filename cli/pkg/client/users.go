@@ -1,11 +1,14 @@
 package client
 
 import (
+	"log"
+
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
 type Users struct {
-	r requester
+	log *log.Logger
+	r   requester
 }
 
 // CheckUsersExist method check the existence of the users given in `userIds`

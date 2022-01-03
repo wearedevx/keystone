@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -16,6 +17,7 @@ import (
 )
 
 type Context struct {
+	log                    *log.Logger
 	err                    *kserrors.Error
 	Wd                     string
 	TmpDir                 string
@@ -45,6 +47,7 @@ func New(flag string) *Context {
 	var cwd string
 	var err error
 	context := new(Context)
+	context.log = log.New(log.Writer(), "[Context] ", 0)
 
 	if cwd, err = os.Getwd(); err != nil {
 		return context.setError(kserrors.NoWorkingDirectory(err))
@@ -65,6 +68,8 @@ func New(flag string) *Context {
 	default:
 		context.err = kserrors.UnsupportedFlag(flag, nil)
 	}
+
+	context.log.Printf("Context working directory: %s", context.Wd)
 
 	// Get a temporary directory
 	tmpDir := os.TempDir()
@@ -254,6 +259,8 @@ func (c *Context) RunHook() error {
 		} else {
 			return fmt.Errorf("Command \"%s\" not found", hook.Command)
 		}
+	} else {
+		c.log.Printf("[WARNING] There is no hook to run")
 	}
 
 	return nil

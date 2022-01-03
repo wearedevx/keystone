@@ -2,6 +2,7 @@ package ci
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"strings"
@@ -40,6 +41,7 @@ const (
 )
 
 type gitlabCiService struct {
+	log           *log.Logger
 	err           error
 	name          string
 	apiUrl        string
@@ -74,6 +76,7 @@ func GitLabCi(ctx *core.Context, name string, apiUrl string) CiService {
 
 	ciService := &gitlabCiService{
 		err:    nil,
+		log:    log.New(log.Writer(), "[GitlabCi] ", 0),
 		name:   name,
 		apiUrl: apiUrl,
 		ctx:    ctx,
@@ -159,6 +162,12 @@ func (g *gitlabCiService) PushSecret(
 	}
 
 	g.environment = environment
+	g.log.Printf(
+		"Sending secrets to %s/%s on environment %s\n",
+		g.options.BaseUrl,
+		g.options.Project,
+		environment,
+	)
 
 	g.initClient().
 		createEnvironment().
@@ -168,6 +177,8 @@ func (g *gitlabCiService) PushSecret(
 	return g
 }
 
+// Adds the environment scope option to gitlab requests
+// to set secrets for specific environments
 func (g *gitlabCiService) environmentScopeOption() func(*retryablehttp.Request) error {
 	return func(req *retryablehttp.Request) error {
 		query := req.URL.Query()
@@ -180,11 +191,18 @@ func (g *gitlabCiService) environmentScopeOption() func(*retryablehttp.Request) 
 }
 
 func (g *gitlabCiService) hasVariable(key string) bool {
-	variable, _, _ := g.client.ProjectVariables.GetVariable(
+	variable, _, err := g.client.ProjectVariables.GetVariable(
 		g.options.Project,
 		key,
 		g.environmentScopeOption(),
 	)
+	if err != nil {
+		g.log.Printf(
+			"[Warning] an error occurred getting variable %s: %v\n",
+			key,
+			err,
+		)
+	}
 
 	return variable != nil
 }
@@ -201,6 +219,8 @@ func (g *gitlabCiService) createVariable(key string, value string) {
 		EnvironmentScope: gitlab.String(g.environment),
 	}
 
+	g.log.Printf("Creating new variable %s, with value %s\n", key, value)
+
 	_, _, err := g.client.ProjectVariables.CreateVariable(
 		g.options.Project,
 		options,
@@ -211,6 +231,8 @@ func (g *gitlabCiService) createVariable(key string, value string) {
 }
 
 func (g *gitlabCiService) updateVariable(key string, value string) {
+	g.log.Printf("Updating variable %s, with value %s\n", key, value)
+
 	_, _, err := g.client.ProjectVariables.UpdateVariable(
 		g.options.Project,
 		key,
@@ -226,6 +248,8 @@ func (g *gitlabCiService) updateVariable(key string, value string) {
 }
 
 func (g *gitlabCiService) deleteVariable(key string) *gitlabCiService {
+	g.log.Printf("Deleting variable %sn", key)
+
 	_, err := g.client.ProjectVariables.RemoveVariable(
 		g.options.Project,
 		key,
@@ -259,6 +283,14 @@ func (g *gitlabCiService) CheckSetup() CiService {
 	if g.err != nil {
 		return g
 	}
+
+	g.log.Printf(
+		"Current setup for %s:\n\tBaseUrl: %s,\n\t,Project: %s\n\t,ApiKey: %s\n",
+		g.Name(),
+		g.options.BaseUrl,
+		g.options.Project,
+		g.apiKey,
+	)
 
 	if len(g.options.BaseUrl) == 0 ||
 		len(g.apiKey) == 0 ||
@@ -318,6 +350,7 @@ func (g *gitlabCiService) createEnvironment() *gitlabCiService {
 	}
 
 	if len(environments) == 0 {
+		g.log.Printf("Creating new environment %s on remote\n", g.environment)
 		_, _, err := g.client.Environments.CreateEnvironment(
 			g.options.Project,
 			&gitlab.CreateEnvironmentOptions{
@@ -327,6 +360,8 @@ func (g *gitlabCiService) createEnvironment() *gitlabCiService {
 		if err != nil {
 			g.err = err
 		}
+	} else {
+		g.log.Printf("Environment %s already exists on remote\n", g.environment)
 	}
 
 	return g
@@ -363,6 +398,13 @@ func (g *gitlabCiService) sendEnvironmentSecrets() *gitlabCiService {
 			break
 		}
 
+		g.log.Printf(
+			"Sending secret %s (environemt: %s, value: %s)",
+			key,
+			value,
+			g.environment,
+		)
+
 		if g.createOrUpdateVariable(key, string(value)).err != nil {
 			break
 		}
@@ -395,6 +437,13 @@ func (g *gitlabCiService) sendEnvironmentFiles() *gitlabCiService {
 
 		key := pathToVarname(file.Path)
 		value := fmt.Sprintf("%s#%s", file.Path, contents)
+
+		g.log.Printf(
+			"Sending file %s (key: %s, environment: %s)\n",
+			file.Path,
+			key,
+			g.environment,
+		)
 
 		g.createOrUpdateVariable(key, value)
 

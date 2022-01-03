@@ -2,13 +2,15 @@ package client
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
 type Project struct {
-	id string
-	r  requester
+	log *log.Logger
+	id  string
+	r   requester
 }
 
 // Init method creates a new project
@@ -23,6 +25,8 @@ func (p *Project) Init(
 		OrganizationID: organizationID,
 	}
 
+	p.log.Printf("Init with %+v\n", payload)
+
 	err := p.r.post("/projects", payload, &project, nil)
 
 	return project, err
@@ -33,7 +37,11 @@ func (p *Project) GetAllMembers() ([]models.ProjectMember, error) {
 	var err error
 	var result models.GetMembersResponse
 
-	err = p.r.get("/projects/"+p.id+"/members", &result, nil)
+	err = p.r.get(
+		fmt.Sprintf("/projects/%s/members", p.id),
+		&result,
+		nil,
+	)
 
 	return result.Members, err
 }
@@ -54,6 +62,8 @@ func (p *Project) AddMembers(memberRoles map[string]models.Role) error {
 		)
 	}
 
+	p.log.Printf("Adding Members %+v\n", payload)
+
 	err = p.r.post("/projects/"+p.id+"/members", payload, &result, nil)
 
 	if !result.Success && result.Error != "" {
@@ -72,7 +82,14 @@ func (p *Project) RemoveMembers(members []string) error {
 		Members: members,
 	}
 
-	err = p.r.del("/projects/"+p.id+"/members/", payload, &result, nil)
+	p.log.Printf("Removing members %+v\n", payload)
+
+	err = p.r.del(
+		fmt.Sprintf("/projects/%s/members/", p.id),
+		payload,
+		&result,
+		nil,
+	)
 
 	if !result.Success && result.Error != "" {
 		err = fmt.Errorf(result.Error)
@@ -89,7 +106,14 @@ func (p *Project) SetMemberRole(memberId string, role string) (err error) {
 		RoleName: role,
 	}
 
-	err = p.r.put("/projects/"+p.id+"/members/role", payload, nil, nil)
+	p.log.Printf("Set member role %+v\n", payload)
+
+	err = p.r.put(
+		fmt.Sprintf("/projects/%s/members/role", p.id),
+		payload,
+		nil,
+		nil,
+	)
 
 	return err
 }
@@ -107,7 +131,9 @@ func (p *Project) GetAccessibleEnvironments() ([]models.Environment, error) {
 // Destroys the project, its environments, environments versions,
 // project members, messages, etc. Permanently
 func (p *Project) Destroy() (err error) {
-	err = p.r.del("/projects/"+p.id, nil, nil, nil)
+	p.log.Printf("Destroy project %s", p.id)
+
+	err = p.r.del(fmt.Sprintf("/projects/%s", p.id), nil, nil, nil)
 
 	return err
 }
@@ -139,7 +165,9 @@ func (p *Project) GetRoles() ([]models.Role, error) {
 	var err error
 	var result models.GetRolesResponse
 
-	err = p.r.get("/projects/"+p.id+"roles", &result, nil)
+	err = p.r.get(
+		fmt.Sprintf("/projects/%s/roles", p.id),
+		&result, nil)
 
 	return result.Roles, err
 }
@@ -162,7 +190,14 @@ func (p *Project) GetLogs(
 	var err error
 	var result models.GetActivityLogResponse
 
-	err = p.r.post("/projects/"+p.id+"/activity-logs", options, &result, nil)
+	p.log.Printf("Get logs with options: %+v\n", options)
+
+	err = p.r.post(
+		fmt.Sprintf("/projects/%s/activity-logs", p.id),
+		options,
+		&result,
+		nil,
+	)
 
 	return result.Logs, err
 }

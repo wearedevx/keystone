@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -19,6 +20,12 @@ import (
 
 var authRedirectURL string
 
+var l *log.Logger
+
+func init() {
+	l = log.New(log.Writer(), "[Auth] ", 0)
+}
+
 func makeOAuthState(code string) (out string, err error) {
 	state := models.AuthState{
 		TemporaryCode: code,
@@ -31,6 +38,8 @@ func makeOAuthState(code string) (out string, err error) {
 		return "", err
 	}
 
+	l.Printf("OAuthState: %s\n", out)
+
 	return out, nil
 }
 
@@ -42,6 +51,8 @@ func getLoginRequest(
 	client := http.Client{
 		Timeout: timeout,
 	}
+
+	l.Printf("Get Login Request: %s\n", apiUrl)
 
 	request, err := http.NewRequest("POST", apiUrl+"/login-request", nil)
 	request.Header.Set("Accept", "application/json; charset=utf-8")
@@ -61,6 +72,7 @@ func getLoginRequest(
 
 	if resp.StatusCode == http.StatusOK {
 		err = json.NewDecoder(resp.Body).Decode(&loginRequest)
+		l.Printf("loginRequest: %+v\n", loginRequest)
 
 		return loginRequest, err
 	} else {
@@ -102,6 +114,8 @@ func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
 		q := u.Query()
 		q.Add("code", code)
 
+		l.Printf("Polling for login request, q: %s\n", q.Encode())
+
 		var resp *http.Response
 		request, err := http.NewRequest("GET", u.String()+"?"+q.Encode(), nil)
 		request.Header.Set("Accept", "application/json; charset=utf-8")
@@ -132,6 +146,8 @@ func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
 			}
 
 			if loginRequest.AuthCode != "" {
+				l.Printf("Got AuthCode %s\n", loginRequest.AuthCode)
+
 				r := pollResult{
 					authCode: loginRequest.AuthCode,
 				}
@@ -139,6 +155,8 @@ func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
 				c <- r
 
 				done = true
+			} else {
+				l.Println("Not authenticated yet")
 			}
 
 		} else {
@@ -155,6 +173,7 @@ func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
 		}
 
 		if attemps == MAX_ATTEMPTS {
+			l.Println("Max attempts reached")
 			done = true
 		}
 	}
@@ -183,6 +202,8 @@ func completeLogin(
 	if err != nil {
 		return user, "", err
 	}
+
+	l.Printf("Complete login: %s\n", buf.String())
 
 	req, err := http.NewRequest("POST", apiUrl+"/complete", buf)
 	req.Header.Add("Accept", "application/octet-stream")
@@ -223,6 +244,8 @@ func completeLogin(
 
 	if jwtToken == "" {
 		err = fmt.Errorf("no token was returned")
+	} else {
+		l.Printf("Got token: %s\n", jwtToken)
 	}
 
 	return user, jwtToken, err

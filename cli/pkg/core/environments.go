@@ -177,12 +177,22 @@ func (ctx *Context) SetAllSecrets(
 	if ctx.HasEnvironment(name) {
 		dotEnvPath := ctx.CachedEnvironmentDotEnvPath(name)
 
-		if err := new(envfile.EnvFile).Load(dotEnvPath, nil).SetData(secrets).Dump().Err(); err != nil {
+		if err := new(envfile.EnvFile).
+			Load(dotEnvPath, nil).
+			SetData(secrets).
+			Dump().
+			Err(); err != nil {
 			return ctx.setError(kserrors.FailedToUpdateDotEnv(dotEnvPath, err))
 		}
 
 	} else {
-		return ctx.setError(kserrors.EnvironmentDoesntExist(name, strings.Join(ctx.ListEnvironments(), ", "), nil))
+		return ctx.
+			setError(
+				kserrors.EnvironmentDoesntExist(
+					name, strings.Join(ctx.ListEnvironments(), ", "),
+					nil,
+				),
+			)
 	}
 
 	return ctx
