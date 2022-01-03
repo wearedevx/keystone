@@ -50,19 +50,22 @@ func (c *Organizations) GetByName(
 		params["owned"] = "1"
 	}
 
-	c.log.Printf("Getting organizations with params %v\n", params)
+	c.log.Printf("Getting organizations with params %v ... ", params)
 
 	err = c.r.get("/organizations", &result, params)
 
 	if err != nil {
+		c.log.Println("FAIL")
 		return orga, err
 	}
 
 	if len(result.Organizations) == 0 {
+		c.log.Println("FAIL")
 		return orga, apierrors.ErrorFailedToGetResource
 	}
 
 	orga = result.Organizations[0]
+	c.log.Println("OK")
 
 	return orga, nil
 }
@@ -158,11 +161,20 @@ func (c *Organizations) GetProjects(
 	var err error
 	var result models.GetProjectsResponse
 
+	path := fmt.Sprintf("/organizations/%d/projects", orga.ID)
+	c.log.Printf("Getting projects for organization : %s ... ", path)
+
 	err = c.r.get(
 		fmt.Sprintf("/organizations/%d/projects", orga.ID),
 		&result,
 		nil,
 	)
+
+	if err != nil {
+		c.log.Println("FAIL")
+	} else {
+		c.log.Println("OK")
+	}
 
 	return result.Projects, err
 }
