@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
@@ -27,6 +26,7 @@ import (
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
+	"github.com/wearedevx/keystone/cli/internal/loggers"
 	"github.com/wearedevx/keystone/cli/ui"
 
 	"github.com/wearedevx/keystone/cli/pkg/constants"
@@ -99,9 +99,9 @@ func Initialize() {
 		return
 	}
 
-	log.SetOutput(ioutil.Discard)
+	loggers.SetOutput(ioutil.Discard)
 	if debug {
-		log.SetOutput(os.Stderr)
+		loggers.SetOutput(os.Stderr)
 	}
 
 	checkEnvironment := true

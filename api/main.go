@@ -1,6 +1,7 @@
 package main
 
 //go:generate go run ./generators/errors.go
+//go:generate go run ./generators/templates.go
 
 import (
 	"log"

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/bxcodec/faker/v3"
@@ -195,7 +196,7 @@ func TestGetAuthRedirect(t *testing.T) {
 		name         string
 		args         args
 		wantStatus   int
-		wantResponse string
+		wantResponse []string
 	}{
 		{
 			name: "it works",
@@ -206,10 +207,10 @@ func TestGetAuthRedirect(t *testing.T) {
 				},
 				in2: []httprouter.Param{},
 			},
-			wantResponse: `You have been successfully authenticated.
-You may now return to your terminal and start using Keystone.
-
-Thank you!`,
+			wantResponse: []string{
+				"You have been successfully auchenticated",
+				"You may now return to your terminal and start using Keystone",
+			},
 		},
 		{
 			name: "temporary code is too short",
@@ -220,8 +221,11 @@ Thank you!`,
 				},
 				in2: []httprouter.Param{},
 			},
-			wantStatus:   http.StatusBadRequest,
-			wantResponse: "Bad Request\n",
+			wantStatus: http.StatusBadRequest,
+			wantResponse: []string{
+				"Bad Request",
+				"The provided code is invalid",
+			},
 		},
 		{
 			name: "no such request",
@@ -232,8 +236,11 @@ Thank you!`,
 				},
 				in2: []httprouter.Param{},
 			},
-			wantStatus:   http.StatusNotFound,
-			wantResponse: "not found\n",
+			wantStatus: http.StatusBadRequest,
+			wantResponse: []string{
+				"Bad Request",
+				"The link used is invalid or expired",
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -252,13 +259,15 @@ Thank you!`,
 			}
 
 			gotResponse := got.body.String()
-			if gotResponse != tt.wantResponse {
-				t.Errorf(
-					"GetAuthRedirec() got response %v, want %v",
-					gotResponse,
-					tt.wantResponse,
-				)
-				return
+			for _, want := range tt.wantResponse {
+				if !strings.Contains(gotResponse, want) {
+					t.Errorf(
+						"GetAuthRedirec() want %v, not found in response %s",
+						want,
+						gotResponse,
+					)
+					return
+				}
 			}
 		})
 	}
@@ -317,7 +326,9 @@ func TestGetLoginRequest(t *testing.T) {
 	okUrl, _ := url.Parse(
 		fmt.Sprintf("http://tests.com/login-request?code=%s", lr.TemporaryCode),
 	)
-	notFoundUrl, _ := url.Parse("http://tests.com/login-request?code=notacodebutitcouldhavebeenjusthavetobelongenough")
+	notFoundUrl, _ := url.Parse(
+		"http://tests.com/login-request?code=notacodebutitcouldhavebeenjusthavetobelongenough",
+	)
 
 	type args struct {
 		w   http.ResponseWriter
@@ -387,7 +398,11 @@ func TestGetLoginRequest(t *testing.T) {
 			case tt.want == nil &&
 				tt.wantMessage != "":
 				if got.body.String() != tt.wantMessage {
-					t.Errorf("GetLoginRequest() got %v, want %v", got.body.String(), tt.wantMessage)
+					t.Errorf(
+						"GetLoginRequest() got %v, want %v",
+						got.body.String(),
+						tt.wantMessage,
+					)
 				}
 			default:
 				// t.Errorf("GetLoginRequest() got %v, want %v", got.body.String(), tt.want)
