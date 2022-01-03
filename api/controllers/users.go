@@ -265,7 +265,7 @@ func GetAuthRedirect(
 
 	tpl := "login-success"
 	data := tplData{
-		Title:   "You have been successfully auchenticated",
+		Title:   "You have been successfully authenticated",
 		Message: `You may now return to your terminal and start using Keystone`,
 	}
 

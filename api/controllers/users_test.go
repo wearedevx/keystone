@@ -208,7 +208,7 @@ func TestGetAuthRedirect(t *testing.T) {
 				in2: []httprouter.Param{},
 			},
 			wantResponse: []string{
-				"You have been successfully auchenticated",
+				"You have been successfully authenticated",
 				"You may now return to your terminal and start using Keystone",
 			},
 		},
