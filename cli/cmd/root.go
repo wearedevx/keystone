@@ -99,6 +99,11 @@ func Initialize() {
 		return
 	}
 
+	log.SetOutput(ioutil.Discard)
+	if debug {
+		log.SetOutput(os.Stderr)
+	}
+
 	checkEnvironment := true
 	checkProject := true
 	checkLogin := false
@@ -182,10 +187,6 @@ func Initialize() {
 		exit(kserrors.MustBeLoggedIn(nil))
 	}
 
-	log.SetOutput(ioutil.Discard)
-	if debug {
-		log.SetOutput(os.Stderr)
-	}
 }
 
 func init() {
