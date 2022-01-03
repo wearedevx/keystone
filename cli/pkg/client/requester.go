@@ -58,9 +58,9 @@ func (r *requester) request(
 	queryParams := url.Values{}
 	for key, value := range params {
 		queryParams.Set(key, value)
-		if err := json.NewEncoder(buf).Encode(&data); err != nil {
-			return err
-		}
+		// if err := json.NewEncoder(buf).Encode(&data); err != nil {
+		// 	return err
+		// }
 	}
 
 	// fmt.Println(ApiURL + path)
@@ -90,12 +90,14 @@ func (r *requester) request(
 	}
 
 	resp, err := c.Do(req)
+	fmt.Printf("LS -> pkg/client/requester.go:92 -> err: %+v\n", err)
 
 	if resp == nil {
 		return auth.ErrorServiceNotAvailable
 	}
 
 	if err != nil {
+		fmt.Printf("LS -> pkg/client/requester.go:98 -> err: %+v\n", err)
 		return err
 	}
 
