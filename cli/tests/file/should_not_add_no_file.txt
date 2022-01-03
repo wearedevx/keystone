@@ -5,10 +5,6 @@ stdout '.*No files are currently tracked as secret files\..*'
 
 ! ks file add --skip nofile.txt
 
-cmp stderr file_not_added_str_expected.txt 
-
--- file_not_added_str_expected.txt --
-
- ERROR  Cannot Add File: 'nofile.txt'
-This happened because: file not found
+stderr ' ERROR  Cannot Add File: "nofile\.txt"'
+stderr 'This happened because: file not found'
 
