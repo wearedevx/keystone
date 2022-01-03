@@ -22,6 +22,7 @@ import (
 	"github.com/wearedevx/keystone/api/internal/authconnector"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/repo"
+	"github.com/wearedevx/keystone/api/templates"
 )
 
 // postUser Gets or Creates a user
@@ -253,51 +254,85 @@ func GetAuthRedirect(
 ) {
 	var err error
 	var response string
+	var temporaryCode string
+	var code string
+	statusCode := http.StatusOK
+
+	type tplData struct {
+		Title   string
+		Message string
+	}
+
+	tpl := "login-success"
+	data := tplData{
+		Title:   "You have been successfully auchenticated",
+		Message: `You may now return to your terminal and start using Keystone`,
+	}
 
 	// used to find the matching login request
 	state := models.AuthState{}
 	err = state.Decode(r.URL.Query().Get("state"))
 	if err != nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
+		tpl = "login-fail"
+		data.Title = "Bad Request"
+		data.Message = "The link used is malformed"
+		statusCode = http.StatusBadRequest
+		goto done
 	}
 
-	temporaryCode := state.TemporaryCode
+	temporaryCode = state.TemporaryCode
 
 	// code given by the third party
-	code := r.URL.Query().Get("code")
+	code = r.URL.Query().Get("code")
 
 	if len(temporaryCode) < 16 || len(code) == 0 {
-		fmt.Printf("[ERROR] Bad temporary code length: %v \n", temporaryCode)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
+		tpl = "login-fail"
+		data.Title = "Bad Request"
+		data.Message = "The provided code is invalid"
+		statusCode = http.StatusBadRequest
+		goto done
 	}
 
 	err = repo.Transaction(func(Repo repo.IRepo) error {
 		Repo.SetLoginRequestCode(temporaryCode, code)
 		if err = Repo.Err(); err != nil {
-			code := http.StatusInternalServerError
+			tpl = "login-fail"
+			statusCode = http.StatusInternalServerError
+			data.Title = "Internal Server Error"
+			data.Message = "An unexpected error occurred while trying to log you in"
 
 			if errors.Is(err, repo.ErrorNotFound) {
-				code = http.StatusNotFound
+				statusCode = http.StatusBadRequest
+				data.Title = "Bad Request"
+				data.Message = "The link used is invalid or expired"
 			}
 
-			http.Error(w, err.Error(), code)
 			return err
 		}
 		return nil
 	})
 
-	if err == nil {
-		response = `You have been successfully authenticated.
-You may now return to your terminal and start using Keystone.
+	tpl = "login-success"
+	if statusCode != http.StatusOK {
+		tpl = "login-fail"
+	}
 
-Thank you!`
-		w.Header().Add("Content-Type", "text/plain")
-		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
-		if _, err := fmt.Fprint(w, response); err != nil {
-			fmt.Printf("err: %+v\n", err)
-		}
+done:
+	response, err = templates.RenderTemplate(tpl, data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "text/html")
+	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
+	if _, err := fmt.Fprint(w, response); err != nil {
+		fmt.Printf("err: %+v\n", err)
+		return
+	}
+
+	if statusCode != http.StatusOK {
+		w.WriteHeader(statusCode)
 	}
 }
 

@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/wearedevx/keystone/cli/internal/crypto"
+	"github.com/wearedevx/keystone/cli/internal/loggers"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 )
 
@@ -22,6 +23,7 @@ var l *log.Logger
 
 func init() {
 	l = log.New(log.Writer(), "[Archive] ", 0)
+	loggers.AddLogger(l)
 }
 
 // GetBackupPath returns the path to file the backup archive will be written to

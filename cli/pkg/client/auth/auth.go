@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/loggers"
 	"github.com/wearedevx/keystone/cli/pkg/constants"
 	"golang.org/x/oauth2"
 )
@@ -24,6 +25,7 @@ var l *log.Logger
 
 func init() {
 	l = log.New(log.Writer(), "[Auth] ", 0)
+	loggers.AddLogger(l)
 }
 
 func makeOAuthState(code string) (out string, err error) {
