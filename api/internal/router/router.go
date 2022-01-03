@@ -61,12 +61,17 @@ func (p Params) Get(key string) string {
 	}
 
 	v := p.urlQuery.Get(key)
+	u, err := url.QueryUnescape(v)
+
+	if err != nil {
+		fmt.Printf("Faild unscaping: %s\n", v)
+	}
 
 	/* if len(v) == 1 {
 		return v[0]
 	} */
 
-	return v
+	return u
 }
 
 type Handler = func(params Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (Serde, int, error)
