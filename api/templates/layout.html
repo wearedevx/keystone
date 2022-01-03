@@ -6,12 +6,115 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<style>
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,700;1,300&display=swap");
+
+body {
+    margin: 0;
+    font-family: Source Sans Pro,-apple-system,blinkmacsystemfont,Segoe UI,roboto,Helvetica Neue,arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
+    font-size: 1.25rem;
+    font-weight: normal;
+    line-height: 1.5;
+    color: #1d2d35;
+    text-align: left;
+    background-color: #f4f4f4;
+		padding-top: 4rem;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: rgba(29,45,53,0);
+}
+
+.header-bar {
+    border-top: 4px solid;
+    border-image-source: linear-gradient(90deg, #8b939d, #dbdbdb 50%, #cab6b6);
+    border-image-slice: 1;
+}
+
+.fixed-top {
+	position: fixed;
+	top: 0;
+	right: 0;
+	left: 0;
+	z-index: 1030;
+}
+
+.navbar {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+	margin-top: 4px;
+	display: flex;
+	justify-content: center;
+	font-size: 1.5rem;
+	font-family: "JetBrains Mono", sfmono-regular, menlo, monaco, consolas, "Liberation Mono", "Courier New", monospace;
+	font-weight: 800;
+}
+
+.navbar > .container {
+	display: flex;
+	flex-wrap: inherit;
+	align-items: center;
+	justify-content: space-between;
+}
+
+a {
+	text-decoration: none !important;
+}
+
+a:hover, a:active, a:visited {
+	color: #1d2d35;
+}
+
+.navbar > .container > a {
+	padding: 0.3125rem 0;
+}
+
+.container {
+  max-width: 1320px;
+	width: 100%;
+	margin-right: auto;
+	margin-left: auto;
+	padding: 0 24px;
+}
+
+.content {
+	margin-top: 4rem;
+}
+
+.flex {
+	display: flex;
+}
+
+.full-width {
+	width: 100%;
+}
+
+.text-center {
+	text-align: center;
+}
+
+.success, .error {
+	padding-top: 1rem;
+}
+
+.hero-img {
+	width: 6em;
+	height: 6em;
+	margin: -1em;
+}
+
+.title {
+	font-size: 2em;
+	font-family: "JetBrains Mono", sfmono-regular, menlo, monaco, consolas, "Liberation Mono", "Courier New", monospace;
+	font-weight: 800;
+	display: inline-flex;
+	align-items: center;
+}
 		</style>
 	</head>
 	<body class="home">
+		<div class="header-bar fixed-top"></div>
 		<header class="fixed-top navbar">
 			<div class="container">
-				<strong>Keystone</strong>
+				<a href="https://keystone.sh">Keystone</a>
 			</div>
 		</header>	
 		<div class="container" role="document">

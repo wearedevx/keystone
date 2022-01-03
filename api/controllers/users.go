@@ -265,15 +265,15 @@ func GetAuthRedirect(
 
 	tpl := "login-success"
 	data := tplData{
-		Title: "Welcome!",
-		Message: `You have been successfully authenticated.
-You may now return to your terminal and start using Keystone.`,
+		Title:   "You have been successfully auchenticated",
+		Message: `You may now return to your terminal and start using Keystone`,
 	}
 
 	// used to find the matching login request
 	state := models.AuthState{}
 	err = state.Decode(r.URL.Query().Get("state"))
 	if err != nil {
+		tpl = "login-fail"
 		data.Title = "Bad Request"
 		data.Message = "The link used is malformed"
 		statusCode = http.StatusBadRequest
@@ -286,6 +286,7 @@ You may now return to your terminal and start using Keystone.`,
 	code = r.URL.Query().Get("code")
 
 	if len(temporaryCode) < 16 || len(code) == 0 {
+		tpl = "login-fail"
 		data.Title = "Bad Request"
 		data.Message = "The provided code is invalid"
 		statusCode = http.StatusBadRequest
@@ -295,6 +296,7 @@ You may now return to your terminal and start using Keystone.`,
 	err = repo.Transaction(func(Repo repo.IRepo) error {
 		Repo.SetLoginRequestCode(temporaryCode, code)
 		if err = Repo.Err(); err != nil {
+			tpl = "login-fail"
 			statusCode = http.StatusInternalServerError
 			data.Title = "Internal Server Error"
 			data.Message = "An unexpected error occurred while trying to log you in"
@@ -329,8 +331,9 @@ done:
 		return
 	}
 
-	w.WriteHeader(statusCode)
-
+	if statusCode != http.StatusOK {
+		w.WriteHeader(statusCode)
+	}
 }
 
 func PostLoginRequest(
