@@ -32,12 +32,9 @@ func (r *Repo) GetOrganizationByName(
 		Joins("left join users u on u.id = pm.user_id").
 		Where("(pm.user_id = ? and organizations.private = false) or organizations.user_id = ?", userID, userID).
 		Where("organizations.name = ?", name).
+		Distinct("organizations.id").
 		Find(&orgas).
 		Error
-
-	if len(*orgas) == 0 {
-		r.err = gorm.ErrRecordNotFound
-	}
 
 	return r
 }
