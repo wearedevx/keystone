@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -36,11 +35,22 @@ This will override all the data you have stored locally.`,
 		}
 
 		extractTarget := ctx.Wd
+		tempTarget, err := os.MkdirTemp("", "*")
+		exitIfErr(err)
+		defer os.RemoveAll(tempTarget)
+
+		// This dry run only to test if the user has the correct password
+		exitIfErr(
+			archive.ExtractWithPassphrase(
+				backupfile,
+				tempTarget,
+				password,
+				archive.DRY_RUN,
+			),
+		)
 
 		if !skipPrompts {
 			if !prompts.ConfirmDotKeystonDirRemoval() {
-				fmt.Println("srietn")
-
 				exit(nil)
 			}
 		}
@@ -52,6 +62,7 @@ This will override all the data you have stored locally.`,
 				backupfile,
 				extractTarget,
 				password,
+				0,
 			),
 		)
 
