@@ -20,11 +20,12 @@ var ErrorHookFailed = errors.New("hook failed")
 // and to stderr in case of failure
 func (h *Hook) Run() (err error) {
 	var output []byte
-	cacheDirPath := h.ctx.DotKeystonePath()
+	projectPath := h.ctx.Wd
 	projectId := h.ctx.GetProjectID()
+	projectName := h.ctx.GetProjectName()
 
 	ui.PrintDim("Executing hook '%s'", h.Command)
-	output, err = exec.Command(h.Command, projectId, cacheDirPath).Output()
+	output, err = exec.Command(h.Command, projectName, projectId, projectPath).Output()
 	printer := ui.PrintDim
 
 	if err != nil {
