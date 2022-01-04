@@ -78,10 +78,13 @@ jobs:
           make test
 
       - name: Install goveralls
-        run: go install github.com/mattn/goveralls
+        env:
+          GO111MODULE: on
+        run: go install github.com/mattn/goveralls@latest
 
       - name: Send coverage
         env:
+          GO111MODULE: on
           COVERALLS_TOKEN: ${{ github.token }}
         run: goveralls -coverprofile=covprofile -service=github
 
