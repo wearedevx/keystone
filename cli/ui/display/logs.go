@@ -22,7 +22,7 @@ func Logs(logs []models.ActivityLogLite) {
 func printLog(log models.ActivityLogLite) {
 	fmt.Printf(
 		"[%s] %s on %s%s: %s %s %s\n",
-		log.CreatedAt.Format("2006-12-29 15:04:05"),
+		log.CreatedAt.Format("2006-01-02 15:04:05"),
 		log.UserID,
 		log.ProjectName,
 		formatEnvironmentForLog(log.EnvironmentName),
