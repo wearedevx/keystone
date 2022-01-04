@@ -77,14 +77,20 @@ jobs:
           cd api
           make test
 
-      - name: Send coverage
-        env:
-          GO111MODULE: on
-          COVERALLS_TOKEN: ${{ github.token }}
-        run: |-
-          cd api
-          go get github.com/mattn/goveralls@latest
-          goveralls -coverprofile=api/cover.out -service=github
+      - name: gcov 2 lcov
+        uses: jandelgado/gcov2lcov-action@v1.0.5
+        with:
+          infile: cover.out
+          outfile: cover.lcov
+          working-directory: api
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ github.token }}
+          path-to-lcov: "api/cover.lcov"
+          base-path: "api"
+
       - name: Run CLI Security Scan
         env:
           GO111MODULE: on
