@@ -33,6 +33,7 @@ var hookRmCmd = &cobra.Command{
 		if hook, ok := ctx.GetHook(); ok {
 			if prompts.ConfirmHookRemoval(hook) {
 				config.RemoveHook()
+				config.Write()
 			}
 		} else {
 			display.ThereIsNoHookYet()

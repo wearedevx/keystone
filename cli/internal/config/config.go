@@ -1,8 +1,12 @@
 package config
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"os"
 	"reflect"
+	"strings"
 
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
@@ -12,17 +16,6 @@ import (
 )
 
 var configFilePath string
-
-func castAccount(
-	rawAccount map[interface{}]interface{},
-	account *map[string]string,
-) {
-	*account = make(map[string]string)
-
-	for k, v := range rawAccount {
-		(*account)[k.(string)] = v.(string)
-	}
-}
 
 // Writes the global config to the disk
 // Exits with 1 status code
@@ -255,5 +248,151 @@ func GetHook() (string, bool) {
 }
 
 func RemoveHook() {
-	AddHook("")
+	err := unset("hook")
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+// castAccount casts a map[interface{}]interface{}, which is returned by
+// viper, into a more manageable map[string]string
+func castAccount(
+	rawAccount map[interface{}]interface{},
+	account *map[string]string,
+) {
+	*account = make(map[string]string)
+
+	for k, v := range rawAccount {
+		(*account)[k.(string)] = v.(string)
+	}
+}
+
+// deepCasts an entire object (as returned by viper.AllValues(), for
+// instance) into an object where `map[interface{}]interface{}` have
+// been cast to `map[string]interface{}` (recursively, at that), so that
+// it can be used with json/yaml Marshal functions
+func deepCast(input interface{}) (output interface{}) {
+	t := fmt.Sprintf("%T", input)
+
+	switch t {
+	case "[]interface {}":
+		v := input.([]interface{})
+		if len(v) == 0 {
+			output = input
+		} else {
+			first := v[0]
+			t = fmt.Sprintf("%T", first)
+			output = make([]interface{}, len(v))
+
+			for i, r := range v {
+				output.([]interface{})[i] = deepCast(r)
+			}
+		}
+
+	case "map[interface {}]interface {}":
+		m := input.(map[interface{}]interface{})
+		output = make(map[string]interface{})
+
+		for k, v := range m {
+			key := k.(string)
+			output.(map[string]interface{})[key] = deepCast(v)
+		}
+
+	case "map[string]interface {}":
+		m := input.(map[string]interface{})
+		output = make(map[string]interface{})
+
+		for k, v := range m {
+			output.(map[string]interface{})[k] = deepCast(v)
+		}
+
+	default:
+		output = input
+	}
+
+	return output
+}
+
+// *Debug only* deepPrint recursively prints the type of a an
+// interface{}, assuming it is map, as returned by viper.AllValues()
+func deepPrint(input interface{}, level int) {
+	t := fmt.Sprintf("%T", input)
+	indent := strings.Repeat(" ", level)
+
+	switch t {
+	case "[]interface {}":
+		v := input.([]interface{})
+		if len(v) != 0 {
+			first := v[0]
+			t = fmt.Sprintf("%T", first)
+
+			deepPrint(first, level+1)
+		}
+
+	case "map[interface {}]interface {}":
+		m := input.(map[interface{}]interface{})
+
+		for k, v := range m {
+			key := k.(string)
+			fmt.Printf("%s%v: %T\n", indent, key, v)
+			deepPrint(v, level+1)
+		}
+
+	case "map[string]interface {}":
+		m := input.(map[string]interface{})
+
+		for k, v := range m {
+			fmt.Printf("%s%v: %T\n", indent, k, v)
+			deepPrint(v, level+1)
+		}
+
+	default:
+	}
+}
+
+// unset removes a key from the configuration
+func unset(vars ...string) error {
+	cfg := viper.AllSettings()
+	vals := cfg
+
+	for _, v := range vars {
+		parts := strings.Split(v, ".")
+		for i, k := range parts {
+			v, ok := vals[k]
+			if !ok {
+				// Doesn't exist no action needed
+				break
+			}
+
+			switch len(parts) {
+			case i + 1:
+				// Last part so delete.
+				delete(vals, k)
+
+			default:
+				m, ok := v.(map[string]interface{})
+				if !ok {
+					return fmt.Errorf("unsupported type: %T for %q", v, strings.Join(parts[0:i], "."))
+				}
+				vals = m
+			}
+		}
+	}
+
+	vals = deepCast(vals).(map[string]interface{})
+	// deepPrint(vals, 0)
+
+	b, err := json.MarshalIndent(vals, "", " ")
+	if err != nil {
+		return err
+	}
+
+	if err = viper.ReadConfig(bytes.NewReader(b)); err != nil {
+		return err
+	}
+
+	Write()
+
+	return nil
 }
