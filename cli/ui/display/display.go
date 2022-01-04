@@ -10,8 +10,12 @@ import (
 )
 
 // BackupCreated function Messages when backup is created
-func BackupCreated(backupName string) {
-	ui.PrintSuccess("Backup created: %s", backupName)
+func BackupCreated(backupName string, short bool) {
+	if short {
+		ui.Print(backupName)
+	} else {
+		ui.PrintSuccess("Backup created: %s", backupName)
+	}
 }
 
 // BackupRestored function Massage when backup is restored
