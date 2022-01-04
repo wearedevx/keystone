@@ -10,6 +10,7 @@ import (
 
 var password string
 var backupName string
+var short bool
 
 // backupCmd represents the backup command
 var backupCmd = &cobra.Command{
@@ -47,7 +48,7 @@ to prevent losing them all if anything were to happen to your device.`,
 			)
 		}
 
-		display.BackupCreated(backupName)
+		display.BackupCreated(backupName, short)
 	},
 }
 
@@ -55,4 +56,5 @@ func init() {
 	RootCmd.AddCommand(backupCmd)
 	backupCmd.Flags().StringVarP(&password, "password", "p", "", "password to encrypt backup with")
 	backupCmd.Flags().StringVarP(&backupName, "name", "n", "", "name of the backup file")
+	backupCmd.Flags().BoolVar(&short, "short", false, "short output, for use in scrpits")
 }
