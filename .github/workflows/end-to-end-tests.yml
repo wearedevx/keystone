@@ -77,6 +77,14 @@ jobs:
           cd api
           make test
 
+      - name: Install goveralls
+        run: go install github.com/mattn/goveralls@latest
+
+      - name: Send coverage
+        env:
+          COVERALLS_TOKEN: ${{ github.token }}
+        run: goveralls -coverprofile=covprofile -service=github
+
       - name: Run CLI Security Scan
         env:
           GO111MODULE: on
