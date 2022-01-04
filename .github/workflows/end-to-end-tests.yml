@@ -72,6 +72,11 @@ jobs:
           cd cli
           ./test.sh ./tests/...
 
+      - name: Run API Tests
+        run: |-
+          cd api
+          make test
+
       - name: Run CLI Security Scan
         env:
           GO111MODULE: on
