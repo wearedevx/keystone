@@ -72,10 +72,6 @@ jobs:
           cd cli
           ./test.sh ./tests/...
 
-      
-      - name: Debugging with tmate
-        uses: mxschmitt/action-tmate@v3.9
-
       - name: Run API Tests
         run: |-
           cd api
