@@ -24,10 +24,6 @@ to prevent losing them all if anything were to happen to your device.`,
 	Run: func(_ *cobra.Command, _ []string) {
 		var err error
 
-		if len(ctx.AccessibleEnvironments) < 3 {
-			exit(kserrors.BackupDenied(nil))
-		}
-
 		backupName = archive.GetBackupPath(
 			ctx.Wd,
 			ctx.GetProjectName(),
