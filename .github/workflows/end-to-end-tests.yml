@@ -79,6 +79,8 @@ jobs:
 
       - name: gcov 2 lcov
         uses: jandelgado/gcov2lcov-action@v1.0.8
+        env:
+          GO111MODULE: on
         with:
           infile: cover.out
           outfile: cover.lcov
@@ -86,6 +88,8 @@ jobs:
 
       - name: Coveralls
         uses: coverallsapp/github-action@master
+        env:
+          GO111MODULE: on
         with:
           github-token: ${{ github.token }}
           path-to-lcov: "api/cover.lcov"
