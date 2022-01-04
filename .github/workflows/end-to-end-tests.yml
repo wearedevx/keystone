@@ -78,7 +78,7 @@ jobs:
           make test
 
       - name: gcov 2 lcov
-        uses: jandelgado/gcov2lcov-action@v1.0.5
+        uses: jandelgado/gcov2lcov-action@v1.0.8
         with:
           infile: cover.out
           outfile: cover.lcov
