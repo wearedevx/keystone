@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"io/ioutil"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -35,7 +36,7 @@ This will override all the data you have stored locally.`,
 		}
 
 		extractTarget := ctx.Wd
-		tempTarget, err := os.MkdirTemp("", "*")
+		tempTarget, err := ioutil.TempDir("", "*")
 		exitIfErr(err)
 		defer os.RemoveAll(tempTarget)
 
