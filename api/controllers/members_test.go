@@ -1,11 +1,10 @@
-// +build test
-
 package controllers
 
 import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"reflect"
 	"testing"
@@ -39,7 +38,7 @@ func TestDoUsersExist(t *testing.T) {
 			name: "finds-a-user",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(
+				body: ioutil.NopCloser(
 					bytes.NewBufferString(
 						fmt.Sprintf(
 							`{"MemberIDs":["%s"]}`,
@@ -61,7 +60,7 @@ func TestDoUsersExist(t *testing.T) {
 			name: "does not find a user",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(
+				body: ioutil.NopCloser(
 					bytes.NewBufferString(
 						`{"MemberIDs":["idontexist"]}`,
 					),
@@ -80,7 +79,7 @@ func TestDoUsersExist(t *testing.T) {
 			name: "does not find multiple users",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(
+				body: ioutil.NopCloser(
 					bytes.NewBufferString(
 						`
                         {
@@ -157,7 +156,7 @@ func TestPutMembersSetRole(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": project.UUID,
 				}),
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
                 {
                     "MemberID": "%s",
                     "RoleName": "lead-dev"
@@ -176,7 +175,7 @@ func TestPutMembersSetRole(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": project.UUID,
 				}),
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
                 {
                     "MemberID": "%s",
                     "RoleName": "lead-dev"
@@ -195,7 +194,7 @@ func TestPutMembersSetRole(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": "not-a-project",
 				}),
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
                 {
                     "MemberID": "%s",
                     "RoleName": "lead-dev"
@@ -214,7 +213,7 @@ func TestPutMembersSetRole(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": project.UUID,
 				}),
-				body: io.NopCloser(bytes.NewBufferString(`
+				body: ioutil.NopCloser(bytes.NewBufferString(`
                 {
                     "MemberID": "not-a-member",
                     "RoleName": "lead-dev"
@@ -233,7 +232,7 @@ func TestPutMembersSetRole(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": unpaidProject.UUID,
 				}),
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
                 {
                     "MemberID": "%s",
                     "RoleName": "lead-dev"

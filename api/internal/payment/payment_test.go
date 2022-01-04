@@ -2,7 +2,7 @@ package payment
 
 import (
 	"bytes"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"reflect"
 	"testing"
@@ -167,7 +167,7 @@ func Test_stripePayment_HandleEvent(t *testing.T) {
 			sp:   &stripePayment{},
 			args: args{
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBuffer([]byte{})),
+					Body: ioutil.NopCloser(bytes.NewBuffer([]byte{})),
 				},
 			},
 			wantPaymentEvent: Event{
@@ -184,7 +184,7 @@ func Test_stripePayment_HandleEvent(t *testing.T) {
 			sp:   &stripePayment{},
 			args: args{
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString("bad-event")),
+					Body: ioutil.NopCloser(bytes.NewBufferString("bad-event")),
 				},
 			},
 			wantPaymentEvent: Event{},
@@ -195,7 +195,7 @@ func Test_stripePayment_HandleEvent(t *testing.T) {
 			sp:   &stripePayment{},
 			args: args{
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString("bad-event-to-ignore")),
+					Body: ioutil.NopCloser(bytes.NewBufferString("bad-event-to-ignore")),
 				},
 			},
 			wantPaymentEvent: Event{
@@ -212,7 +212,7 @@ func Test_stripePayment_HandleEvent(t *testing.T) {
 			sp:   &stripePayment{},
 			args: args{
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(`
+					Body: ioutil.NopCloser(bytes.NewBufferString(`
 {
     "type": "checkout.session.completed",
     "client_reference_id": "12",
@@ -237,7 +237,7 @@ func Test_stripePayment_HandleEvent(t *testing.T) {
 			sp:   &stripePayment{},
 			args: args{
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(`
+					Body: ioutil.NopCloser(bytes.NewBufferString(`
 {
     "type": "invoice.paid",
     "customer": "cus_srietnsirent",
@@ -260,7 +260,7 @@ func Test_stripePayment_HandleEvent(t *testing.T) {
 			sp:   &stripePayment{},
 			args: args{
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(`
+					Body: ioutil.NopCloser(bytes.NewBufferString(`
 {
     "type": "invoice.payment_failed",
     "customer": "cus_srietnsirent",
@@ -283,7 +283,7 @@ func Test_stripePayment_HandleEvent(t *testing.T) {
 			sp:   &stripePayment{},
 			args: args{
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(`
+					Body: ioutil.NopCloser(bytes.NewBufferString(`
 {
     "type": "customer.subscription.updated",
     "customer": "cus_srietnsirent",
@@ -307,7 +307,7 @@ func Test_stripePayment_HandleEvent(t *testing.T) {
 			sp:   &stripePayment{},
 			args: args{
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(`
+					Body: ioutil.NopCloser(bytes.NewBufferString(`
 {
     "type": "customer.subscription.updated",
     "customer": "cus_srietnsirent",
@@ -331,7 +331,7 @@ func Test_stripePayment_HandleEvent(t *testing.T) {
 			sp:   &stripePayment{},
 			args: args{
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(`
+					Body: ioutil.NopCloser(bytes.NewBufferString(`
 {
     "type": "customer.subscription.updated",
     "customer": "cus_srietnsirent",
@@ -355,7 +355,7 @@ func Test_stripePayment_HandleEvent(t *testing.T) {
 			sp:   &stripePayment{},
 			args: args{
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(`
+					Body: ioutil.NopCloser(bytes.NewBufferString(`
 {
     "type": "customer.subscription.updated",
     "customer": "cus_srietnsirent",
@@ -379,7 +379,7 @@ func Test_stripePayment_HandleEvent(t *testing.T) {
 			sp:   &stripePayment{},
 			args: args{
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(`
+					Body: ioutil.NopCloser(bytes.NewBufferString(`
 {
     "type": "customer.subscription.updated",
     "customer": "cus_srietnsirent",
@@ -403,7 +403,7 @@ func Test_stripePayment_HandleEvent(t *testing.T) {
 			sp:   &stripePayment{},
 			args: args{
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(`
+					Body: ioutil.NopCloser(bytes.NewBufferString(`
 {
     "type": "customer.subscription.updated",
     "customer": "cus_srietnsirent",
@@ -427,7 +427,7 @@ func Test_stripePayment_HandleEvent(t *testing.T) {
 			sp:   &stripePayment{},
 			args: args{
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(`
+					Body: ioutil.NopCloser(bytes.NewBufferString(`
 {
     "type": "customer.subscription.deleted",
     "customer": "cus_srietnsirent",

@@ -1,11 +1,10 @@
-// +build test
-
 package controllers
 
 import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -468,7 +467,7 @@ func TestWriteMessages(t *testing.T) {
 			name: "writes a message",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
                 {
                     "messages": [
                         {
@@ -504,7 +503,7 @@ func TestWriteMessages(t *testing.T) {
 			name: "bad request",
 			args: args{
 				in0:  router.Params{},
-				body: io.NopCloser(bytes.NewBufferString("not serializable")),
+				body: ioutil.NopCloser(bytes.NewBufferString("not serializable")),
 				Repo: repo.NewRepo(),
 				user: users["admin"],
 			},
@@ -516,7 +515,7 @@ func TestWriteMessages(t *testing.T) {
 			name: "empty payload",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
                 {
                     "messages": [
                         {
@@ -548,7 +547,7 @@ func TestWriteMessages(t *testing.T) {
 			name: "no such environment",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
                 {
                     "messages": [
                         {
@@ -579,7 +578,7 @@ func TestWriteMessages(t *testing.T) {
 			name: "no such recipient",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
                 {
                     "messages": [
                         {
@@ -610,7 +609,7 @@ func TestWriteMessages(t *testing.T) {
 			name: "recipient cannot write or write",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
                 {
                     "messages": [
                         {
@@ -644,7 +643,7 @@ func TestWriteMessages(t *testing.T) {
 			name: "sender device not found",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
                 {
                     "messages": [
                         {

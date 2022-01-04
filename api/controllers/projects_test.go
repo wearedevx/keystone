@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"reflect"
 	"testing"
@@ -39,7 +40,7 @@ func TestPostProject(t *testing.T) {
 			name: "creates a project",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
                 {
                     "name": "%s",
                     "organization_id": %d
@@ -66,7 +67,7 @@ func TestPostProject(t *testing.T) {
 			name: "does not create a project without an organization",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
                 {
                     "name": "%s"
                 }
@@ -447,7 +448,7 @@ func TestPostProjectsMembers(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": paidProject.UUID,
 				}),
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
   "Members": [
 		{
 			"MemberID": "%s",
@@ -469,7 +470,7 @@ func TestPostProjectsMembers(t *testing.T) {
 			name: "bad request if no project id",
 			args: args{
 				params: router.ParamsFrom(map[string]string{}),
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
   "Members": [
 		{
 			"MemberID": "%s",
@@ -490,7 +491,7 @@ func TestPostProjectsMembers(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": "not a real project id",
 				}),
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
   "Members": [
 		{
 			"MemberID": "%s",
@@ -511,7 +512,7 @@ func TestPostProjectsMembers(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": freeProject.UUID,
 				}),
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
   "Members": [
 		{
 			"MemberID": "%s",
@@ -532,7 +533,7 @@ func TestPostProjectsMembers(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": paidProject.UUID,
 				}),
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
   "Members": [
 		{
 			"MemberID": "%s",
@@ -556,7 +557,7 @@ func TestPostProjectsMembers(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": paidProject.UUID,
 				}),
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
 		  "Members": [
 				{
 					"MemberID": "%s",
@@ -656,7 +657,7 @@ func TestDeleteProjectsMembers(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": project.UUID,
 				}),
-				body: io.NopCloser(
+				body: ioutil.NopCloser(
 					bytes.NewBufferString(fmt.Sprintf(`{
   "Members": ["%s"]
 }`,
@@ -678,7 +679,7 @@ func TestDeleteProjectsMembers(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": "this is not a project",
 				}),
-				body: io.NopCloser(
+				body: ioutil.NopCloser(
 					bytes.NewBufferString(fmt.Sprintf(`{
   "Members": ["%s"]
 }`,
@@ -700,7 +701,7 @@ func TestDeleteProjectsMembers(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": project.UUID,
 				}),
-				body: io.NopCloser(
+				body: ioutil.NopCloser(
 					bytes.NewBufferString(fmt.Sprintf(`{
   "Members": ["%s"]
 }`,
@@ -722,7 +723,7 @@ func TestDeleteProjectsMembers(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": project.UUID,
 				}),
-				body: io.NopCloser(
+				body: ioutil.NopCloser(
 					bytes.NewBufferString(`{
   "Members": ["not@member", "me@neither"]
 }`)),

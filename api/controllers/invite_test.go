@@ -1,11 +1,10 @@
-// +build test
-
 package controllers
 
 import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"testing"
 
@@ -36,7 +35,7 @@ func TestPostInvite(t *testing.T) {
 			name: "it invites some user",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
 {
     "Email": "some-user@some-mail-service.com",
     "ProjectName": "%s"
@@ -55,7 +54,7 @@ func TestPostInvite(t *testing.T) {
 			name: "user has an account",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
 {
     "Email": "%s",
     "ProjectName": "%s"
@@ -76,7 +75,7 @@ func TestPostInvite(t *testing.T) {
 			name: "error if project does not exist",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(`
+				body: ioutil.NopCloser(bytes.NewBufferString(`
 {
     "Email": "some.user@some.mail.com",
     "ProjectName": "that-is-not-a-project"

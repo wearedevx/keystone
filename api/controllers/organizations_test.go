@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"testing"
@@ -250,7 +251,7 @@ func TestPostOrganization(t *testing.T) {
 			name: "creates an organization",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(`{
   "name": "organization-name"
 }`)),
 				Repo: repo.NewRepo(),
@@ -266,7 +267,7 @@ func TestPostOrganization(t *testing.T) {
 			name: "the paid property is always false on creation",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(`{
   "name": "hacky-organization-name",
 	"paid": true
 }`)),
@@ -284,7 +285,7 @@ func TestPostOrganization(t *testing.T) {
 			name: "no spaces in organization name",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(`{
   "name": "organization name"
 }`)),
 				Repo: repo.NewRepo(),
@@ -298,7 +299,7 @@ func TestPostOrganization(t *testing.T) {
 			name: "cant create orga with same name",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
   "name": "%s"
 }`, org.Name))),
 				Repo: repo.NewRepo(),
@@ -312,7 +313,7 @@ func TestPostOrganization(t *testing.T) {
 			name: "input must be valid json",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(`{
   "name": "a-valid-name",
 }`)),
 				Repo: repo.NewRepo(),
@@ -398,7 +399,7 @@ func TestUpdateOrganization(t *testing.T) {
 			name: "updates an organization name",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
 	"id": %d,
   "name": "anew-name"
 }`, orga.ID))),
@@ -418,7 +419,7 @@ func TestUpdateOrganization(t *testing.T) {
 			name: "updates an organization privacy",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
 	"id": %d,
 	"private": true
 }`, orga.ID))),
@@ -438,7 +439,7 @@ func TestUpdateOrganization(t *testing.T) {
 			name: "do not update the paid flag",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
 	"id": %d,
 	"paid": true,
 	"private": true
@@ -459,7 +460,7 @@ func TestUpdateOrganization(t *testing.T) {
 			name: "do not update the user_id",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
 	"id": %d,
 	"user_id": %d,
 	"private": true
@@ -480,7 +481,7 @@ func TestUpdateOrganization(t *testing.T) {
 			name: "not if the name is taken",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
 	"id": %d,
   "name": "%s"
 }`, orga.ID, otherOrga.Name))),
@@ -495,7 +496,7 @@ func TestUpdateOrganization(t *testing.T) {
 			name: "not if the name is bad",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
 	"id": %d,
   "name": "a name with spaces is a bad name"
 }`, orga.ID))),
@@ -510,7 +511,7 @@ func TestUpdateOrganization(t *testing.T) {
 			name: "must own the orga",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
 					"id": %d,
 					"name": "a-name-that-is-a-valid-one"
 				}`, orga.ID))),
@@ -525,7 +526,7 @@ func TestUpdateOrganization(t *testing.T) {
 			name: "body must be valid json",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
 					"id": %d,
 					"name": "a-name-that-is-a-valid-one",
 				}`, orga.ID))),
@@ -540,7 +541,7 @@ func TestUpdateOrganization(t *testing.T) {
 			name: "organization must exists",
 			args: args{
 				in0: router.Params{},
-				body: io.NopCloser(bytes.NewBufferString(`{
+				body: ioutil.NopCloser(bytes.NewBufferString(`{
 							"id": 123049,
 							"name": "a-name-that-is-a-valid-one"
 						}`)),

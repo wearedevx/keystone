@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -91,7 +92,7 @@ func TestPostUserToken(t *testing.T) {
 			name: "it works",
 			args: args{
 				w: newMockResponse(),
-				r: &http.Request{Body: io.NopCloser(bytes.NewBufferString(`
+				r: &http.Request{Body: ioutil.NopCloser(bytes.NewBufferString(`
 							{
 								"AccountType": "github",
 								"Token": {
@@ -109,7 +110,7 @@ func TestPostUserToken(t *testing.T) {
 			name: "bad device name",
 			args: args{
 				w: newMockResponse(),
-				r: &http.Request{Body: io.NopCloser(bytes.NewBufferString(`
+				r: &http.Request{Body: ioutil.NopCloser(bytes.NewBufferString(`
 							{
 								"AccountType": "github",
 								"Token": {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -356,7 +357,7 @@ func TestPostStripeWebhook(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBuffer([]byte{})),
+					Body: ioutil.NopCloser(bytes.NewBuffer([]byte{})),
 				},
 				in2: []httprouter.Param{},
 			},
@@ -367,7 +368,7 @@ func TestPostStripeWebhook(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString("bad-event")),
+					Body: ioutil.NopCloser(bytes.NewBufferString("bad-event")),
 				},
 			},
 			wantStatus: http.StatusInternalServerError,
@@ -377,7 +378,7 @@ func TestPostStripeWebhook(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString("bad-event-to-ignore")),
+					Body: ioutil.NopCloser(bytes.NewBufferString("bad-event-to-ignore")),
 				},
 			},
 			wantStatus: http.StatusInternalServerError,
@@ -387,7 +388,7 @@ func TestPostStripeWebhook(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
 						`{
     "type": "checkout.session.completed",
     "client_reference_id": "%d",
@@ -413,7 +414,7 @@ func TestPostStripeWebhook(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
 						`{
 						"type": "invoice.paid",
 						"customer": "%s",
@@ -436,7 +437,7 @@ func TestPostStripeWebhook(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
 						`{
 				"type": "invoice.payment_failed",
 				"customer": "%s",
@@ -460,7 +461,7 @@ func TestPostStripeWebhook(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
 						`{
     "type": "customer.subscription.updated",
     "customer": "%s",
@@ -485,7 +486,7 @@ func TestPostStripeWebhook(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
 						`{
 	"type": "customer.subscription.updated",
 	"customer": "%s",
@@ -510,7 +511,7 @@ func TestPostStripeWebhook(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
 						`{
 	"type": "customer.subscription.updated",
 	"customer": "%s",
@@ -535,7 +536,7 @@ func TestPostStripeWebhook(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
 						`{
 				"type": "customer.subscription.updated",
 				"customer": "%s",
@@ -560,7 +561,7 @@ func TestPostStripeWebhook(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
 						`{
 				"type": "customer.subscription.updated",
 				"customer": "%s",
@@ -585,7 +586,7 @@ func TestPostStripeWebhook(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
 						`{
 				"type": "customer.subscription.updated",
 				"customer": "%s",
@@ -609,7 +610,7 @@ func TestPostStripeWebhook(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					Body: io.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
 						`{
 				"type": "customer.subscription.deleted",
 				"customer": "%s",

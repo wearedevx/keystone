@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
@@ -39,7 +40,7 @@ func TestGetActivityLogs(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": project.UUID,
 				}),
-				body: io.NopCloser(strings.NewReader(`
+				body: ioutil.NopCloser(strings.NewReader(`
 {
     "actions": [],
     "environments": [],
@@ -105,7 +106,7 @@ func TestGetActivityLogs(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": project.UUID,
 				}),
-				body: io.NopCloser(strings.NewReader(`
+				body: ioutil.NopCloser(strings.NewReader(`
 {
     "actions": ["GetEnvironmentPublicKeys"],
     "environments": [],
@@ -147,7 +148,7 @@ func TestGetActivityLogs(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": project.UUID,
 				}),
-				body: io.NopCloser(strings.NewReader(`
+				body: ioutil.NopCloser(strings.NewReader(`
 {
     "actions": [],
     "environments": ["dev"],
@@ -189,7 +190,7 @@ func TestGetActivityLogs(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": "not-a-project-uui",
 				}),
-				body: io.NopCloser(strings.NewReader(`
+				body: ioutil.NopCloser(strings.NewReader(`
 {
     "actions": [],
     "environments": [],
@@ -212,7 +213,7 @@ func TestGetActivityLogs(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": unpaidProject.UUID,
 				}),
-				body: io.NopCloser(strings.NewReader(`
+				body: ioutil.NopCloser(strings.NewReader(`
 {
     "actions": [],
     "environments": [],
