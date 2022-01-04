@@ -84,7 +84,6 @@ jobs:
         with:
           github-token: ${{ github.token }}
           path-to-lcov: "api/cover.lcov"
-          base-path: "api"
 
       - name: Run CLI Security Scan
         env:
