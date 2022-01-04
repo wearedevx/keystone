@@ -1,4 +1,5 @@
 *credentials.json
 build
 server
+cover.lcov
 .vscode/**/*

@@ -86,6 +86,7 @@ test:
 	touch "${TMPDIR}keystone_gorm.db"
 	go test -tags test -coverprofile cover.out.tmp ./...
 	cat cover.out.tmp | grep -v "generated_" | grep -v "_testing" > cover.out
+	gcov2lcov -infile=cover.out -outfile=cover.lcov
 	rm cover.out.tmp
 
 run:

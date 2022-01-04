@@ -14,6 +14,7 @@ require (
 	github.com/gojekfarm/go-coverage v0.0.1 // indirect
 	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/google/go-github/v32 v32.1.0
+	github.com/jandelgado/gcov2lcov v1.0.5 // indirect
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/k3a/html2text v1.0.8
 	github.com/keighl/mandrill v0.0.0-20170605120353-1775dd4b3b41
