@@ -36,6 +36,10 @@ func (r *Repo) GetOrganizationByName(
 		Find(&orgas).
 		Error
 
+	if len(*orgas) == 0 {
+		r.err = ErrorNotFound
+	}
+
 	return r
 }
 
