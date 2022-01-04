@@ -21,6 +21,8 @@ import (
 
 var l *log.Logger
 
+const DRY_RUN = 1
+
 func init() {
 	l = log.New(log.Writer(), "[Archive] ", 0)
 	loggers.AddLogger(l)
@@ -130,7 +132,7 @@ func Extract(archive io.Reader, target string) (err error) {
 // `archivepath` is the path to the encrypted archive,
 // `target` is the directory where the archive will be extracted, and
 // `passphrase` is the passphrase used to decrypt.
-func ExtractWithPassphrase(archivepath, target, passphrase string) (err error) {
+func ExtractWithPassphrase(archivepath, target, passphrase string, flag int) (err error) {
 	l.Printf("Decrypt with passsphrase %s", passphrase)
 
 	decrypted, err := crypto.DecryptFile(archivepath, passphrase)
@@ -140,8 +142,10 @@ func ExtractWithPassphrase(archivepath, target, passphrase string) (err error) {
 	}
 	l.Println("  OK")
 
-	if err = Extract(decrypted, target); err != nil {
-		return err
+	if flag != DRY_RUN {
+		if err = Extract(decrypted, target); err != nil {
+			return err
+		}
 	}
 
 	return nil
