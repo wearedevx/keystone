@@ -377,7 +377,7 @@ func AddedMail(
 	inviter models.User,
 	projectName string,
 ) (email *Email, err error) {
-	html, text, err := renderInviteTemplate(inviter.Email, projectName)
+	html, text, err := renderAddedTemplate(inviter.Email, projectName)
 	if err != nil {
 		return nil, err
 	}

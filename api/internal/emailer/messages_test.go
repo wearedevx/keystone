@@ -126,17 +126,15 @@ func TestAddedMail(t *testing.T) {
 				To:        []string{},
 				Subject:   "You are added to a Keystone project",
 				HtmlBody:  "",
-				TextBody: `Hello!
+				TextBody: `Hello! 
 
-ok@mail.co is inviting you to join a Keystone project!
+ok@mail.co has added you to a Keystone project! 
 
-To join the project okProject, ok@mail.co needs your Keystone username. To get it :
+You now have access to okProject. 
 
-create, or login into your account: ks login; display your username: ks whoami. The way you transmit your Keystone username to ok@mail.co is up to you.
+go in your project directory login into your account: ks login; use secret: ks source Have a nice day! 
 
-Have a nice day!
-
-The Keystone team
+The Keystone team 
 
 DevX, 2 av Président Pierre Angot, 64000 Pau, Nouvelle-Aquitaine, France`,
 			},

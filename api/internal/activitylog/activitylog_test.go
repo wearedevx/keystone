@@ -2,7 +2,6 @@ package activitylog
 
 import (
 	"errors"
-	"reflect"
 	"testing"
 
 	"github.com/wearedevx/keystone/api/internal/emailer"
@@ -16,6 +15,7 @@ func TestNewActivityLogger(t *testing.T) {
 	type args struct {
 		repo repo.IRepo
 	}
+
 	tests := []struct {
 		name    string
 		args    args
@@ -24,7 +24,7 @@ func TestNewActivityLogger(t *testing.T) {
 		{
 			name: "creates an activity logger",
 			args: args{
-				repo: new(FakeRepo),
+				repo: newFakeRepo(),
 			},
 			wantErr: nil,
 		},
@@ -57,7 +57,7 @@ func Test_activityLogger_Err(t *testing.T) {
 			name: "no error in logger",
 			fields: fields{
 				err:  nil,
-				repo: new(FakeRepo),
+				repo: newFakeRepo(),
 			},
 			wantErr: false,
 		},
@@ -65,7 +65,7 @@ func Test_activityLogger_Err(t *testing.T) {
 			name: "error in logger",
 			fields: fields{
 				err:  errors.New("some error that happened"),
-				repo: new(FakeRepo),
+				repo: newFakeRepo(),
 			},
 			wantErr: true,
 		},
@@ -95,24 +95,36 @@ func Test_activityLogger_Save(t *testing.T) {
 	type args struct {
 		err error
 	}
-	fakeRepo := new(FakeRepo)
+
+	var userID uint = 12
+	var projectID uint = 12
+	var environmentID uint = 12
+
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   ActivityLogger
+		name     string
+		fields   fields
+		args     args
+		wantSave bool
+		wantErr  bool
 	}{
 		{
 			name: "saves an activity log",
 			fields: fields{
 				err:  nil,
-				repo: fakeRepo,
+				repo: newFakeRepo(),
 			},
-			args: args{},
-			want: &activityLogger{
-				nil,
-				fakeRepo,
+			args: args{
+				err: &models.ActivityLog{
+					UserID:        &userID,
+					ProjectID:     &projectID,
+					EnvironmentID: &environmentID,
+					Action:        "GetMessaes",
+					Success:       true,
+					Message:       "",
+				},
 			},
+			wantSave: true,
+			wantErr:  false,
 		},
 		{
 			name: "does not save a plain error",
@@ -120,11 +132,35 @@ func Test_activityLogger_Save(t *testing.T) {
 				err:  nil,
 				repo: new(FakeRepo),
 			},
-			args: args{},
-			want: &activityLogger{
-				nil,
-				fakeRepo,
+			args: args{
+				err: errors.New("test error"),
 			},
+			wantSave: false,
+			wantErr:  false,
+		},
+		{
+			name: "does nothing if logger has an error",
+			fields: fields{
+				err:  errors.New("Some error"),
+				repo: new(FakeRepo),
+			},
+			args: args{
+				err: errors.New("test error"),
+			},
+			wantSave: false,
+			wantErr:  true,
+		},
+		{
+			name: "does nothing if the error is nil",
+			fields: fields{
+				err:  nil,
+				repo: new(FakeRepo),
+			},
+			args: args{
+				err: nil,
+			},
+			wantSave: false,
+			wantErr:  false,
 		},
 	}
 	for _, tt := range tests {
@@ -133,17 +169,40 @@ func Test_activityLogger_Save(t *testing.T) {
 				err:  tt.fields.err,
 				repo: tt.fields.repo,
 			}
-			if got := logger.Save(tt.args.err); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
-				t.Errorf("activityLogger.Save() = %v, want %v", got, tt.want)
+
+			logger.Save(tt.args.err)
+
+			if (logger.Err() != nil) != tt.wantErr {
+				t.Errorf("ActivityLog.Save() error: %v", logger.Err())
+				return
+			}
+
+			var gotSaved bool
+			for _, c := range tt.fields.repo.(*FakeRepo).called {
+				if c == "SaveActivityLog" {
+					gotSaved = true
+					break
+				}
+			}
+
+			if gotSaved != tt.wantSave {
+				t.Errorf("ActivityLog.Save() gotSaved: %v, want: %v", gotSaved, tt.wantSave)
 			}
 		})
 	}
 }
 
-type FakeRepo struct{}
+type FakeRepo struct {
+	err    error
+	called []string
+}
+
+func newFakeRepo() *FakeRepo {
+	f := new(FakeRepo)
+	f.called = make([]string, 0)
+
+	return f
+}
 
 func (f *FakeRepo) CreateEnvironment(_ *models.Environment) repo.IRepo {
 	panic("not implemented")
@@ -207,7 +266,7 @@ func (f *FakeRepo) DeleteProjectsEnvironments(
 }
 
 func (f *FakeRepo) Err() error {
-	panic("not implemented")
+	return f.err
 }
 
 func (f *FakeRepo) FindUsers(
@@ -461,7 +520,9 @@ func (f *FakeRepo) RemoveOldMessageForRecipient(
 }
 
 func (f *FakeRepo) SaveActivityLog(al *models.ActivityLog) repo.IRepo {
-	panic("not implemented")
+	f.called = append(f.called, "SaveActivityLog")
+
+	return f
 }
 
 func (f *FakeRepo) SetLoginRequestCode(_ string, _ string) models.LoginRequest {
