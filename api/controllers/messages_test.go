@@ -952,11 +952,14 @@ func seedMessages(paid bool) (
 		db.Create(&project)
 
 		orga := models.Organization{}
-		db.Where("id = ?", project.OrganizationID).First(&orga)
+		faker.FakeData(&orga)
 		if paid {
 			orga.Paid = true
 			db.Create(&orga)
 		}
+		project.Organization = orga
+		project.OrganizationID = orga.ID
+		db.Save(&project)
 
 		roles := make([]models.Role, 0)
 		db.Find(&roles)

@@ -1,7 +1,6 @@
 package rights
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
@@ -16,7 +15,7 @@ const (
 	Invite UserRight = "invite"
 )
 
-func DoesUserHaveRightsOnEnvironment(
+func doesUserHaveRightsOnEnvironment(
 	Repo repo.IRepo,
 	userID uint,
 	projectID uint,
@@ -38,14 +37,7 @@ func DoesUserHaveRightsOnEnvironment(
 		RoleID:            projectMember.RoleID,
 	}
 
-	err = Repo.GetRolesEnvironmentType(&rolesEnvironmentType).Err()
-
-	if errors.Is(err, repo.ErrorNotFound) {
-		fmt.Println("No rolesEnvironmentType found")
-		return false, err
-	}
-
-	if err != nil {
+	if err = Repo.GetRolesEnvironmentType(&rolesEnvironmentType).Err(); err != nil {
 		fmt.Println("Error getEnvironmentRoleRights", err)
 		return false, err
 	}
@@ -72,7 +64,7 @@ func CanUserReadEnvironment(
 	projectID uint,
 	environment *models.Environment,
 ) (bool, error) {
-	return DoesUserHaveRightsOnEnvironment(
+	return doesUserHaveRightsOnEnvironment(
 		Repo,
 		userID,
 		projectID,
@@ -87,7 +79,7 @@ func CanUserWriteOnEnvironment(
 	projectID uint,
 	environment *models.Environment,
 ) (bool, error) {
-	return DoesUserHaveRightsOnEnvironment(
+	return doesUserHaveRightsOnEnvironment(
 		Repo,
 		userID,
 		projectID,
@@ -160,6 +152,7 @@ func CanUserSetMemberRole(
 		myMember.Role,
 		otherMember.Role,
 	)
+
 	canSetTargetRole, canSetTargetRoleErr := CanRoleAddRole(
 		Repo,
 		myMember.Role,
@@ -230,7 +223,10 @@ func IsUserOwnerOfOrga(
 	return false, nil
 }
 
-//
+// HasOrganizationNotPaidAndHasNonAdmin function returns true if
+// the project's organization is free (not paid)
+// and there is at least one of the members is not admin
+// which is invalid (although unlikely) state
 func HasOrganizationNotPaidAndHasNonAdmin(
 	Repo repo.IRepo,
 	project models.Project,
@@ -258,5 +254,5 @@ func HasOrganizationNotPaidAndHasNonAdmin(
 	}
 
 done:
-	return has, nil
+	return has, err
 }

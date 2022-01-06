@@ -25,6 +25,7 @@ func (repo *Repo) GetEnvironment(environment *models.Environment) IRepo {
 	repo.err = repo.GetDb().
 		Preload("EnvironmentType").
 		Preload("Project").
+		Preload("Project.Organization").
 		Where(*environment).
 		First(&environment).
 		Error

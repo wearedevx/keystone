@@ -209,6 +209,8 @@ func WriteMessages(
 		log.ProjectID = &projectMember.ProjectID
 		log.EnvironmentID = &environment.ID
 
+		fmt.Printf("LS -> controllers/messages.go:210 -> environment.Project.Organization: %+v\n", environment.Project.Organization)
+
 		// If organization has not paid and there is no admin in the project,
 		// messages cannot be written
 		has, err = rights.
