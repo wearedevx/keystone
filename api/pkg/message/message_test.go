@@ -7,7 +7,7 @@ import (
 
 func TestNewMessageService(t *testing.T) {
 	t.Run("instanciate a message service", func(t *testing.T) {
-		service := NewMessageService()
+		service := NewMessageService().(*messageService)
 
 		if service == nil {
 			t.Errorf("NewMessageService(): got nil")
@@ -56,7 +56,7 @@ func TestMessageService_GetMessageByUuid(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := NewMessageService()
+			m := NewMessageService().(*messageService)
 			m.redis.SetupFixtures(tt.fixtures)
 			got, err := m.GetMessageByUuid(tt.args.uuid)
 			if (err != nil) != tt.wantErr {
@@ -101,7 +101,7 @@ func TestMessageService_WriteMessageWithUuid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := NewMessageService()
+			m := NewMessageService().(*messageService)
 			m.redis.SetupFixtures(tt.fixtures)
 			if err := m.WriteMessageWithUuid(tt.args.uuid, tt.args.value); (err != nil) != tt.wantErr {
 				t.Errorf(
@@ -137,7 +137,7 @@ func TestMessageService_DeleteMessageWithUuid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := NewMessageService()
+			m := NewMessageService().(*messageService)
 			m.redis.SetupFixtures(tt.fixtures)
 			if err := m.DeleteMessageWithUuid(tt.args.uuid); (err != nil) != tt.wantErr {
 				t.Errorf(

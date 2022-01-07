@@ -7,16 +7,13 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"reflect"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/bxcodec/faker/v3"
 	"github.com/julienschmidt/httprouter"
-	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/internal/router"
-	"github.com/wearedevx/keystone/api/pkg/message"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 	"gorm.io/gorm"
@@ -193,6 +190,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 		wantEnvironments []string
 		wantStatus       int
 		wantErr          string
+		wantCalled       []string
 	}{
 		{
 			name: "gets message for a user - dev env for dev user",
@@ -202,7 +200,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    users["developer"].Devices[0].UID,
 				}),
 				in1:  nil,
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["developer"],
 			},
 			wantEnvironments: []string{"dev"},
@@ -222,20 +220,103 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 			wantErr:    "",
 		},
 		{
-			name:             "crashes while fetching project",
-			args:             args{
+			name: "fails while fetching project",
+			args: args{
 				params: router.ParamsFrom(map[string]string{
-					"projectID": "crash it",
-					"device":    cusers["developer"].Devices[0].UID,
+					"projectID": project.UUID,
+					"device":    users["developer"].Devices[0].UID,
 				}),
-				in1:    nil,
-				Repo:   newFakeRepo(),
-				user:   cusers["developer"],
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetProject": errors.New("unexpected error"),
+				}),
+				user: users["developer"],
 			},
 			want:             &models.GetMessageByEnvironmentResponse{},
 			wantEnvironments: []string{},
 			wantStatus:       http.StatusBadRequest,
 			wantErr:          "bad request: unexpected error",
+		},
+		{
+			name: "fails while getting permissions",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+					"device":    users["developer"].Devices[0].UID,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetProjectMember": errors.New("not found"),
+				}),
+				user: users["developer"],
+			},
+			want:             &models.GetMessageByEnvironmentResponse{},
+			wantEnvironments: []string{},
+			wantStatus:       http.StatusNotFound,
+			wantErr:          "failed to get permission: not found",
+		},
+		{
+			name: "fails while getting messages from db",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+					"device":    users["developer"].Devices[0].UID,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetMessagesForUserOnEnvironment": errors.New(
+						"unexpected error",
+					),
+				}),
+				user: users["developer"],
+			},
+			want:             &models.GetMessageByEnvironmentResponse{},
+			wantEnvironments: []string{},
+			wantStatus:       http.StatusBadRequest,
+			wantErr:          "failed to get: unexpected error",
+		},
+		{
+			name: "fails while deleting message after a redis error",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+					"device":    users["developer"].Devices[0].UID,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"MessageService.GetMessageByUuid": errors.New(
+						"unexpected error",
+					),
+					"DeleteMessage": errors.New("not found"),
+				}),
+				user: users["developer"],
+			},
+			want:             &models.GetMessageByEnvironmentResponse{},
+			wantEnvironments: []string{},
+			wantStatus:       http.StatusOK,
+			wantErr:          "",
+			wantCalled:       []string{"DeleteMessage"},
+		},
+		{
+			name: "deletes db messages if read form redis fails",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+					"device":    users["developer"].Devices[0].UID,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"MessageService.GetMessageByUuid": errors.New(
+						"unexpected error",
+					),
+				}),
+				user: users["developer"],
+			},
+			want:             &models.GetMessageByEnvironmentResponse{},
+			wantEnvironments: []string{},
+			wantStatus:       http.StatusOK,
+			wantErr:          "",
+			wantCalled:       []string{"DeleteMessage"},
 		},
 		{
 			name: "gets message for a user - dev env for lead-dev user",
@@ -245,7 +326,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    users["lead-dev"].Devices[0].UID,
 				}),
 				in1:  nil,
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["lead-dev"],
 			},
 			wantEnvironments: []string{"dev"},
@@ -272,7 +353,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    users["devops"].Devices[0].UID,
 				}),
 				in1:  nil,
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["devops"],
 			},
 			wantEnvironments: []string{"dev", "staging", "prod"},
@@ -315,7 +396,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    users["admin"].Devices[0].UID,
 				}),
 				in1:  nil,
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["admin"],
 			},
 			wantEnvironments: []string{"dev", "staging", "prod"},
@@ -358,7 +439,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    users["admin"].Devices[0].UID,
 				}),
 				in1:  nil,
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["admin"],
 			},
 			wantEnvironments: []string{},
@@ -376,7 +457,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    "not a device",
 				}),
 				in1:  nil,
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["admin"],
 			},
 			wantEnvironments: []string{},
@@ -394,7 +475,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    users["admin"].Devices[0].UID,
 				}),
 				in1:  nil,
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["dev"],
 			},
 			wantEnvironments: []string{},
@@ -428,6 +509,26 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					tt.wantStatus,
 				)
 				return
+			}
+
+			if tt.wantCalled != nil {
+				gotCalled := tt.args.Repo.(*fakeRepo).called
+
+				found := false
+				for _, w := range tt.wantCalled {
+					found = false
+
+					for _, g := range gotCalled {
+						if g == w {
+							found = true
+							break
+						}
+					}
+
+					if !found {
+						t.Errorf("GetMessagesFromProjectByUser() got called %v, want %v", gotCalled, tt.wantCalled)
+					}
+				}
 			}
 
 			gotResponse := got.(*models.GetMessageByEnvironmentResponse)
@@ -510,7 +611,7 @@ func TestWriteMessages(t *testing.T) {
 					users["devops"].ID,
 					devEnvironment.EnvironmentID,
 				))),
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["admin"],
 			},
 			want: &models.GetEnvironmentsResponse{
@@ -528,7 +629,7 @@ func TestWriteMessages(t *testing.T) {
 				body: ioutil.NopCloser(
 					bytes.NewBufferString("not serializable"),
 				),
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["admin"],
 			},
 			want:       nil,
@@ -560,7 +661,7 @@ func TestWriteMessages(t *testing.T) {
 					users["devops"].ID,
 					devEnvironment.EnvironmentID,
 				))),
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["admin"],
 			},
 			want:       nil,
@@ -591,7 +692,7 @@ func TestWriteMessages(t *testing.T) {
 					users["admin"].UserID,
 					users["devops"].ID,
 				))),
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["admin"],
 			},
 			want:       nil,
@@ -622,7 +723,7 @@ func TestWriteMessages(t *testing.T) {
 					users["admin"].UserID,
 					devEnvironment.EnvironmentID,
 				))),
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["admin"],
 			},
 			want:       nil,
@@ -630,7 +731,7 @@ func TestWriteMessages(t *testing.T) {
 			wantErr:    "not found",
 		},
 		{
-			name: "recipient cannot write or write",
+			name: "recipient cannot read or write",
 			args: args{
 				in0: router.Params{},
 				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
@@ -654,7 +755,7 @@ func TestWriteMessages(t *testing.T) {
 					users["developer"].ID,
 					prodEnvironment.EnvironmentID,
 				))),
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["admin"],
 			},
 			want: &models.GetEnvironmentsResponse{
@@ -687,12 +788,318 @@ func TestWriteMessages(t *testing.T) {
 					users["developer"].ID,
 					devEnvironment.EnvironmentID,
 				))),
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: users["admin"],
 			},
 			want:       nil,
 			wantStatus: http.StatusNotFound,
 			wantErr:    "no device",
+		},
+		{
+			name: "error while checking free org has no non admin members",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+                {
+                    "messages": [
+                        {
+                            "payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+                            "sender_device_uid": "%s",
+                            "recipient_device_id": %d,
+                            "userid": "%s",
+                            "recipient_id": %d,
+                            "environment_id": "%s",
+                            "update_environment_version": true
+                        }
+                    ]
+                }
+                `,
+					users["admin"].Devices[0].UID,
+					users["devops"].Devices[0].ID,
+					users["admin"].UserID,
+					users["devops"].ID,
+					devEnvironment.EnvironmentID,
+				))),
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganizationMembers": errors.New("unexpected error"),
+				}),
+				user: users["admin"],
+			},
+			want:       &models.GetEnvironmentsResponse{},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "organization without an admin: unexpected error",
+		},
+		{
+			name: "error getting permissions",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+								{
+										"messages": [
+												{
+														"payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+														"sender_device_uid": "%s",
+														"recipient_device_id": %d,
+														"userid": "%s",
+														"recipient_id": %d,
+														"environment_id": "%s",
+														"update_environment_version": true
+												}
+										]
+								}
+								`,
+					users["admin"].Devices[0].UID,
+					users["devops"].Devices[0].ID,
+					users["admin"].UserID,
+					users["devops"].ID,
+					devEnvironment.EnvironmentID,
+				))),
+				Repo: newFakeRepo(map[string]error{
+					"GetRolesEnvironmentType": errors.New("unexpected error"),
+				}),
+				user: users["admin"],
+			},
+			want:       &models.GetEnvironmentsResponse{},
+			wantStatus: http.StatusNotFound,
+			wantErr:    "failed to get permission",
+		},
+		{
+			name: "error removing previous messages",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+								{
+										"messages": [
+												{
+														"payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+														"sender_device_uid": "%s",
+														"recipient_device_id": %d,
+														"userid": "%s",
+														"recipient_id": %d,
+														"environment_id": "%s",
+														"update_environment_version": true
+												}
+										]
+								}
+								`,
+					users["admin"].Devices[0].UID,
+					users["devops"].Devices[0].ID,
+					users["admin"].UserID,
+					users["devops"].ID,
+					devEnvironment.EnvironmentID,
+				))),
+				Repo: newFakeRepo(map[string]error{
+					"RemoveOldMessageForRecipient": errors.New("unexpected error"),
+				}),
+				user: users["admin"],
+			},
+			want:       &models.GetEnvironmentsResponse{},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to delete: unexpected error",
+		},
+		{
+			name: "fails when sender device is not found",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+								{
+										"messages": [
+												{
+														"payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+														"sender_device_uid": "%s",
+														"recipient_device_id": %d,
+														"userid": "%s",
+														"recipient_id": %d,
+														"environment_id": "%s",
+														"update_environment_version": true
+												}
+										]
+								}
+								`,
+					users["admin"].Devices[0].UID,
+					users["devops"].Devices[0].ID,
+					users["admin"].UserID,
+					users["devops"].ID,
+					devEnvironment.EnvironmentID,
+				))),
+				Repo: newFakeRepo(map[string]error{
+					"GetDevice": repo.ErrorNotFound,
+				}),
+				user: users["admin"],
+			},
+			want:       nil,
+			wantStatus: http.StatusNotFound,
+			wantErr:    "no device",
+		},
+		{
+			name: "fails trying to get sender device",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+								{
+										"messages": [
+												{
+														"payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+														"sender_device_uid": "%s",
+														"recipient_device_id": %d,
+														"userid": "%s",
+														"recipient_id": %d,
+														"environment_id": "%s",
+														"update_environment_version": true
+												}
+										]
+								}
+								`,
+					users["admin"].Devices[0].UID,
+					users["devops"].Devices[0].ID,
+					users["admin"].UserID,
+					users["devops"].ID,
+					devEnvironment.EnvironmentID,
+				))),
+				Repo: newFakeRepo(map[string]error{
+					"GetDevice": errors.New("unexpected error"),
+				}),
+				user: users["admin"],
+			},
+			want:       nil,
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "no device",
+		},
+		{
+			name: "fails writing messages in db",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+								{
+										"messages": [
+												{
+														"payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+														"sender_device_uid": "%s",
+														"recipient_device_id": %d,
+														"userid": "%s",
+														"recipient_id": %d,
+														"environment_id": "%s",
+														"update_environment_version": true
+												}
+										]
+								}
+								`,
+					users["admin"].Devices[0].UID,
+					users["devops"].Devices[0].ID,
+					users["admin"].UserID,
+					users["devops"].ID,
+					devEnvironment.EnvironmentID,
+				))),
+				Repo: newFakeRepo(map[string]error{
+					"WriteMessage": errors.New("unexpected error"),
+				}),
+				user: users["admin"],
+			},
+			want:       nil,
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to write message: unexpected error",
+		},
+		{
+			name: "fails setting version id because not found",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+								{
+										"messages": [
+												{
+														"payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+														"sender_device_uid": "%s",
+														"recipient_device_id": %d,
+														"userid": "%s",
+														"recipient_id": %d,
+														"environment_id": "%s",
+														"update_environment_version": true
+												}
+										]
+								}
+								`,
+					users["admin"].Devices[0].UID,
+					users["devops"].Devices[0].ID,
+					users["admin"].UserID,
+					users["devops"].ID,
+					devEnvironment.EnvironmentID,
+				))),
+				Repo: newFakeRepo(map[string]error{
+					"SetNewVersionID": repo.ErrorNotFound,
+				}),
+				user: users["admin"],
+			},
+			want:       nil,
+			wantStatus: http.StatusNotFound,
+			wantErr:    "not found",
+		},
+		{
+			name: "fails setting version id because unexpected",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+								{
+										"messages": [
+												{
+														"payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+														"sender_device_uid": "%s",
+														"recipient_device_id": %d,
+														"userid": "%s",
+														"recipient_id": %d,
+														"environment_id": "%s",
+														"update_environment_version": true
+												}
+										]
+								}
+								`,
+					users["admin"].Devices[0].UID,
+					users["devops"].Devices[0].ID,
+					users["admin"].UserID,
+					users["devops"].ID,
+					devEnvironment.EnvironmentID,
+				))),
+				Repo: newFakeRepo(map[string]error{
+					"SetNewVersionID": errors.New("unexpected error"),
+				}),
+				user: users["admin"],
+			},
+			want:       nil,
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to set environment version: unexpected error",
+		},
+		{
+			name: "fails writing message on redis",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+								{
+										"messages": [
+												{
+														"payload": "PGVuY3J5cHRlZF9jb250ZW50Pg==",
+														"sender_device_uid": "%s",
+														"recipient_device_id": %d,
+														"userid": "%s",
+														"recipient_id": %d,
+														"environment_id": "%s",
+														"update_environment_version": true
+												}
+										]
+								}
+								`,
+					users["admin"].Devices[0].UID,
+					users["devops"].Devices[0].ID,
+					users["admin"].UserID,
+					users["devops"].ID,
+					devEnvironment.EnvironmentID,
+				))),
+				Repo: newFakeRepo(map[string]error{
+					"MessageService.WriteMessageWithUuid": errors.New("unexpected error"),
+				}),
+				user: users["admin"],
+			},
+			want:       nil,
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to write message: unexpected error",
 		},
 	}
 	for _, tt := range tests {
@@ -771,13 +1178,66 @@ func TestDeleteMessage(t *testing.T) {
 		wantErr    string
 	}{
 		{
-			name: "deletes a message",
+			name: "fails if id not an uint",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"messageID": "not a valid id",
+				}),
+				in1:  nil,
+				Repo: newFakeRepo(noCrashers),
+				user: models.User{},
+			},
+			want: &GenericResponse{
+				Success: false,
+				Error:   "strconv.ParseUint: parsing \"not a valid id\": invalid syntax",
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    "strconv.ParseUint: parsing \"not a valid id\": invalid syntax: invalid syntax",
+		},
+		{
+			name: "message not found",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
 					"messageID": strconv.Itoa(int(messages[0].ID)),
 				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetMessage": repo.ErrorNotFound,
+				}),
+				user: models.User{},
+			},
+			want: &GenericResponse{
+				Success: true,
+			},
+			wantStatus: http.StatusNotFound,
+			wantErr:    "not found",
+		},
+		{
+			name: "delete fails in db",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"messageID": strconv.Itoa(int(messages[0].ID)),
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"DeleteMessage": errors.New("unexpected error"),
+				}),
+				user: models.User{},
+			},
+			want: &GenericResponse{
+				Error: "unexpected error",
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to delete: unexpected error",
+		},
+		{
+			name: "deletes a message",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"messageID": strconv.Itoa(int(messages[1].ID)),
+				}),
 				in1:  nil,
-				Repo: newFakeRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: models.User{},
 			},
 			want: &GenericResponse{
@@ -813,7 +1273,11 @@ func TestDeleteMessage(t *testing.T) {
 			}
 
 			gotResponse := got.(*GenericResponse)
-			if !reflect.DeepEqual(gotResponse, tt.want) {
+			if tt.want.Success != gotResponse.Success {
+				t.Errorf("DeleteMessage() got = %v, want %v", got, tt.want)
+			}
+
+			if tt.want.Error != gotResponse.Error {
 				t.Errorf("DeleteMessage() got = %v, want %v", got, tt.want)
 			}
 		})
@@ -1163,613 +1627,4 @@ func seedSoonToExpireMessages() []models.Message {
 	})
 
 	return messages
-}
-
-// +------ Fake Repo
-
-type fakeRepo struct {
-	err error
-	inner repo.IRepo
-}
-
-func newFakeRepo() *fakeRepo {
-	return &fakeRepo{
-		inner: repo.NewRepo(),
-	}
-}
-
-func (f *fakeRepo) CreateEnvironment(
-	environment *models.Environment,
-) repo.IRepo {
-	f.inner.CreateEnvironment(environment)
-	return f
-}
-
-func (f *fakeRepo) CreateEnvironmentType(
-	environmentType *models.EnvironmentType,
-) repo.IRepo {
-	f.inner.CreateEnvironmentType(environmentType)
-	return f
-}
-
-func (f *fakeRepo) CreateLoginRequest() models.LoginRequest {
-	return f.inner.CreateLoginRequest()
-}
-
-func (f *fakeRepo) CreateProjectMember(
-	projectMember *models.ProjectMember,
-	role *models.Role,
-) repo.IRepo {
-	f.inner.CreateProjectMember(projectMember, role)
-	return f
-}
-
-func (f *fakeRepo) CreateRole(role *models.Role) repo.IRepo {
-	f.inner.CreateRole(role)
-	return f
-}
-
-func (f *fakeRepo) CreateRoleEnvironmentType(
-	rolesEnvironmentType *models.RolesEnvironmentType,
-) repo.IRepo {
-	f.inner.CreateRoleEnvironmentType(rolesEnvironmentType)
-	return f
-}
-
-func (f *fakeRepo) DeleteLoginRequest(id string) bool {
-	return f.inner.DeleteLoginRequest(id)
-}
-
-func (f *fakeRepo) DeleteAllProjectMembers(project *models.Project) repo.IRepo {
-	f.inner.DeleteAllProjectMembers(project)
-	return f
-}
-
-func (f *fakeRepo) DeleteExpiredMessages() repo.IRepo {
-	f.inner.DeleteExpiredMessages()
-	return f
-}
-
-func (f *fakeRepo) GetGroupedMessagesWillExpireByUser(
-	groupedMessageUser *map[uint]emailer.GroupedMessagesUser,
-) repo.IRepo {
-	f.inner.GetGroupedMessagesWillExpireByUser(groupedMessageUser)
-	return f
-}
-
-func (f *fakeRepo) DeleteMessage(messageID uint, userID uint) repo.IRepo {
-	f.inner.DeleteMessage(messageID, userID)
-	return f
-}
-
-func (f *fakeRepo) DeleteProject(project *models.Project) repo.IRepo {
-	f.inner.DeleteProject(project)
-	return f
-}
-
-func (f *fakeRepo) DeleteProjectsEnvironments(
-	project *models.Project,
-) repo.IRepo {
-	f.inner.DeleteProjectsEnvironments(project)
-	return f
-}
-
-func (f *fakeRepo) Err() error {
-	if f.err != nil {
-		return f.err
-	}
-
-	return f.inner.Err()
-}
-
-func (f *fakeRepo) FindUsers(
-	userIDs []string,
-	users *map[string]models.User,
-	notFounds *[]string,
-) repo.IRepo {
-	f.inner.FindUsers(userIDs, users, notFounds)
-	return f
-}
-
-func (f *fakeRepo) GetActivityLogs(
-	projectID string,
-	options models.GetLogsOptions,
-	logs *[]models.ActivityLog,
-) repo.IRepo {
-	f.inner.GetActivityLogs(projectID, options, logs)
-	return f
-}
-
-func (f *fakeRepo) GetChildrenRoles(
-	role models.Role,
-	roles *[]models.Role,
-) repo.IRepo {
-	f.inner.GetChildrenRoles(role, roles)
-	return f
-}
-
-func (f *fakeRepo) GetDb() *gorm.DB {
-	return f.inner.GetDb()
-}
-
-func (f *fakeRepo) GetEnvironment(environment *models.Environment) repo.IRepo {
-	f.inner.GetEnvironment(environment)
-	return f
-}
-
-func (f *fakeRepo) GetEnvironmentPublicKeys(
-	envID string,
-	publicKeys *models.PublicKeys,
-) repo.IRepo {
-	f.inner.GetEnvironmentPublicKeys(envID, publicKeys)
-	return f
-}
-
-func (f *fakeRepo) GetEnvironmentType(
-	environmentType *models.EnvironmentType,
-) repo.IRepo {
-	f.inner.GetEnvironmentType(environmentType)
-	return f
-}
-
-func (f *fakeRepo) GetEnvironmentsByProjectUUID(
-	projectUUID string,
-	foundEnvironments *[]models.Environment,
-) repo.IRepo {
-	f.inner.GetEnvironmentsByProjectUUID(projectUUID, foundEnvironments)
-	return f
-}
-
-func (f *fakeRepo) GetInvitableRoles(
-	role models.Role,
-	roles *[]models.Role,
-) repo.IRepo {
-	f.inner.GetInvitableRoles(role, roles)
-	return f
-}
-
-func (f *fakeRepo) GetLoginRequest(
-	loginRequest string,
-) (models.LoginRequest, bool) {
-	return f.inner.GetLoginRequest(loginRequest)
-}
-
-func (f *fakeRepo) GetMessage(message *models.Message) repo.IRepo {
-	f.inner.GetMessage(message)
-	return f
-}
-
-func (f *fakeRepo) GetMessagesForUserOnEnvironment(
-	device models.Device,
-	environment models.Environment,
-	message *models.Message,
-) repo.IRepo {
-	f.inner.GetMessagesForUserOnEnvironment(device, environment, message)
-	return f
-}
-
-func (f *fakeRepo) GetOrCreateEnvironment(
-	environment *models.Environment,
-) repo.IRepo {
-	f.inner.GetOrCreateEnvironment(environment)
-	return f
-}
-
-func (f *fakeRepo) GetOrCreateEnvironmentType(
-	environmentType *models.EnvironmentType,
-) repo.IRepo {
-	f.inner.GetOrCreateEnvironmentType(environmentType)
-	return f
-}
-
-func (f *fakeRepo) GetOrCreateProject(project *models.Project) repo.IRepo {
-	f.inner.GetOrCreateProject(project)
-	return f
-}
-
-func (f *fakeRepo) GetOrCreateProjectMember(
-	projectMember *models.ProjectMember,
-	iRepo string,
-) repo.IRepo {
-	f.inner.GetOrCreateProjectMember(projectMember, iRepo)
-	return f
-}
-
-func (f *fakeRepo) GetOrCreateRole(role *models.Role) repo.IRepo {
-	f.inner.GetOrCreateRole(role)
-	return f
-}
-
-func (f *fakeRepo) GetOrCreateRoleEnvType(
-	rolesEnvironmentType *models.RolesEnvironmentType,
-) repo.IRepo {
-	f.inner.GetOrCreateRoleEnvType(rolesEnvironmentType)
-	return f
-}
-
-func (f *fakeRepo) GetOrCreateUser(user *models.User) repo.IRepo {
-	f.inner.GetOrCreateUser(user)
-	return f
-}
-
-func (f *fakeRepo) GetProject(project *models.Project) repo.IRepo {
-	if project.UUID == "crash it" {
-			f.err = errors.New("unexpected error")
-			return f
-	}
-
-	f.inner.GetProject(project)
-	return f
-}
-
-func (f *fakeRepo) GetProjectByUUID(
-	uuid string,
-	project *models.Project,
-) repo.IRepo {
-	f.inner.GetProjectByUUID(uuid, project)
-	return f
-}
-
-func (f *fakeRepo) GetProjectMember(
-	projectMember *models.ProjectMember,
-) repo.IRepo {
-	f.inner.GetProjectMember(projectMember)
-	return f
-}
-
-func (f *fakeRepo) GetProjectsOrganization(
-	id string,
-	organization *models.Organization,
-) repo.IRepo {
-	f.inner.GetProjectsOrganization(id, organization)
-	return f
-}
-
-func (f *fakeRepo) OrganizationCountMembers(
-	organization *models.Organization,
-	iRepo *int64,
-) repo.IRepo {
-	f.inner.OrganizationCountMembers(organization, iRepo)
-	return f
-}
-
-func (f *fakeRepo) GetRole(role *models.Role) repo.IRepo {
-	f.inner.GetRole(role)
-	return f
-}
-
-func (f *fakeRepo) GetRoles(role *[]models.Role) repo.IRepo {
-	f.inner.GetRoles(role)
-	return f
-}
-
-func (f *fakeRepo) GetRolesEnvironmentType(
-	rolesEnvironmentType *models.RolesEnvironmentType,
-) repo.IRepo {
-	f.inner.GetRolesEnvironmentType(rolesEnvironmentType)
-	return f
-}
-
-func (f *fakeRepo) GetRolesMemberCanInvite(
-	projectMember models.ProjectMember,
-	roles *[]models.Role,
-) repo.IRepo {
-	f.inner.GetRolesMemberCanInvite(projectMember, roles)
-	return f
-}
-
-func (f *fakeRepo) GetUser(user *models.User) repo.IRepo {
-	f.inner.GetUser(user)
-	return f
-}
-
-func (f *fakeRepo) GetUserByEmail(id string, user *[]models.User) repo.IRepo {
-	f.inner.GetUserByEmail(id, user)
-	return f
-}
-
-func (f *fakeRepo) IsMemberOfProject(
-	project *models.Project,
-	projectMember *models.ProjectMember,
-) repo.IRepo {
-	f.inner.IsMemberOfProject(project, projectMember)
-	return f
-}
-
-func (f *fakeRepo) ListProjectMembers(
-	userIDList []string,
-	projectMember *[]models.ProjectMember,
-) repo.IRepo {
-	f.inner.ListProjectMembers(userIDList, projectMember)
-	return f
-}
-
-func (f *fakeRepo) MessageService() *message.MessageService {
-	return f.inner.MessageService()
-}
-
-func (f *fakeRepo) ProjectAddMembers(
-	project models.Project,
-	memberRole []models.MemberRole,
-	user models.User,
-) repo.IRepo {
-	f.inner.ProjectAddMembers(project, memberRole, user)
-	return f
-}
-
-func (f *fakeRepo) UsersInMemberRoles(
-	mers []models.MemberRole,
-) (map[string]models.User, []string) {
-	return f.inner.UsersInMemberRoles(mers)
-}
-
-func (f *fakeRepo) SetNewlyCreatedDevice(
-	flag bool,
-	deviceID uint,
-	userID uint,
-) repo.IRepo {
-	f.inner.SetNewlyCreatedDevice(flag, deviceID, userID)
-	return f
-}
-
-func (f *fakeRepo) ProjectGetAdmins(
-	project *models.Project,
-	members *[]models.ProjectMember,
-) repo.IRepo {
-	f.inner.ProjectGetAdmins(project, members)
-	return f
-}
-
-func (f *fakeRepo) ProjectIsMemberAdmin(
-	project *models.Project,
-	member *models.ProjectMember,
-) bool {
-	return f.inner.ProjectIsMemberAdmin(project, member)
-}
-
-func (f *fakeRepo) ProjectGetMembers(
-	project *models.Project,
-	projectMember *[]models.ProjectMember,
-) repo.IRepo {
-	f.inner.ProjectGetMembers(project, projectMember)
-	return f
-}
-
-func (f *fakeRepo) ProjectLoadUsers(project *models.Project) repo.IRepo {
-	f.inner.ProjectLoadUsers(project)
-	return f
-}
-
-func (f *fakeRepo) ProjectRemoveMembers(
-	project models.Project,
-	iRepo []string,
-) repo.IRepo {
-	f.inner.ProjectRemoveMembers(project, iRepo)
-	return f
-}
-
-func (f *fakeRepo) ProjectSetRoleForUser(
-	projet models.Project,
-	user models.User,
-	role models.Role,
-) repo.IRepo {
-	f.inner.ProjectSetRoleForUser(projet, user, role)
-	return f
-}
-
-func (f *fakeRepo) CheckMembersAreInProject(
-	project models.Project,
-	members []string,
-) ([]string, error) {
-	return f.inner.CheckMembersAreInProject(project, members)
-}
-
-func (f *fakeRepo) RemoveOldMessageForRecipient(
-	userID uint,
-	environmentID string,
-) repo.IRepo {
-	f.inner.RemoveOldMessageForRecipient(userID, environmentID)
-	return f
-}
-
-func (f *fakeRepo) SaveActivityLog(al *models.ActivityLog) repo.IRepo {
-	f.inner.SaveActivityLog(al)
-	return f
-}
-
-func (f *fakeRepo) SetLoginRequestCode(
-	code string,
-	c string,
-) models.LoginRequest {
-	return f.inner.SetLoginRequestCode(code, c)
-}
-
-func (f *fakeRepo) SetNewVersionID(environment *models.Environment) error {
-	return f.inner.SetNewVersionID(environment)
-}
-
-func (f *fakeRepo) WriteMessage(
-	user models.User,
-	message models.Message,
-) repo.IRepo {
-	f.inner.WriteMessage(user, message)
-	return f
-}
-
-func (f *fakeRepo) GetDevices(id uint, device *[]models.Device) repo.IRepo {
-	f.inner.GetDevices(id, device)
-	return f
-}
-
-func (f *fakeRepo) GetNewlyCreatedDevices(device *[]models.Device) repo.IRepo {
-	f.inner.GetNewlyCreatedDevices(device)
-	return f
-}
-
-func (f *fakeRepo) GetDevice(device *models.Device) repo.IRepo {
-	f.inner.GetDevice(device)
-	return f
-}
-
-func (f *fakeRepo) GetDeviceByUserID(
-	userID uint,
-	device *models.Device,
-) repo.IRepo {
-	f.inner.GetDeviceByUserID(userID, device)
-	return f
-}
-
-func (f *fakeRepo) UpdateDeviceLastUsedAt(deviceUID string) repo.IRepo {
-	f.inner.UpdateDeviceLastUsedAt(deviceUID)
-	return f
-}
-
-func (f *fakeRepo) RevokeDevice(userID uint, deviceUID string) repo.IRepo {
-	f.inner.RevokeDevice(userID, deviceUID)
-	return f
-}
-
-func (f *fakeRepo) GetAdminsFromUserProjects(
-	userID uint,
-	adminProjectsMap *map[string][]string,
-) repo.IRepo {
-	f.inner.GetAdminsFromUserProjects(userID, adminProjectsMap)
-	return f
-}
-
-func (f *fakeRepo) CreateOrganization(orga *models.Organization) repo.IRepo {
-	f.inner.CreateOrganization(orga)
-	return f
-}
-
-func (f *fakeRepo) UpdateOrganization(orga *models.Organization) repo.IRepo {
-	f.inner.UpdateOrganization(orga)
-	return f
-}
-
-func (f *fakeRepo) OrganizationSetCustomer(
-	organization *models.Organization,
-	customer string,
-) repo.IRepo {
-	f.inner.OrganizationSetCustomer(organization, customer)
-	return f
-}
-
-func (f *fakeRepo) OrganizationSetSubscription(
-	organization *models.Organization,
-	subscription string,
-) repo.IRepo {
-	f.inner.OrganizationSetSubscription(organization, subscription)
-	return f
-}
-
-func (f *fakeRepo) GetOrganization(orga *models.Organization) repo.IRepo {
-	f.inner.GetOrganization(orga)
-	return f
-}
-
-func (f *fakeRepo) GetOrganizations(
-	userID uint,
-	result *[]models.Organization,
-) repo.IRepo {
-	f.inner.GetOrganizations(userID, result)
-	return f
-}
-
-func (f *fakeRepo) GetOwnedOrganizations(
-	userID uint,
-	result *[]models.Organization,
-) repo.IRepo {
-	f.inner.GetOwnedOrganizations(userID, result)
-	return f
-}
-
-func (f *fakeRepo) GetOwnedOrganizationByName(
-	userID uint,
-	name string,
-	orgas *[]models.Organization,
-) repo.IRepo {
-	f.inner.GetOwnedOrganizationByName(userID, name, orgas)
-	return f
-}
-
-func (f *fakeRepo) GetOrganizationByName(
-	userID uint,
-	name string,
-	orga *[]models.Organization,
-) repo.IRepo {
-	f.inner.GetOrganizationByName(userID, name, orga)
-	return f
-}
-
-func (f *fakeRepo) GetOrganizationProjects(
-	organization *models.Organization,
-	project *[]models.Project,
-) repo.IRepo {
-	f.inner.GetOrganizationProjects(organization, project)
-	return f
-}
-
-func (f *fakeRepo) GetOrganizationMembers(
-	orgaID uint,
-	result *[]models.ProjectMember,
-) repo.IRepo {
-	f.inner.GetOrganizationMembers(orgaID, result)
-	return f
-}
-
-func (f *fakeRepo) IsUserOwnerOfOrga(
-	user *models.User,
-	organization *models.Organization,
-) (bool, error) {
-	return f.inner.IsUserOwnerOfOrga(user, organization)
-}
-
-func (f *fakeRepo) IsProjectOrganizationPaid(str string) (bool, error) {
-	return f.inner.IsProjectOrganizationPaid(str)
-}
-
-func (f *fakeRepo) CreateCheckoutSession(
-	checkoutSession *models.CheckoutSession,
-) repo.IRepo {
-	f.inner.CreateCheckoutSession(checkoutSession)
-	return f
-}
-
-func (f *fakeRepo) GetCheckoutSession(
-	str string,
-	checkoutSession *models.CheckoutSession,
-) repo.IRepo {
-	f.inner.GetCheckoutSession(str, checkoutSession)
-	return f
-}
-
-func (f *fakeRepo) UpdateCheckoutSession(
-	checkoutSession *models.CheckoutSession,
-) repo.IRepo {
-	f.inner.UpdateCheckoutSession(checkoutSession)
-	return f
-}
-
-func (f *fakeRepo) DeleteCheckoutSession(
-	checkoutSession *models.CheckoutSession,
-) repo.IRepo {
-	f.inner.DeleteCheckoutSession(checkoutSession)
-	return f
-}
-
-func (f *fakeRepo) OrganizationSetPaid(
-	organization *models.Organization,
-	paid bool,
-) repo.IRepo {
-	f.inner.OrganizationSetPaid(organization, paid)
-	return f
-}
-
-func (f *fakeRepo) GetUserProjects(
-	userID uint,
-	projects *[]models.Project,
-) repo.IRepo {
-	f.inner.GetUserProjects(userID, projects)
-	return f
 }

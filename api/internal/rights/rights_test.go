@@ -498,7 +498,7 @@ func (f *FakeRepo) IsMemberOfProject(_ *Project, _ *ProjectMember) IRepo {
 	return f
 }
 
-func (f *FakeRepo) MessageService() *message.MessageService {
+func (f *FakeRepo) MessageService() message.MessageService {
 	f.called = append(f.called, "MessageService")
 	return nil
 }
@@ -770,6 +770,12 @@ func getRoleByUserID(userID uint) (role Role) {
 
 func (fakeRepo *FakeRepo) Err() error {
 	return fakeRepo.err
+}
+
+func (f *FakeRepo) ClearErr() repo.IRepo {
+	f.err = nil
+
+	return f
 }
 
 func (fakeRepo *FakeRepo) GetRolesEnvironmentType(

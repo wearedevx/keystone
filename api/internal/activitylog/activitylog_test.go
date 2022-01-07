@@ -269,6 +269,12 @@ func (f *FakeRepo) Err() error {
 	return f.err
 }
 
+func (f *FakeRepo) ClearErr() repo.IRepo {
+	f.err = nil
+
+	return f
+}
+
 func (f *FakeRepo) FindUsers(
 	userIDs []string,
 	users *map[string]models.User,
@@ -453,7 +459,7 @@ func (f *FakeRepo) ListProjectMembers(
 	panic("not implemented")
 }
 
-func (f *FakeRepo) MessageService() *message.MessageService {
+func (f *FakeRepo) MessageService() message.MessageService {
 	panic("not implemented")
 }
 

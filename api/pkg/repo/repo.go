@@ -16,7 +16,7 @@ import (
 type Repo struct {
 	err      error
 	tx       *gorm.DB
-	messages *message.MessageService
+	messages message.MessageService
 }
 
 const (
@@ -103,6 +103,12 @@ func (repo *Repo) Err() error {
 	return repo.err
 }
 
+func (repo *Repo) ClearErr() IRepo {
+	repo.err = nil
+
+	return repo
+}
+
 func (repo *Repo) GetDb() *gorm.DB {
 	return db
 }
@@ -111,7 +117,7 @@ func (repo *Repo) GetDialect() Dialect {
 	return dialect
 }
 
-func (repo *Repo) MessageService() *message.MessageService {
+func (repo *Repo) MessageService() message.MessageService {
 	return repo.messages
 }
 

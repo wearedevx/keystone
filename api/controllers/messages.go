@@ -138,6 +138,7 @@ func GetMessagesFromProjectByUser(
 						"Error deleting message without a payload: %+v\n",
 						err,
 					)
+					Repo.ClearErr()
 				}
 			} else {
 				result.Environments[environment.Name] = curr
@@ -164,7 +165,8 @@ func WriteMessages(
 	}
 	senderDevice := models.Device{}
 	var has bool
-	var can bool
+	var canRead, canWrite bool
+	var errCanRead, errCanWrite error
 
 	payload := &models.MessagesToWritePayload{}
 	if err = payload.Deserialize(body); err != nil {
@@ -232,37 +234,29 @@ func WriteMessages(
 		}
 
 		// - check if user has rights to write on environment
-		can, err = rights.
+		canWrite, errCanWrite = rights.
 			CanUserWriteOnEnvironment(
 				Repo,
 				user.ID,
 				environment.Project.ID,
 				&environment,
 			)
-		if err != nil {
-			status = http.StatusNotFound
-			err = apierrors.ErrorFailedToGetPermission(err)
-			goto done
-		}
-
-		if !can {
-			continue
-		}
 
 		// - check recipient exists with read rights.
-		can, err = rights.
+		canRead, errCanRead = rights.
 			CanUserReadEnvironment(Repo,
 				projectMember.UserID,
 				projectMember.ProjectID,
 				&environment,
 			)
-		if err != nil {
+
+		if errCanWrite != nil || errCanRead != nil {
 			status = http.StatusNotFound
 			err = apierrors.ErrorFailedToGetPermission(err)
 			goto done
 		}
 
-		if !can {
+		if !canRead || !canWrite {
 			continue
 		}
 
@@ -275,7 +269,7 @@ func WriteMessages(
 			Err(); err != nil {
 			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToDeleteResource(err)
-			break
+			goto done
 		}
 
 		senderDevice = models.Device{
@@ -306,6 +300,7 @@ func WriteMessages(
 		if err = Repo.WriteMessage(user, *messageToWrite).Err(); err != nil {
 			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToWriteMessage(err)
+			response = nil
 			break
 		}
 
@@ -317,6 +312,9 @@ func WriteMessages(
 			); err != nil {
 			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToWriteMessage(err)
+			response = nil
+
+			goto done
 		}
 
 		if clientMessage.UpdateEnvironmentVersion {
@@ -330,6 +328,7 @@ func WriteMessages(
 					status = http.StatusInternalServerError
 					err = apierrors.ErrorFailedToSetEnvironmentVersion(err)
 				}
+				response = nil
 
 				goto done
 			}
@@ -365,9 +364,9 @@ func DeleteMessage(
 
 	id, err := strconv.ParseUint(messageID, 10, 64)
 	if err != nil {
+		status = http.StatusBadRequest
 		response.Success = false
 		response.Error = err.Error()
-		err = nil
 
 		goto done
 	}
@@ -384,14 +383,9 @@ func DeleteMessage(
 		response.Error = err.Error()
 		response.Success = false
 		err = apierrors.ErrorFailedToDeleteResource(err)
+		status = http.StatusInternalServerError
 
 		goto done
-	}
-
-	if err = Repo.
-		MessageService().
-		DeleteMessageWithUuid(message.Uuid); err != nil {
-		fmt.Printf("Error deleting message on redis: %+v\n", err)
 	}
 
 	if err = Repo.

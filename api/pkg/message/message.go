@@ -6,17 +6,23 @@ import (
 
 // var Redis *redis.Redis
 
-type MessageService struct {
+type messageService struct {
 	redis *redis.Redis
 }
 
-func NewMessageService() *MessageService {
-	return &MessageService{
+type MessageService interface {
+	GetMessageByUuid(uuid string) ([]byte, error)
+	WriteMessageWithUuid(uuid string, value []byte) error
+	DeleteMessageWithUuid(uuid string) error
+}
+
+func NewMessageService() MessageService {
+	return &messageService{
 		redis: redis.NewRedis(),
 	}
 }
 
-func (m *MessageService) GetMessageByUuid(uuid string) ([]byte, error) {
+func (m *messageService) GetMessageByUuid(uuid string) ([]byte, error) {
 	value := ""
 	m.redis.Read(uuid, &value)
 
@@ -27,12 +33,12 @@ func (m *MessageService) GetMessageByUuid(uuid string) ([]byte, error) {
 	return []byte(value), nil
 }
 
-func (m *MessageService) WriteMessageWithUuid(uuid string, value []byte) error {
+func (m *messageService) WriteMessageWithUuid(uuid string, value []byte) error {
 	m.redis.Write(uuid, string(value))
 	return m.redis.Err()
 }
 
-func (m *MessageService) DeleteMessageWithUuid(uuid string) error {
+func (m *messageService) DeleteMessageWithUuid(uuid string) error {
 	m.redis.Delete(uuid)
 
 	return m.redis.Err()

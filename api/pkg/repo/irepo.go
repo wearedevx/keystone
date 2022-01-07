@@ -23,6 +23,7 @@ type IRepo interface {
 	DeleteProject(project *models.Project) IRepo
 	DeleteProjectsEnvironments(project *models.Project) IRepo
 	Err() error
+	ClearErr() IRepo
 	FindUsers(userIDs []string, users *map[string]models.User, notFounds *[]string) IRepo
 	GetActivityLogs(projectID string, options models.GetLogsOptions, logs *[]models.ActivityLog) IRepo
 	GetChildrenRoles(role models.Role, roles *[]models.Role) IRepo
@@ -49,13 +50,13 @@ type IRepo interface {
 	OrganizationCountMembers(*models.Organization, *int64) IRepo
 	GetRole(*models.Role) IRepo
 	GetRoles(*[]models.Role) IRepo
-	GetRolesEnvironmentType(*models.RolesEnvironmentType) IRepo
+	GetRolesEnvironmentType(environmentType *models.RolesEnvironmentType) IRepo
 	GetRolesMemberCanInvite(projectMember models.ProjectMember, roles *[]models.Role) IRepo
 	GetUser(*models.User) IRepo
 	GetUserByEmail(string, *[]models.User) IRepo
 	IsMemberOfProject(*models.Project, *models.ProjectMember) IRepo
 	ListProjectMembers(userIDList []string, projectMember *[]models.ProjectMember) IRepo
-	MessageService() *message.MessageService
+	MessageService() message.MessageService
 	ProjectAddMembers(models.Project, []models.MemberRole, models.User) IRepo
 	UsersInMemberRoles(mers []models.MemberRole) (map[string]models.User, []string)
 	SetNewlyCreatedDevice(flag bool, deviceID uint, userID uint) IRepo
