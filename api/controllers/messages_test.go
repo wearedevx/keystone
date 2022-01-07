@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,7 +14,9 @@ import (
 
 	"github.com/bxcodec/faker/v3"
 	"github.com/julienschmidt/httprouter"
+	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/internal/router"
+	"github.com/wearedevx/keystone/api/pkg/message"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
 	"gorm.io/gorm"
@@ -174,6 +177,9 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 	stagingEnvironment := findEnv(project, "staging")
 	prodEnvironment := findEnv(project, "prod")
 
+	crashingProject, cusers, cmessages := seedMessages(true)
+	defer teardownMessages(crashingProject, cusers, cmessages)
+
 	type args struct {
 		params router.Params
 		in1    io.ReadCloser
@@ -196,7 +202,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    users["developer"].Devices[0].UID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: users["developer"],
 			},
 			wantEnvironments: []string{"dev"},
@@ -216,6 +222,22 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 			wantErr:    "",
 		},
 		{
+			name:             "crashes while fetching project",
+			args:             args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": "crash it",
+					"device":    cusers["developer"].Devices[0].UID,
+				}),
+				in1:    nil,
+				Repo:   newFakeRepo(),
+				user:   cusers["developer"],
+			},
+			want:             &models.GetMessageByEnvironmentResponse{},
+			wantEnvironments: []string{},
+			wantStatus:       http.StatusBadRequest,
+			wantErr:          "bad request: unexpected error",
+		},
+		{
 			name: "gets message for a user - dev env for lead-dev user",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
@@ -223,7 +245,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    users["lead-dev"].Devices[0].UID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: users["lead-dev"],
 			},
 			wantEnvironments: []string{"dev"},
@@ -250,7 +272,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    users["devops"].Devices[0].UID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: users["devops"],
 			},
 			wantEnvironments: []string{"dev", "staging", "prod"},
@@ -293,7 +315,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    users["admin"].Devices[0].UID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: users["admin"],
 			},
 			wantEnvironments: []string{"dev", "staging", "prod"},
@@ -336,7 +358,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    users["admin"].Devices[0].UID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: users["admin"],
 			},
 			wantEnvironments: []string{},
@@ -354,7 +376,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    "not a device",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: users["admin"],
 			},
 			wantEnvironments: []string{},
@@ -372,7 +394,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 					"device":    users["admin"].Devices[0].UID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: users["dev"],
 			},
 			wantEnvironments: []string{},
@@ -488,7 +510,7 @@ func TestWriteMessages(t *testing.T) {
 					users["devops"].ID,
 					devEnvironment.EnvironmentID,
 				))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: users["admin"],
 			},
 			want: &models.GetEnvironmentsResponse{
@@ -502,9 +524,11 @@ func TestWriteMessages(t *testing.T) {
 		{
 			name: "bad request",
 			args: args{
-				in0:  router.Params{},
-				body: ioutil.NopCloser(bytes.NewBufferString("not serializable")),
-				Repo: repo.NewRepo(),
+				in0: router.Params{},
+				body: ioutil.NopCloser(
+					bytes.NewBufferString("not serializable"),
+				),
+				Repo: newFakeRepo(),
 				user: users["admin"],
 			},
 			want:       nil,
@@ -536,7 +560,7 @@ func TestWriteMessages(t *testing.T) {
 					users["devops"].ID,
 					devEnvironment.EnvironmentID,
 				))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: users["admin"],
 			},
 			want:       nil,
@@ -567,7 +591,7 @@ func TestWriteMessages(t *testing.T) {
 					users["admin"].UserID,
 					users["devops"].ID,
 				))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: users["admin"],
 			},
 			want:       nil,
@@ -598,7 +622,7 @@ func TestWriteMessages(t *testing.T) {
 					users["admin"].UserID,
 					devEnvironment.EnvironmentID,
 				))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: users["admin"],
 			},
 			want:       nil,
@@ -630,7 +654,7 @@ func TestWriteMessages(t *testing.T) {
 					users["developer"].ID,
 					prodEnvironment.EnvironmentID,
 				))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: users["admin"],
 			},
 			want: &models.GetEnvironmentsResponse{
@@ -663,7 +687,7 @@ func TestWriteMessages(t *testing.T) {
 					users["developer"].ID,
 					devEnvironment.EnvironmentID,
 				))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: users["admin"],
 			},
 			want:       nil,
@@ -753,7 +777,7 @@ func TestDeleteMessage(t *testing.T) {
 					"messageID": strconv.Itoa(int(messages[0].ID)),
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(),
 				user: models.User{},
 			},
 			want: &GenericResponse{
@@ -930,11 +954,19 @@ func TestAlertMessagesWillExpire(t *testing.T) {
 			gotBody := resp.BodyString()
 
 			if resp.status != tt.wantStatus {
-				t.Errorf("AlertMessagesWillExpire() got status = %v, want %v", resp.status, tt.wantStatus)
+				t.Errorf(
+					"AlertMessagesWillExpire() got status = %v, want %v",
+					resp.status,
+					tt.wantStatus,
+				)
 			}
 
 			if gotBody != tt.wantBody {
-				t.Errorf("AlertMessagesWillExpire() got = %v, want %v", gotBody, tt.wantBody)
+				t.Errorf(
+					"AlertMessagesWillExpire() got = %v, want %v",
+					gotBody,
+					tt.wantBody,
+				)
 			}
 		})
 	}
@@ -1079,7 +1111,6 @@ func teardownMessages(
 
 		return nil
 	})
-
 	if err != nil {
 		panic(err)
 	}
@@ -1132,4 +1163,613 @@ func seedSoonToExpireMessages() []models.Message {
 	})
 
 	return messages
+}
+
+// +------ Fake Repo
+
+type fakeRepo struct {
+	err error
+	inner repo.IRepo
+}
+
+func newFakeRepo() *fakeRepo {
+	return &fakeRepo{
+		inner: repo.NewRepo(),
+	}
+}
+
+func (f *fakeRepo) CreateEnvironment(
+	environment *models.Environment,
+) repo.IRepo {
+	f.inner.CreateEnvironment(environment)
+	return f
+}
+
+func (f *fakeRepo) CreateEnvironmentType(
+	environmentType *models.EnvironmentType,
+) repo.IRepo {
+	f.inner.CreateEnvironmentType(environmentType)
+	return f
+}
+
+func (f *fakeRepo) CreateLoginRequest() models.LoginRequest {
+	return f.inner.CreateLoginRequest()
+}
+
+func (f *fakeRepo) CreateProjectMember(
+	projectMember *models.ProjectMember,
+	role *models.Role,
+) repo.IRepo {
+	f.inner.CreateProjectMember(projectMember, role)
+	return f
+}
+
+func (f *fakeRepo) CreateRole(role *models.Role) repo.IRepo {
+	f.inner.CreateRole(role)
+	return f
+}
+
+func (f *fakeRepo) CreateRoleEnvironmentType(
+	rolesEnvironmentType *models.RolesEnvironmentType,
+) repo.IRepo {
+	f.inner.CreateRoleEnvironmentType(rolesEnvironmentType)
+	return f
+}
+
+func (f *fakeRepo) DeleteLoginRequest(id string) bool {
+	return f.inner.DeleteLoginRequest(id)
+}
+
+func (f *fakeRepo) DeleteAllProjectMembers(project *models.Project) repo.IRepo {
+	f.inner.DeleteAllProjectMembers(project)
+	return f
+}
+
+func (f *fakeRepo) DeleteExpiredMessages() repo.IRepo {
+	f.inner.DeleteExpiredMessages()
+	return f
+}
+
+func (f *fakeRepo) GetGroupedMessagesWillExpireByUser(
+	groupedMessageUser *map[uint]emailer.GroupedMessagesUser,
+) repo.IRepo {
+	f.inner.GetGroupedMessagesWillExpireByUser(groupedMessageUser)
+	return f
+}
+
+func (f *fakeRepo) DeleteMessage(messageID uint, userID uint) repo.IRepo {
+	f.inner.DeleteMessage(messageID, userID)
+	return f
+}
+
+func (f *fakeRepo) DeleteProject(project *models.Project) repo.IRepo {
+	f.inner.DeleteProject(project)
+	return f
+}
+
+func (f *fakeRepo) DeleteProjectsEnvironments(
+	project *models.Project,
+) repo.IRepo {
+	f.inner.DeleteProjectsEnvironments(project)
+	return f
+}
+
+func (f *fakeRepo) Err() error {
+	if f.err != nil {
+		return f.err
+	}
+
+	return f.inner.Err()
+}
+
+func (f *fakeRepo) FindUsers(
+	userIDs []string,
+	users *map[string]models.User,
+	notFounds *[]string,
+) repo.IRepo {
+	f.inner.FindUsers(userIDs, users, notFounds)
+	return f
+}
+
+func (f *fakeRepo) GetActivityLogs(
+	projectID string,
+	options models.GetLogsOptions,
+	logs *[]models.ActivityLog,
+) repo.IRepo {
+	f.inner.GetActivityLogs(projectID, options, logs)
+	return f
+}
+
+func (f *fakeRepo) GetChildrenRoles(
+	role models.Role,
+	roles *[]models.Role,
+) repo.IRepo {
+	f.inner.GetChildrenRoles(role, roles)
+	return f
+}
+
+func (f *fakeRepo) GetDb() *gorm.DB {
+	return f.inner.GetDb()
+}
+
+func (f *fakeRepo) GetEnvironment(environment *models.Environment) repo.IRepo {
+	f.inner.GetEnvironment(environment)
+	return f
+}
+
+func (f *fakeRepo) GetEnvironmentPublicKeys(
+	envID string,
+	publicKeys *models.PublicKeys,
+) repo.IRepo {
+	f.inner.GetEnvironmentPublicKeys(envID, publicKeys)
+	return f
+}
+
+func (f *fakeRepo) GetEnvironmentType(
+	environmentType *models.EnvironmentType,
+) repo.IRepo {
+	f.inner.GetEnvironmentType(environmentType)
+	return f
+}
+
+func (f *fakeRepo) GetEnvironmentsByProjectUUID(
+	projectUUID string,
+	foundEnvironments *[]models.Environment,
+) repo.IRepo {
+	f.inner.GetEnvironmentsByProjectUUID(projectUUID, foundEnvironments)
+	return f
+}
+
+func (f *fakeRepo) GetInvitableRoles(
+	role models.Role,
+	roles *[]models.Role,
+) repo.IRepo {
+	f.inner.GetInvitableRoles(role, roles)
+	return f
+}
+
+func (f *fakeRepo) GetLoginRequest(
+	loginRequest string,
+) (models.LoginRequest, bool) {
+	return f.inner.GetLoginRequest(loginRequest)
+}
+
+func (f *fakeRepo) GetMessage(message *models.Message) repo.IRepo {
+	f.inner.GetMessage(message)
+	return f
+}
+
+func (f *fakeRepo) GetMessagesForUserOnEnvironment(
+	device models.Device,
+	environment models.Environment,
+	message *models.Message,
+) repo.IRepo {
+	f.inner.GetMessagesForUserOnEnvironment(device, environment, message)
+	return f
+}
+
+func (f *fakeRepo) GetOrCreateEnvironment(
+	environment *models.Environment,
+) repo.IRepo {
+	f.inner.GetOrCreateEnvironment(environment)
+	return f
+}
+
+func (f *fakeRepo) GetOrCreateEnvironmentType(
+	environmentType *models.EnvironmentType,
+) repo.IRepo {
+	f.inner.GetOrCreateEnvironmentType(environmentType)
+	return f
+}
+
+func (f *fakeRepo) GetOrCreateProject(project *models.Project) repo.IRepo {
+	f.inner.GetOrCreateProject(project)
+	return f
+}
+
+func (f *fakeRepo) GetOrCreateProjectMember(
+	projectMember *models.ProjectMember,
+	iRepo string,
+) repo.IRepo {
+	f.inner.GetOrCreateProjectMember(projectMember, iRepo)
+	return f
+}
+
+func (f *fakeRepo) GetOrCreateRole(role *models.Role) repo.IRepo {
+	f.inner.GetOrCreateRole(role)
+	return f
+}
+
+func (f *fakeRepo) GetOrCreateRoleEnvType(
+	rolesEnvironmentType *models.RolesEnvironmentType,
+) repo.IRepo {
+	f.inner.GetOrCreateRoleEnvType(rolesEnvironmentType)
+	return f
+}
+
+func (f *fakeRepo) GetOrCreateUser(user *models.User) repo.IRepo {
+	f.inner.GetOrCreateUser(user)
+	return f
+}
+
+func (f *fakeRepo) GetProject(project *models.Project) repo.IRepo {
+	if project.UUID == "crash it" {
+			f.err = errors.New("unexpected error")
+			return f
+	}
+
+	f.inner.GetProject(project)
+	return f
+}
+
+func (f *fakeRepo) GetProjectByUUID(
+	uuid string,
+	project *models.Project,
+) repo.IRepo {
+	f.inner.GetProjectByUUID(uuid, project)
+	return f
+}
+
+func (f *fakeRepo) GetProjectMember(
+	projectMember *models.ProjectMember,
+) repo.IRepo {
+	f.inner.GetProjectMember(projectMember)
+	return f
+}
+
+func (f *fakeRepo) GetProjectsOrganization(
+	id string,
+	organization *models.Organization,
+) repo.IRepo {
+	f.inner.GetProjectsOrganization(id, organization)
+	return f
+}
+
+func (f *fakeRepo) OrganizationCountMembers(
+	organization *models.Organization,
+	iRepo *int64,
+) repo.IRepo {
+	f.inner.OrganizationCountMembers(organization, iRepo)
+	return f
+}
+
+func (f *fakeRepo) GetRole(role *models.Role) repo.IRepo {
+	f.inner.GetRole(role)
+	return f
+}
+
+func (f *fakeRepo) GetRoles(role *[]models.Role) repo.IRepo {
+	f.inner.GetRoles(role)
+	return f
+}
+
+func (f *fakeRepo) GetRolesEnvironmentType(
+	rolesEnvironmentType *models.RolesEnvironmentType,
+) repo.IRepo {
+	f.inner.GetRolesEnvironmentType(rolesEnvironmentType)
+	return f
+}
+
+func (f *fakeRepo) GetRolesMemberCanInvite(
+	projectMember models.ProjectMember,
+	roles *[]models.Role,
+) repo.IRepo {
+	f.inner.GetRolesMemberCanInvite(projectMember, roles)
+	return f
+}
+
+func (f *fakeRepo) GetUser(user *models.User) repo.IRepo {
+	f.inner.GetUser(user)
+	return f
+}
+
+func (f *fakeRepo) GetUserByEmail(id string, user *[]models.User) repo.IRepo {
+	f.inner.GetUserByEmail(id, user)
+	return f
+}
+
+func (f *fakeRepo) IsMemberOfProject(
+	project *models.Project,
+	projectMember *models.ProjectMember,
+) repo.IRepo {
+	f.inner.IsMemberOfProject(project, projectMember)
+	return f
+}
+
+func (f *fakeRepo) ListProjectMembers(
+	userIDList []string,
+	projectMember *[]models.ProjectMember,
+) repo.IRepo {
+	f.inner.ListProjectMembers(userIDList, projectMember)
+	return f
+}
+
+func (f *fakeRepo) MessageService() *message.MessageService {
+	return f.inner.MessageService()
+}
+
+func (f *fakeRepo) ProjectAddMembers(
+	project models.Project,
+	memberRole []models.MemberRole,
+	user models.User,
+) repo.IRepo {
+	f.inner.ProjectAddMembers(project, memberRole, user)
+	return f
+}
+
+func (f *fakeRepo) UsersInMemberRoles(
+	mers []models.MemberRole,
+) (map[string]models.User, []string) {
+	return f.inner.UsersInMemberRoles(mers)
+}
+
+func (f *fakeRepo) SetNewlyCreatedDevice(
+	flag bool,
+	deviceID uint,
+	userID uint,
+) repo.IRepo {
+	f.inner.SetNewlyCreatedDevice(flag, deviceID, userID)
+	return f
+}
+
+func (f *fakeRepo) ProjectGetAdmins(
+	project *models.Project,
+	members *[]models.ProjectMember,
+) repo.IRepo {
+	f.inner.ProjectGetAdmins(project, members)
+	return f
+}
+
+func (f *fakeRepo) ProjectIsMemberAdmin(
+	project *models.Project,
+	member *models.ProjectMember,
+) bool {
+	return f.inner.ProjectIsMemberAdmin(project, member)
+}
+
+func (f *fakeRepo) ProjectGetMembers(
+	project *models.Project,
+	projectMember *[]models.ProjectMember,
+) repo.IRepo {
+	f.inner.ProjectGetMembers(project, projectMember)
+	return f
+}
+
+func (f *fakeRepo) ProjectLoadUsers(project *models.Project) repo.IRepo {
+	f.inner.ProjectLoadUsers(project)
+	return f
+}
+
+func (f *fakeRepo) ProjectRemoveMembers(
+	project models.Project,
+	iRepo []string,
+) repo.IRepo {
+	f.inner.ProjectRemoveMembers(project, iRepo)
+	return f
+}
+
+func (f *fakeRepo) ProjectSetRoleForUser(
+	projet models.Project,
+	user models.User,
+	role models.Role,
+) repo.IRepo {
+	f.inner.ProjectSetRoleForUser(projet, user, role)
+	return f
+}
+
+func (f *fakeRepo) CheckMembersAreInProject(
+	project models.Project,
+	members []string,
+) ([]string, error) {
+	return f.inner.CheckMembersAreInProject(project, members)
+}
+
+func (f *fakeRepo) RemoveOldMessageForRecipient(
+	userID uint,
+	environmentID string,
+) repo.IRepo {
+	f.inner.RemoveOldMessageForRecipient(userID, environmentID)
+	return f
+}
+
+func (f *fakeRepo) SaveActivityLog(al *models.ActivityLog) repo.IRepo {
+	f.inner.SaveActivityLog(al)
+	return f
+}
+
+func (f *fakeRepo) SetLoginRequestCode(
+	code string,
+	c string,
+) models.LoginRequest {
+	return f.inner.SetLoginRequestCode(code, c)
+}
+
+func (f *fakeRepo) SetNewVersionID(environment *models.Environment) error {
+	return f.inner.SetNewVersionID(environment)
+}
+
+func (f *fakeRepo) WriteMessage(
+	user models.User,
+	message models.Message,
+) repo.IRepo {
+	f.inner.WriteMessage(user, message)
+	return f
+}
+
+func (f *fakeRepo) GetDevices(id uint, device *[]models.Device) repo.IRepo {
+	f.inner.GetDevices(id, device)
+	return f
+}
+
+func (f *fakeRepo) GetNewlyCreatedDevices(device *[]models.Device) repo.IRepo {
+	f.inner.GetNewlyCreatedDevices(device)
+	return f
+}
+
+func (f *fakeRepo) GetDevice(device *models.Device) repo.IRepo {
+	f.inner.GetDevice(device)
+	return f
+}
+
+func (f *fakeRepo) GetDeviceByUserID(
+	userID uint,
+	device *models.Device,
+) repo.IRepo {
+	f.inner.GetDeviceByUserID(userID, device)
+	return f
+}
+
+func (f *fakeRepo) UpdateDeviceLastUsedAt(deviceUID string) repo.IRepo {
+	f.inner.UpdateDeviceLastUsedAt(deviceUID)
+	return f
+}
+
+func (f *fakeRepo) RevokeDevice(userID uint, deviceUID string) repo.IRepo {
+	f.inner.RevokeDevice(userID, deviceUID)
+	return f
+}
+
+func (f *fakeRepo) GetAdminsFromUserProjects(
+	userID uint,
+	adminProjectsMap *map[string][]string,
+) repo.IRepo {
+	f.inner.GetAdminsFromUserProjects(userID, adminProjectsMap)
+	return f
+}
+
+func (f *fakeRepo) CreateOrganization(orga *models.Organization) repo.IRepo {
+	f.inner.CreateOrganization(orga)
+	return f
+}
+
+func (f *fakeRepo) UpdateOrganization(orga *models.Organization) repo.IRepo {
+	f.inner.UpdateOrganization(orga)
+	return f
+}
+
+func (f *fakeRepo) OrganizationSetCustomer(
+	organization *models.Organization,
+	customer string,
+) repo.IRepo {
+	f.inner.OrganizationSetCustomer(organization, customer)
+	return f
+}
+
+func (f *fakeRepo) OrganizationSetSubscription(
+	organization *models.Organization,
+	subscription string,
+) repo.IRepo {
+	f.inner.OrganizationSetSubscription(organization, subscription)
+	return f
+}
+
+func (f *fakeRepo) GetOrganization(orga *models.Organization) repo.IRepo {
+	f.inner.GetOrganization(orga)
+	return f
+}
+
+func (f *fakeRepo) GetOrganizations(
+	userID uint,
+	result *[]models.Organization,
+) repo.IRepo {
+	f.inner.GetOrganizations(userID, result)
+	return f
+}
+
+func (f *fakeRepo) GetOwnedOrganizations(
+	userID uint,
+	result *[]models.Organization,
+) repo.IRepo {
+	f.inner.GetOwnedOrganizations(userID, result)
+	return f
+}
+
+func (f *fakeRepo) GetOwnedOrganizationByName(
+	userID uint,
+	name string,
+	orgas *[]models.Organization,
+) repo.IRepo {
+	f.inner.GetOwnedOrganizationByName(userID, name, orgas)
+	return f
+}
+
+func (f *fakeRepo) GetOrganizationByName(
+	userID uint,
+	name string,
+	orga *[]models.Organization,
+) repo.IRepo {
+	f.inner.GetOrganizationByName(userID, name, orga)
+	return f
+}
+
+func (f *fakeRepo) GetOrganizationProjects(
+	organization *models.Organization,
+	project *[]models.Project,
+) repo.IRepo {
+	f.inner.GetOrganizationProjects(organization, project)
+	return f
+}
+
+func (f *fakeRepo) GetOrganizationMembers(
+	orgaID uint,
+	result *[]models.ProjectMember,
+) repo.IRepo {
+	f.inner.GetOrganizationMembers(orgaID, result)
+	return f
+}
+
+func (f *fakeRepo) IsUserOwnerOfOrga(
+	user *models.User,
+	organization *models.Organization,
+) (bool, error) {
+	return f.inner.IsUserOwnerOfOrga(user, organization)
+}
+
+func (f *fakeRepo) IsProjectOrganizationPaid(str string) (bool, error) {
+	return f.inner.IsProjectOrganizationPaid(str)
+}
+
+func (f *fakeRepo) CreateCheckoutSession(
+	checkoutSession *models.CheckoutSession,
+) repo.IRepo {
+	f.inner.CreateCheckoutSession(checkoutSession)
+	return f
+}
+
+func (f *fakeRepo) GetCheckoutSession(
+	str string,
+	checkoutSession *models.CheckoutSession,
+) repo.IRepo {
+	f.inner.GetCheckoutSession(str, checkoutSession)
+	return f
+}
+
+func (f *fakeRepo) UpdateCheckoutSession(
+	checkoutSession *models.CheckoutSession,
+) repo.IRepo {
+	f.inner.UpdateCheckoutSession(checkoutSession)
+	return f
+}
+
+func (f *fakeRepo) DeleteCheckoutSession(
+	checkoutSession *models.CheckoutSession,
+) repo.IRepo {
+	f.inner.DeleteCheckoutSession(checkoutSession)
+	return f
+}
+
+func (f *fakeRepo) OrganizationSetPaid(
+	organization *models.Organization,
+	paid bool,
+) repo.IRepo {
+	f.inner.OrganizationSetPaid(organization, paid)
+	return f
+}
+
+func (f *fakeRepo) GetUserProjects(
+	userID uint,
+	projects *[]models.Project,
+) repo.IRepo {
+	f.inner.GetUserProjects(userID, projects)
+	return f
 }
