@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,7 +13,6 @@ import (
 	"testing"
 
 	"github.com/bxcodec/faker/v3"
-	"github.com/julienschmidt/httprouter"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"gorm.io/gorm"
 
@@ -78,15 +78,18 @@ func TestPostUserToken(t *testing.T) {
 	defer teardownOnlyDevice(device)
 
 	type args struct {
-		w   http.ResponseWriter
-		r   *http.Request
-		in2 httprouter.Params
+		w    http.ResponseWriter
+		r    *http.Request
+		in2  router.Params
+		Repo repo.IRepo
 	}
 	tests := []struct {
 		name              string
 		args              args
 		wantStatus        int
 		wantAuthorization bool
+		wantErr           bool
+		wantMsg           string
 	}{
 		{
 			name: "it works",
@@ -102,9 +105,12 @@ func TestPostUserToken(t *testing.T) {
 								"Device": "a-device",
 								"DeviceUID": "a-device-uid"
 							}`))},
-				in2: []httprouter.Param{},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
 			},
+			wantStatus:        http.StatusOK,
 			wantAuthorization: true,
+			wantErr:           false,
 		},
 		{
 			name: "bad device name",
@@ -120,21 +126,171 @@ func TestPostUserToken(t *testing.T) {
 								"Device": "is that such a bad device name ?",
 								"DeviceUID": "a-device-uid"
 							}`))},
-				in2: []httprouter.Param{},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantStatus:        http.StatusConflict,
 			wantAuthorization: false,
+			wantErr:           true,
+			wantMsg:           "bad device name",
+		},
+		{
+			name: "bad payload",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{Body: ioutil.NopCloser(bytes.NewBufferString(`
+									{
+										"AccountType": "github",
+										"Token": 
+										"PublicKey": "YSB2ZXJ5IHB1YmxpYyBrZXk=",
+										"Device": "is that such a bad device name ?",
+										"DeviceUID": "a-device-uid"
+									}`))},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
+			},
+			wantStatus:        http.StatusBadRequest,
+			wantAuthorization: false,
+			wantErr:           true,
+			wantMsg:           "Bad Request",
+		},
+		{
+			name: "missing public key",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{Body: ioutil.NopCloser(bytes.NewBufferString(`
+				{
+					"AccountType": "github",
+					"Token": {
+						"access_token": "YSB0b2tlbg=="
+					},
+					"PublicKey": "",
+					"Device": "is that such a bad device name ?",
+					"DeviceUID": "a-device-uid"
+				}`))},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
+			},
+			wantStatus:        http.StatusBadRequest,
+			wantAuthorization: false,
+			wantErr:           true,
+			wantMsg:           "Bad Request",
+		},
+		{
+			name: "fails to create a user",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{Body: ioutil.NopCloser(bytes.NewBufferString(`
+						{
+							"AccountType": "github",
+							"Token": {
+								"access_token": "YSB0b2tlbg=="
+							},
+							"PublicKey": "YSB2ZXJ5IHB1YmxpYyBrZXk=",
+							"Device": "a-good-device-name",
+							"DeviceUID": "a-device-uid"
+						}`))},
+				in2: router.Params{},
+				Repo: newFakeRepo(map[string]error{
+					"GetOrCreateUser": errors.New("unexpected error"),
+				}),
+			},
+			wantStatus:        http.StatusInternalServerError,
+			wantAuthorization: false,
+			wantErr:           true,
+			wantMsg:           "Internal Server Error",
+		},
+		{
+			name: "fails to get newly created devices",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{Body: ioutil.NopCloser(bytes.NewBufferString(`
+								{
+									"AccountType": "github",
+									"Token": {
+										"access_token": "YSB0b2tlbg=="
+									},
+									"PublicKey": "YSB2ZXJ5IHB1YmxpYyBrZXk=",
+									"Device": "another-unique-device-name",
+									"DeviceUID": "a-device-uid"
+								}`))},
+				in2: router.Params{},
+				Repo: newFakeRepo(map[string]error{
+					"GetNewlyCreatedDevices": errors.New("unexpected error"),
+				}),
+			},
+			wantStatus:        http.StatusInternalServerError,
+			wantAuthorization: false,
+			wantErr:           true,
+			wantMsg:           "Internal Server Error",
+		},
+		{
+			name: "fails to find admins of projects",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{Body: ioutil.NopCloser(bytes.NewBufferString(`
+										{
+											"AccountType": "github",
+											"Token": {
+												"access_token": "YSB0b2tlbg=="
+											},
+											"PublicKey": "YSB2ZXJ5IHB1YmxpYyBrZXk=",
+											"Device": "yet-another-device-name",
+											"DeviceUID": "a-device-uid"
+										}`))},
+				in2: router.Params{},
+				Repo: newFakeRepo(map[string]error{
+					"GetAdminsFromUserProjects": errors.New("unexpected error"),
+				}),
+			},
+			wantStatus:        http.StatusInternalServerError,
+			wantAuthorization: false,
+			wantErr:           true,
+			wantMsg:           "unexpected error",
+		},
+		{
+			name: "fais setting newly created device flags",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{Body: ioutil.NopCloser(bytes.NewBufferString(`
+												{
+													"AccountType": "github",
+													"Token": {
+														"access_token": "YSB0b2tlbg=="
+													},
+													"PublicKey": "YSB2ZXJ5IHB1YmxpYyBrZXk=",
+													"Device": "yet-another-unique-device-name",
+													"DeviceUID": "a-device-uid"
+												}`))},
+				in2: router.Params{},
+				Repo: newFakeRepo(map[string]error{
+					"SetNewlyCreatedDevice": errors.New("unexpected error"),
+				}),
+			},
+			wantStatus:        http.StatusInternalServerError,
+			wantAuthorization: false,
+			wantErr:           true,
+			wantMsg:           "unexpected error",
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			PostUserToken(tt.args.w, tt.args.r, tt.args.in2)
+			status, err := PostUserToken(tt.args.w, tt.args.r, tt.args.in2, tt.args.Repo)
 			got := tt.args.w.(*mockResponseWriter)
 
-			if got.status != tt.wantStatus {
+			if (err != nil) != tt.wantErr {
+				t.Errorf(
+					"PostUserToken() err %v, want %v",
+					err,
+					tt.wantErr,
+				)
+			}
+
+			if status != tt.wantStatus {
 				t.Errorf(
 					"PostUserToken() got status %v, want %v",
-					got.status,
+					status,
 					tt.wantStatus,
 				)
 				return
@@ -146,7 +302,15 @@ func TestPostUserToken(t *testing.T) {
 					return
 				}
 			}
+
+			if tt.wantErr {
+				gotMsg := got.body.String()
+				if gotMsg != tt.wantMsg {
+					t.Errorf("PostUserToken() msg = %v, want %v", gotMsg, tt.wantMsg)
+				}
+			}
 		})
+
 	}
 }
 
@@ -187,17 +351,20 @@ func TestGetAuthRedirect(t *testing.T) {
 			notFoundState,
 		),
 	)
+	badUrl, _ := url.Parse("http://tests.com/redirect?state=rubbish")
 
 	type args struct {
-		w   http.ResponseWriter
-		r   *http.Request
-		in2 httprouter.Params
+		w    http.ResponseWriter
+		r    *http.Request
+		in2  router.Params
+		Repo repo.IRepo
 	}
 	tests := []struct {
 		name         string
 		args         args
 		wantStatus   int
 		wantResponse []string
+		wantErr      bool
 	}{
 		{
 			name: "it works",
@@ -206,11 +373,29 @@ func TestGetAuthRedirect(t *testing.T) {
 				r: &http.Request{
 					URL: okUrl,
 				},
-				in2: []httprouter.Param{},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
 			},
+			wantStatus: http.StatusOK,
 			wantResponse: []string{
 				"You have been successfully authenticated",
 				"You may now return to your terminal and start using Keystone",
+			},
+		},
+		{
+			name: "bad url",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					URL: badUrl,
+				},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
+			},
+			wantStatus: http.StatusBadRequest,
+			wantResponse: []string{
+				"Bad Request",
+				"The link used is malformed",
 			},
 		},
 		{
@@ -220,7 +405,8 @@ func TestGetAuthRedirect(t *testing.T) {
 				r: &http.Request{
 					URL: tooShortCodeUrl,
 				},
-				in2: []httprouter.Param{},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantStatus: http.StatusBadRequest,
 			wantResponse: []string{
@@ -235,7 +421,8 @@ func TestGetAuthRedirect(t *testing.T) {
 				r: &http.Request{
 					URL: notFoundUrl,
 				},
-				in2: []httprouter.Param{},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantStatus: http.StatusBadRequest,
 			wantResponse: []string{
@@ -246,14 +433,18 @@ func TestGetAuthRedirect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetAuthRedirect(tt.args.w, tt.args.r, tt.args.in2)
+			status, err := GetAuthRedirect(tt.args.w, tt.args.r, tt.args.in2, tt.args.Repo)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAuthRedirect() err = %v, want %v", err, tt.wantErr)
+			}
 
 			got := tt.args.w.(*mockResponseWriter)
 
-			if got.status != tt.wantStatus {
+			if status != tt.wantStatus {
 				t.Errorf(
 					"GetAuthRedirect() got status %v, want %v",
-					got.status,
+					status,
 					tt.wantStatus,
 				)
 				return
@@ -276,31 +467,61 @@ func TestGetAuthRedirect(t *testing.T) {
 
 func TestPostLoginRequest(t *testing.T) {
 	type args struct {
-		w   http.ResponseWriter
-		in1 *http.Request
-		in2 httprouter.Params
+		w    http.ResponseWriter
+		in1  *http.Request
+		in2  router.Params
+		Repo repo.IRepo
 	}
 	tests := []struct {
 		name       string
 		args       args
 		wantStatus int
+		wantErr    bool
+		wantMsg    string
 	}{
 		{
 			name: "it work",
 			args: args{
+				w:    newMockResponse(),
+				in1:  &http.Request{},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "it fails interting in db",
+			args: args{
 				w:   newMockResponse(),
 				in1: &http.Request{},
-				in2: []httprouter.Param{},
+				in2: router.Params{},
+				Repo: newFakeRepo(map[string]error{
+					"CreateLoginRequest": errors.New("unexpected error"),
+				}),
 			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    true,
+			wantMsg:    "Status Internal Server Error",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			PostLoginRequest(tt.args.w, tt.args.in1, tt.args.in2)
+			status, err := PostLoginRequest(tt.args.w, tt.args.in1, tt.args.in2, tt.args.Repo)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf(
+					"PostLoginRequest() err = %v, want %v",
+					err,
+					tt.wantErr,
+				)
+
+				return
+			}
 
 			got := tt.args.w.(*mockResponseWriter)
 
-			if got.status != tt.wantStatus {
+			if status != tt.wantStatus {
 				t.Errorf(
 					"PostLoginRequest() got status %v, want %v",
 					got.status,
@@ -309,12 +530,23 @@ func TestPostLoginRequest(t *testing.T) {
 				return
 			}
 
-			var lr models.LoginRequest
-			if err := lr.Deserialize(got.body); err != nil {
-				t.Errorf(
-					"PostLoginRequest() invalid respons body: %v",
-					got.body.String(),
-				)
+			if !tt.wantErr {
+				var lr models.LoginRequest
+				if err := lr.Deserialize(got.body); err != nil {
+					t.Errorf(
+						"PostLoginRequest() invalid respons body: %v",
+						got.body.String(),
+					)
+				}
+			} else {
+				var msg = got.body.String()
+				if msg != tt.wantMsg {
+					t.Errorf(
+						"PostLoginRequest() msg = %v, want %v",
+						msg,
+						tt.wantMsg,
+					)
+				}
 			}
 		})
 	}
@@ -330,11 +562,15 @@ func TestGetLoginRequest(t *testing.T) {
 	notFoundUrl, _ := url.Parse(
 		"http://tests.com/login-request?code=notacodebutitcouldhavebeenjusthavetobelongenough",
 	)
+	tooShortUrl, _ := url.Parse(
+		"http://tests.com/login-request?code=notaco",
+	)
 
 	type args struct {
-		w   http.ResponseWriter
-		r   *http.Request
-		in2 httprouter.Params
+		w    http.ResponseWriter
+		r    *http.Request
+		in2  router.Params
+		Repo repo.IRepo
 	}
 	tests := []struct {
 		name        string
@@ -342,6 +578,7 @@ func TestGetLoginRequest(t *testing.T) {
 		wantStatus  int
 		want        *models.LoginRequest
 		wantMessage string
+		wantErr     bool
 	}{
 		{
 			name: "it works",
@@ -350,11 +587,13 @@ func TestGetLoginRequest(t *testing.T) {
 				r: &http.Request{
 					URL: okUrl,
 				},
-				in2: []httprouter.Param{},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantStatus:  http.StatusOK,
 			want:        &lr,
 			wantMessage: "",
+			wantErr:     false,
 		},
 		{
 			name: "not found",
@@ -363,23 +602,66 @@ func TestGetLoginRequest(t *testing.T) {
 				r: &http.Request{
 					URL: notFoundUrl,
 				},
-				in2: []httprouter.Param{},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantStatus:  http.StatusNotFound,
 			want:        nil,
-			wantMessage: "not found\n",
+			wantMessage: "not found",
+			wantErr:     true,
+		},
+		{
+			name: "temporary code is too short",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					URL: tooShortUrl,
+				},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
+			},
+			wantStatus:  http.StatusBadRequest,
+			want:        nil,
+			wantMessage: "Bad Request",
+			wantErr:     true,
+		},
+		{
+			name: "it fails",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					URL: okUrl,
+				},
+				in2: router.Params{},
+				Repo: newFakeRepo(map[string]error{
+					"GetLoginRequest": errors.New("unexpected error"),
+				}),
+			},
+			wantStatus:  http.StatusInternalServerError,
+			want:        nil,
+			wantMessage: "unexpected error",
+			wantErr:     true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetLoginRequest(tt.args.w, tt.args.r, tt.args.in2)
+			status, err := GetLoginRequest(tt.args.w, tt.args.r, tt.args.in2, tt.args.Repo)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf(
+					"GetLoginRequest() err = %v, want %v",
+					err,
+					tt.wantErr,
+				)
+				return
+			}
 
 			got := tt.args.w.(*mockResponseWriter)
 
-			if got.status != tt.wantStatus {
+			if status != tt.wantStatus {
 				t.Errorf(
 					"GetLoginRequest() got status %v, want %v",
-					got.status,
+					status,
 					tt.wantStatus,
 				)
 				return
@@ -439,7 +721,7 @@ func TestGetUserKeys(t *testing.T) {
 					"userID": otherUser.UserID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				in3:  models.User{},
 			},
 			want: &models.UserDevices{
@@ -455,7 +737,7 @@ func TestGetUserKeys(t *testing.T) {
 			args: args{
 				params: router.Params{},
 				in1:    nil,
-				Repo:   repo.NewRepo(),
+				Repo:   newFakeRepo(noCrashers),
 				in3:    user,
 			},
 			want:       &models.UserDevices{},
@@ -469,12 +751,28 @@ func TestGetUserKeys(t *testing.T) {
 					"userID": "not a member id",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				in3:  user,
 			},
 			want:       &models.UserDevices{},
 			wantStatus: http.StatusNotFound,
 			wantErr:    "not found",
+		},
+		{
+			name: "fails to get the user",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"userID": user.UserID,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetUser": errors.New("unexpected error"),
+				}),
+				in3: models.User{},
+			},
+			want:       &models.UserDevices{},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
 		},
 	}
 	for _, tt := range tests {

@@ -76,6 +76,24 @@ func (p Params) Get(key string) string {
 
 type Handler = func(params Params, body io.ReadCloser, Repo repo.IRepo, user models.User) (Serde, int, error)
 
+func RegularHandler(handler func(w http.ResponseWriter, r *http.Request, params Params, Repo repo.IRepo) (int, error)) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+		dw := newDoneWriter(w)
+		p := newParams(r, params)
+
+		var status int
+		var err error
+
+		err = repo.Transaction(func(Repo repo.IRepo) error {
+			status, err = handler(dw, r, p, Repo)
+
+			return err
+		})
+
+		dw.WriteHeader(status)
+	}
+}
+
 func AuthedHandler(handler Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		dw := newDoneWriter(w)

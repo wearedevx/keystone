@@ -18,7 +18,6 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/models"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/wearedevx/keystone/api/internal/authconnector"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -113,37 +112,54 @@ func GetUser(
 func PostUserToken(
 	w http.ResponseWriter,
 	r *http.Request,
-	_ httprouter.Params,
-) {
-	var err error
+	_ router.Params,
+	Repo repo.IRepo,
+) (status int, err error) {
+	status = http.StatusOK
 	payload := models.LoginPayload{}
 
 	var user models.User
 	var serializedUser string
 	var jwtToken string
 	var responseBody bytes.Buffer
+	var msg string
 
 	var connector authconnector.AuthConnector
 
 	var newDevices []models.Device
 
+	alogger := activitylog.NewActivityLogger(Repo)
+	log := models.ActivityLog{
+		Action: "PostUserToken",
+	}
+
 	if err = json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
+		status = http.StatusBadRequest
+		msg = "Bad Request"
+		goto done
+	}
+
+	if len(payload.PublicKey) == 0 {
+		status = http.StatusBadRequest
+		msg = "Bad Request"
+		err = errors.New("bad request")
+		goto done
 	}
 
 	connector, err = authconnector.GetConnectorForAccountType(
 		payload.AccountType,
 	)
 	if err != nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
+		status = http.StatusBadRequest
+		msg = "Bad Request"
+		goto done
 	}
 
 	user, err = connector.GetUserInfo(payload.Token)
 	if err != nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
+		status = http.StatusBadRequest
+		msg = "Bad Request"
+		goto done
 	}
 
 	user.Devices = []models.Device{{
@@ -152,87 +168,71 @@ func PostUserToken(
 		UID:       payload.DeviceUID,
 	}}
 
-	if len(payload.PublicKey) == 0 {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
+	if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
+		if errors.Is(err, ErrorBadDeviceName) {
+			msg = err.Error()
+			status = http.StatusConflict
+		} else {
+			msg = "Internal Server Error"
+			status = http.StatusInternalServerError
+		}
+
+		goto done
 	}
 
-	err = repo.Transaction(func(Repo repo.IRepo) error {
-		err = nil
-		msg := ""
-		status := http.StatusOK
-		alogger := activitylog.NewActivityLogger(Repo)
-		log := models.ActivityLog{
-			Action: "PostUserToken",
-		}
+	if err = Repo.GetNewlyCreatedDevices(&newDevices).Err(); err != nil {
+		msg = "Internal Server Error"
+		status = http.StatusInternalServerError
+		goto done
+	}
 
-		if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
-			if errors.Is(err, ErrorBadDeviceName) {
-				msg = err.Error()
-				status = http.StatusConflict
-			} else {
-				msg = "Internal Server Error"
-				status = http.StatusInternalServerError
-			}
+	for _, device := range newDevices {
+		// Newly created devices only have one user
+		user := device.Users[0]
 
-			goto done
-		}
-
-		if err := Repo.GetNewlyCreatedDevices(&newDevices).Err(); err != nil {
-			return err
-		}
-
-		for _, device := range newDevices {
-			// Newly created devices only have one user
-			user := device.Users[0]
-
-			var adminProjectsMap map[string][]string
-			if err := Repo.GetAdminsFromUserProjects(user.ID, &adminProjectsMap).Err(); err != nil {
-				status = http.StatusInternalServerError
-				msg = err.Error()
-				goto done
-			}
-			if err := notification.SendEmailForNewDevices(device, adminProjectsMap, user); err != nil {
-				status = http.StatusInternalServerError
-				msg = err.Error()
-				goto done
-			}
-			if err := Repo.SetNewlyCreatedDevice(false, device.ID, user.ID).Err(); err != nil {
-				status = http.StatusInternalServerError
-				msg = err.Error()
-				goto done
-			}
-
-		}
-
-		log.User = user
-		jwtToken, err = jwt.MakeToken(user, payload.DeviceUID, time.Now())
-
-		if err != nil {
-			msg = "Internal Server Error"
+		var adminProjectsMap map[string][]string
+		if err = Repo.GetAdminsFromUserProjects(user.ID, &adminProjectsMap).Err(); err != nil {
 			status = http.StatusInternalServerError
-
+			msg = err.Error()
 			goto done
 		}
-
-		if err = user.Serialize(&serializedUser); err != nil {
-			msg = "Internal Server Error"
+		if err = notification.SendEmailForNewDevices(device, adminProjectsMap, user); err != nil {
 			status = http.StatusInternalServerError
-
+			msg = err.Error()
+			goto done
+		}
+		if err = Repo.SetNewlyCreatedDevice(false, device.ID, user.ID).Err(); err != nil {
+			status = http.StatusInternalServerError
+			msg = err.Error()
 			goto done
 		}
 
-	done:
-		alogger.Save(log.SetError(err))
+	}
 
-		if err != nil {
-			http.Error(w, msg, status)
-		}
+	log.User = user
+	jwtToken, err = jwt.MakeToken(user, payload.DeviceUID, time.Now())
 
-		return err
-	})
+	if err != nil {
+		msg = "Internal Server Error"
+		status = http.StatusInternalServerError
 
-	if err == nil {
+		goto done
+	}
+
+	if err = user.Serialize(&serializedUser); err != nil {
+		msg = "Internal Server Error"
+		status = http.StatusInternalServerError
+
+		goto done
+	}
+
+done:
+	alogger.Save(log.SetError(err))
+
+	if err != nil {
+		w.Write([]byte(msg))
+	} else {
+
 		serializedUserBytes := []byte(serializedUser)
 		responseBody = *bytes.NewBuffer(serializedUserBytes)
 
@@ -244,19 +244,21 @@ func PostUserToken(
 			fmt.Printf("err: %+v\n", err)
 		}
 	}
+
+	return status, err
 }
 
 // Route uses a redirect URI for OAuth2 requests
 func GetAuthRedirect(
 	w http.ResponseWriter,
 	r *http.Request,
-	_ httprouter.Params,
-) {
-	var err error
+	_ router.Params,
+	Repo repo.IRepo,
+) (status int, err error) {
 	var response string
 	var temporaryCode string
 	var code string
-	statusCode := http.StatusOK
+	status = http.StatusOK
 
 	type tplData struct {
 		Title   string
@@ -276,7 +278,7 @@ func GetAuthRedirect(
 		tpl = "login-fail"
 		data.Title = "Bad Request"
 		data.Message = "The link used is malformed"
-		statusCode = http.StatusBadRequest
+		status = http.StatusBadRequest
 		goto done
 	}
 
@@ -289,32 +291,24 @@ func GetAuthRedirect(
 		tpl = "login-fail"
 		data.Title = "Bad Request"
 		data.Message = "The provided code is invalid"
-		statusCode = http.StatusBadRequest
+		status = http.StatusBadRequest
 		goto done
 	}
 
-	err = repo.Transaction(func(Repo repo.IRepo) error {
-		Repo.SetLoginRequestCode(temporaryCode, code)
-		if err = Repo.Err(); err != nil {
-			tpl = "login-fail"
-			statusCode = http.StatusInternalServerError
-			data.Title = "Internal Server Error"
-			data.Message = "An unexpected error occurred while trying to log you in"
-
-			if errors.Is(err, repo.ErrorNotFound) {
-				statusCode = http.StatusBadRequest
-				data.Title = "Bad Request"
-				data.Message = "The link used is invalid or expired"
-			}
-
-			return err
-		}
-		return nil
-	})
-
-	tpl = "login-success"
-	if statusCode != http.StatusOK {
+	Repo.SetLoginRequestCode(temporaryCode, code)
+	if err = Repo.Err(); err != nil {
 		tpl = "login-fail"
+		status = http.StatusInternalServerError
+		data.Title = "Internal Server Error"
+		data.Message = "An unexpected error occurred while trying to log you in"
+
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusBadRequest
+			data.Title = "Bad Request"
+			data.Message = "The link used is invalid or expired"
+		}
+
+		goto done
 	}
 
 done:
@@ -326,53 +320,45 @@ done:
 
 	w.Header().Add("Content-Type", "text/html")
 	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
-	if _, err := fmt.Fprint(w, response); err != nil {
+	if _, err = fmt.Fprint(w, response); err != nil {
 		fmt.Printf("err: %+v\n", err)
-		return
 	}
 
-	if statusCode != http.StatusOK {
-		w.WriteHeader(statusCode)
-	}
+	return status, err
 }
 
 func PostLoginRequest(
 	w http.ResponseWriter,
 	_ *http.Request,
-	_ httprouter.Params,
-) {
+	_ router.Params,
+	Repo repo.IRepo,
+) (status int, err error) {
+	status = http.StatusOK
 	var response string
-	err := repo.Transaction(func(Repo repo.IRepo) (err error) {
-		loginRequest := Repo.CreateLoginRequest()
-		alogger := activitylog.NewActivityLogger(Repo)
-		log := models.ActivityLog{
-			Action: "PostLoginRequest",
-		}
-		var msg string
-		var status int
 
-		if err = Repo.Err(); err != nil {
-			msg = "Status Internal Server Error"
-			status = http.StatusInternalServerError
+	loginRequest := Repo.CreateLoginRequest()
+	alogger := activitylog.NewActivityLogger(Repo)
+	log := models.ActivityLog{
+		Action: "PostLoginRequest",
+	}
+	var msg string
 
-			goto done
-		}
+	if err = Repo.Err(); err != nil {
+		msg = "Status Internal Server Error"
+		status = http.StatusInternalServerError
 
-		if err = loginRequest.Serialize(&response); err != nil {
-			msg = "Status Internal Server Error"
-			status = http.StatusInternalServerError
+		goto done
+	}
 
-			goto done
-		}
+	if err = loginRequest.Serialize(&response); err != nil {
+		msg = "Status Internal Server Error"
+		status = http.StatusInternalServerError
 
-	done:
-		alogger.Save(log.SetError(err))
-		if err != nil {
-			http.Error(w, msg, status)
-		}
+		goto done
+	}
 
-		return err
-	})
+done:
+	alogger.Save(log.SetError(err))
 
 	if err == nil {
 		w.Header().Add("Content-Type", "application/json; charset=utf-8")
@@ -380,73 +366,70 @@ func PostLoginRequest(
 		if _, err := fmt.Fprint(w, response); err != nil {
 			fmt.Printf("err: %+v\n", err)
 		}
+	} else {
+		w.Write([]byte(msg))
 	}
+
+	return status, err
 }
 
 // Route to poll to check wether the user has completed the login
 func GetLoginRequest(
 	w http.ResponseWriter,
 	r *http.Request,
-	_ httprouter.Params,
-) {
+	_ router.Params,
+	Repo repo.IRepo,
+) (status int, err error) {
 	var response string
-	var err error
-	status := http.StatusOK
+	var loginRequest models.LoginRequest
+	status = http.StatusOK
+
+	alogger := activitylog.NewActivityLogger(Repo)
+	alog := models.ActivityLog{
+		Action: "GetLoginRequest",
+	}
 
 	temporaryCode := r.URL.Query().Get("code")
 
 	if len(temporaryCode) < 16 {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
+		status = http.StatusBadRequest
+		response = "Bad Request"
+		err = errors.New("code too short")
+		goto done
 	}
 
-	err = repo.Transaction(func(Repo repo.IRepo) (err error) {
-		alogger := activitylog.NewActivityLogger(Repo)
-		alog := models.ActivityLog{
-			Action: "GetLoginRequest",
-		}
-		var msg string
+	loginRequest, _ = Repo.GetLoginRequest(temporaryCode)
 
-		loginRequest, _ := Repo.GetLoginRequest(temporaryCode)
-
-		if err = Repo.Err(); err != nil {
-			if errors.Is(err, repo.ErrorNotFound) {
-				status = http.StatusNotFound
-			} else {
-				status = http.StatusInternalServerError
-			}
-			msg = err.Error()
-
-			goto done
-		}
-
-		err = loginRequest.Serialize(&response)
-
-		if err != nil {
-			msg = err.Error()
-			status = http.StatusInternalServerError
-
-			goto done
-		}
-
-	done:
-		alogger.Save(alog.SetError(err))
-		if err != nil {
-			http.Error(w, msg, status)
-		}
-
-		return nil
-	})
-
-	if err == nil {
-		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
-
-		if _, err := fmt.Fprint(w, response); err != nil {
-			fmt.Printf("err: %+v\n", err)
+	if err = Repo.Err(); err != nil {
+		if errors.Is(err, repo.ErrorNotFound) {
+			status = http.StatusNotFound
 		} else {
-			w.WriteHeader(status)
+			status = http.StatusInternalServerError
 		}
+		response = err.Error()
+
+		goto done
 	}
+
+	err = loginRequest.Serialize(&response)
+
+	if err != nil {
+		response = err.Error()
+		status = http.StatusInternalServerError
+
+		goto done
+	}
+
+done:
+	alogger.Save(alog.SetError(err))
+
+	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
+
+	if _, err := fmt.Fprint(w, response); err != nil {
+		fmt.Printf("err: %+v\n", err)
+	}
+
+	return status, err
 }
 
 func GetUserKeys(
@@ -482,7 +465,7 @@ func GetUserKeys(
 			status = http.StatusNotFound
 		} else {
 			status = http.StatusInternalServerError
-			err = apierrors.ErrorFailedToDeleteResource(err)
+			err = apierrors.ErrorFailedToGetResource(err)
 		}
 	} else {
 		userDevices.UserID = targetUser.ID

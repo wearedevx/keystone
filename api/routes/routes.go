@@ -66,10 +66,10 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.GET("/devices", AuthedHandler(GetDevices))
 	router.DELETE("/devices/:uid", AuthedHandler(DeleteDevice))
 
-	router.POST("/login-request", PostLoginRequest)
-	router.GET("/login-request", GetLoginRequest)
-	router.GET("/auth-redirect/", GetAuthRedirect)
-	router.POST("/complete", PostUserToken)
+	router.POST("/login-request", RegularHandler(PostLoginRequest))
+	router.GET("/login-request", RegularHandler(GetLoginRequest))
+	router.GET("/auth-redirect/", RegularHandler(GetAuthRedirect))
+	router.POST("/complete", RegularHandler(PostUserToken))
 
 	router.POST("/users/exist", AuthedHandler(DoUsersExist))
 	router.GET("/users/:userID/key", AuthedHandler(GetUserKeys))
