@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -11,7 +12,6 @@ import (
 	"testing"
 
 	"github.com/bxcodec/faker/v3"
-	"github.com/julienschmidt/httprouter"
 	"github.com/wearedevx/keystone/api/internal/router"
 	"github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
@@ -48,7 +48,7 @@ func TestPostSubscription(t *testing.T) {
 					"organizationName": organization.Name,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			wantResponse: &models.StartSubscriptionResponse{
@@ -59,18 +59,46 @@ func TestPostSubscription(t *testing.T) {
 			wantErr:    "",
 		},
 		{
+			name: "must have an organziation name",
+			args: args{
+				params: router.Params{},
+				in1:    nil,
+				Repo:   newFakeRepo(noCrashers),
+				user:   user,
+			},
+			wantResponse: nil,
+			wantStatus:   http.StatusBadRequest,
+			wantErr:      "bad request",
+		},
+		{
 			name: "the organization must exists",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
 					"organizationName": "not an organizationName",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			wantResponse: nil,
 			wantStatus:   http.StatusNotFound,
 			wantErr:      "not found",
+		},
+		{
+			name: "fails to get the organization or count its memebers",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"organizationName": organization.Name,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"OrganizationCountMembers": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			wantResponse: nil,
+			wantStatus:   http.StatusInternalServerError,
+			wantErr:      "failed to get: unexpected error",
 		},
 		{
 			name: "the user must own the organization",
@@ -79,7 +107,7 @@ func TestPostSubscription(t *testing.T) {
 					"organizationName": organization.Name,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: paidUser,
 			},
 			wantResponse: nil,
@@ -93,12 +121,28 @@ func TestPostSubscription(t *testing.T) {
 					"organizationName": paidOrganization.Name,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: paidUser,
 			},
 			wantResponse: nil,
 			wantStatus:   http.StatusConflict,
 			wantErr:      "already subscribed",
+		},
+		{
+			name: "create checkout session fail",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"organizationName": organization.Name,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"OrganizationSetCustomer": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			wantResponse: nil,
+			wantStatus:   http.StatusInternalServerError,
+			wantErr:      "failed to create resource: unexpected error",
 		},
 	}
 	for _, tt := range tests {
@@ -147,7 +191,7 @@ func TestGetPollSubscriptionSuccess(t *testing.T) {
 					"sessionID": csession.SessionID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			wantResponse: nil,
@@ -161,12 +205,28 @@ func TestGetPollSubscriptionSuccess(t *testing.T) {
 					"sessionID": "this is not a session id",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			wantResponse: nil,
 			wantStatus:   http.StatusNotFound,
 			wantErr:      "not found",
+		},
+		{
+			name: "other errors",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"sessionID": csession.SessionID,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetCheckoutSession": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			wantResponse: nil,
+			wantStatus:   http.StatusInternalServerError,
+			wantErr:      "failed to get: unexpected error",
 		},
 	}
 	for _, tt := range tests {
@@ -190,19 +250,26 @@ func TestGetCheckoutSuccess(t *testing.T) {
 	cs := seedCheckoutSession()
 	defer teardownCheckoutSession(cs)
 
+	csd := seedCheckoutSession()
+	defer teardownCheckoutSession(csd)
+
 	okUrl, _ := url.Parse(fmt.Sprintf("http://tests.com?session_id=%s", cs.SessionID))
 	koUrl, _ := url.Parse("http://tests.com?session_id=not-a-session-id")
 
+	dUrl, _ := url.Parse(fmt.Sprintf("http://tests.com?sessions_id=%s", csd.SessionID))
+
 	type args struct {
-		w   http.ResponseWriter
-		r   *http.Request
-		in2 httprouter.Params
+		w    http.ResponseWriter
+		r    *http.Request
+		in2  router.Params
+		Repo repo.IRepo
 	}
 	tests := []struct {
 		name       string
 		args       args
 		want       string
 		wantStatus int
+		wantErr    bool
 	}{
 		{
 			name: "it works",
@@ -211,10 +278,12 @@ func TestGetCheckoutSuccess(t *testing.T) {
 				r: &http.Request{
 					URL: okUrl,
 				},
-				in2: []httprouter.Param{},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
 			},
 			want:       "Thank you for subscribing to Keystone!",
 			wantStatus: http.StatusOK,
+			wantErr:    false,
 		},
 		{
 			name: "not found",
@@ -223,15 +292,38 @@ func TestGetCheckoutSuccess(t *testing.T) {
 				r: &http.Request{
 					URL: koUrl,
 				},
-				in2: []httprouter.Param{},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
 			},
 			want:       "No such checkout session",
 			wantStatus: http.StatusNotFound,
+			wantErr:    true,
+		},
+		{
+			name: "fails to delete the resource",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					URL: dUrl,
+				},
+				in2: router.Params{},
+				Repo: newFakeRepo(map[string]error{
+					"DeleteCheckoutSession": errors.New("unexpected error"),
+				}),
+			},
+			want:       "An error occurred: unexpected error",
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetCheckoutSuccess(tt.args.w, tt.args.r, tt.args.in2)
+			status, err := GetCheckoutSuccess(tt.args.w, tt.args.r, tt.args.in2, tt.args.Repo)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetCheckoutSuccess() err = %v, want %v", err, tt.wantErr)
+				return
+			}
 
 			got := tt.args.w.(*mockResponseWriter)
 			if got.body.String() != tt.want {
@@ -239,8 +331,8 @@ func TestGetCheckoutSuccess(t *testing.T) {
 				return
 			}
 
-			if got.status != tt.wantStatus {
-				t.Errorf("GetCheckoutSuccess() got.status %v, want %v", got.status, tt.wantStatus)
+			if status != tt.wantStatus {
+				t.Errorf("GetCheckoutSuccess() status %v, want %v", status, tt.wantStatus)
 			}
 		})
 	}
@@ -250,19 +342,26 @@ func TestGetCheckoutCancel(t *testing.T) {
 	cs := seedCheckoutSession()
 	defer teardownCheckoutSession(cs)
 
+	csd := seedCheckoutSession()
+	defer teardownCheckoutSession(csd)
+
 	okUrl, _ := url.Parse(fmt.Sprintf("http://tests.com?session_id=%s", cs.SessionID))
 	koUrl, _ := url.Parse("http://tests.com?session_id=not-a-session-id")
 
+	dUrl, _ := url.Parse(fmt.Sprintf("http://tests.com?session_id=%s", csd.SessionID))
+
 	type args struct {
-		w   http.ResponseWriter
-		r   *http.Request
-		in2 httprouter.Params
+		w    http.ResponseWriter
+		r    *http.Request
+		in2  router.Params
+		Repo repo.IRepo
 	}
 	tests := []struct {
 		name       string
 		args       args
 		want       string
 		wantStatus int
+		wantErr    bool
 	}{
 		{
 			name: "it works",
@@ -271,7 +370,8 @@ func TestGetCheckoutCancel(t *testing.T) {
 				r: &http.Request{
 					URL: okUrl,
 				},
-				in2: []httprouter.Param{},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
 			},
 			want:       "You cancelled your subscription",
 			wantStatus: http.StatusOK,
@@ -283,15 +383,38 @@ func TestGetCheckoutCancel(t *testing.T) {
 				r: &http.Request{
 					URL: koUrl,
 				},
-				in2: []httprouter.Param{},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
 			},
 			want:       "No such checkout session",
 			wantStatus: http.StatusNotFound,
+			wantErr:    true,
+		},
+		{
+			name: "if fails at deleting the resource",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					URL: dUrl,
+				},
+				in2: router.Params{},
+				Repo: newFakeRepo(map[string]error{
+					"DeleteCheckoutSession": errors.New("unexpected error"),
+				}),
+			},
+			want:       "An error occurred: unexpected error",
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetCheckoutCancel(tt.args.w, tt.args.r, tt.args.in2)
+			status, err := GetCheckoutCancel(tt.args.w, tt.args.r, tt.args.in2, tt.args.Repo)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetCheckoutCancel() err = %v, want %v", err, tt.wantErr)
+				return
+			}
 
 			got := tt.args.w.(*mockResponseWriter)
 			if got.body.String() != tt.want {
@@ -299,8 +422,8 @@ func TestGetCheckoutCancel(t *testing.T) {
 				return
 			}
 
-			if got.status != tt.wantStatus {
-				t.Errorf("GetCheckoutCancel() got.status %v, want %v", got.status, tt.wantStatus)
+			if status != tt.wantStatus {
+				t.Errorf("GetCheckoutCancel() status %v, want %v", status, tt.wantStatus)
 			}
 		})
 	}
@@ -342,15 +465,17 @@ func TestPostStripeWebhook(t *testing.T) {
 	defer teardownCheckoutSession(canceledSession)
 
 	type args struct {
-		w   http.ResponseWriter
-		r   *http.Request
-		in2 httprouter.Params
+		w    http.ResponseWriter
+		r    *http.Request
+		in2  router.Params
+		Repo repo.IRepo
 	}
 	tests := []struct {
 		name             string
 		args             args
 		wantStatus       int
 		wantOrganization *models.Organization
+		wantErr          bool
 	}{
 		{
 			name: "ignores event",
@@ -359,7 +484,8 @@ func TestPostStripeWebhook(t *testing.T) {
 				r: &http.Request{
 					Body: ioutil.NopCloser(bytes.NewBuffer([]byte{})),
 				},
-				in2: []httprouter.Param{},
+				in2:  router.Params{},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantStatus: http.StatusOK,
 		},
@@ -370,8 +496,10 @@ func TestPostStripeWebhook(t *testing.T) {
 				r: &http.Request{
 					Body: ioutil.NopCloser(bytes.NewBufferString("bad-event")),
 				},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantStatus: http.StatusInternalServerError,
+			wantErr:    true,
 		},
 		{
 			name: "ignores-a-specific-parsing-error",
@@ -380,8 +508,10 @@ func TestPostStripeWebhook(t *testing.T) {
 				r: &http.Request{
 					Body: ioutil.NopCloser(bytes.NewBufferString("bad-event-to-ignore")),
 				},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantStatus: http.StatusInternalServerError,
+			wantErr:    true,
 		},
 		{
 			name: "handles checkout.session.completed",
@@ -400,6 +530,7 @@ func TestPostStripeWebhook(t *testing.T) {
 						completedSession.SessionID,
 					))),
 				},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantStatus: http.StatusOK,
 			wantOrganization: &models.Organization{
@@ -408,6 +539,56 @@ func TestPostStripeWebhook(t *testing.T) {
 				SubscriptionID: "sub_auesrntausrent",
 				Paid:           true,
 			},
+		},
+		{
+			name: "fails checkout.session.completed",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+						`{
+				"type": "checkout.session.completed",
+				"client_reference_id": "%d",
+				"id": "%s",
+				"customer": "cus_srietnsirent",
+				"subscription": "sub_auesrntausrent"
+		}`,
+						completedOrg.ID,
+						completedSession.SessionID,
+					))),
+				},
+				Repo: newFakeRepo(map[string]error{
+					"GetCheckoutSession": errors.New("unexpected error"),
+				}),
+			},
+			wantStatus:       http.StatusInternalServerError,
+			wantOrganization: nil,
+			wantErr:          true,
+		},
+		{
+			name: "fails checkout.session.completed II",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+						`{
+				"type": "checkout.session.completed",
+				"client_reference_id": "%d",
+				"id": "%s",
+				"customer": "cus_srietnsirent",
+				"subscription": "sub_auesrntausrent"
+		}`,
+						completedOrg.ID,
+						completedSession.SessionID,
+					))),
+				},
+				Repo: newFakeRepo(map[string]error{
+					"UpdateCheckoutSession": errors.New("unexpected error"),
+				}),
+			},
+			wantStatus:       http.StatusInternalServerError,
+			wantOrganization: nil,
+			wantErr:          true,
 		},
 		{
 			name: "handles invoice.paid",
@@ -422,7 +603,9 @@ func TestPostStripeWebhook(t *testing.T) {
 				}`,
 						paidOrg.CustomerID,
 						paidOrg.SubscriptionID,
-					)))},
+					))),
+				},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantStatus: http.StatusOK,
 			wantOrganization: &models.Organization{
@@ -431,6 +614,29 @@ func TestPostStripeWebhook(t *testing.T) {
 				SubscriptionID: paidOrg.SubscriptionID,
 				Paid:           true,
 			},
+		},
+		{
+			name: "fails invoice.paid",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+						`{
+								"type": "invoice.paid",
+								"customer": "%s",
+								"subscription": "%s"
+						}`,
+						paidOrg.CustomerID,
+						paidOrg.SubscriptionID,
+					))),
+				},
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganization": errors.New("unexpected error"),
+				}),
+			},
+			wantStatus:       http.StatusInternalServerError,
+			wantOrganization: nil,
+			wantErr:          true,
 		},
 		{
 			name: "handles invoice.payment_failed",
@@ -447,6 +653,7 @@ func TestPostStripeWebhook(t *testing.T) {
 						unpaidOrg.SubscriptionID,
 					))),
 				},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantOrganization: &models.Organization{
 				ID:             unpaidOrg.ID,
@@ -455,6 +662,29 @@ func TestPostStripeWebhook(t *testing.T) {
 				Paid:           false,
 			},
 			wantStatus: http.StatusOK,
+		},
+		{
+			name: "fails invoice.payment_failed",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+						`{
+						"type": "invoice.payment_failed",
+						"customer": "%s",
+						"subscription": "%s"
+				}`,
+						unpaidOrg.CustomerID,
+						unpaidOrg.SubscriptionID,
+					))),
+				},
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganization": errors.New("unexpected error"),
+				}),
+			},
+			wantOrganization: nil,
+			wantStatus:       http.StatusInternalServerError,
+			wantErr:          true,
 		},
 		{
 			name: "handles-customer.subscription.updated:active",
@@ -472,6 +702,7 @@ func TestPostStripeWebhook(t *testing.T) {
 						paidOrg.SubscriptionID,
 					))),
 				},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantOrganization: &models.Organization{
 				ID:             paidOrg.ID,
@@ -480,6 +711,30 @@ func TestPostStripeWebhook(t *testing.T) {
 				Paid:           true,
 			},
 			wantStatus: http.StatusOK,
+		},
+		{
+			name: "fails-customer.subscription.updated:active",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+						`{
+				"type": "customer.subscription.updated",
+				"customer": "%s",
+				"id": "%s",
+				"status": "active"
+		}`,
+						paidOrg.CustomerID,
+						paidOrg.SubscriptionID,
+					))),
+				},
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganization": errors.New("unexpected error"),
+				}),
+			},
+			wantOrganization: nil,
+			wantStatus:       http.StatusInternalServerError,
+			wantErr:          true,
 		},
 		{
 			name: "handles-customer.subscription.updated:trialing",
@@ -497,6 +752,7 @@ func TestPostStripeWebhook(t *testing.T) {
 						paidOrg.SubscriptionID,
 					))),
 				},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantOrganization: &models.Organization{
 				ID:             paidOrg.ID,
@@ -505,6 +761,30 @@ func TestPostStripeWebhook(t *testing.T) {
 				Paid:           true,
 			},
 			wantStatus: http.StatusOK,
+		},
+		{
+			name: "fails-customer.subscription.updated:trialing",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+						`{
+			"type": "customer.subscription.updated",
+			"customer": "%s",
+			"id": "%s",
+			"status": "trialing"
+		}`,
+						paidOrg.CustomerID,
+						paidOrg.SubscriptionID,
+					))),
+				},
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganization": errors.New("unexpected error"),
+				}),
+			},
+			wantOrganization: nil,
+			wantStatus:       http.StatusInternalServerError,
+			wantErr:          true,
 		},
 		{
 			name: "handles-customer.subscription.updated:incomplete",
@@ -522,6 +802,7 @@ func TestPostStripeWebhook(t *testing.T) {
 						paidOrg.SubscriptionID,
 					))),
 				},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantOrganization: &models.Organization{
 				ID:             paidOrg.ID,
@@ -530,6 +811,30 @@ func TestPostStripeWebhook(t *testing.T) {
 				Paid:           true,
 			},
 			wantStatus: http.StatusOK,
+		},
+		{
+			name: "fails-customer.subscription.updated:incomplete",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+						`{
+			"type": "customer.subscription.updated",
+			"customer": "%s",
+			"id": "%s",
+			"status": "incomplete"
+		}`,
+						paidOrg.CustomerID,
+						paidOrg.SubscriptionID,
+					))),
+				},
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganization": errors.New("unexpected error"),
+				}),
+			},
+			wantOrganization: nil,
+			wantStatus:       http.StatusInternalServerError,
+			wantErr:          true,
 		},
 		{
 			name: "handles-customer.subscription.updated:past_due",
@@ -547,6 +852,7 @@ func TestPostStripeWebhook(t *testing.T) {
 						unpaidOrg.SubscriptionID,
 					))),
 				},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantOrganization: &models.Organization{
 				ID:             unpaidOrg.ID,
@@ -555,6 +861,30 @@ func TestPostStripeWebhook(t *testing.T) {
 				Paid:           false,
 			},
 			wantStatus: http.StatusOK,
+		},
+		{
+			name: "fails-customer.subscription.updated:past_due",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+						`{
+						"type": "customer.subscription.updated",
+						"customer": "%s",
+						"id": "%s",
+						"status": "past_due"
+				}`,
+						unpaidOrg.CustomerID,
+						unpaidOrg.SubscriptionID,
+					))),
+				},
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganization": errors.New("unexpected error"),
+				}),
+			},
+			wantOrganization: nil,
+			wantStatus:       http.StatusInternalServerError,
+			wantErr:          true,
 		},
 		{
 			name: "handles-customer.subscription.updated:incomplete_expired",
@@ -572,6 +902,7 @@ func TestPostStripeWebhook(t *testing.T) {
 						unpaidOrg.SubscriptionID,
 					))),
 				},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantOrganization: &models.Organization{
 				ID:             unpaidOrg.ID,
@@ -580,6 +911,30 @@ func TestPostStripeWebhook(t *testing.T) {
 				Paid:           false,
 			},
 			wantStatus: http.StatusOK,
+		},
+		{
+			name: "fails-customer.subscription.updated:incomplete_expired",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+						`{
+						"type": "customer.subscription.updated",
+						"customer": "%s",
+						"id": "%s",
+						"status": "incomplete_expired"
+				}`,
+						unpaidOrg.CustomerID,
+						unpaidOrg.SubscriptionID,
+					))),
+				},
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganization": errors.New("unexpected error"),
+				}),
+			},
+			wantOrganization: nil,
+			wantStatus:       http.StatusInternalServerError,
+			wantErr:          true,
 		},
 		{
 			name: "handles-customer.subscription.updated:canceled",
@@ -597,6 +952,7 @@ func TestPostStripeWebhook(t *testing.T) {
 						canceledOrg.SubscriptionID,
 					))),
 				},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantOrganization: &models.Organization{
 				ID:             canceledOrg.ID,
@@ -604,6 +960,30 @@ func TestPostStripeWebhook(t *testing.T) {
 				SubscriptionID: canceledOrg.SubscriptionID,
 			},
 			wantStatus: http.StatusOK,
+		},
+		{
+			name: "fails-customer.subscription.updated:canceled",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+						`{
+						"type": "customer.subscription.updated",
+						"customer": "%s",
+						"id": "%s",
+						"status": "canceled"
+				}`,
+						canceledOrg.CustomerID,
+						canceledOrg.SubscriptionID,
+					))),
+				},
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganization": errors.New("unexpected error"),
+				}),
+			},
+			wantOrganization: nil,
+			wantStatus:       http.StatusInternalServerError,
+			wantErr:          true,
 		},
 		{
 			name: "handles-customer.subscription.deleted",
@@ -620,6 +1000,7 @@ func TestPostStripeWebhook(t *testing.T) {
 						canceledOrg.SubscriptionID,
 					))),
 				},
+				Repo: newFakeRepo(noCrashers),
 			},
 			wantOrganization: &models.Organization{
 				ID:             canceledOrg.ID,
@@ -628,14 +1009,41 @@ func TestPostStripeWebhook(t *testing.T) {
 			},
 			wantStatus: http.StatusOK,
 		},
+		{
+			name: "fails-customer.subscription.deleted",
+			args: args{
+				w: newMockResponse(),
+				r: &http.Request{
+					Body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(
+						`{
+						"type": "customer.subscription.deleted",
+						"customer": "%s",
+						"id": "%s"
+				}`,
+						canceledOrg.CustomerID,
+						canceledOrg.SubscriptionID,
+					))),
+				},
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganization": errors.New("unexpected error"),
+				}),
+			},
+			wantOrganization: nil,
+			wantStatus:       http.StatusInternalServerError,
+			wantErr:          true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			PostStripeWebhook(tt.args.w, tt.args.r, tt.args.in2)
+			status, err := PostStripeWebhook(tt.args.w, tt.args.r, tt.args.in2, tt.args.Repo)
 
-			got := tt.args.w.(*mockResponseWriter)
-			if got.status != tt.wantStatus {
-				t.Errorf("PostStripeWebhook() got status %v, want %v", got.status, tt.wantStatus)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PostStripeWebhook() error: %v, want %v", err, tt.wantErr)
+				return
+			}
+
+			if status != tt.wantStatus {
+				t.Errorf("PostStripeWebhook() status %v, want %v", status, tt.wantStatus)
 				return
 			}
 
@@ -682,7 +1090,7 @@ func TestManageSubscription(t *testing.T) {
 					"organizationName": org.Name,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.ManageSubscriptionResponse{
@@ -698,7 +1106,7 @@ func TestManageSubscription(t *testing.T) {
 					"organizationName": "not an organization name",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want:       nil,
@@ -712,7 +1120,7 @@ func TestManageSubscription(t *testing.T) {
 					"organizationName": org.Name,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: otherUser,
 			},
 			want:       nil,
@@ -726,7 +1134,7 @@ func TestManageSubscription(t *testing.T) {
 					"organizationName": otherOrg.Name,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: otherUser,
 			},
 			want:       nil,

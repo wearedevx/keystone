@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/julienschmidt/httprouter"
 	apierrors "github.com/wearedevx/keystone/api/internal/errors"
 	"github.com/wearedevx/keystone/api/internal/payment"
 	"github.com/wearedevx/keystone/api/internal/router"
@@ -33,7 +32,15 @@ func PostSubscription(
 	p := payment.NewStripePayment()
 
 	organizationName := params.Get("organizationName")
-	organization := models.Organization{
+	var organization models.Organization
+
+	if organizationName == "" {
+		status = http.StatusBadRequest
+		err = apierrors.ErrorBadRequest(nil)
+		goto done
+	}
+
+	organization = models.Organization{
 		Name: organizationName,
 	}
 
@@ -120,28 +127,26 @@ func GetPollSubscriptionSuccess(
 func GetCheckoutSuccess(
 	w http.ResponseWriter,
 	r *http.Request,
-	_ httprouter.Params,
-) {
-	status := http.StatusOK
+	_ router.Params,
+	Repo repo.IRepo,
+) (status int, err error) {
+	status = http.StatusOK
 
 	sessionID := r.URL.Query().Get("session_id")
 	msg := "Thank you for subscribing to Keystone!"
 
-	err := repo.Transaction(func(Repo repo.IRepo) error {
-		var cs models.CheckoutSession
+	var cs models.CheckoutSession
 
-		return Repo.
-			GetCheckoutSession(sessionID, &cs).
-			DeleteCheckoutSession(&cs).
-			Err()
-	})
-	if err != nil {
+	if err = Repo.
+		GetCheckoutSession(sessionID, &cs).
+		DeleteCheckoutSession(&cs).
+		Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
 			msg = "No such checkout session"
 		} else {
 			status = http.StatusInternalServerError
-			msg = fmt.Sprintf("An error occurred : %s", err.Error())
+			msg = fmt.Sprintf("An error occurred: %s", err.Error())
 		}
 	}
 
@@ -149,52 +154,57 @@ func GetCheckoutSuccess(
 	w.Header().Add("Content-Length", strconv.Itoa(len(msg)))
 	w.Write([]byte(msg))
 
-	w.WriteHeader(status)
+	return status, err
 }
 
 func GetCheckoutCancel(
 	w http.ResponseWriter,
 	r *http.Request,
-	_ httprouter.Params,
-) {
-	status := http.StatusOK
+	_ router.Params,
+	Repo repo.IRepo,
+) (status int, err error) {
+	status = http.StatusOK
 	sessionID := r.URL.Query().Get("session_id")
 	msg := "You cancelled your subscription"
 
-	err := repo.Transaction(func(Repo repo.IRepo) error {
-		var cs models.CheckoutSession
+	var cs models.CheckoutSession
 
-		return Repo.
-			GetCheckoutSession(sessionID, &cs).
-			DeleteCheckoutSession(&cs).
-			Err()
-	})
-	if err != nil {
+	if err = Repo.
+		GetCheckoutSession(sessionID, &cs).
+		DeleteCheckoutSession(&cs).
+		Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
 			msg = "No such checkout session"
 		} else {
 			status = http.StatusInternalServerError
-			msg = fmt.Sprintf("An error occurred : %s", err.Error())
+			msg = fmt.Sprintf("An error occurred: %s", err.Error())
 		}
 	}
 
 	w.Header().Add("Content-Type", "text/plain")
 	w.Header().Add("Content-Length", strconv.Itoa(len(msg)))
 	w.Write([]byte(msg))
-	w.WriteHeader(status)
+
+	return status, err
 }
 
 func PostStripeWebhook(
 	w http.ResponseWriter,
 	r *http.Request,
-	_ httprouter.Params,
-) {
-	var err error
+	_ router.Params,
+	Repo repo.IRepo,
+) (status int, err error) {
+	status = http.StatusOK
 	var event payment.Event
 
 	p := payment.NewStripePayment()
 	event, err = p.HandleEvent(r)
+
+	if err != nil {
+		status = http.StatusInternalServerError
+		goto done
+	}
 
 	switch event.Type {
 	case payment.EventCheckoutComplete:
@@ -203,31 +213,25 @@ func PostStripeWebhook(
 		}
 		session := models.CheckoutSession{}
 
-		err = repo.Transaction(func(Repo repo.IRepo) error {
-			var seats int64
-			var err error
-			if err = Repo.
-				GetCheckoutSession(event.SessionID, &session).
-				Err(); err != nil {
-				return err
-			}
+		var seats int64
+		if err = Repo.
+			GetCheckoutSession(event.SessionID, &session).
+			Err(); err != nil {
+			status = http.StatusInternalServerError
+			err = apierrors.ErrorCheckoutCompleteFailed(err)
+			goto done
+		}
 
-			session.Status = models.CheckoutSessionStatusSuccess
+		session.Status = models.CheckoutSessionStatusSuccess
 
-			if err = Repo.
-				UpdateCheckoutSession(&session).
-				OrganizationSetCustomer(&organization, string(event.CustomerID)).
-				OrganizationSetSubscription(&organization, string(event.SubscriptionID)).
-				OrganizationSetPaid(&organization, true).
-				OrganizationCountMembers(&organization, &seats).
-				Err(); err != nil {
-				return err
-			}
-
-			return nil
-		})
-
-		if err != nil {
+		if err = Repo.
+			UpdateCheckoutSession(&session).
+			OrganizationSetCustomer(&organization, string(event.CustomerID)).
+			OrganizationSetSubscription(&organization, string(event.SubscriptionID)).
+			OrganizationSetPaid(&organization, true).
+			OrganizationCountMembers(&organization, &seats).
+			Err(); err != nil {
+			status = http.StatusInternalServerError
 			err = apierrors.ErrorCheckoutCompleteFailed(err)
 		}
 
@@ -237,26 +241,19 @@ func PostStripeWebhook(
 			SubscriptionID: string(event.SubscriptionID),
 		}
 
-		err = repo.Transaction(func(Repo repo.IRepo) error {
-			var err error
+		if err = Repo.
+			GetOrganization(&organization).
+			OrganizationSetPaid(&organization, true).
+			OrganizationCountMembers(&organization, &seats).
+			Err(); err != nil {
+			status = http.StatusInternalServerError
+			err = apierrors.ErrorSubscriptionPaidFailed(err)
+			goto done
+		}
 
-			if err = Repo.
-				GetOrganization(&organization).
-				OrganizationSetPaid(&organization, true).
-				OrganizationCountMembers(&organization, &seats).
-				Err(); err != nil {
-				return err
-			}
-
-			if err = p.
-				UpdateSubscription(event.SubscriptionID, seats); err != nil {
-				return err
-			}
-
-			return nil
-		})
-
-		if err != nil {
+		if err = p.
+			UpdateSubscription(event.SubscriptionID, seats); err != nil {
+			status = http.StatusInternalServerError
 			err = apierrors.ErrorSubscriptionPaidFailed(err)
 		}
 
@@ -265,14 +262,11 @@ func PostStripeWebhook(
 			SubscriptionID: string(event.SubscriptionID),
 		}
 
-		err = repo.Transaction(func(Repo repo.IRepo) error {
-			return Repo.
-				GetOrganization(&organization).
-				OrganizationSetPaid(&organization, false).
-				Err()
-		})
-
-		if err != nil {
+		if err = Repo.
+			GetOrganization(&organization).
+			OrganizationSetPaid(&organization, false).
+			Err(); err != nil {
+			status = http.StatusInternalServerError
 			err = apierrors.ErrorSubscriptionUnpaidFailed(err)
 		}
 
@@ -281,25 +275,23 @@ func PostStripeWebhook(
 			SubscriptionID: string(event.SubscriptionID),
 		}
 
-		err = repo.Transaction(func(Repo repo.IRepo) error {
-			return Repo.
-				GetOrganization(&organization).
-				OrganizationSetPaid(&organization, false).
-				Err()
-		})
-
-		if err != nil {
+		if err = Repo.
+			GetOrganization(&organization).
+			OrganizationSetPaid(&organization, false).
+			Err(); err != nil {
+			status = http.StatusInternalServerError
 			err = apierrors.ErrorSubscriptionCanceledFailed(err)
 		}
 
 	default:
 	}
 
+done:
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	} else {
-		http.Error(w, "", http.StatusOK)
+		w.Write([]byte(err.Error()))
 	}
+
+	return status, err
 }
 
 func ManageSubscription(
@@ -362,4 +354,3 @@ func ManageSubscription(
 done:
 	return result, status, log.SetError(err)
 }
-

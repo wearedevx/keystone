@@ -108,11 +108,11 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 		AuthedHandler(GetPollSubscriptionSuccess),
 	)
 
-	router.GET("/checkout-success", GetCheckoutSuccess)
-	router.GET("/checkout-cancel", GetCheckoutCancel)
+	router.GET("/checkout-success", RegularHandler(GetCheckoutSuccess))
+	router.GET("/checkout-cancel", RegularHandler(GetCheckoutCancel))
 
 	// Subscription Event Webhook
-	router.POST("/subscription/webhook", PostStripeWebhook)
+	router.POST("/subscription/webhook", RegularHandler(PostStripeWebhook))
 
 	router.ServeHTTP(w, r)
 }
