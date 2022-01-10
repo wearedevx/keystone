@@ -488,6 +488,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tt.args.Repo.ClearErr()
 			got, gotStatus, err := GetMessagesFromProjectByUser(
 				tt.args.params,
 				tt.args.in1,

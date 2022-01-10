@@ -27,8 +27,15 @@ func doesUserHaveRightsOnEnvironment(
 		ProjectID: projectID,
 	}
 
+	if Repo.Err() != nil {
+		fmt.Printf("Previous error: %v\n", Repo.Err())
+		return false, Repo.Err()
+	}
+
 	err := Repo.GetProjectMember(&projectMember).Err()
 	if err != nil {
+		fmt.Printf("LS -> internal/rights/rights.go:31 -> err: %+v\n", err)
+		fmt.Printf("Error no such project Member: %d on projet %d\n", userID, projectID)
 		return false, err
 	}
 

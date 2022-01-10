@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -19,6 +20,8 @@ import (
 func TestPostProject(t *testing.T) {
 	user, organization := seedSingleUser()
 	defer teardownUserAndOrganization(user, organization)
+	otherUser, otherOrg := seedSingleUser()
+	defer teardownUserAndOrganization(otherUser, otherOrg)
 
 	projectName := faker.Sentence()
 	defer teardownProjectWithName(projectName)
@@ -46,7 +49,7 @@ func TestPostProject(t *testing.T) {
                     "organization_id": %d
                 }
                 `, projectName, organization.ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.Project{
@@ -64,6 +67,23 @@ func TestPostProject(t *testing.T) {
 			wantErr:    "",
 		},
 		{
+			name: "body must be valid json",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+								{
+										name: "%s",
+										"organization_id": %d
+								}
+								`, projectName, organization.ID))),
+				Repo: newFakeRepo(noCrashers),
+				user: user,
+			},
+			want:       nil,
+			wantStatus: http.StatusBadRequest,
+			wantErr:    "bad request: invalid character 'n' looking for beginning of object key string",
+		},
+		{
 			name: "does not create a project without an organization",
 			args: args{
 				in0: router.Params{},
@@ -72,14 +92,105 @@ func TestPostProject(t *testing.T) {
                     "name": "%s"
                 }
                 `, projectName))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want:       nil,
 			wantStatus: http.StatusNotFound,
 			wantErr:    "not found",
 		},
-		// TODO: test that organization owners are added as admins to projects created by other organization members
+		{
+			name: "does not create a project with a non existant organization",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+								{
+										"name": "%s",
+										"organization_id": 9999999
+								}
+								`, projectName))),
+				Repo: newFakeRepo(noCrashers),
+				user: user,
+			},
+			want:       nil,
+			wantStatus: http.StatusNotFound,
+			wantErr:    "not found",
+		},
+		{
+			name: "does not create a project because db fails",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+								{
+										"name": "%s",
+										"organization_id": %d
+								}
+								`, projectName, organization.ID))),
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganization": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			want:       nil,
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
+			name: "adds the organization owner the project",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+                {
+                    "name": "%s",
+                    "organization_id": %d
+                }
+                `, projectName, organization.ID))),
+				Repo: newFakeRepo(noCrashers),
+				user: otherUser,
+			},
+			want: &models.Project{
+				TTL:                 7,
+				DaysBeforeTTLExpiry: 2,
+				Name:                projectName,
+				Members:             []models.ProjectMember{},
+				UserID:              otherUser.ID,
+				User:                otherUser,
+				Environments:        []models.Environment{},
+				OrganizationID:      organization.ID,
+				Organization:        organization,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    "",
+		},
+		{
+			name: "fails at adding the organization owner the project",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+								{
+										"name": "%s",
+										"organization_id": %d
+								}
+								`, projectName, organization.ID))),
+				Repo: newFakeRepo(map[string]error{
+					"GetRole": errors.New("unexpected error"),
+				}),
+				user: otherUser,
+			},
+			want: &models.Project{
+				TTL:                 7,
+				DaysBeforeTTLExpiry: 2,
+				Name:                projectName,
+				Members:             []models.ProjectMember{},
+				UserID:              otherUser.ID,
+				User:                otherUser,
+				Environments:        []models.Environment{},
+				OrganizationID:      organization.ID,
+				Organization:        organization,
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -183,7 +294,7 @@ func TestGetProjects(t *testing.T) {
 			args: args{
 				in0:  router.Params{},
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.GetProjectsResponse{
@@ -191,6 +302,20 @@ func TestGetProjects(t *testing.T) {
 			},
 			wantStatus: http.StatusOK,
 			wantErr:    "",
+		},
+		{
+			name: "can fail unexpectedly",
+			args: args{
+				in0: router.Params{},
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetUserProjects": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			want:       nil,
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
 		},
 	}
 	for _, tt := range tests {
@@ -262,7 +387,6 @@ func TestGetProjects(t *testing.T) {
 }
 
 func TestGetProjectsMembers(t *testing.T) {
-	Repo := repo.NewRepo()
 	users := make([]models.User, 5)
 
 	for i := 1; i < 5; i++ {
@@ -304,7 +428,7 @@ func TestGetProjectsMembers(t *testing.T) {
 					"projectID": project.UUID,
 				}),
 				in1:  nil,
-				Repo: Repo,
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.GetMembersResponse{
@@ -320,7 +444,7 @@ func TestGetProjectsMembers(t *testing.T) {
 					"projectID": "not a valid project id",
 				}),
 				in1:  nil,
-				Repo: Repo,
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want:       &models.GetMembersResponse{},
@@ -328,16 +452,44 @@ func TestGetProjectsMembers(t *testing.T) {
 			wantErr:    "not found",
 		},
 		{
+			name: "bad request if no project id",
+			args: args{
+				params: router.Params{},
+				in1:    nil,
+				Repo:   newFakeRepo(noCrashers),
+				user:   user,
+			},
+			want:       &models.GetMembersResponse{},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    "bad request",
+		},
+		{
 			name: "not found if user is not a member of the project",
 			args: args{
 				params: router.ParamsFrom(map[string]string{"projectID": project.UUID}),
 				in1:    nil,
-				Repo:   Repo,
-				user:   externalUser,
+				Repo: newFakeRepo(map[string]error{
+					"IsMemberOfProject": repo.ErrorNotFound,
+				}),
+				user: externalUser,
 			},
 			want:       &models.GetMembersResponse{},
 			wantStatus: http.StatusNotFound,
 			wantErr:    "not found",
+		},
+		{
+			name: "fails to read the database",
+			args: args{
+				params: router.ParamsFrom(map[string]string{"projectID": project.UUID}),
+				in1:    nil,
+				Repo: newFakeRepo(map[string]error{
+					"ProjectGetMembers": errors.New("unexpected error"),
+				}),
+				user: externalUser,
+			},
+			want:       &models.GetMembersResponse{},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
 		},
 	}
 	for _, tt := range tests {
@@ -403,6 +555,9 @@ func TestPostProjectsMembers(t *testing.T) {
 	userToAdd, organizationToAdd := seedSingleUser()
 	defer teardownUserAndOrganization(userToAdd, organizationToAdd)
 
+	userToAddButFails, organizationToAddButFails := seedSingleUser()
+	defer teardownUserAndOrganization(userToAddButFails, organizationToAddButFails)
+
 	adminToAdd, arganizationToAdd := seedSingleUser()
 	defer teardownUserAndOrganization(adminToAdd, arganizationToAdd)
 
@@ -456,7 +611,7 @@ func TestPostProjectsMembers(t *testing.T) {
 		}
   ]
 }`, userToAdd.UserID, roles["developer"].ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: paidUser,
 			},
 			want: &models.AddMembersResponse{
@@ -478,7 +633,7 @@ func TestPostProjectsMembers(t *testing.T) {
 		}
   ]
 }`, userToAdd.UserID, roles["developer"].ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: paidUser,
 			},
 			want:       &models.AddMembersResponse{},
@@ -499,12 +654,58 @@ func TestPostProjectsMembers(t *testing.T) {
 		}
   ]
 }`, userToAdd.UserID, roles["developer"].ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: paidUser,
 			},
 			want:       &models.AddMembersResponse{},
 			wantStatus: http.StatusNotFound,
 			wantErr:    "not found",
+		},
+		{
+			name: "fails to find project for other reasons",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": paidProject.UUID,
+				}),
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+					"Members": [
+						{
+							"MemberID": "%s",
+							"RoleID": %d
+						}
+					]
+				}`, userToAdd.UserID, roles["developer"].ID))),
+				Repo: newFakeRepo(map[string]error{
+					"GetProjectByUUID": errors.New("unexpected error"),
+				}),
+				user: paidUser,
+			},
+			want:       &models.AddMembersResponse{},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
+			name: "projects without an orga trigger errors",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": paidProject.UUID,
+				}),
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+							"Members": [
+								{
+									"MemberID": "%s",
+									"RoleID": %d
+								}
+							]
+						}`, userToAdd.UserID, roles["developer"].ID))),
+				Repo: newFakeRepo(map[string]error{
+					"GetProjectsOrganization": repo.ErrorNotFound,
+				}),
+				user: paidUser,
+			},
+			want:       &models.AddMembersResponse{},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: not found",
 		},
 		{
 			name: "ask for upgrade if organization is free and pm is not admin",
@@ -520,7 +721,7 @@ func TestPostProjectsMembers(t *testing.T) {
 		}
   ]
 }`, userToAdd.UserID, roles["developer"].ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: freeUser,
 			},
 			want:       &models.AddMembersResponse{},
@@ -541,7 +742,7 @@ func TestPostProjectsMembers(t *testing.T) {
 		}
   ]
 }`, addedUser.UserID, roles["developer"].ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: paidUser,
 			},
 			want: &models.AddMembersResponse{
@@ -565,7 +766,7 @@ func TestPostProjectsMembers(t *testing.T) {
 				}
 			]
 		}`, adminToAdd.UserID, roles["admin"].ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: addedUser,
 			},
 			want: &models.AddMembersResponse{
@@ -574,6 +775,56 @@ func TestPostProjectsMembers(t *testing.T) {
 			},
 			wantStatus: http.StatusForbidden,
 			wantErr:    "permission denied",
+		},
+		{
+			name: "stops if cannot check if users are in projects",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": paidProject.UUID,
+				}),
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+									"Members": [
+										{
+											"MemberID": "%s",
+											"RoleID": %d
+										}
+									]
+								}`, userToAdd.UserID, roles["developer"].ID))),
+				Repo: newFakeRepo(map[string]error{
+					"CheckMembersAreInProject": errors.New("unexpected error"),
+				}),
+				user: paidUser,
+			},
+			want: &models.AddMembersResponse{
+				Error: "could not check if members were in project",
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "unknown: unexpected error",
+		},
+		{
+			name: "counting errors",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": paidProject.UUID,
+				}),
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+											"Members": [
+												{
+													"MemberID": "%s",
+													"RoleID": %d
+												}
+											]
+										}`, userToAddButFails.UserID, roles["developer"].ID))),
+				Repo: newFakeRepo(map[string]error{
+					"OrganizationCountMembers": errors.New("unexpected error"),
+				}),
+				user: paidUser,
+			},
+			want: &models.AddMembersResponse{
+				Error: "failed to add members",
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to add members: unexpected error",
 		},
 	}
 	for _, tt := range tests {
@@ -663,7 +914,7 @@ func TestDeleteProjectsMembers(t *testing.T) {
 }`,
 						userToRemove.UserID,
 					))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: adminUser,
 			},
 			want: &models.RemoveMembersResponse{
@@ -685,7 +936,7 @@ func TestDeleteProjectsMembers(t *testing.T) {
 }`,
 						userToRemove.UserID,
 					))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: adminUser,
 			},
 			want: &models.RemoveMembersResponse{
@@ -694,6 +945,117 @@ func TestDeleteProjectsMembers(t *testing.T) {
 			},
 			wantStatus: http.StatusNotFound,
 			wantErr:    "not found",
+		},
+		{
+			name: "bad request if no projectID",
+			args: args{
+				params: router.Params{},
+				body: ioutil.NopCloser(
+					bytes.NewBufferString(fmt.Sprintf(`{
+			"Members": ["%s"]
+		}`,
+						userToRemove.UserID,
+					))),
+				Repo: newFakeRepo(noCrashers),
+				user: adminUser,
+			},
+			want: &models.RemoveMembersResponse{
+				Success: false,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    "bad request",
+		},
+		{
+			name: "errors getting informations from db",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: ioutil.NopCloser(
+					bytes.NewBufferString(fmt.Sprintf(`{
+  "Members": ["%s"]
+}`,
+						userOtherToRemove.UserID,
+					))),
+				Repo: newFakeRepo(map[string]error{
+					"GetProjectByUUID": errors.New("unexpected error"),
+				}),
+				user: adminUser,
+			},
+			want: &models.RemoveMembersResponse{
+				Error: "failed to get",
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
+			name: "errors checking members are in project",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: ioutil.NopCloser(
+					bytes.NewBufferString(fmt.Sprintf(`{
+	"Members": ["%s"]
+}`,
+						userOtherToRemove.UserID,
+					))),
+				Repo: newFakeRepo(map[string]error{
+					"CheckMembersAreInProject": errors.New("unexpected error"),
+				}),
+				user: adminUser,
+			},
+			want: &models.RemoveMembersResponse{
+				Error: "could not check if members were in project",
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "unknown: unexpected error",
+		},
+		{
+			name: "errors removing member from db",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: ioutil.NopCloser(
+					bytes.NewBufferString(fmt.Sprintf(`{
+	"Members": ["%s"]
+}`,
+						userOtherToRemove.UserID,
+					))),
+				Repo: newFakeRepo(map[string]error{
+					"ProjectRemoveMembers": errors.New("unexpected error"),
+				}),
+				user: adminUser,
+			},
+			want: &models.RemoveMembersResponse{
+				Error: "failed to delete",
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to delete: unexpected error",
+		},
+		{
+			name: "errors checking if can remove member",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: ioutil.NopCloser(
+					bytes.NewBufferString(fmt.Sprintf(`{
+	"Members": ["%s"]
+}`,
+						userOtherToRemove.UserID,
+					))),
+				Repo: newFakeRepo(map[string]error{
+					"GetChildrenRoles": errors.New("unexpected error"),
+				}),
+				user: adminUser,
+			},
+			want: &models.RemoveMembersResponse{
+				Error: "failed to get permission",
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get permission: unexpected error",
 		},
 		{
 			name: "fails because not priviledged enough",
@@ -707,7 +1069,7 @@ func TestDeleteProjectsMembers(t *testing.T) {
 }`,
 						userOtherToRemove.UserID,
 					))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: userNotAdmin,
 			},
 			want: &models.RemoveMembersResponse{
@@ -727,7 +1089,7 @@ func TestDeleteProjectsMembers(t *testing.T) {
 					bytes.NewBufferString(`{
   "Members": ["not@member", "me@neither"]
 }`)),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: adminUser,
 			},
 			want: &models.RemoveMembersResponse{
@@ -826,7 +1188,7 @@ func TestGetAccessibleEnvironments(t *testing.T) {
 					"projectID": project.UUID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: adminUser,
 			},
 			want: &models.GetEnvironmentsResponse{
@@ -845,7 +1207,7 @@ func TestGetAccessibleEnvironments(t *testing.T) {
 					"projectID": "not a real project id",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: adminUser,
 			},
 			want: &models.GetEnvironmentsResponse{
@@ -855,13 +1217,49 @@ func TestGetAccessibleEnvironments(t *testing.T) {
 			wantErr:    "not found",
 		},
 		{
+			name: "fails getting project",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetProjectByUUID": errors.New("unexpected error"),
+				}),
+				user: adminUser,
+			},
+			want: &models.GetEnvironmentsResponse{
+				Environments: []models.Environment{},
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
+			name: "fails checking permssions",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetRolesEnvironmentType": errors.New("unexpected error"),
+				}),
+				user: adminUser,
+			},
+			want: &models.GetEnvironmentsResponse{
+				Environments: []models.Environment{},
+			},
+			wantStatus: http.StatusNotFound,
+			wantErr:    "failed to get permission: unexpected error",
+		},
+		{
 			name: "all environments for devops user",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
 					"projectID": project.UUID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: devopsUser,
 			},
 			want: &models.GetEnvironmentsResponse{
@@ -880,7 +1278,7 @@ func TestGetAccessibleEnvironments(t *testing.T) {
 					"projectID": project.UUID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: leadDevUser,
 			},
 			want: &models.GetEnvironmentsResponse{
@@ -897,7 +1295,7 @@ func TestGetAccessibleEnvironments(t *testing.T) {
 					"projectID": project.UUID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: developerUser,
 			},
 			want: &models.GetEnvironmentsResponse{
@@ -1002,13 +1400,62 @@ func TestDeleteProject(t *testing.T) {
 		wantErr    string
 	}{
 		{
+			name: "error getting project",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": projectOk.UUID,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetProjectByUUID": errors.New("unexpected error"),
+				}),
+				user: userOk,
+			},
+			want:       nil,
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "unknown: unexpected error",
+		},
+		{
+			name: "error checking permission",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": projectOk.UUID,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"ProjectIsMemberAdmin": errors.New("unexpected error"),
+				}),
+				user: userOk,
+			},
+			want:       nil,
+			wantStatus: http.StatusNotFound,
+			wantErr:    "unknown: unexpected error",
+		},
+
+		{
+			name: "error deleting project",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": projectKo.UUID,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"DeleteAllProjectMembers": errors.New("unexpected error"),
+				}),
+				user: userKo,
+			},
+			want:       nil,
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to delete: unexpected error",
+		},
+		{
 			name: "deletes a project",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
 					"projectID": projectOk.UUID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: userOk,
 			},
 			want:       nil,
@@ -1022,7 +1469,7 @@ func TestDeleteProject(t *testing.T) {
 					"projectID": "not a real project id",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: userOk,
 			},
 			want:       nil,
@@ -1036,7 +1483,7 @@ func TestDeleteProject(t *testing.T) {
 					"projectID": projectKo.UUID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: otherUser,
 			},
 			want:       nil,
@@ -1099,7 +1546,7 @@ func TestGetProjectsOrganization(t *testing.T) {
 					"projectID": project.UUID,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want:       &org,
@@ -1107,14 +1554,30 @@ func TestGetProjectsOrganization(t *testing.T) {
 			wantErr:    "",
 		},
 		{
+			name: "db request fails",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetProjectsOrganization": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			want:       nil,
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
 			name: "bad request if no project id",
 			args: args{
 				params: router.ParamsFrom(map[string]string{}),
 				in1:    nil,
-				Repo:   repo.NewRepo(),
+				Repo:   newFakeRepo(noCrashers),
 				user:   user,
 			},
-			want:       &models.Organization{},
+			want:       nil,
 			wantStatus: http.StatusBadRequest,
 			wantErr:    "bad request: no project id",
 		},
@@ -1125,10 +1588,10 @@ func TestGetProjectsOrganization(t *testing.T) {
 					"projectID": "not a real project id",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
-			want:       &models.Organization{},
+			want:       nil,
 			wantStatus: http.StatusNotFound,
 			wantErr:    "not found",
 		},

@@ -32,8 +32,10 @@ func PostProject(
 	if err = project.Deserialize(body); err != nil {
 		status = http.StatusBadRequest
 		err = apierrors.ErrorBadRequest(err)
+		project = nil
 		goto done
 	}
+
 	if project.OrganizationID == 0 {
 		err = repo.ErrorNotFound
 		status = http.StatusNotFound
@@ -46,8 +48,8 @@ func PostProject(
 	project.UserID = user.ID
 
 	if err = Repo.
-		GetOrCreateProject(project).
 		GetOrganization(&orga).
+		GetOrCreateProject(project).
 		Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
@@ -55,6 +57,7 @@ func PostProject(
 			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToGetResource(err)
 		}
+		project = nil
 		goto done
 	}
 
@@ -64,6 +67,8 @@ func PostProject(
 			Name: "admin",
 		}
 
+		// TODO: shouldn't we delete the project from the database,
+		// then ?
 		if err = Repo.GetRole(&role).Err(); err != nil {
 			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToGetResource(err)
@@ -109,16 +114,17 @@ func GetProjects(
 		Action: "GetProjects",
 	}
 
-	var result models.GetProjectsResponse
+	var result *models.GetProjectsResponse = &models.GetProjectsResponse{}
 
 	if err = Repo.
 		GetUserProjects(user.ID, &result.Projects).
 		Err(); err != nil {
 		status = http.StatusInternalServerError
 		err = apierrors.ErrorFailedToGetResource(err)
+		result = nil
 	}
 
-	return &result, status, log.SetError(err)
+	return result, status, log.SetError(err)
 }
 
 func GetProjectsMembers(
@@ -153,6 +159,7 @@ func GetProjectsMembers(
 	log.ProjectID = &project.ID
 
 	if err = Repo.Err(); err != nil {
+		result = models.GetMembersResponse{}
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
 		} else {
@@ -210,7 +217,7 @@ func PostProjectMembers(
 	if err = Repo.
 		GetProjectsOrganization(projectID, &organization).
 		Err(); err != nil {
-		status = http.StatusBadRequest
+		status = http.StatusInternalServerError
 		err = apierrors.ErrorFailedToGetResource(err)
 		goto done
 	}
@@ -240,7 +247,7 @@ func PostProjectMembers(
 	if err != nil {
 		status = http.StatusInternalServerError
 		err = apierrors.ErrorUnknown(err)
-		result.Error = "could no check if members were in project"
+		result.Error = "could not check if members were in project"
 
 		goto done
 	}
@@ -267,6 +274,8 @@ func PostProjectMembers(
 		var seats int64
 		usersInMemberRoles, _ := Repo.UsersInMemberRoles(input.Members)
 
+		// TODO: If an error occurs while counting, members are added but no charges apply
+		// because the stripe service never gets called
 		if err = Repo.
 			ProjectAddMembers(project, input.Members, user).
 			OrganizationCountMembers(&organization, &seats).
@@ -322,6 +331,11 @@ func DeleteProjectsMembers(
 
 	if projectID == "" || err != nil {
 		status = http.StatusBadRequest
+
+		if projectID == "" {
+			err = errors.New("bad request")
+		}
+
 		goto done
 	}
 
@@ -347,7 +361,7 @@ func DeleteProjectsMembers(
 	if err != nil {
 		status = http.StatusInternalServerError
 		err = apierrors.ErrorUnknown(err)
-		result.Error = "could no check if members were in project"
+		result.Error = "could not check if members were in project"
 
 		goto done
 	}
@@ -620,7 +634,7 @@ func GetProjectsOrganization(
 		Action: "GetProjectsOrganization",
 	}
 
-	result := models.Organization{}
+	var result *models.Organization
 	projectId := params.Get("projectID")
 	var organization models.Organization
 
@@ -644,8 +658,8 @@ func GetProjectsOrganization(
 		goto done
 	}
 
-	result = organization
+	result = &organization
 
 done:
-	return &result, status, log.SetError(err)
+	return result, status, log.SetError(err)
 }
