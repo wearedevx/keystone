@@ -38,7 +38,7 @@ func TestGetActivityLogs(t *testing.T) {
 			name: "bad payload",
 			args: args{
 				params: router.Params{},
-				body:   ioutil.NopCloser(bytes.NewBufferString(`{]`)),
+				body:   ioutil.NopCloser(bytes.NewBufferString(`{--not-a-json-string]`)),
 				Repo:   newFakeRepo(noCrashers),
 				in3:    user,
 			},

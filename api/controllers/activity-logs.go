@@ -24,7 +24,7 @@ func GetActivityLogs(
 
 	projectID := params.Get("projectID")
 	options := models.GetLogsOptions{}
-	if err := options.Deserialize(body); err != nil {
+	if err = options.Deserialize(body); err != nil {
 		status = http.StatusBadRequest
 		err = apierrors.ErrorBadRequest(nil)
 		goto done
