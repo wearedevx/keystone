@@ -42,6 +42,8 @@ func DoUsersExist(
 	if err != nil {
 		status = http.StatusBadRequest
 		err = apierrors.ErrorBadRequest(err)
+		response.Success = false
+		response.Error = err.Error()
 
 		goto done
 	}
@@ -52,6 +54,9 @@ func DoUsersExist(
 		Err(); err != nil {
 		status = http.StatusInternalServerError
 		err = apierrors.ErrorFailedToGetResource(err)
+		response.Success = false
+		response.Error = err.Error()
+
 		goto done
 	}
 

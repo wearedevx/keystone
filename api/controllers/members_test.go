@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -46,7 +47,7 @@ func TestDoUsersExist(t *testing.T) {
 						),
 					),
 				),
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: members["admin"],
 			},
 			want: &models.CheckMembersResponse{
@@ -57,6 +58,28 @@ func TestDoUsersExist(t *testing.T) {
 			wantErr:    "",
 		},
 		{
+			name: "bad payload",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(
+					bytes.NewBufferString(
+						fmt.Sprintf(
+							`{"MemberIDs" ["%s"]}`,
+							members["developer"].UserID,
+						),
+					),
+				),
+				Repo: newFakeRepo(noCrashers),
+				user: members["admin"],
+			},
+			want: &models.CheckMembersResponse{
+				Success: false,
+				Error:   "bad request",
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    "bad request: invalid character '[' after object key",
+		},
+		{
 			name: "does not find a user",
 			args: args{
 				in0: router.Params{},
@@ -65,7 +88,7 @@ func TestDoUsersExist(t *testing.T) {
 						`{"MemberIDs":["idontexist"]}`,
 					),
 				),
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: members["admin"],
 			},
 			want: &models.CheckMembersResponse{
@@ -90,7 +113,7 @@ func TestDoUsersExist(t *testing.T) {
                         }`,
 					),
 				),
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: members["admin"],
 			},
 			want: &models.CheckMembersResponse{
@@ -99,6 +122,33 @@ func TestDoUsersExist(t *testing.T) {
 			},
 			wantStatus: http.StatusNotFound,
 			wantErr:    "",
+		},
+		{
+			name: "error finding multiple users",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(
+					bytes.NewBufferString(
+						`
+														{
+																"MemberIDs": [
+																		"idontexist",
+																		"idontexisteither"
+																]
+														}`,
+					),
+				),
+				Repo: newFakeRepo(map[string]error{
+					"FindUsers": errors.New("unexpected error"),
+				}),
+				user: members["admin"],
+			},
+			want: &models.CheckMembersResponse{
+				Success: false,
+				Error:   "failed to get",
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
 		},
 	}
 	for _, tt := range tests {
@@ -151,6 +201,71 @@ func TestPutMembersSetRole(t *testing.T) {
 		wantErr      string
 	}{
 		{
+			name: "fails getting project/user/role",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+                {
+                    "MemberID": "%s",
+                    "RoleName": "lead-dev"
+                }
+                `, members["developer"].UserID))),
+				Repo: newFakeRepo(map[string]error{
+					"GetProjectByUUID": errors.New("unexpected error"),
+					"GetUser":          errors.New("unexpected error"),
+					"GetRole":          errors.New("unexpected error"),
+				}),
+				user: members["admin"],
+			},
+			wantResponse: nil,
+			wantStatus:   http.StatusInternalServerError,
+			wantErr:      "failed to get: unexpected error",
+		},
+		{
+			name: "fails checking if organization is paid",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+										{
+												"MemberID": "%s",
+												"RoleName": "lead-dev"
+										}
+										`, members["developer"].UserID))),
+				Repo: newFakeRepo(map[string]error{
+					"IsProjectOrganizationPaid": errors.New("unexpected error"),
+				}),
+				user: members["admin"],
+			},
+			wantResponse: nil,
+			wantStatus:   http.StatusInternalServerError,
+			wantErr:      "unknown: unexpected error",
+		},
+		{
+			name: "fails setting the role",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+												{
+														"MemberID": "%s",
+														"RoleName": "lead-dev"
+												}
+												`, members["developer"].UserID))),
+				Repo: newFakeRepo(map[string]error{
+					"ProjectSetRoleForUser": errors.New("unexpected error"),
+				}),
+				user: members["admin"],
+			},
+			wantResponse: nil,
+			wantStatus:   http.StatusInternalServerError,
+			wantErr:      "failed to set role: unexpected error",
+		},
+		{
 			name: "admin-sets-role-on-dev",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
@@ -162,12 +277,31 @@ func TestPutMembersSetRole(t *testing.T) {
                     "RoleName": "lead-dev"
                 }
                 `, members["developer"].UserID))),
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: members["admin"],
 			},
 			wantResponse: nil,
 			wantStatus:   http.StatusOK,
 			wantErr:      "",
+		},
+		{
+			name: "bad payload",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+										{
+												"MemberID": "%s", --- this is very bad json !!!
+												"RoleName": "lead-dev"
+										}
+										`, members["developer"].UserID))),
+				Repo: newFakeRepo(noCrashers),
+				user: members["admin"],
+			},
+			wantResponse: nil,
+			wantStatus:   http.StatusBadRequest,
+			wantErr:      "bad request: invalid character '-' looking for beginning of object key string",
 		},
 		{
 			name: "dev-cannot-set-role-of-admin",
@@ -181,7 +315,7 @@ func TestPutMembersSetRole(t *testing.T) {
                     "RoleName": "lead-dev"
                 }
                 `, members["admin"].UserID))),
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: members["developer"],
 			},
 			wantResponse: nil,
@@ -200,7 +334,7 @@ func TestPutMembersSetRole(t *testing.T) {
                     "RoleName": "lead-dev"
                 }
                 `, members["admin"].UserID))),
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: members["admin"],
 			},
 			wantResponse: nil,
@@ -219,7 +353,7 @@ func TestPutMembersSetRole(t *testing.T) {
                     "RoleName": "lead-dev"
                 }
                 `)),
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: members["developer"],
 			},
 			wantResponse: nil,
@@ -238,7 +372,7 @@ func TestPutMembersSetRole(t *testing.T) {
                     "RoleName": "lead-dev"
                 }
                 `, unpaidMembers["developer"].UserID))),
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: members["admin"],
 			},
 			wantResponse: nil,
