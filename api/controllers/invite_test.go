@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -41,7 +42,7 @@ func TestPostInvite(t *testing.T) {
     "ProjectName": "%s"
 }
 `, project.Name))),
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.GetInviteResponse{
@@ -49,6 +50,65 @@ func TestPostInvite(t *testing.T) {
 			},
 			wantStatus: http.StatusOK,
 			wantErr:    "",
+		},
+		{
+			name: "fails getting project",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+		{
+				"Email": "some-user@some-mail-service.com",
+				"ProjectName": "%s"
+		}
+		`, project.Name))),
+				Repo: newFakeRepo(map[string]error{
+					"GetProject": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			want: &models.GetInviteResponse{
+				UserUIDs: []string{},
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
+			name: "fails to get users",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+				{
+						"Email": "some-user@some-mail-service.com",
+						"ProjectName": "%s"
+				}
+				`, project.Name))),
+				Repo: newFakeRepo(map[string]error{
+					"GetUserByEmail": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			want: &models.GetInviteResponse{
+				UserUIDs: []string{},
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "unexpected error",
+		},
+		{
+			name: "bad payload",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`
+		{
+				"Email": "some-user@some-mail-service.com", --- some bad json
+				"ProjectName": "%s"
+		}
+		`, project.Name))),
+				Repo: newFakeRepo(noCrashers),
+				user: user,
+			},
+			want:       nil,
+			wantStatus: http.StatusBadRequest,
+			wantErr:    "bad request",
 		},
 		{
 			name: "user has an account",
@@ -60,7 +120,7 @@ func TestPostInvite(t *testing.T) {
     "ProjectName": "%s"
 }
 `, otherUser.Email, project.Name))),
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.GetInviteResponse{
@@ -81,7 +141,7 @@ func TestPostInvite(t *testing.T) {
     "ProjectName": "that-is-not-a-project"
 }
 `)),
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.GetInviteResponse{
@@ -112,26 +172,28 @@ func TestPostInvite(t *testing.T) {
 				return
 			}
 
-			gotResponse := got.(*models.GetInviteResponse)
-			gotUserUIDs := gotResponse.UserUIDs
-			wantUserUIDs := tt.want.UserUIDs
-			gotLen := len(gotUserUIDs)
-			wantLen := len(wantUserUIDs)
+			if tt.want != nil {
+				gotResponse := got.(*models.GetInviteResponse)
+				gotUserUIDs := gotResponse.UserUIDs
+				wantUserUIDs := tt.want.UserUIDs
+				gotLen := len(gotUserUIDs)
+				wantLen := len(wantUserUIDs)
 
-			if gotLen != wantLen {
-				t.Errorf(
-					"PostInvite() got len = %v, want len %v",
-					gotLen,
-					wantLen,
-				)
-				return
-			}
+				if gotLen != wantLen {
+					t.Errorf(
+						"PostInvite() got len = %v, want len %v",
+						gotLen,
+						wantLen,
+					)
+					return
+				}
 
-			for index, gotUID := range gotUserUIDs {
-				wantUID := wantUserUIDs[index]
+				for index, gotUID := range gotUserUIDs {
+					wantUID := wantUserUIDs[index]
 
-				if gotUID != wantUID {
-					t.Errorf("PostInvite() got = %v, want %v", gotUID, wantUID)
+					if gotUID != wantUID {
+						t.Errorf("PostInvite() got = %v, want %v", gotUID, wantUID)
+					}
 				}
 			}
 		})

@@ -20,7 +20,7 @@ func PostInvite(
 ) (_ router.Serde, status int, err error) {
 	payload := models.InvitePayload{}
 	if err = payload.Deserialize(body); err != nil {
-		return nil, http.StatusBadRequest, err
+		return nil, http.StatusBadRequest, apierrors.ErrorBadRequest(err)
 	}
 
 	targetUsers := []models.User{}
@@ -53,6 +53,9 @@ func PostInvite(
 				status = http.StatusInternalServerError
 				goto done
 			}
+		} else {
+			status = http.StatusInternalServerError
+			goto done
 		}
 	} else {
 		for _, user := range targetUsers {
