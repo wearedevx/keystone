@@ -24,7 +24,11 @@ func GetActivityLogs(
 
 	projectID := params.Get("projectID")
 	options := models.GetLogsOptions{}
-	options.Deserialize(body)
+	if err := options.Deserialize(body); err != nil {
+		status = http.StatusBadRequest
+		err = apierrors.ErrorBadRequest(nil)
+		goto done
+	}
 
 	if err = Repo.
 		GetProjectsOrganization(projectID, &organization).

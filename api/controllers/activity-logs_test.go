@@ -1,9 +1,9 @@
-// +build test
-
 package controllers
 
 import (
+	"bytes"
 	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -35,6 +35,64 @@ func TestGetActivityLogs(t *testing.T) {
 		wantErr    bool
 	}{
 		{
+			name: "bad payload",
+			args: args{
+				params: router.Params{},
+				body:   ioutil.NopCloser(bytes.NewBufferString(`{]`)),
+				Repo:   newFakeRepo(noCrashers),
+				in3:    user,
+			},
+			want:       &models.GetActivityLogResponse{},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+
+		{
+			name: "fails getting the organization",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: ioutil.NopCloser(strings.NewReader(`
+				{
+					"actions": [],
+					"environments": [],
+					"users": [],
+					"limit": 200
+				}`)),
+				Repo: newFakeRepo(map[string]error{
+					"GetProjectsOrganization": errors.New("unexpected error"),
+				}),
+				in3: models.User{},
+			},
+			want:       &models.GetActivityLogResponse{},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    true,
+		},
+		{
+			name: "fails getting the logs",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				body: ioutil.NopCloser(strings.NewReader(`
+						{
+							"actions": [],
+							"environments": [],
+							"users": [],
+							"limit": 200
+						}`)),
+				Repo: newFakeRepo(map[string]error{
+					"GetActivityLogs": errors.New("unexpected error"),
+				}),
+				in3: models.User{},
+			},
+			want:       &models.GetActivityLogResponse{},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    true,
+		},
+
+		{
 			name: "returns-all-logs",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
@@ -48,7 +106,7 @@ func TestGetActivityLogs(t *testing.T) {
     "limit": 200
 }
 `)),
-				Repo: &repo.Repo{},
+				Repo: newFakeRepo(noCrashers),
 				in3:  models.User{},
 			},
 			want: &models.GetActivityLogResponse{
@@ -114,7 +172,7 @@ func TestGetActivityLogs(t *testing.T) {
     "limit": 200
 }
 `)),
-				Repo: &repo.Repo{},
+				Repo: newFakeRepo(noCrashers),
 				in3:  models.User{},
 			},
 			want: &models.GetActivityLogResponse{
@@ -156,7 +214,7 @@ func TestGetActivityLogs(t *testing.T) {
     "limit": 200
 }
 `)),
-				Repo: &repo.Repo{},
+				Repo: newFakeRepo(noCrashers),
 				in3:  models.User{},
 			},
 			want: &models.GetActivityLogResponse{
@@ -198,7 +256,7 @@ func TestGetActivityLogs(t *testing.T) {
     "limit": 200
 }
 `)),
-				Repo: &repo.Repo{},
+				Repo: newFakeRepo(noCrashers),
 				in3:  models.User{},
 			},
 			want: &models.GetActivityLogResponse{
@@ -221,7 +279,7 @@ func TestGetActivityLogs(t *testing.T) {
     "limit": 200
 }
 `)),
-				Repo: &repo.Repo{},
+				Repo: newFakeRepo(noCrashers),
 				in3:  models.User{},
 			},
 			want: &models.GetActivityLogResponse{
