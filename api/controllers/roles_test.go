@@ -1,8 +1,7 @@
-// +build test
-
 package controllers
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"testing"
@@ -46,7 +45,7 @@ func TestGetRoles(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": project.UUID,
 				}),
-				Repo: &repo.Repo{},
+				Repo: newFakeRepo(noCrashers),
 				user: models.User{},
 			},
 			wantRoles:          []string{"admin"},
@@ -60,7 +59,7 @@ func TestGetRoles(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": paidProject.UUID,
 				}),
-				Repo: &repo.Repo{},
+				Repo: newFakeRepo(noCrashers),
 				user: models.User{},
 			},
 			wantRoles:          []string{"admin", "developer", "devops", "lead-dev"},
@@ -74,7 +73,7 @@ func TestGetRoles(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": "doesnotexist",
 				}),
-				Repo: &repo.Repo{},
+				Repo: newFakeRepo(noCrashers),
 				user: models.User{},
 			},
 			wantRoles:          []string{},
@@ -88,7 +87,7 @@ func TestGetRoles(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": "",
 				}),
-				Repo: &repo.Repo{},
+				Repo: newFakeRepo(noCrashers),
 				user: models.User{},
 			},
 			wantRoles:          []string{"admin", "developer", "devops", "lead-dev"},
@@ -102,13 +101,45 @@ func TestGetRoles(t *testing.T) {
 				params: router.ParamsFrom(map[string]string{
 					"projectID": project.UUID,
 				}),
-				Repo: &repo.Repo{},
+				Repo: newFakeRepo(noCrashers),
 				user: models.User{},
 			},
 			wantRoles:          []string{},
 			wantStatus:         http.StatusNotFound,
 			wantErr:            "not found",
 			wantTearDownBefore: true,
+		},
+		{
+			name: "fails to get roles on a free project",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": project.UUID,
+				}),
+				Repo: newFakeRepo(map[string]error{
+					"GetRole": errors.New("unexpected error"),
+				}),
+				user: models.User{},
+			},
+			wantRoles:          []string{},
+			wantStatus:         http.StatusInternalServerError,
+			wantErr:            "failed to get: unexpected error",
+			wantTearDownBefore: false,
+		},
+		{
+			name: "fails to get roles on a paid project",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"projectID": paidProject.UUID,
+				}),
+				Repo: newFakeRepo(map[string]error{
+					"GetRoles": errors.New("unexpected error"),
+				}),
+				user: models.User{},
+			},
+			wantRoles:          []string{},
+			wantStatus:         http.StatusInternalServerError,
+			wantErr:            "failed to get: unexpected error",
+			wantTearDownBefore: false,
 		},
 	}
 	for _, tt := range tests {
