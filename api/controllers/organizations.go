@@ -159,11 +159,14 @@ func UpdateOrganization(
 
 	orga.ID = inputOrga.ID
 	if err = Repo.GetOrganization(orga).Err(); err != nil {
+		orga = nil
+		status = http.StatusInternalServerError
+
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
-			orga = nil
-			goto done
 		}
+
+		goto done
 	}
 
 	if orga.Name != inputOrga.Name && inputOrga.Name != "" {
@@ -177,6 +180,7 @@ func UpdateOrganization(
 	case err != nil:
 		status = http.StatusBadRequest
 		err = apierrors.ErrorBadRequest(err)
+		orga = nil
 	case !isOwner:
 		status = http.StatusForbidden
 		err = apierrors.ErrorNotOrganizationOwner()
@@ -258,6 +262,8 @@ func GetOrganizationProjects(
 			} else {
 				status = http.StatusInternalServerError
 				err = apierrors.ErrorFailedToGetResource(err)
+				result = models.GetProjectsResponse{}
+				goto done
 			}
 		}
 	}

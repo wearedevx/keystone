@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -62,7 +63,7 @@ func TestGetOrganizations(t *testing.T) {
 			args: args{
 				params: router.Params{},
 				in1:    nil,
-				Repo:   repo.NewRepo(),
+				Repo:   newFakeRepo(noCrashers),
 				user:   mainUser,
 			},
 			want: &models.GetOrganizationsResponse{
@@ -77,13 +78,32 @@ func TestGetOrganizations(t *testing.T) {
 			wantErr:    "",
 		},
 		{
+			name: "fails at listing all organisations the user is member of",
+			args: args{
+				params: router.Params{},
+				in1:    nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetOwnedOrganizationByName": errors.New("unexpected error"),
+					"GetOrganizationByName":      errors.New("unexpected error"),
+					"GetOwnedOrganizations":      errors.New("unexpected error"),
+					"GetOrganizations":           errors.New("unexpected error"),
+				}),
+				user: mainUser,
+			},
+			want: &models.GetOrganizationsResponse{
+				Organizations: []models.Organization{},
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
 			name: "lists all organisations the user owns",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
 					"owned": "1",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: mainUser,
 			},
 			want: &models.GetOrganizationsResponse{
@@ -95,13 +115,34 @@ func TestGetOrganizations(t *testing.T) {
 			wantErr:    "",
 		},
 		{
+			name: "fails at listing all organisations the user owns",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"owned": "1",
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetOwnedOrganizationByName": errors.New("unexpected error"),
+					"GetOrganizationByName":      errors.New("unexpected error"),
+					"GetOwnedOrganizations":      errors.New("unexpected error"),
+					"GetOrganizations":           errors.New("unexpected error"),
+				}),
+				user: mainUser,
+			},
+			want: &models.GetOrganizationsResponse{
+				Organizations: []models.Organization{},
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
 			name: "find an organization by name among those the user is a member of",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
 					"name": orga.Name,
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: mainUser,
 			},
 			want: &models.GetOrganizationsResponse{
@@ -113,6 +154,27 @@ func TestGetOrganizations(t *testing.T) {
 			wantErr:    "",
 		},
 		{
+			name: "fails at finding an organization by name among those the user is a member of",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"name": orga.Name,
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetOwnedOrganizationByName": errors.New("unexpected error"),
+					"GetOrganizationByName":      errors.New("unexpected error"),
+					"GetOwnedOrganizations":      errors.New("unexpected error"),
+					"GetOrganizations":           errors.New("unexpected error"),
+				}),
+				user: mainUser,
+			},
+			want: &models.GetOrganizationsResponse{
+				Organizations: []models.Organization{},
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
 			name: "find an organization by name among those the user owns",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
@@ -120,7 +182,7 @@ func TestGetOrganizations(t *testing.T) {
 					"owned": "1",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: mainUser,
 			},
 			want: &models.GetOrganizationsResponse{
@@ -132,6 +194,28 @@ func TestGetOrganizations(t *testing.T) {
 			wantErr:    "",
 		},
 		{
+			name: "fails at finding an organization by name among those the user owns",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"name":  org.Name,
+					"owned": "1",
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetOwnedOrganizationByName": errors.New("unexpected error"),
+					"GetOrganizationByName":      errors.New("unexpected error"),
+					"GetOwnedOrganizations":      errors.New("unexpected error"),
+					"GetOrganizations":           errors.New("unexpected error"),
+				}),
+				user: mainUser,
+			},
+			want: &models.GetOrganizationsResponse{
+				Organizations: []models.Organization{},
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
 			name: "does not an organization by name among those the user owns",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
@@ -139,7 +223,7 @@ func TestGetOrganizations(t *testing.T) {
 					"owned": "1",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: mainUser,
 			},
 			want: &models.GetOrganizationsResponse{
@@ -155,7 +239,7 @@ func TestGetOrganizations(t *testing.T) {
 					"name": "wait... that's no organization name!",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: mainUser,
 			},
 			want: &models.GetOrganizationsResponse{
@@ -254,7 +338,7 @@ func TestPostOrganization(t *testing.T) {
 				body: ioutil.NopCloser(bytes.NewBufferString(`{
   "name": "organization-name"
 }`)),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.Organization{
@@ -264,6 +348,22 @@ func TestPostOrganization(t *testing.T) {
 			wantErr:    "",
 		},
 		{
+			name: "fails creating the organization",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(`{
+					"name": "unique-other-organization-name"
+				}`)),
+				Repo: newFakeRepo(map[string]error{
+					"CreateOrganization": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			want:       nil,
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to create resource: unexpected error",
+		},
+		{
 			name: "the paid property is always false on creation",
 			args: args{
 				in0: router.Params{},
@@ -271,7 +371,7 @@ func TestPostOrganization(t *testing.T) {
   "name": "hacky-organization-name",
 	"paid": true
 }`)),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.Organization{
@@ -288,7 +388,7 @@ func TestPostOrganization(t *testing.T) {
 				body: ioutil.NopCloser(bytes.NewBufferString(`{
   "name": "organization name"
 }`)),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want:       nil,
@@ -302,7 +402,7 @@ func TestPostOrganization(t *testing.T) {
 				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
   "name": "%s"
 }`, org.Name))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want:       nil,
@@ -316,7 +416,7 @@ func TestPostOrganization(t *testing.T) {
 				body: ioutil.NopCloser(bytes.NewBufferString(`{
   "name": "a-valid-name",
 }`)),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want:       nil,
@@ -396,6 +496,57 @@ func TestUpdateOrganization(t *testing.T) {
 		wantErr    string
 	}{
 		{
+			name: "fails getting organization",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+	"id": %d,
+  "name": "anew-name"
+}`, orga.ID))),
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganization": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			want:       nil,
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "unexpected error",
+		},
+		{
+			name: "fails checking if user is owner of organization",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+	"id": %d,
+	"name": "anew-name"
+}`, orga.ID))),
+				Repo: newFakeRepo(map[string]error{
+					"IsUserOwnerOfOrga": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			want:       nil,
+			wantStatus: http.StatusBadRequest,
+			wantErr:    "bad request: unexpected error",
+		},
+		{
+			name: "fails updating the organization",
+			args: args{
+				in0: router.Params{},
+				body: ioutil.NopCloser(bytes.NewBufferString(fmt.Sprintf(`{
+			"id": %d,
+			"name": "anew-name"
+		}`, orga.ID))),
+				Repo: newFakeRepo(map[string]error{
+					"UpdateOrganization": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			want:       nil,
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to update: unexpected error",
+		},
+		{
 			name: "updates an organization name",
 			args: args{
 				in0: router.Params{},
@@ -403,7 +554,7 @@ func TestUpdateOrganization(t *testing.T) {
 	"id": %d,
   "name": "anew-name"
 }`, orga.ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.Organization{
@@ -423,7 +574,7 @@ func TestUpdateOrganization(t *testing.T) {
 	"id": %d,
 	"private": true
 }`, orga.ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.Organization{
@@ -444,7 +595,7 @@ func TestUpdateOrganization(t *testing.T) {
 	"paid": true,
 	"private": true
 }`, orga.ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.Organization{
@@ -465,7 +616,7 @@ func TestUpdateOrganization(t *testing.T) {
 	"user_id": %d,
 	"private": true
 }`, orga.ID, otherUser.ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.Organization{
@@ -485,7 +636,7 @@ func TestUpdateOrganization(t *testing.T) {
 	"id": %d,
   "name": "%s"
 }`, orga.ID, otherOrga.Name))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want:       nil,
@@ -500,7 +651,7 @@ func TestUpdateOrganization(t *testing.T) {
 	"id": %d,
   "name": "a name with spaces is a bad name"
 }`, orga.ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want:       nil,
@@ -515,7 +666,7 @@ func TestUpdateOrganization(t *testing.T) {
 					"id": %d,
 					"name": "a-name-that-is-a-valid-one"
 				}`, orga.ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: otherUser,
 			},
 			want:       nil,
@@ -530,7 +681,7 @@ func TestUpdateOrganization(t *testing.T) {
 					"id": %d,
 					"name": "a-name-that-is-a-valid-one",
 				}`, orga.ID))),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want:       nil,
@@ -545,7 +696,7 @@ func TestUpdateOrganization(t *testing.T) {
 							"id": 123049,
 							"name": "a-name-that-is-a-valid-one"
 						}`)),
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want:       nil,
@@ -648,7 +799,7 @@ func TestGetOrganizationProjects(t *testing.T) {
 					"orgaID": strconv.FormatUint(uint64(org.ID), 10),
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.GetProjectsResponse{
@@ -664,12 +815,44 @@ func TestGetOrganizationProjects(t *testing.T) {
 					"orgaID": "that's not a number",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want:       &models.GetProjectsResponse{},
 			wantStatus: http.StatusBadRequest,
 			wantErr:    `bad request: strconv.ParseUint: parsing "that's not a number": invalid syntax`,
+		},
+		{
+			name: "fails to get organization projects",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"orgaID": strconv.FormatUint(uint64(org.ID), 10),
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganizationProjects": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			want:       &models.GetProjectsResponse{},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
+			name: "fails to get projects members",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"orgaID": strconv.FormatUint(uint64(org.ID), 10),
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetProjectMember": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			want:       &models.GetProjectsResponse{},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
 		},
 	}
 	for _, tt := range tests {
@@ -785,7 +968,7 @@ func TestGetOrganizationMembers(t *testing.T) {
 					"orgaID": strconv.FormatUint(uint64(org.ID), 10),
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.GetMembersResponse{
@@ -801,13 +984,31 @@ func TestGetOrganizationMembers(t *testing.T) {
 			wantErr:    "",
 		},
 		{
+			name: "fails at getting all members of an organization",
+			args: args{
+				params: router.ParamsFrom(map[string]string{
+					"orgaID": strconv.FormatUint(uint64(org.ID), 10),
+				}),
+				in1: nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetOrganizationMembers": errors.New("unexpected error"),
+				}),
+				user: user,
+			},
+			want: &models.GetMembersResponse{
+				Members: []models.ProjectMember{},
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
 			name: "bad request if organization id is invalid",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
 					"orgaID": "not a valid orga id",
 				}),
 				in1:  nil,
-				Repo: repo.NewRepo(),
+				Repo: newFakeRepo(noCrashers),
 				user: user,
 			},
 			want: &models.GetMembersResponse{
