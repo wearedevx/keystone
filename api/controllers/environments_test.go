@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"testing"
@@ -36,7 +37,7 @@ func TestGetEnvironmentPublicKeys(t *testing.T) {
 					"envID": environments["dev"].EnvironmentID,
 				}),
 				in1:  nil,
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: adminUser,
 			},
 			want: models.PublicKeys{
@@ -63,7 +64,7 @@ func TestGetEnvironmentPublicKeys(t *testing.T) {
 					"envID": "that environment is not one",
 				}),
 				in1:  nil,
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: adminUser,
 			},
 			want: models.PublicKeys{
@@ -73,13 +74,61 @@ func TestGetEnvironmentPublicKeys(t *testing.T) {
 			wantErr:    "not found",
 		},
 		{
+			name: "fails getting the environment",
+			args: args{
+				params: router.Params{},
+				in1:    nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetEnvironment": errors.New("unexpected error"),
+				}),
+				user: adminUser,
+			},
+			want: models.PublicKeys{
+				Keys: []models.UserDevices{},
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
+			name: "fails to get the environment public keys",
+			args: args{
+				params: router.Params{},
+				in1:    nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetEnvironmentPublicKeys": errors.New("unexpected error"),
+				}),
+				user: adminUser,
+			},
+			want: models.PublicKeys{
+				Keys: []models.UserDevices{},
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "failed to get: unexpected error",
+		},
+		{
+			name: "fails to check the rights",
+			args: args{
+				params: router.Params{},
+				in1:    nil,
+				Repo: newFakeRepo(map[string]error{
+					"GetProjectMember": errors.New("unexpected error"),
+				}),
+				user: adminUser,
+			},
+			want: models.PublicKeys{
+				Keys: []models.UserDevices{},
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    "unexpected error",
+		},
+		{
 			name: "dev user cannot see the prod keys",
 			args: args{
 				params: router.ParamsFrom(map[string]string{
 					"envID": environments["prod"].EnvironmentID,
 				}),
 				in1:  nil,
-				Repo: new(repo.Repo),
+				Repo: newFakeRepo(noCrashers),
 				user: devUser,
 			},
 			want: models.PublicKeys{
