@@ -240,19 +240,21 @@ func (s *messageService) decryptMessages(
 				}
 			}
 
-			d, e := crypto.DecryptMessage(
-				privateKey,
-				udevice.PublicKey,
-				msg.Payload,
-			)
-			if e != nil {
-				return kserrors.CouldNotDecryptMessages("Decryption failed", e)
+			if len(msg.Payload) > 0 {
+				d, e := crypto.DecryptMessage(
+					privateKey,
+					udevice.PublicKey,
+					msg.Payload,
+				)
+				if e != nil {
+					return kserrors.CouldNotDecryptMessages("Decryption failed", e)
+				}
+
+				environment.Message.Payload = d
+
+				byEnvironment.Environments[environmentName] = environment
+				s.log.Printf("Message for %s decryted\n", environmentName)
 			}
-
-			environment.Message.Payload = d
-
-			byEnvironment.Environments[environmentName] = environment
-			s.log.Printf("Message for %s decryted\n", environmentName)
 		}
 	}
 
