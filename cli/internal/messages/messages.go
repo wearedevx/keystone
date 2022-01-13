@@ -246,7 +246,7 @@ func (s *messageService) decryptMessages(
 					udevice.PublicKey,
 					msg.Payload,
 				)
-				if e != nil {
+				if e != nil && e != crypto.ErrorEmptyMessage {
 					return kserrors.CouldNotDecryptMessages("Decryption failed", e)
 				}
 

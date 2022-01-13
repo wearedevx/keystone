@@ -13,6 +13,12 @@ import (
 	"github.com/cossacklabs/themis/gothemis/message"
 )
 
+var (
+	ErrorEmptyMessage          error = errors.New("empty message")
+	ErrorInvalidMessagesLength       = errors.New("invalid message lenght")
+	ErrorCannotRead                  = errors.New("cannot read")
+)
+
 // EncryptMessage function encrypts a message with themis
 func EncryptMessage(
 	senderPrivateKey []byte,
@@ -30,7 +36,7 @@ func EncryptMessage(
 	}
 
 	if len(p) == 0 {
-		return nil, errors.New("crypto: invalid message length")
+		return nil, ErrorInvalidMessagesLength
 	}
 
 	return p, nil
@@ -49,7 +55,11 @@ func DecryptMessage(
 
 	p, err := secureMessage.Unwrap(msg)
 	if err != nil {
-		return []byte(""), err
+		if err.Error() == "Failed to get output size" {
+			return []byte{}, ErrorEmptyMessage
+		}
+
+		return []byte{}, err
 	}
 
 	return p, nil
