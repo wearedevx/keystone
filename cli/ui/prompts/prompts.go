@@ -349,7 +349,7 @@ It will update other members secrets and files.`,
 // ConfirmOverrideFileContents function asks confirmation for ovirriding
 // existing file contents
 func ConfirmOverrideFileContents() bool {
-	return Confirm("Do you want to overrid the contents")
+	return Confirm("Do you want to override the contents")
 }
 
 // ConfirmFileReset function asks confirmation to reset the local contents
@@ -399,7 +399,7 @@ func ConfirmOverrideSecretValue(forceYes bool) bool {
 		return true
 	}
 
-	return Confirm("Do you want to overrid the value")
+	return Confirm("Do you want to override the value")
 }
 
 // ValueForEnvironment function prompts the secret value for an environment

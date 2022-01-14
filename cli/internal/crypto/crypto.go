@@ -3,12 +3,12 @@ package crypto
 import (
 	"bytes"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 
 	"github.com/cossacklabs/themis/gothemis/cell"
-	"github.com/cossacklabs/themis/gothemis/errors"
 	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/cossacklabs/themis/gothemis/message"
 )
@@ -55,7 +55,7 @@ func DecryptMessage(
 
 	p, err := secureMessage.Unwrap(msg)
 	if err != nil {
-		if err.Error() == "Failed to get output size" {
+		if errors.Is(err, message.ErrGetOutputSize) {
 			return []byte{}, ErrorEmptyMessage
 		}
 
