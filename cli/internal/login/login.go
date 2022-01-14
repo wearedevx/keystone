@@ -1,6 +1,7 @@
 package login
 
 import (
+	"errors"
 	"log"
 
 	"github.com/cossacklabs/themis/gothemis/keys"
@@ -63,7 +64,20 @@ func (s *LoginService) LogIntoExisitingAccount(accountIndex int) {
 
 	s.log.Printf("Loging into existing account %d", accountIndex)
 
-	publicKey, _ := config.GetUserPublicKey()
+	publicKey, err := config.GetUserPublicKey()
+	if errors.Is(err, config.ErrorNoPublicKey) {
+		keyPair, err := keys.New(keys.TypeEC)
+		if err != nil {
+			s.err = err
+			return
+		}
+		config.SetUserPublicKey(keyPair.Public.Value)
+		config.SetUserPrivateKey(keyPair.Private.Value)
+		config.Write()
+
+		publicKey = keyPair.Public.Value
+	}
+
 	_, jwtToken, err := s.c.Finish(
 		publicKey,
 		config.GetDeviceName(),
@@ -120,8 +134,8 @@ func (s *LoginService) CreateAccountAndLogin() {
 		},
 	)
 
-	config.SetUserPublicKey(string(keyPair.Public.Value))
-	config.SetUserPrivateKey(string(keyPair.Private.Value))
+	config.SetUserPublicKey(keyPair.Public.Value)
+	config.SetUserPrivateKey(keyPair.Private.Value)
 
 	config.SetCurrentAccount(accountIndex)
 	config.SetAuthToken(jwtToken)

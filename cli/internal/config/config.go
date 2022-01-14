@@ -2,7 +2,9 @@ package config
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -16,6 +18,11 @@ import (
 )
 
 var configFilePath string
+
+var (
+	ErrorNoPublicKey  error = errors.New("no public key")
+	ErrorNoPrivateKey       = errors.New("no private key")
+)
 
 // Writes the global config to the disk
 // Exits with 1 status code
@@ -106,24 +113,44 @@ func UserFromAccount(account map[string]string) (user models.User) {
 
 // GetUserPrivateKey function returns the currently logged in user's private key
 func GetUserPrivateKey() (privateKey []byte, err error) {
-	privateKey = []byte(viper.Get("private_key").(string))
-	return privateKey, err
+	pk := viper.GetString("private_key")
+	if pk == "" {
+		return []byte{}, ErrorNoPrivateKey
+	}
+
+	privateKey, err = base64.StdEncoding.DecodeString(pk)
+	if err != nil {
+		return []byte(pk), nil
+	}
+
+	return privateKey, nil
 }
 
 // GetUserPublicKey function returns the currently logged in users's public key
 func GetUserPublicKey() (publicKey []byte, err error) {
-	publicKey = []byte(viper.Get("public_key").(string))
-	return publicKey, err
+	pk := viper.GetString("public_key")
+	if pk == "" {
+		return []byte{}, ErrorNoPublicKey
+	}
+
+	publicKey, err = base64.StdEncoding.DecodeString(pk)
+	if err != nil {
+		return []byte(pk), nil
+	}
+
+	return publicKey, nil
 }
 
 // SetUserPrivateKey function sets the private key for the currenty logged in user
-func SetUserPrivateKey(privateKey string) {
-	viper.Set("private_key", privateKey)
+func SetUserPrivateKey(privateKey []byte) {
+	encodedKey := base64.StdEncoding.EncodeToString(privateKey)
+	viper.Set("private_key", encodedKey)
 }
 
 // SetUserPublicKey function sets the pulblic key for the currently logged in use
-func SetUserPublicKey(publicKey string) {
-	viper.Set("public_key", publicKey)
+func SetUserPublicKey(publicKey []byte) {
+	encodedKey := base64.StdEncoding.EncodeToString(publicKey)
+	viper.Set("public_key", encodedKey)
 }
 
 // Sets the current account as the index at `index`
