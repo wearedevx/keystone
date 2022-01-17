@@ -231,6 +231,8 @@ func init() {
 		"login",
 		"logout",
 		"documentation",
+		"completion",
+		"__complete",
 		"init",
 		"whoami",
 		"invite",
@@ -243,5 +245,5 @@ func init() {
 
 	noProjectCommands = noEnvironmentCommands
 
-	noLoginCommands = []string{"login", "source", "documentation", "version", "backup"}
+	noLoginCommands = []string{"login", "source", "documentation", "completion", "__complete", "version", "backup"}
 }
