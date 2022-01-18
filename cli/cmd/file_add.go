@@ -18,6 +18,7 @@ package cmd
 import (
 	"errors"
 	"io/ioutil"
+	"path"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -127,7 +128,8 @@ ks file add -s ./credentials.json`,
 					Err(),
 			)
 		} else {
-			// just add file to keystone.yaml and keep old content
+			// add file to keystone.yaml and use the file from the cache
+			// if the file doesn’t
 
 			file := keystonefile.FileKey{
 				Path:   filePath,
@@ -141,6 +143,17 @@ ks file add -s ./credentials.json`,
 				Err(); err != nil {
 				exit(kserrors.FailedToUpdateKeystoneFile(err))
 			}
+
+			if !utils.FileExists(filePath) {
+				cachePath := ctx.CachedEnvironmentFilesPath(currentEnvironment)
+				cachedFilePath := path.Join(cachePath, filePath)
+				destination = path.Join(ctx.Wd, filePath)
+
+				exitIfErr(
+					utils.CopyFile(cachedFilePath, destination),
+				)
+			}
+
 		}
 
 		display.FileAddSuccess(filePath, len(environments))
