@@ -47,7 +47,8 @@ ks --env staging file set ./config.php
 		ctx.MustHaveEnvironment(currentEnvironment)
 		ctx.MustHaveAccessToEnvironment(currentEnvironment)
 
-		filePath := args[0]
+		filePath, err := cleanPathArgument(args[0], ctx.Wd)
+		exitIfErr(err)
 
 		if !utils.FileExists(path.Join(ctx.Wd, filePath)) {
 			exit(kserrors.
