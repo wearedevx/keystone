@@ -147,9 +147,10 @@ ks file add -s ./credentials.json`,
 			if !utils.FileExists(filePath) {
 				cachePath := ctx.CachedEnvironmentFilesPath(currentEnvironment)
 				cachedFilePath := path.Join(cachePath, filePath)
+				destination = path.Join(ctx.Wd, filePath)
 
 				exitIfErr(
-					utils.CopyFile(cachedFilePath, filePath),
+					utils.CopyFile(cachedFilePath, destination),
 				)
 			}
 
