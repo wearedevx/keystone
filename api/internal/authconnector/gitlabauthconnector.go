@@ -28,7 +28,7 @@ func (glac *gitlabAuthConnector) GetUserInfo(
 		return user, err
 	}
 
-	userName := "No name"
+	userName := gUser.Username
 
 	if gUser.Name != "" {
 		userName = gUser.Name
