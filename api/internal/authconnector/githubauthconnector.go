@@ -47,7 +47,7 @@ func (ghac *githubAuthConnector) GetUserInfo(
 		}
 	}
 
-	userName := "No name"
+	userName := *gUser.Login
 
 	if gUser.Name != nil {
 		userName = *gUser.Name
