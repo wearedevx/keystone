@@ -9,11 +9,11 @@ Sync your environment variables across team members, environments and codebase v
 ## Installation
 ### Linux
 Use snap to install this package.
-```
+```sh
 snap install keystone-cli
 ```
 By default, you can call keystone command with `keystone-cli.ks`. You might want to create an alias using [snap aliases](https://snapcraft.io/docs/commands-and-aliases).
-```
+```sh
 snap alias keystone-cli.ks ks
 ```
 
