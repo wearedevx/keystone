@@ -53,7 +53,7 @@ func init() {
 	genCmd := newGenDocCommand(RootCmd)
 
 	genCmd.Flags().
-		StringVarP(&doctype, "type", "t", "md", "either 'hugo' or 'md'")
+		StringVarP(&doctype, "type", "t", "md", "either 'hugo', 'md' or 'man'")
 	genCmd.Flags().
 		StringVarP(&destination, "destination", "d", "./doc", "target directory")
 
