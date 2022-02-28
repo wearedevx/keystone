@@ -5,6 +5,7 @@ package errors
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -61,8 +62,13 @@ func (e *Error) Name() string {
 	return e.name
 }
 
+// Help method returns the help part of the error
 func (e *Error) Help() string {
-	return e.help
+	rendered := e.Error()
+	s := strings.Split(rendered, "\n")
+	helpLines := s[1:]
+
+	return strings.Join(helpLines, "\n")
 }
 
 // Print method prints the error to stderr
