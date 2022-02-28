@@ -24,16 +24,16 @@ brew tap wearedevx/keystone
 ```
 
 Install the latest stable version
-```
+```sh
 brew install wearedevx/keystone/keystone
 ```
 
 You can also install the development version with
-```
+```sh
 brew install wearedevx/keystone/keystone-develop
 ```
 And to update the development version
-```
+```sh
 brew reinstall wearedevx/keystone/keystone-develop
 ```
 
