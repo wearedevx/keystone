@@ -230,7 +230,7 @@ Only files belonging to {{ .Wd }} or its subdirectories can be added.
 {{ ERROR }} {{ .Name | red }}
 We couldn't find data for the following environments: '{{ .EnvironmentsName }}',
 but a new value has been set by another member.
-Ask someone to push their environments to make new data available to you.
+Ask someone to use 'ks env send' to make new data available to you.
 `,
 	"FileHasChanged": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{ .FilePath | red }}
@@ -732,7 +732,7 @@ func EnvironmentsHaveChanged(environmentsname string, cause error) *Error {
 	meta := map[string]interface{}{
 		"EnvironmentsName": string(environmentsname),
 	}
-	return NewError("Environments have changed", helpTexts["EnvironmentsHaveChanged"], meta, cause)
+	return NewError("Messages expired", helpTexts["EnvironmentsHaveChanged"], meta, cause)
 }
 
 func FileHasChanged(filepath string, affectedenvironments string, cause error) *Error {
