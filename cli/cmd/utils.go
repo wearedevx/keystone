@@ -87,6 +87,7 @@ func shouldFetchMessages() (core.ChangesByEnvironment, messages.MessageService) 
 			"WARNING: Could not get messages (%s)",
 			err.Name(),
 		)
+		ui.PrintStdErr(err.Help())
 	}
 
 	return changes, ms

@@ -61,6 +61,10 @@ func (e *Error) Name() string {
 	return e.name
 }
 
+func (e *Error) Help() string {
+	return e.help
+}
+
 // Print method prints the error to stderr
 func (e *Error) Print() {
 	fmt.Fprintln(os.Stderr, e.Error())
