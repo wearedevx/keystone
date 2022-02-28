@@ -33,6 +33,16 @@ env:
   strict: true
 - key: STRIPE_PRICE
   strict: true
+- key: DB_PASSWORD
+  strict: true
+- key: DATABASE_URL
+  strict: true
+- key: DB_HOST
+  strict: true
+- key: DB_NAME
+  strict: true
+- key: DB_USER
+  strict: true
 files:
 - path: api/keystone-server-credentials.json
   strict: false
