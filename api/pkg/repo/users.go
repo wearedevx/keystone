@@ -60,7 +60,6 @@ func (r *Repo) undeleteOrCreateDevices(
 				break
 			}
 		} else {
-			fmt.Printf("userDevice: %+v\n", userDevice)
 			userDevice.DeletedAt = gorm.DeletedAt{}
 			r.err = db.Save(&userDevice).Error
 		}

@@ -131,6 +131,7 @@ func (r *Repo) AddNewDevice(
 ) IRepo {
 	db := r.GetDb()
 
+	// TODO: this should probably go to the controller
 	matched, _ := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, device.Name)
 	if !matched {
 		r.err = apierrors.ErrorBadDeviceName()

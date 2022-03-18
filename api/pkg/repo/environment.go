@@ -83,17 +83,21 @@ func (repo *Repo) GetEnvironmentPublicKeys(
 	publicKeys *models.PublicKeys,
 ) IRepo {
 	rows, err := repo.GetDb().
-		Raw(`select d.id, d.uid, d.name, d.public_key, u.user_id, u.id as UserID
-	from environments as e
-	inner join environment_types as et on et.id = e.environment_type_id
-	inner join roles_environment_types as ret on ret.environment_type_id = et.id
-	inner join roles as r on ret.role_id = r.id
-	inner join project_members as pm on r.id = pm.role_id and pm.project_id = e.project_id
-	inner join users as u on u.id = pm.user_id
-	inner join user_devices as ud on u.id = ud.user_id
-	inner join devices as d on ud.device_id = d.id
-	where e.environment_id = ?
-	and ret.read = true
+		// all the not deleted devices that are related to a user who can read
+		// the given environment (who has a role with `read=true` for the environment type
+		// of the given environment
+		Raw(`SELECT d.id, d.uid, d.name, d.public_key, u.user_id, u.id AS UserID
+	FROM environments AS e
+	INNER JOIN environment_types AS et ON et.id = e.environment_type_id
+	INNER JOIN roles_environment_types AS ret ON ret.environment_type_id = et.id
+	INNER JOIN roles AS r ON ret.role_id = r.id
+	INNER JOIN project_members AS pm ON r.id = pm.role_id AND pm.project_id = e.project_id
+	INNER JOIN users AS u ON u.id = pm.user_id
+	INNER JOIN user_devices AS ud ON u.id = ud.user_id
+	INNER JOIN devices AS d ON ud.device_id = d.id
+	WHERE e.environment_id = ?
+	AND ret.read = true
+  AND d.deleted_at IS NULL
 	`, environmentID).
 		Rows()
 	if err != nil {
@@ -102,14 +106,18 @@ func (repo *Repo) GetEnvironmentPublicKeys(
 	}
 
 	var PublicKey []byte
-	var UserID uint
-	var UserUID string
-	var DeviceUID string
-	var DeviceName string
-	var PublicKeyId uint
+	var UserID, PublicKeyId uint
+	var UserUID, DeviceUID, DeviceName string
 
 	for rows.Next() {
-		if err := rows.Scan(&PublicKeyId, &DeviceUID, &DeviceName, &PublicKey, &UserUID, &UserID); err != nil {
+		if err := rows.Scan(
+			&PublicKeyId,
+			&DeviceUID,
+			&DeviceName,
+			&PublicKey,
+			&UserUID,
+			&UserID,
+		); err != nil {
 			repo.err = err
 			return repo
 		}
