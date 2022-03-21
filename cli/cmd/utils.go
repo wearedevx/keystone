@@ -141,7 +141,8 @@ func handleClientError(err error) {
 		kserrors.ManagementInaccessible(err).Print()
 
 		// Device Errors
-	case errors.Is(err, apierrors.ErrorNoDevice):
+	case errors.Is(err, apierrors.ErrorNoDevice),
+		errors.Is(err, auth.ErrorDeviceNotRegistered):
 		kserrors.DeviceNotRegistered(err).Print()
 
 	case errors.Is(err, apierrors.ErrorBadDeviceName):
@@ -173,8 +174,6 @@ func handleClientError(err error) {
 	default:
 		ui.PrintError(err.Error())
 	}
-
-	d.PrintStack()
 
 	os.Exit(1)
 }
