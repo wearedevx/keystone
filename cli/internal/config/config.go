@@ -185,6 +185,12 @@ func GetDeviceUID() string {
 	return ""
 }
 
+// RevokeDevice removes device information (including keys) from
+// the configuration file
+func RevokeDevice() error {
+	return unset("device", "device_uid", "private_key", "public_key")
+}
+
 // GetServiceApiKey function returns the API Key for the named CI service
 func GetServiceApiKey(serviceName string) string {
 	token := viper.Get(serviceName + "_auth_token")

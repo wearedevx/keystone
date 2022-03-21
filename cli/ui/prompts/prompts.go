@@ -85,7 +85,7 @@ func SelectDevice(devices []models.Device) models.Device {
 		if device.LastUsedAt.IsZero() {
 			newItem["LastUsedAtString"] = "never used"
 		} else {
-			newItem["LastUsedAtString"] = fmt.Sprintf("last used on %s", device.CreatedAt.Format("2006/01/02"))
+			newItem["LastUsedAtString"] = fmt.Sprintf("last used on %s", device.LastUsedAt.Format("2006/01/02"))
 		}
 
 		items = append(items, newItem)

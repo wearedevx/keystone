@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/ui/display"
@@ -34,6 +35,9 @@ var deviceRevokeCmd = &cobra.Command{
 			handleClientError(err)
 			exit(err)
 		}
+
+		exitIfErr(config.RevokeDevice())
+		config.Write()
 
 		display.DeviceRevokeSuccess()
 	},
