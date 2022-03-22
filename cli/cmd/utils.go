@@ -142,7 +142,9 @@ func handleClientError(err error) {
 
 		// Device Errors
 	case errors.Is(err, apierrors.ErrorNoDevice),
-		errors.Is(err, auth.ErrorDeviceNotRegistered):
+		errors.Is(err, auth.ErrorDeviceNotRegistered),
+		// There is a an undetermined path where only this seem to work…
+		strings.Contains(err.Error(), auth.ErrorDeviceNotRegistered.Error()):
 		kserrors.DeviceNotRegistered(err).Print()
 
 	case errors.Is(err, apierrors.ErrorBadDeviceName):
