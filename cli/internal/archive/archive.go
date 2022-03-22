@@ -92,7 +92,7 @@ func ArchiveWithPassphrase(source, target, passphrase string) (err error) {
 		return err
 	}
 
-	l.Printf("Encrypt with %s", passphrase)
+	l.Printf("Encrypt with passphrase")
 
 	encrypted, err := crypto.EncryptFile(target, passphrase)
 	if err != nil {
@@ -133,7 +133,7 @@ func Extract(archive io.Reader, target string) (err error) {
 // `target` is the directory where the archive will be extracted, and
 // `passphrase` is the passphrase used to decrypt.
 func ExtractWithPassphrase(archivepath, target, passphrase string, flag int) (err error) {
-	l.Printf("Decrypt with passsphrase %s", passphrase)
+	l.Printf("Decrypt with passsphrase")
 
 	decrypted, err := crypto.DecryptFile(archivepath, passphrase)
 	if err != nil {
