@@ -12,6 +12,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/wearedevx/keystone/cli/internal/crypto"
@@ -210,6 +211,10 @@ func Untar(tarball io.Reader, target string) error {
 			break
 		} else if err != nil {
 			return err
+		}
+
+		if strings.Contains(header.Name, "..") {
+			return errors.New("invalid extract path")
 		}
 
 		/* #nosec */
