@@ -4,7 +4,6 @@ package redis
 
 import (
 	"context"
-	"math"
 	"os"
 	"strconv"
 
@@ -46,13 +45,8 @@ func NewRedis() *Redis {
 	redisPort = getOrDefault(redisPort, "REDIS_PORT", "6379")
 	redisIndex = getOrDefault(redisIndex, "REDIS_INDEX", "0")
 
-	redisIndexInt, err := strconv.ParseInt(redisIndex, 10, 64)
+	redisIndexInt, err := strconv.ParseInt(redisIndex, 10, 32)
 	if err != nil {
-		redisIndexInt = 0
-	}
-
-	// FIXME: shouldn’t we log this ?
-	if redisIndexInt > math.MaxInt {
 		redisIndexInt = 0
 	}
 

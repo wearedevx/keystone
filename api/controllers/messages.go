@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -347,17 +346,13 @@ done:
 }
 
 func parseID(idstring string) (uint, error) {
-	id, err := strconv.ParseUint(idstring, 10, 64)
+	id, err := strconv.ParseUint(idstring, 10, 32)
 
 	if err != nil {
 		return 0, err
 	}
 
-	if id >= 0 && id <= math.MaxUint {
-		return uint(id), nil
-	}
-
-	return 0, errors.New("id out of bounds")
+	return uint(id), nil
 }
 
 func DeleteMessage(
