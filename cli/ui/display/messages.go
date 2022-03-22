@@ -16,7 +16,6 @@ func Changes(
 
 		changesList, ok := changes.Environments[environmentName]
 		if !ok { // means there are no changes, and versions are equal
-			printEnvironmentUpToDate(environmentName)
 			continue
 		}
 
@@ -27,9 +26,8 @@ func Changes(
 
 		if !changesList.IsEmpty() {
 			printChangeList(environmentName, changesList)
+			printEnvironmentUpToDate(environmentName)
 		}
-
-		printEnvironmentUpToDate(environmentName)
 	}
 }
 
