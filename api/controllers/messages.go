@@ -345,6 +345,16 @@ done:
 	return response, status, log.SetError(err)
 }
 
+func parseID(idstring string) (uint, error) {
+	id, err := strconv.ParseUint(idstring, 10, 32)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return uint(id), nil
+}
+
 func DeleteMessage(
 	params router.Params,
 	_ io.ReadCloser,
@@ -362,7 +372,7 @@ func DeleteMessage(
 
 	messageID := params.Get("messageID")
 
-	id, err := strconv.ParseUint(messageID, 10, 64)
+	id, err := parseID(messageID)
 	if err != nil {
 		status = http.StatusBadRequest
 		response.Success = false
@@ -371,11 +381,11 @@ func DeleteMessage(
 		goto done
 	}
 
-	message.ID = uint(id)
+	message.ID = id
 
 	if err = Repo.
 		GetMessage(&message).
-		DeleteMessage(uint(id), user.ID).Err(); err != nil {
+		DeleteMessage(id, user.ID).Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
 			goto done

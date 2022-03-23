@@ -22,6 +22,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/backup"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
@@ -67,6 +68,7 @@ var RootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() int {
+
 	if err := RootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
@@ -183,9 +185,16 @@ func Initialize() {
 		}
 	}
 
+	bs := backup.NewBackupService(ctx)
+
+	if !bs.IsSetup() {
+		bs.Setup()
+	}
+
 	if checkLogin && !config.IsLoggedIn() {
 		exit(kserrors.MustBeLoggedIn(nil))
 	}
+
 }
 
 func init() {
