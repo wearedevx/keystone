@@ -8,6 +8,7 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/wearedevx/keystone/cli/internal/backup"
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/crypto"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
@@ -88,14 +89,22 @@ func (s *messageService) GetMessages() core.ChangesByEnvironment {
 	messagesIds := getMessagesIds(messagesByEnvironment)
 	s.DeleteMessages(messagesIds)
 
-	if shouldRunHooks(changes) {
+	if hasChanges(changes) {
 		s.ctx.RunHook()
+		bs := backup.NewBackupService(s.ctx)
+
+		if bs.IsSetup() {
+			_, _, err := bs.Backup()
+			if err != nil {
+				s.err = kserrors.BackupFailed(err)
+			}
+		}
 	}
 
 	return changes
 }
 
-func shouldRunHooks(changes core.ChangesByEnvironment) (shouldRun bool) {
+func hasChanges(changes core.ChangesByEnvironment) (shouldRun bool) {
 	for _, c := range changes.Environments {
 		if !c.IsEmpty() && !c.IsSingleVersionChange() {
 			shouldRun = true
@@ -297,6 +306,11 @@ func (s *messageService) SendEnvironments(
 	s.sendMessageAndUpdateEnvironment(messagesToWrite)
 
 	if err := s.ctx.RunHook(); err != nil {
+		ui.PrintError(err.Error())
+	}
+
+	bs := backup.NewBackupService(s.ctx)
+	if _, _, err := bs.Backup(); err != nil {
 		ui.PrintError(err.Error())
 	}
 

@@ -10,6 +10,7 @@ export $(cat .env-test | xargs)
 LDFLAGS="-X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=$KSAPI_URL \
 	-X github.com/wearedevx/keystone/api/pkg/jwt.salt=${JWT_SALT}"
 NOSPIN=true
+NOBACKUP=true
 
 DBFILE="${TMPDIR}keystone_gorm.db"
 

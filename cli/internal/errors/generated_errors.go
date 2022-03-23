@@ -230,7 +230,7 @@ Only files belonging to {{ .Wd }} or its subdirectories can be added.
 {{ ERROR }} {{ .Name | red }}
 We couldn't find data for the following environments: '{{ .EnvironmentsName }}',
 but a new value has been set by another member.
-Ask someone to use 'ks env send' to make new data available to you.
+Ask someone to use 'ks env send' to make newa data available to you.
 `,
 	"FileHasChanged": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{ .FilePath | red }}
@@ -449,6 +449,34 @@ This happened because: {{ .Cause }}
 This happened because: {{ .Cause }}
 `,
 	"FailedToWriteBackup": `
+{{ ERROR }} {{ .Name | red }}
+
+This happened because: {{ .Cause }}
+`,
+	"BackupNotSetUp": `
+{{ ERROR }} {{ .Name | red }}
+
+This functionnality requires backups to have been setup.
+You can do it using:
+  $ ks backup --setup
+`,
+	"NoBackup": `
+{{ ERROR }} {{ .Name | red }}
+No backup could be found for the project "{{ .ProjectName }}" in
+"{{ .BackupDirPath }}".
+
+You can create one manually with:
+  $ ks backup
+
+Or change the backup directory with:
+  $ ks backup --setup
+`,
+	"RestoreFailed": `
+{{ ERROR }} {{ .Name | red }}
+
+This happened because: {{ .Cause }}
+`,
+	"BackupFailed": `
 {{ ERROR }} {{ .Name | red }}
 
 This happened because: {{ .Cause }}
@@ -999,6 +1027,32 @@ func FailedToWriteBackup(cause error) *Error {
 	meta := map[string]interface{}{}
 
 	return NewError("Failed To Write Backup", helpTexts["FailedToWriteBackup"], meta, cause)
+}
+
+func BackupNotSetUp(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Backup required", helpTexts["BackupNotSetUp"], meta, cause)
+}
+
+func NoBackup(projectname string, backupdirpath string, cause error) *Error {
+	meta := map[string]interface{}{
+		"ProjectName":   string(projectname),
+		"BackupDirPath": string(backupdirpath),
+	}
+	return NewError("No Backup For Current Project", helpTexts["NoBackup"], meta, cause)
+}
+
+func RestoreFailed(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Backup Restoration Failed", helpTexts["RestoreFailed"], meta, cause)
+}
+
+func BackupFailed(cause error) *Error {
+	meta := map[string]interface{}{}
+
+	return NewError("Backup Failed", helpTexts["BackupFailed"], meta, cause)
 }
 
 func NoCIServices(cause error) *Error {
