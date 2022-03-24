@@ -34,6 +34,10 @@ type BackupService interface {
 }
 
 func NewBackupService(ctx *core.Context) BackupService {
+	if nobackp := os.Getenv("NOBACKUP"); nobackp == "true" {
+		return &stubBackupService{}
+	}
+
 	return &backupService{
 		log: log.New(log.Writer(), "[Backup] ", 0),
 		ctx: ctx,

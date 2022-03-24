@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/cli/internal/archive"
+	"github.com/wearedevx/keystone/cli/internal/environments"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
 	"github.com/wearedevx/keystone/cli/internal/utils"
@@ -22,6 +23,9 @@ This will override all the data you have stored locally.`,
 	Example: "ks restore keystone-backup-project-163492022.tar.gz",
 	Args:    cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, args []string) {
+		es := environments.NewEnvironmentService(ctx)
+		ctx.AccessibleEnvironments = es.GetAccessibleEnvironments()
+
 		if len(ctx.AccessibleEnvironments) < 3 {
 			exit(kserrors.RestoreDenied(nil))
 		}
