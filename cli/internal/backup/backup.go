@@ -45,7 +45,7 @@ func NewBackupService(ctx *core.Context) BackupService {
 }
 
 func (b *backupService) Setup() error {
-	if prompts.ConfirmCreateBackupStrategy(b.IsSetup()) {
+	if prompts.ConfirmCreateBackupStrategy(!b.IsSetup()) {
 		backupPath := prompts.BackupPath()
 		config.SetBackupStrategy(true, backupPath)
 
