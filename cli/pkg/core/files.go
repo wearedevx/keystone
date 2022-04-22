@@ -101,7 +101,7 @@ func (ctx *Context) ListFiles() []keystonefile.FileKey {
 	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
 
 	if err := ksfile.Err(); err != nil {
-		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 		return make([]keystonefile.FileKey, 0)
 	}
 
@@ -146,7 +146,7 @@ func (ctx *Context) ListCachedFilesForEnvironment(
 		},
 	)
 	if err != nil {
-		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		ctx.setError(kserrors.FailedToReadKeystoneFile(ctx.Wd, err))
 		return []keystonefile.FileKey{}
 	}
 
@@ -199,7 +199,7 @@ func (ctx *Context) ListFilesFromCache() []keystonefile.FileKey {
 				return nil
 			})
 		if err != nil {
-			ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+			ctx.setError(kserrors.FailedToReadKeystoneFile(ctx.Wd, err))
 			return make([]keystonefile.FileKey, 0)
 		}
 	}
@@ -316,7 +316,7 @@ func (ctx *Context) SetFile(filePath string, content []byte) *Context {
 	// Add file path to the keystone file
 	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
 	if err := ksfile.Err(); err != nil {
-		return ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		return ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 	}
 
 	currentEnvironment := ctx.CurrentEnvironment()
@@ -461,7 +461,7 @@ func (ctx *Context) FilesUseEnvironment(
 
 	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
 	if err := ksfile.Err(); err != nil {
-		return ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		return ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 	}
 
 	cachePath := ctx.CachedEnvironmentFilesPath(targetEnvironment)
@@ -541,7 +541,7 @@ func (ctx *Context) RemoveFile(
 	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
 
 	if err := ksfile.Err(); err != nil {
-		return ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		return ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 	}
 
 	filteredFiles := make([]keystonefile.FileKey, 0)
@@ -620,7 +620,7 @@ func (ctx *Context) HasFile(fileName string) bool {
 
 	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
 	if err := ksfile.Err(); err != nil {
-		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 		return haveIt
 	}
 

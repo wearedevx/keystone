@@ -16,7 +16,7 @@ func (ctx *Context) GetProjectName() string {
 	ksFile := &keystonefile.KeystoneFile{}
 	ksFile.Load(ctx.Wd)
 
-	ctx.err = kserrors.FailedToReadKeystoneFile(ksFile.Err())
+	ctx.err = kserrors.FailedToReadKeystoneFile(ksFile.Path, ksFile.Err())
 
 	return ksFile.ProjectName
 }
@@ -31,7 +31,7 @@ func (ctx *Context) GetProjectID() string {
 	ksFile.Load(ctx.Wd)
 
 	if ksFile.Err() != nil {
-		ctx.err = kserrors.FailedToReadKeystoneFile(ksFile.Err())
+		ctx.err = kserrors.FailedToReadKeystoneFile(ksFile.Path, ksFile.Err())
 		return ""
 	}
 

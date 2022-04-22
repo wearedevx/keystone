@@ -56,7 +56,7 @@ This happened because: {{ .Cause }}
 `,
 	"FailedToReadKeystoneFile": `
 {{ ERROR }} {{ .Name | red }}
-The keystone.yaml file exists, but it might not be readable or writable.
+The '{{ .Path }}' exists, but it might not be readable or writable.
 Its content may also be corrupted and may not be parsable.
 
 This happened because: {{ .Cause }}
@@ -230,7 +230,7 @@ Only files belonging to {{ .Wd }} or its subdirectories can be added.
 {{ ERROR }} {{ .Name | red }}
 We couldn't find data for the following environments: '{{ .EnvironmentsName }}',
 but a new value has been set by another member.
-Ask someone to use 'ks env send' to make new data available to you.
+Ask someone to use 'ks env send' to make newa data available to you.
 `,
 	"FileHasChanged": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{ .FilePath | red }}
@@ -565,9 +565,10 @@ func CannotSaveConfig(cause error) *Error {
 	return NewError("Cannot Save Config", helpTexts["CannotSaveConfig"], meta, cause)
 }
 
-func FailedToReadKeystoneFile(cause error) *Error {
-	meta := map[string]interface{}{}
-
+func FailedToReadKeystoneFile(path string, cause error) *Error {
+	meta := map[string]interface{}{
+		"Path": string(path),
+	}
 	return NewError("Failed To Read Keystone File", helpTexts["FailedToReadKeystoneFile"], meta, cause)
 }
 
