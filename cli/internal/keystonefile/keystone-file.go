@@ -69,18 +69,27 @@ func ExistsKeystoneFile(wd string) bool {
 	return utils.FileExists(keystoneFilePath(wd))
 }
 
+var files map[string][]byte = make(map[string][]byte)
+
 // Loads a Keystone from disk
 func (file *KeystoneFile) Load(wd string) *KeystoneFile {
-	/* #nosec
-	 * We generate the file path, and its content is about to be parsed
-	 */
-	bytes, err := ioutil.ReadFile(keystoneFilePath(wd))
-	// file := newKeystoneFile(context)
-	if err != nil {
-		file.err = err
-	}
-
+	var bytes []byte
+	var err error
 	file.Path = keystoneFilePath(wd)
+
+	bytes, ok := files[file.Path]
+	if !ok {
+		/* #nosec
+		 * We generate the file path, and its content is about to be parsed
+		 */
+		bytes, err = ioutil.ReadFile(file.Path)
+		// file := newKeystoneFile(context)
+		if err != nil {
+			file.err = err
+		} else {
+			files[file.Path] = bytes
+		}
+	}
 
 	return file.fromYaml(bytes)
 }
@@ -127,6 +136,7 @@ func (file *KeystoneFile) Save() *KeystoneFile {
 		if err := ioutil.WriteFile(file.Path, yamlBytes, 0o600); err != nil {
 			file.err = fmt.Errorf("could not write `keystone.yaml` (%w)", err)
 		}
+		files[file.Path] = yamlBytes
 	}
 
 	return file
