@@ -28,7 +28,7 @@ type keystoneFileOptions struct {
 
 // Represents the contents of the keystone.yaml file
 type KeystoneFile struct {
-	path        string `yaml:"-"`
+	Path        string `yaml:"-"`
 	err         error  `yaml:"-"`
 	ProjectId   string `yaml:"project_id"`
 	ProjectName string `yaml:"name"`
@@ -52,7 +52,7 @@ func keystoneFilePath(wd string) string {
 // NewKeystoneFile function returns a new instance of a KeyatoneFile
 func NewKeystoneFile(wd string, project models.Project) *KeystoneFile {
 	return &KeystoneFile{
-		path:        keystoneFilePath(wd),
+		Path:        keystoneFilePath(wd),
 		err:         nil,
 		ProjectId:   project.UUID,
 		ProjectName: project.Name,
@@ -80,7 +80,7 @@ func (file *KeystoneFile) Load(wd string) *KeystoneFile {
 		file.err = err
 	}
 
-	file.path = keystoneFilePath(wd)
+	file.Path = keystoneFilePath(wd)
 
 	return file.fromYaml(bytes)
 }
@@ -91,7 +91,10 @@ func (file *KeystoneFile) fromYaml(bytes []byte) *KeystoneFile {
 		return file
 	}
 
-	file.err = yaml.Unmarshal(bytes, &file)
+	err := yaml.Unmarshal(bytes, &file)
+	if err != nil {
+		file.err = fmt.Errorf("Parsing error: %w", err)
+	}
 
 	return file
 }
@@ -121,7 +124,7 @@ func (file *KeystoneFile) Save() *KeystoneFile {
 	if file.Err() == nil {
 		yamlBytes := file.toYaml()
 
-		if err := ioutil.WriteFile(file.path, yamlBytes, 0o600); err != nil {
+		if err := ioutil.WriteFile(file.Path, yamlBytes, 0o600); err != nil {
 			file.err = fmt.Errorf("could not write `keystone.yaml` (%w)", err)
 		}
 	}
@@ -135,7 +138,7 @@ func (file *KeystoneFile) Remove() *KeystoneFile {
 		return file
 	}
 
-	if err := os.Remove(file.path); err != nil {
+	if err := os.Remove(file.Path); err != nil {
 		file.err = fmt.Errorf("could not remove `keystone.yaml` (%w)", err)
 	}
 

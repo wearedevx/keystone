@@ -207,7 +207,7 @@ func (ctx *Context) PurgeSecrets() *Context {
 	// Add new env key to keystone.yaml
 
 	if err = ksfile.Load(ctx.Wd).Err(); err != nil {
-		return ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		return ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 	}
 
 	// Update environments' .env files
@@ -343,7 +343,7 @@ func (ctx *Context) GetSecret(secretName string) *Secret {
 	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
 
 	if err = ksfile.Err(); err != nil {
-		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 		return secret
 	}
 
@@ -391,7 +391,7 @@ func (ctx *Context) ListSecretsFromCache() []Secret {
 	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
 
 	if err = ksfile.Err(); err != nil {
-		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 		return secrets
 	}
 
@@ -439,7 +439,12 @@ func (ctx *Context) ListSecrets() []Secret {
 	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
 
 	if err = ksfile.Err(); err != nil {
-		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		ctx.setError(
+			kserrors.FailedToReadKeystoneFile(
+				ksfile.Path,
+				err,
+			),
+		)
 		return secrets
 	}
 
@@ -481,7 +486,7 @@ func (ctx *Context) HasSecret(secretName string) bool {
 
 	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
 	if err := ksfile.Err(); err != nil {
-		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 		return haveIt
 	}
 
@@ -532,7 +537,7 @@ func (ctx *Context) SecretIsRequired(secretName string) bool {
 
 	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
 	if err := ksfile.Err(); err != nil {
-		ctx.setError(kserrors.FailedToReadKeystoneFile(err))
+		ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 		return required
 	}
 

@@ -94,10 +94,12 @@ errors:
   # ––––––––––––––––––––
   - type: FailedToReadKeystoneFile
     name: "Failed To Read Keystone File"
-    params: []
+    params:
+      - name: Path
+        type: string
     template: |-
       {{ ERROR }} {{ .Name | red }}
-      The keystone.yaml file exists, but it might not be readable or writable.
+      The '{{ .Path }}' exists, but it might not be readable or writable.
       Its content may also be corrupted and may not be parsable.
 
       This happened because: {{ .Cause }}
