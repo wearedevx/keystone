@@ -810,50 +810,6 @@ errors:
 
       This happened because: {{ .Cause }}
 
-  - type: BackupNotSetUp
-    name: "Backup required"
-    params: []
-    template: |-
-      {{ ERROR }} {{ .Name | red }}
-
-      This functionnality requires backups to have been setup.
-      You can do it using:
-        $ ks backup --setup
-
-  - type: NoBackup
-    name: "No Backup For Current Project"
-    params:
-      - name: ProjectName
-        type: string
-      - name: BackupDirPath
-        type: string
-    template: |-
-      {{ ERROR }} {{ .Name | red }}
-      No backup could be found for the project "{{ .ProjectName }}" in
-      "{{ .BackupDirPath }}".
-
-      You can create one manually with:
-        $ ks backup
-
-      Or change the backup directory with:
-        $ ks backup --setup
-
-  - type: RestoreFailed
-    name: "Backup Restoration Failed"
-    params: []
-    template: |-
-      {{ ERROR }} {{ .Name | red }}
-
-      This happened because: {{ .Cause }}
-
-  - type: BackupFailed
-    name: "Backup Failed"
-    params: []
-    template: |-
-      {{ ERROR }} {{ .Name | red }}
-
-      This happened because: {{ .Cause }}
-
   # CI ERRORS
   # ---------------
   - type: NoCIServices

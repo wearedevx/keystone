@@ -4,13 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path"
 	"regexp"
 	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 )
@@ -207,23 +205,6 @@ func ConfirmSendEnvironmentToCiService(environmentName string, skipPrompts bool)
 	)
 
 	return Confirm("Continue")
-}
-
-func ConfirmCreateBackupStrategy(long bool) bool {
-	if long {
-		ui.Print(`Keystone can backup secrets and managed files to a local directory.`)
-	}
-
-	return Confirm("Do you want Keystone to create automatic backups")
-}
-
-func BackupPath() string {
-	configDirPath, _ := config.ConfigDir()
-
-	return StringInput(
-		"Path to the backup directory",
-		path.Join(configDirPath, "backups"),
-	)
 }
 
 // Items for SelectCIService prompt

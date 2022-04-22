@@ -12,7 +12,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/wearedevx/keystone/cli/internal/crypto"
@@ -93,7 +92,7 @@ func ArchiveWithPassphrase(source, target, passphrase string) (err error) {
 		return err
 	}
 
-	l.Printf("Encrypt with passphrase")
+	l.Printf("Encrypt with %s", passphrase)
 
 	encrypted, err := crypto.EncryptFile(target, passphrase)
 	if err != nil {
@@ -134,7 +133,7 @@ func Extract(archive io.Reader, target string) (err error) {
 // `target` is the directory where the archive will be extracted, and
 // `passphrase` is the passphrase used to decrypt.
 func ExtractWithPassphrase(archivepath, target, passphrase string, flag int) (err error) {
-	l.Printf("Decrypt with passsphrase")
+	l.Printf("Decrypt with passsphrase %s", passphrase)
 
 	decrypted, err := crypto.DecryptFile(archivepath, passphrase)
 	if err != nil {
@@ -211,10 +210,6 @@ func Untar(tarball io.Reader, target string) error {
 			break
 		} else if err != nil {
 			return err
-		}
-
-		if strings.Contains(header.Name, "..") {
-			return errors.New("invalid extract path")
 		}
 
 		/* #nosec */

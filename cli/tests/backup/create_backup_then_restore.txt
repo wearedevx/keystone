@@ -5,16 +5,15 @@ ks init project-backup -o $USER_ID
 # Add secret to project
 ks secret add LABEL value -s
 
-# Create a project backup
-ks project backup -p password -n backup
+# Remove members to project
+ks backup -p password -n backup
 
 stdout 'OK  Backup created'
 
 # Removed .keystone to then restore it
 rm -rf .keystone
 
-# Restore the created backup
-ks project restore -p password -s backup.tar.gz
+ks restore -p password -s backup.tar.gz
 
 stdout 'OK  Backup restored'
 

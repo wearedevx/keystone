@@ -45,7 +45,7 @@ func NewRedis() *Redis {
 	redisPort = getOrDefault(redisPort, "REDIS_PORT", "6379")
 	redisIndex = getOrDefault(redisIndex, "REDIS_INDEX", "0")
 
-	redisIndexInt, err := strconv.ParseInt(redisIndex, 10, 32)
+	redisIndexInt, err := strconv.ParseInt(redisIndex, 10, 64)
 	if err != nil {
 		redisIndexInt = 0
 	}

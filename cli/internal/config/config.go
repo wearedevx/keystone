@@ -30,7 +30,7 @@ func Write() {
 	utils.CreateFileIfNotExists(configFilePath, "")
 
 	if err := viper.WriteConfigAs(configFilePath); err != nil {
-		kserrors.CannotSaveConfig(err).Print()
+		kserrors.CannotSaveConfig(err)
 		os.Exit(1)
 	}
 }
@@ -286,45 +286,6 @@ func RemoveHook() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-// GetBackupStrategy returns
-// - a `bool`: whether the user wishes to do backups
-// - a `string`: the path to a folder to store backups to
-func GetBackupStrategy() (doBackup bool, backupPath string) {
-	doBackup = viper.GetBool("do_backups")
-
-	if doBackup {
-		backupPath = viper.GetString("backup_path")
-	}
-
-	return doBackup, backupPath
-}
-
-func SetBackupStrategy(doBackup bool, backupPath string) {
-	SetDoBackups(doBackup)
-
-	if doBackup {
-		SetBackupPath(backupPath)
-	} else {
-		UnsetBackupPath()
-	}
-}
-
-func IsBackupStrategySetup() bool {
-	return viper.InConfig("do_backups")
-}
-
-func SetDoBackups(doBackups bool) {
-	viper.Set("do_backups", doBackups)
-}
-
-func SetBackupPath(backupPath string) {
-	viper.Set("backup_path", backupPath)
-}
-
-func UnsetBackupPath() {
-	unset("backup_path")
 }
 
 // castAccount casts a map[interface{}]interface{}, which is returned by

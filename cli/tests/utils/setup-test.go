@@ -305,7 +305,6 @@ func SetupEnvVars(env *testscript.Env) error {
 	env.Setenv("TMPDIR", osTmpDir)
 	env.Setenv("GCLOUDFILE", GetGcloudFuncAuthPidFilePath())
 	env.Setenv("NOSPIN", "true")
-	env.Setenv("NOBACKUP", "true")
 	env.Setenv("KSCOLORS", "off")
 
 	// Create config folder
