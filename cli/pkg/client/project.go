@@ -63,8 +63,9 @@ func (p *Project) AddMembers(memberRoles map[string]models.Role) error {
 	}
 
 	p.log.Printf("Adding Members %+v\n", payload)
+	var path = fmt.Sprintf("/projects/%s/members", p.id)
 
-	err = p.r.post("/projects/"+p.id+"/members", payload, &result, nil)
+	err = p.r.post(path, payload, &result, nil)
 
 	if !result.Success && result.Error != "" {
 		err = fmt.Errorf(result.Error)
