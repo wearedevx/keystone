@@ -69,16 +69,17 @@ func ExistsKeystoneFile(wd string) bool {
 	return utils.FileExists(keystoneFilePath(wd))
 }
 
-var files map[string][]byte = make(map[string][]byte)
+var ksf *KeystoneFile
 
 // Loads a Keystone from disk
 func (file *KeystoneFile) Load(wd string) *KeystoneFile {
 	var bytes []byte
 	var err error
-	file.Path = keystoneFilePath(wd)
+  
+  if (ksf != nil) {
+    return ksf
+  } else {
 
-	bytes, ok := files[file.Path]
-	if !ok {
 		/* #nosec
 		 * We generate the file path, and its content is about to be parsed
 		 */
@@ -86,12 +87,11 @@ func (file *KeystoneFile) Load(wd string) *KeystoneFile {
 		// file := newKeystoneFile(context)
 		if err != nil {
 			file.err = err
-		} else {
-			files[file.Path] = bytes
+      return file
 		}
-	}
 
 	return file.fromYaml(bytes)
+}
 }
 
 // Loads contents of yml file into a KeystoneFile struct
