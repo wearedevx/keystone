@@ -135,7 +135,6 @@ func (file *KeystoneFile) Save() *KeystoneFile {
 		if err := ioutil.WriteFile(file.Path, yamlBytes, 0o600); err != nil {
 			file.err = fmt.Errorf("could not write `keystone.yaml` (%w)", err)
 		}
-		files[file.Path] = yamlBytes
 	}
 
 	return file
