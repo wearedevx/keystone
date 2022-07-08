@@ -43,8 +43,6 @@ env:
   strict: true
 - key: DB_USER
   strict: true
-- key: TEST
-  strict: true
 files:
 - path: api/keystone-server-credentials.json
   strict: false
