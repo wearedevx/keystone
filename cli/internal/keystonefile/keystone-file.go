@@ -75,11 +75,10 @@ var ksf *KeystoneFile
 func (file *KeystoneFile) Load(wd string) *KeystoneFile {
 	var bytes []byte
 	var err error
-  
-  if (ksf != nil) {
-    return ksf
-  } else {
 
+	if ksf != nil {
+		return ksf
+	} else {
 		/* #nosec
 		 * We generate the file path, and its content is about to be parsed
 		 */
@@ -87,11 +86,11 @@ func (file *KeystoneFile) Load(wd string) *KeystoneFile {
 		// file := newKeystoneFile(context)
 		if err != nil {
 			file.err = err
-      return file
+			return file
 		}
 
-	return file.fromYaml(bytes)
-}
+		return file.fromYaml(bytes)
+	}
 }
 
 // Loads contents of yml file into a KeystoneFile struct
