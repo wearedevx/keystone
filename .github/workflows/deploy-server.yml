@@ -12,6 +12,14 @@ env:
   DATABASE_URL: postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@127.0.0.1:5432/${{ secrets.DB_NAME }}?sslmode=disable
   REF: ${{ github.event.client_payload.ref }}
   TAG: ${{ github.event.client_payload.tag }}
+  JWT_SALT: ${{ secrets.JWT_SALT }}
+  DB_HOST: ${{ secrets.DB_HOST }}
+  DB_NAME: ${{ secrets.DB_NAME}}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  REDIS_HOST: ${{ secrets.REDIS_HOST }}
+  REDIS_PORT: ${{ secrets.REDIS_PORT }}
+  REDIS_INDEX: ${{ secrets.REDIS_INDEX }}
 jobs:
   #####################
   # Server deployment #
@@ -50,7 +58,12 @@ jobs:
 
       - name: Build and Push Container
         env:
+          DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: 5432
+          DB_NAME: ${{ secrets.DB_NAME}}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SALT: ${{ secrets.JWT_SALT }}
         run: |-
           docker build \
             -t ${{ env.GCR_IMAGE }} \
