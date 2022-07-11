@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Print Inputs
         run: |
-           echo "${{ toJSON(github.event.client_payload) }}"
+          echo "${{ toJSON(github.event.client_payload) }}"
 
       - name: Checkout
         uses: actions/checkout@v2
@@ -37,13 +37,13 @@ jobs:
 
       - name: Setup Working Directory
         run: |
-           cd cli
-           mkdir snap
-           sh deploy/gen_snapcraft.sh
+          cd cli
+          mkdir snap
+          sh deploy/gen_snapcraft.sh
 
-           go mod edit -dropreplace github.com/wearedevx/keystone/api
-           go get github.com/wearedevx/keystone/api@${{ env.TAG }}
-           go mod edit -replace github.com/wearedevx/keystone/api=../api
+          go mod edit -dropreplace github.com/wearedevx/keystone/api
+          go get github.com/wearedevx/keystone/api@${{ env.TAG }}
+          go mod edit -replace github.com/wearedevx/keystone/api=../api
         env:
           BRANCH: ${{ env.TAG }}
           #
@@ -59,7 +59,7 @@ jobs:
       - name: Snapcraft Build
         uses: snapcore/action-build@v1.0.9
         with:
-           path: cli/
+          path: cli/
         id: snapcraft
 
       - name: Snapcraft Package
@@ -87,16 +87,18 @@ jobs:
       - name: Snapcraft Publish Edge
         if: ${{ steps.release_type.outputs.release_type == 'edge' }}
         uses: snapcore/action-publish@v1
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ env.SNAPCRAFT_STORE_CREDENTIALS }}
         with:
-          store_login: ${{ secrets.STORE_LOGIN }}
           snap: ${{ steps.snapcraft.outputs.snap }}
           release: edge
 
       - name: Snapcraft Publish Stable
         if: ${{ steps.release_type.outputs.release_type == 'stable' }}
         uses: snapcore/action-publish@v1
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ env.SNAPCRAFT_STORE_CREDENTIALS }}
         with:
-          store_login: ${{ secrets.STORE_LOGIN }}
           snap: ${{ steps.snapcraft.outputs.snap }}
           release: stable
 

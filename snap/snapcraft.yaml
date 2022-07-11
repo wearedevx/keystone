@@ -1,11 +1,12 @@
 name: keystone-cli # you probably want to 'snapcraft register <name>'
 base: core20
 version: <%BRANCH%>
-summary: One app for managing your secrets # 79 char long summary
+summary: Manage secrets got your projects in one place. # 79 char long summary
 description: |
-  Manage secrets got your projects in one place.
+  Sync your environment variables across team members, environments and codebase versions without leaving your terminal.
+license: MIT
+grade: stable
 confinement: strict
-
 apps:
   ks:
     command: bin/ks
