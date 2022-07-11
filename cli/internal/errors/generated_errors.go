@@ -230,7 +230,7 @@ Only files belonging to {{ .Wd }} or its subdirectories can be added.
 {{ ERROR }} {{ .Name | red }}
 We couldn't find data for the following environments: '{{ .EnvironmentsName }}',
 but a new value has been set by another member.
-Ask someone to use 'ks env send' to make newa data available to you.
+Ask someone to use 'ks env send' to make newer data available to you.
 `,
 	"FileHasChanged": `
 {{ ERROR }} {{ .Name | red }} {{- ": '" | red }} {{ .FilePath | red }}

@@ -3,6 +3,7 @@
 # https://hub.docker.com/_/golang
 FROM golang:1.16-buster as builder
 
+ARG GOOGLE_APPLICATION_CREDENTIALS
 ARG DB_HOST
 ARG DB_PORT
 ARG DB_NAME
@@ -18,7 +19,8 @@ ARG STRIPE_WEBHOOK_SECRET
 ARG STRIPE_PRICE
 ARG X_KS_TTL
 
-ENV DB_HOST=$DB_HOST \
+ENV GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
+    DB_HOST=$DB_HOST \
     DB_PORT=$DB_PORT \
     DB_NAME=$DB_NAME \
     DB_USER=$DB_USER \
@@ -30,7 +32,11 @@ ENV DB_HOST=$DB_HOST \
     REDIS_INDEX=$REDIS_INDEX \
     STRIPE_KEY=$STRIPE_KEY \
     STRIPE_WEBHOOK_SECRET=$STRIPE_WEBHOOK_SECRET \
-    STRIPE_PRICE=$STRIPE_PRICE
+    STRIPE_PRICE=$STRIPE_PRICE \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
+    
 
 # Create and change to the app directory.
 WORKDIR /app
@@ -40,6 +46,7 @@ WORKDIR /app
 # Expecting to copy go.mod and if present go.sum.
 COPY go.* ./
 RUN go mod download
+RUN go mod verify
 
 # Copy local code to the container image.
 COPY . ./
@@ -47,31 +54,15 @@ COPY . ./
 # Build the binary.
 RUN make build
 
-# download the cloudsql proxy binary
-RUN wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O ./build/cloud_sql_proxy
-RUN chmod +x ./build/cloud_sql_proxy
-
-
-RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
-RUN cp migrate.linux-amd64 ./build/migrate
-RUN chmod +x ./build/migrate
-
 COPY run.sh ./build/run.sh
 COPY keystone-server-credentials.json ./build/credentials.json
 
-# Use the official Debian slim image for a lean production container.
-# https://hub.docker.com/_/debian
-# https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM debian:buster-slim
-RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+FROM gcr.io/distroless/static-debian11
 
 WORKDIR app
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/build /app/.
 
-RUN cp /app/migrate /usr/local/bin/migrate
-
-# Run the web service on conainer startup.
-CMD ["/app/run.sh"]
+# Run the web service on container startup.
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json 
+CMD ["/app/server"]

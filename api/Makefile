@@ -45,6 +45,10 @@ REDIS_INDEX_FLAG := -X $(REDIS_PKG).redisIndex=$(REDIS_INDEX)
 STRIPE_KEY_FLAG := -X $(PAYMENT_PKG).stripeKey=$(STRIPE_KEY) 
 STRIPE_WEBHOOK_FLAG := -X $(PAYMENT_PKG).stripeWebhookSecret=$(STRIPE_WEBHOOK_SECRET)
 STRIPE_PRICE_FLAG := -X $(PAYMENT_PKG).stripeSubscriptionPrice=$(STRIPE_PRICE)
+
+# Golang binary optimization
+OMIT_SYMBOL_TABLE := -s
+OMIT_DWARF_SYMBOL := -w
  
 LDFLAGS := $(DB_HOST_FLAG) \
 	$(DB_PORT_FLAG) \
@@ -61,7 +65,9 @@ LDFLAGS := $(DB_HOST_FLAG) \
 	$(STRIPE_PRICE_FLAG) \
 	$(STRIPE_WEBHOOK_FLAG) \
 	$(KS_TTL_FLAG) \
-	$(DOMAIN_FLAG) 
+	$(DOMAIN_FLAG) \
+	$(OMIT_SYMBOL_TABLE) \
+	$(OMIT_DWARF_SYMBOL)
 
 build:
 	mkdir ./build

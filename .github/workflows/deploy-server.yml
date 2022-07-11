@@ -35,7 +35,7 @@ jobs:
         with:
           ref: ${{ env.REF }}
 
-      - name: Load Secrts
+      - name: Load Secrets
         uses: wearedevx/keystone-action@main
         with:
           keystone_slot_1: ${{ secrets.KEYSTONE_PROD_SLOT_1 }}
@@ -43,7 +43,6 @@ jobs:
           keystone_slot_3: ${{ secrets.KEYSTONE_PROD_SLOT_3 }}
           keystone_slot_4: ${{ secrets.KEYSTONE_PROD_SLOT_4 }}
           keystone_slot_5: ${{ secrets.KEYSTONE_PROD_SLOT_5 }}
-
 
       - name: Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v0.2.0
@@ -130,11 +129,11 @@ jobs:
 
       - name: Remove Unused Revisions
         id: remove-unused-revisions
-        env: 
+        env:
           GCP_PROJECT: ${{ secrets.PROJECT_ID }}
           GCP_REGION: ${{ env.REGION }}
         run: |-
-          api/remove_unused_revisions.sh 
+          api/remove_unused_revisions.sh
 
       - name: Dispatch Builds
         uses: peter-evans/repository-dispatch@v1.0.0

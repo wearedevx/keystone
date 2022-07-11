@@ -69,6 +69,7 @@ func getPostgres() gorm.Dialector {
 	os.TempDir()
 	config := postgres.Config{
 		DSN: getDSN(),
+		DriverName: "cloudsqlpostgres",
 	}
 
 	if dbDriverName != "" {
