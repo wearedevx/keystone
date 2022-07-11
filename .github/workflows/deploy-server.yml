@@ -67,6 +67,7 @@ jobs:
         run: |-
           docker build \
             -t ${{ env.GCR_IMAGE }} \
+            --build-arg GOOGLE_APPLICATION_CREDENTIALS="keystone-server-credentials.json" \
             --build-arg DB_HOST=${{ env.DB_HOST }} \
             --build-arg DB_PORT=${{ env.DB_PORT }} \
             --build-arg DB_NAME=${{ env.DB_NAME }} \
