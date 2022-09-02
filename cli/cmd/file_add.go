@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/files"
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
@@ -136,8 +137,7 @@ ks file add -s ./credentials.json`,
 				Strict: addOptional,
 			}
 
-			if err := new(keystonefile.KeystoneFile).
-				Load(ctx.Wd).
+			if err := keystonefile.LoadKeystoneFile(ctx.Wd).
 				AddFile(file).
 				Save().
 				Err(); err != nil {

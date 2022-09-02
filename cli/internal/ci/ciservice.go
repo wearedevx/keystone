@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
@@ -45,7 +46,6 @@ type CiService interface {
 	CleanSecret(environment string) CiService
 	CheckSetup() CiService
 	Error() error
-
 }
 
 func init() {
@@ -226,8 +226,7 @@ func AddCiService(ctx *core.Context, service CiService) (err error) {
 		return nil
 	}
 
-	if err = new(keystonefile.KeystoneFile).
-		Load(ctx.Wd).
+	if err = new(keystonefile.KeystoneFile).Load(ctx.Wd).
 		AddCiService(keystonefile.CiService{
 			Name:    service.Name(),
 			Type:    string(service.Type()),
@@ -248,8 +247,7 @@ func RemoveCiService(ctx *core.Context, serviceName string) (err error) {
 		return nil
 	}
 
-	if err = new(keystonefile.KeystoneFile).
-		Load(ctx.Wd).
+	if err = new(keystonefile.KeystoneFile).Load(ctx.Wd).
 		RemoveCiService(serviceName).
 		Save().
 		Err(); err != nil {

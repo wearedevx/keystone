@@ -7,8 +7,9 @@ import (
 	"path"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"github.com/wearedevx/keystone/cli/internal/utils"
 	"gopkg.in/yaml.v2"
+
+	"github.com/wearedevx/keystone/cli/internal/utils"
 )
 
 type EnvKey struct {
@@ -38,6 +39,9 @@ type KeystoneFile struct {
 	CiServices  []CiService `yaml:"ci_services"`
 }
 
+var ksf *KeystoneFile
+var loaded bool = false
+
 type CiService struct {
 	Name    string            `yaml:"name"`
 	Type    string            `yaml:"type"`
@@ -64,41 +68,45 @@ func NewKeystoneFile(wd string, project models.Project) *KeystoneFile {
 	}
 }
 
+func LoadKeystoneFile(wd string) *KeystoneFile {
+	if loaded && ksf != nil {
+		return ksf
+	} else {
+		k := new(KeystoneFile).Load(wd)
+		if k.err != nil {
+			panic(k.err)
+		} else {
+			loaded = true
+			*ksf = *k
+		}
+
+		return ksf
+	}
+}
+
 // Checks if current execution context contains a keystone.yaml
 func ExistsKeystoneFile(wd string) bool {
 	return utils.FileExists(keystoneFilePath(wd))
 }
-
-var ksf KeystoneFile
-var loaded bool = false
 
 // Loads a Keystone from disk
 func (file *KeystoneFile) Load(wd string) *KeystoneFile {
 	var bytes []byte
 	var err error
 
-	if loaded && ksf.Path != "" {
-		*file = ksf
-		return &ksf
-	} else {
-		file.Path = keystoneFilePath(wd)
-		/* #nosec
-		 * We generate the file path, and its content is about to be parsed
-		 */
-		bytes, err = ioutil.ReadFile(file.Path)
-		// file := newKeystoneFile(context)
-		if err != nil {
-			file.err = err
-
-			return file
-		}
-
-		file.fromYaml(bytes)
-		ksf = *file
-		loaded = true
-
-		return &ksf
+	file.Path = keystoneFilePath(wd)
+	/* #nosec
+	 * We generate the file path, and its content is about to be parsed
+	 */
+	bytes, err = ioutil.ReadFile(file.Path)
+	if err != nil {
+		panic(err)
+		// file.err = err
+		//
+		// return file
 	}
+
+	return file.fromYaml(bytes)
 }
 
 // Loads contents of yml file into a KeystoneFile struct

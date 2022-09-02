@@ -14,12 +14,13 @@ import (
 	"github.com/google/go-github/v40/github"
 	"github.com/jamesruan/sodium"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"golang.org/x/oauth2"
+
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
-	"golang.org/x/oauth2"
 )
 
 var (
@@ -230,8 +231,7 @@ func (g *gitHubCiService) setKeys(servicesKeys ServicesKeys) CiService {
 	service.Options = g.servicesKeys
 
 	// Write the local keystone.yaml changes
-	new(keystonefile.KeystoneFile).
-		Load(g.ctx.Wd).
+	new(keystonefile.KeystoneFile).Load(g.ctx.Wd).
 		AddCiService(service).
 		Save()
 

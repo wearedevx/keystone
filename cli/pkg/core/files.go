@@ -12,6 +12,7 @@ import (
 
 	"github.com/udhos/equalfile"
 	"github.com/wearedevx/keystone/api/pkg/models"
+
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/gitignorehelper"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -229,8 +230,7 @@ func (ctx *Context) AddFile(
 	}
 
 	// Add file path to the keystone file
-	if err := new(keystonefile.KeystoneFile).
-		Load(ctx.Wd).
+	if err := new(keystonefile.KeystoneFile).Load(ctx.Wd).
 		AddFile(file).
 		Save().
 		Err(); err != nil {
@@ -643,8 +643,7 @@ func (ctx *Context) MarkFileRequired(
 		return ctx
 	}
 
-	if err := new(keystonefile.KeystoneFile).
-		Load(ctx.Wd).
+	if err := new(keystonefile.KeystoneFile).Load(ctx.Wd).
 		SetFileRequired(filePath, required).
 		Save().
 		Err(); err != nil {

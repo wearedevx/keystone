@@ -52,8 +52,7 @@ func (ctx *Context) MustHaveProject() {
 func (ctx *Context) Destroy() error {
 	var err error
 
-	if err = new(keystonefile.KeystoneFile).
-		Load(ctx.Wd).
+	if err = new(keystonefile.KeystoneFile).Load(ctx.Wd).
 		Remove().
 		Err(); err != nil {
 		return err
