@@ -77,7 +77,7 @@ func LoadKeystoneFile(wd string) *KeystoneFile {
 			panic(k.err)
 		} else {
 			loaded = true
-			*ksf = *k
+			ksf = k
 		}
 
 		return ksf
