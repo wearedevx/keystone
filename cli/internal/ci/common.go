@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+
 	"github.com/wearedevx/keystone/cli/internal/archive"
 	"github.com/wearedevx/keystone/cli/internal/envfile"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
@@ -51,7 +52,7 @@ func getArchiveBuffer(
 	}
 	defer os.RemoveAll(tempdir)
 
-	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
+	ksfile := keystonefile.LoadKeystoneFile(ctx.Wd)
 
 	if err := makeTemporaryDotEnv(ctx, tempdir, environmentName, ksfile); err != nil {
 		return nil, err

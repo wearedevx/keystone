@@ -12,11 +12,13 @@ func (ctx *Context) GetProjectName() string {
 	if ctx.err != nil {
 		return ""
 	}
+	var err error
 
-	ksFile := &keystonefile.KeystoneFile{}
-	ksFile.Load(ctx.Wd)
-
-	ctx.err = kserrors.FailedToReadKeystoneFile(ksFile.Path, ksFile.Err())
+	ksFile := keystonefile.LoadKeystoneFile(ctx.Wd)
+	if err = ksFile.Err(); err != nil {
+		panic(err)
+		return ""
+	}
 
 	return ksFile.ProjectName
 }
@@ -27,11 +29,12 @@ func (ctx *Context) GetProjectID() string {
 		return ""
 	}
 
-	ksFile := &keystonefile.KeystoneFile{}
-	ksFile.Load(ctx.Wd)
+	var err error
+	ksFile := keystonefile.LoadKeystoneFile(ctx.Wd)
 
-	if ksFile.Err() != nil {
-		ctx.err = kserrors.FailedToReadKeystoneFile(ksFile.Path, ksFile.Err())
+	if err = ksFile.Err(); err != nil {
+		panic(err)
+		ctx.err = kserrors.FailedToReadKeystoneFile(ksFile.Path, err)
 		return ""
 	}
 

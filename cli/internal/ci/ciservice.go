@@ -186,7 +186,7 @@ func ListCiServices(ctx *core.Context) (_ []keystonefile.CiService, err error) {
 
 	services := []keystonefile.CiService{}
 
-	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
+	ksfile := keystonefile.LoadKeystoneFile(ctx.Wd)
 	if ksfile.Err() != nil {
 		return services, err
 	}
@@ -226,7 +226,7 @@ func AddCiService(ctx *core.Context, service CiService) (err error) {
 		return nil
 	}
 
-	if err = new(keystonefile.KeystoneFile).Load(ctx.Wd).
+	if err = keystonefile.LoadKeystoneFile(ctx.Wd).
 		AddCiService(keystonefile.CiService{
 			Name:    service.Name(),
 			Type:    string(service.Type()),
@@ -247,7 +247,7 @@ func RemoveCiService(ctx *core.Context, serviceName string) (err error) {
 		return nil
 	}
 
-	if err = new(keystonefile.KeystoneFile).Load(ctx.Wd).
+	if err = keystonefile.LoadKeystoneFile(ctx.Wd).
 		RemoveCiService(serviceName).
 		Save().
 		Err(); err != nil {

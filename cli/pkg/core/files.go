@@ -99,9 +99,10 @@ func (ctx *Context) ListFiles() []keystonefile.FileKey {
 		return make([]keystonefile.FileKey, 0)
 	}
 
-	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
+	ksfile := keystonefile.LoadKeystoneFile(ctx.Wd)
 
 	if err := ksfile.Err(); err != nil {
+		panic(err)
 		ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 		return make([]keystonefile.FileKey, 0)
 	}
@@ -147,6 +148,7 @@ func (ctx *Context) ListCachedFilesForEnvironment(
 		},
 	)
 	if err != nil {
+		panic(err)
 		ctx.setError(kserrors.FailedToReadKeystoneFile(ctx.Wd, err))
 		return []keystonefile.FileKey{}
 	}
@@ -200,6 +202,7 @@ func (ctx *Context) ListFilesFromCache() []keystonefile.FileKey {
 				return nil
 			})
 		if err != nil {
+			panic(err)
 			ctx.setError(kserrors.FailedToReadKeystoneFile(ctx.Wd, err))
 			return make([]keystonefile.FileKey, 0)
 		}
@@ -314,8 +317,9 @@ func (ctx *Context) SetFile(filePath string, content []byte) *Context {
 	}
 
 	// Add file path to the keystone file
-	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
+	ksfile := keystonefile.LoadKeystoneFile(ctx.Wd)
 	if err := ksfile.Err(); err != nil {
+		panic(err)
 		return ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 	}
 
@@ -459,8 +463,9 @@ func (ctx *Context) FilesUseEnvironment(
 		return ctx
 	}
 
-	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
+	ksfile := keystonefile.LoadKeystoneFile(ctx.Wd)
 	if err := ksfile.Err(); err != nil {
+		panic(err)
 		return ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 	}
 
@@ -538,9 +543,10 @@ func (ctx *Context) RemoveFile(
 		return ctx
 	}
 
-	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
+	ksfile := keystonefile.LoadKeystoneFile(ctx.Wd)
 
 	if err := ksfile.Err(); err != nil {
+		panic(err)
 		return ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 	}
 
@@ -618,8 +624,9 @@ func (ctx *Context) HasFile(fileName string) bool {
 		return haveIt
 	}
 
-	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
+	ksfile := keystonefile.LoadKeystoneFile(ctx.Wd)
 	if err := ksfile.Err(); err != nil {
+		panic(err)
 		ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 		return haveIt
 	}

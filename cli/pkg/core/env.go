@@ -203,10 +203,11 @@ func (ctx *Context) PurgeSecrets() *Context {
 
 	var err error
 	var e *kserrors.Error
-	var ksfile keystonefile.KeystoneFile
+	var ksfile = keystonefile.LoadKeystoneFile(ctx.Wd)
 	// Add new env key to keystone.yaml
 
-	if err = ksfile.Load(ctx.Wd).Err(); err != nil {
+	if err = ksfile.Err(); err != nil {
+		panic(err)
 		return ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 	}
 
@@ -340,9 +341,10 @@ func (ctx *Context) GetSecret(secretName string) *Secret {
 	}
 
 	var err error
-	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
+	ksfile := keystonefile.LoadKeystoneFile(ctx.Wd)
 
 	if err = ksfile.Err(); err != nil {
+		panic(err)
 		ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 		return secret
 	}
@@ -388,9 +390,10 @@ func (ctx *Context) ListSecretsFromCache() []Secret {
 	}
 
 	var err error
-	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
+	ksfile := keystonefile.LoadKeystoneFile(ctx.Wd)
 
 	if err = ksfile.Err(); err != nil {
+		panic(err)
 		ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 		return secrets
 	}
@@ -436,9 +439,10 @@ func (ctx *Context) ListSecrets() []Secret {
 	}
 
 	var err error
-	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
+	ksfile := keystonefile.LoadKeystoneFile(ctx.Wd)
 
 	if err = ksfile.Err(); err != nil {
+		panic(err)
 		ctx.setError(
 			kserrors.FailedToReadKeystoneFile(
 				ksfile.Path,
@@ -484,8 +488,9 @@ func (ctx *Context) HasSecret(secretName string) bool {
 		return haveIt
 	}
 
-	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
+	ksfile := keystonefile.LoadKeystoneFile(ctx.Wd)
 	if err := ksfile.Err(); err != nil {
+		panic(err)
 		ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 		return haveIt
 	}
@@ -535,8 +540,9 @@ func (ctx *Context) SecretIsRequired(secretName string) bool {
 		return required
 	}
 
-	ksfile := new(keystonefile.KeystoneFile).Load(ctx.Wd)
+	ksfile := keystonefile.LoadKeystoneFile(ctx.Wd)
 	if err := ksfile.Err(); err != nil {
+		panic(err)
 		ctx.setError(kserrors.FailedToReadKeystoneFile(ksfile.Path, err))
 		return required
 	}
@@ -560,8 +566,7 @@ func (ctx *Context) MarkSecretRequired(
 		return ctx
 	}
 
-	if err := new(keystonefile.KeystoneFile).
-		Load(ctx.Wd).
+	if err := keystonefile.LoadKeystoneFile(ctx.Wd).
 		SetEnv(secretName, required).
 		Save().
 		Err(); err != nil {

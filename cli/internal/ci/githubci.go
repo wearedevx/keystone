@@ -231,7 +231,7 @@ func (g *gitHubCiService) setKeys(servicesKeys ServicesKeys) CiService {
 	service.Options = g.servicesKeys
 
 	// Write the local keystone.yaml changes
-	new(keystonefile.KeystoneFile).Load(g.ctx.Wd).
+	keystonefile.LoadKeystoneFile(g.ctx.Wd).
 		AddCiService(service).
 		Save()
 
