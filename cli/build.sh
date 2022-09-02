@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export $(cat .env-dev | xargs)
+CGO_ENABLED=1
 
 BASE="github.com/wearedevx/keystone/cli"
 CLIENT_PKG="${BASE}/pkg/client"
@@ -26,4 +27,8 @@ LDFLAGS="$API_FLAG \
 
 go build -ldflags "$LDFLAGS" -o ks
 
-echo "Build done"
+if [ $? -ne 0 ]; then
+  echo "Build failed"; 
+else 
+  echo "Build done";
+fi;
