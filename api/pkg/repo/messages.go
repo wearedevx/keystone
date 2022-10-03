@@ -151,8 +151,7 @@ func (repo *Repo) GetGroupedMessagesWillExpireByUser(
 			Model(&models.Message{}).
 			Joins("inner join environments on messages.environment_id = environments.environment_id").
 			Joins("inner join projects on environments.project_id = projects.id").
-			Where("date_trunc('day', messages.created_at) < date_trunc('day', now() - (projects.ttl - projects.days_before_ttl_expiry - 1 || ' days')::interval)").
-			Where("date_trunc('day', messages.created_at) > date_trunc('day', now() - (projects.ttl - projects.days_before_ttl_expiry + 1 || ' days')::interval)").
+			Where("date_trunc('day', messages.created_at) = date_trunc('day', now() - (projects.ttl - projects.days_before_ttl_expiry || ' days')::interval)").
 			Preload("Sender").
 			Preload("Recipient").
 			Preload("Environment").
@@ -166,8 +165,7 @@ func (repo *Repo) GetGroupedMessagesWillExpireByUser(
 			Model(&models.Message{}).
 			Joins("inner join environments on messages.environment_id = environments.environment_id").
 			Joins("inner join projects on environments.project_id = projects.id").
-			Where("date(messages.created_at, 'start_of_day') < date('now', 'start_of_day', '-' || projects.ttl - projects.days_before_ttl_expiry - 1 || ' days')").
-			Where("date(messages.created_at, 'start_of_day') > date('now', 'start_of_day', '-' || projects.ttl - projects.days_before_ttl_expiry + 1 || ' days')").
+			Where("date(messages.created_at, 'start_of_day') = date('now', 'start_of_day', '-' || projects.ttl - projects.days_before_ttl_expiry || ' days')").
 			Preload("Sender").
 			Preload("Recipient").
 			Preload("Environment").

@@ -146,7 +146,7 @@ The Keystone team
 		</p>
 
 		<p>
-			Some messages you haven't read yet will expire in {{.NbDays}} days.
+			Some messages you haven't read yet will expire soon.
 		</p>
 
 		<p>
@@ -155,7 +155,7 @@ The Keystone team
 
 		{{ range $groupedProject := .GroupedProjects}}
 			<p>
-				- Project: {{$groupedProject.Project.Name}}
+				- Project: {{$groupedProject.Project.Name}}, in {{$groupedProject.Project.DaysBeforeTTLExpiry}} days
 			</p>
 
 			<p>

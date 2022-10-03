@@ -403,7 +403,8 @@ func TestMessageWillExpireMail(t *testing.T) {
 				groupedProjects: map[uint]GroupedMessageProject{
 					1: {
 						Project: models.Project{
-							Name: "that-one",
+							Name:                "that-one",
+							DaysBeforeTTLExpiry: 3,
 						},
 						Environments: map[string]models.Environment{
 							"dev": {
@@ -419,7 +420,8 @@ func TestMessageWillExpireMail(t *testing.T) {
 					},
 					2: {
 						Project: models.Project{
-							Name: "this-one",
+							Name:                "this-one",
+							DaysBeforeTTLExpiry: 4,
 						},
 						Environments: map[string]models.Environment{
 							"dev": {
@@ -435,7 +437,8 @@ func TestMessageWillExpireMail(t *testing.T) {
 					},
 					3: {
 						Project: models.Project{
-							Name: "that-one-too",
+							Name:                "that-one-too",
+							DaysBeforeTTLExpiry: 5,
 						},
 						Environments: map[string]models.Environment{
 							"dev": {
@@ -459,25 +462,25 @@ func TestMessageWillExpireMail(t *testing.T) {
 				HtmlBody:  "",
 				TextBody: `Hello!
 
-Some messages you haven't read yet will expire in 3 days.
+Some messages you haven't read yet will expire soon.
 
 Related projects:
 
-- Project: that-one
+- Project: that-one, in 3 days
 
 Environments:
 
 - dev - prod - staging
 
 
-- Project: this-one
+- Project: this-one, in 4 days
 
 Environments:
 
 - dev - prod - staging
 
 
-- Project: that-one-too
+- Project: that-one-too, in 5 days
 
 Environments:
 

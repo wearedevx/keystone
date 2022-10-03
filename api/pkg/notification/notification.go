@@ -43,10 +43,11 @@ func SendExpireMessageToUsers(
 	groupedMessageUser map[uint]emailer.GroupedMessagesUser,
 	errors *[]error,
 ) {
+
 	// For each recipients, send message.
 	for _, groupedMessagesUser := range groupedMessageUser {
 		email, err := emailer.MessageWillExpireMail(
-			5,
+			0,
 			groupedMessagesUser.Projects,
 		)
 		if err != nil {
