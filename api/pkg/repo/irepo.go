@@ -1,10 +1,11 @@
 package repo
 
 import (
+	"gorm.io/gorm"
+
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/pkg/message"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"gorm.io/gorm"
 )
 
 // IRepo The Repo interface
@@ -27,7 +28,7 @@ type IRepo interface {
 	FindUsers(userIDs []string, users *map[string]models.User, notFounds *[]string) IRepo
 	GetActivityLogs(projectID string, options models.GetLogsOptions, logs *[]models.ActivityLog) IRepo
 	GetChildrenRoles(role models.Role, roles *[]models.Role) IRepo
-	GetDb() *gorm.DB
+	GetDB() *gorm.DB
 	GetEnvironment(*models.Environment) IRepo
 	GetEnvironmentPublicKeys(envID string, publicKeys *models.PublicKeys) IRepo
 	GetEnvironmentType(*models.EnvironmentType) IRepo
@@ -98,4 +99,5 @@ type IRepo interface {
 	DeleteCheckoutSession(*models.CheckoutSession) IRepo
 	OrganizationSetPaid(organization *models.Organization, paid bool) IRepo
 	GetUserProjects(userID uint, projects *[]models.Project) IRepo
+	FindUserWithRefreshToken(token string, user *models.User) IRepo
 }

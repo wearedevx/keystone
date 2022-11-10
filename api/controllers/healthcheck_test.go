@@ -60,12 +60,13 @@ func TestGetHealthCheck(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			GetHealthCheck(tt.args.w, tt.args.in1, tt.args.in2)
 
-			got := tt.args.w.(*mockResponseWriter)
-			if got.status != tt.wantStatus {
-			}
+			//got := tt.args.w.(*mockResponseWriter)
+			//if got.status != tt.wantStatus {
+			// TODO
+			//}
 		})
 	}
 }

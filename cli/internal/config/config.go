@@ -160,13 +160,14 @@ func SetCurrentAccount(index int) {
 }
 
 // Saves the jwt token
-func SetAuthToken(token string) {
+func SetAuthToken(token string, refreshToken string) {
 	viper.Set("auth_token", token)
+  viper.Set("refresh_token", refreshToken)
 }
 
 // GetAuthToken function returns the latest auth token we obtained
-func GetAuthToken() string {
-	return viper.Get("auth_token").(string)
+func GetAuthToken() (string, string) {
+	return viper.Get("auth_token").(string), viper.Get("refresh_token").(string)
 }
 
 // GetDeviceName function returns the current device name
@@ -264,7 +265,7 @@ func CheckExpiredTokenError(err *kserrors.Error) {
 // Logout function logs the user oud
 func Logout() {
 	SetCurrentAccount(-1)
-	SetAuthToken("")
+	SetAuthToken("" , "")
 	Write()
 }
 

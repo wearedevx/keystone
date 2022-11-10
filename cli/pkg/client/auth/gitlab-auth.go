@@ -15,7 +15,7 @@ var (
 )
 
 type gitlabAuthService struct {
-	apiUrl       string
+	apiURL       string
 	ctx          context.Context
 	conf         *oauth2.Config
 	loginRequest models.LoginRequest
@@ -27,9 +27,9 @@ type gitlabAuthService struct {
 func (g gitlabAuthService) Name() string { return "Gitlab" }
 
 // GitlabAuth function returns an instance of GitLabAuth service
-func GitlabAuth(ctx context.Context, apiUrl string) AuthService {
+func GitlabAuth(ctx context.Context, apiURL string) AuthService {
 	return &gitlabAuthService{
-		apiUrl: apiUrl,
+		apiURL: apiURL,
 		ctx:    ctx,
 	}
 }
@@ -37,7 +37,7 @@ func GitlabAuth(ctx context.Context, apiUrl string) AuthService {
 // Start method initiate the oauth process by creating a login request
 // on the Keystone server and requesting a login url to GitLab
 func (g *gitlabAuthService) Start() (string, error) {
-	lr, err := getLoginRequest(g.apiUrl)
+	lr, err := getLoginRequest(g.apiURL)
 	if err != nil {
 		return "", err
 	}
@@ -69,7 +69,7 @@ func (g *gitlabAuthService) WaitForExternalLogin() error {
 	c := make(chan pollResult)
 	var result pollResult
 
-	go pollLoginRequest(g.apiUrl, g.loginRequest.TemporaryCode, c)
+	go pollLoginRequest(g.apiURL, g.loginRequest.TemporaryCode, c)
 
 	result = <-c
 
@@ -98,7 +98,7 @@ func (g gitlabAuthService) Finish(
 	deviceUID string,
 ) (models.User, string, error) {
 	return completeLogin(
-		g.apiUrl,
+		g.apiURL,
 		models.GitlabAccountType,
 		g.token,
 		pk,

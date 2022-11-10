@@ -227,11 +227,11 @@ func seedEnvironmentPublicKeys(
 	Repo.GetOrCreateUser(&adminUser)
 	Repo.GetOrCreateUser(&devUser)
 
-	Repo.GetDb().
+	Repo.GetDB().
 		Model(&adminUser).
 		Association("Devices").
 		Find(&adminUser.Devices)
-	Repo.GetDb().Model(&devUser).Association("Devices").Find(&devUser.Devices)
+	Repo.GetDB().Model(&devUser).Association("Devices").Find(&devUser.Devices)
 
 	organization = models.Organization{
 		UserID:  adminUser.ID,
@@ -280,7 +280,7 @@ func teardownEnvironment(
 	adminUser, devUser models.User,
 	environments map[string]models.Environment,
 ) {
-	db := new(repo.Repo).GetDb()
+	db := new(repo.Repo).GetDB()
 	projectID := environments["dev"].ProjectID
 
 	db.Exec("delete from environments where id = ?", environments["dev"].ID)

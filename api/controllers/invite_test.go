@@ -201,7 +201,7 @@ func TestPostInvite(t *testing.T) {
 }
 
 func seedPostInvite() (user, otherUser models.User, project models.Project) {
-	db := new(repo.Repo).GetDb()
+	db := new(repo.Repo).GetDB()
 	var projectMember models.ProjectMember
 
 	faker.FakeData(&user)
@@ -225,7 +225,7 @@ func seedPostInvite() (user, otherUser models.User, project models.Project) {
 }
 
 func teardownPostInvite(user, otherUser models.User, project models.Project) {
-	db := new(repo.Repo).GetDb()
+	db := new(repo.Repo).GetDB()
 
 	db.Exec(
 		"delete from project_members where project_id = ?",

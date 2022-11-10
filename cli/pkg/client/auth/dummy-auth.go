@@ -1,3 +1,4 @@
+//go:build test
 // +build test
 
 package auth
@@ -12,7 +13,7 @@ import (
 )
 
 type dummyAuthService struct {
-	apiUrl       string
+	apiURL       string
 	ctx          context.Context
 	conf         *oauth2.Config
 	loginRequest models.LoginRequest
@@ -23,16 +24,16 @@ type dummyAuthService struct {
 func (g dummyAuthService) Name() string { return "Dummy" }
 
 // DummyAuth function  
-func DummyAuth(ctx context.Context, apiUrl string) AuthService {
+func DummyAuth(ctx context.Context, apiURL string) AuthService {
 	return &dummyAuthService{
-		apiUrl: apiUrl,
+		apiURL: apiURL,
 		ctx:    ctx,
 	}
 }
 
 // Start method  
 func (g *dummyAuthService) Start() (string, error) {
-	lr, _ := getLoginRequest(g.apiUrl)
+	lr, _ := getLoginRequest(g.apiURL)
 
 	g.loginRequest = lr
 
@@ -63,7 +64,7 @@ func (g *dummyAuthService) WaitForExternalLogin() error {
 	c := make(chan pollResult)
 	var result pollResult
 
-	go pollLoginRequest(g.apiUrl, g.loginRequest.TemporaryCode, c)
+	go pollLoginRequest(g.apiURL, g.loginRequest.TemporaryCode, c)
 	go fakeLoginSuccess(g.loginRequest.TemporaryCode)
 
 	result = <-c
@@ -84,7 +85,7 @@ func (g *dummyAuthService) WaitForExternalLogin() error {
 
 // Finish method  
 func (g dummyAuthService) Finish(pk []byte, device string, deviceUID string) (models.User, string, error) {
-	return completeLogin(g.apiUrl, models.GitlabAccountType, g.token, pk, device, deviceUID)
+	return completeLogin(g.apiURL, models.GitlabAccountType, g.token, pk, device, deviceUID)
 }
 
 // CheckAccount method  

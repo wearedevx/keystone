@@ -25,16 +25,18 @@ const (
 )
 
 type requester struct {
-	log      *log.Logger
-	userID   string
-	jwtToken string
+	log          *log.Logger
+	userID       string
+	jwtToken     string
+	refreshToken string
 }
 
-func newRequester(userID string, token string) requester {
+func newRequester(userID string, token string, refreshToken string) requester {
 	return requester{
-		userID:   userID,
-		jwtToken: token,
-		log:      log.New(log.Writer(), "[requester] ", 0),
+		userID:       userID,
+		jwtToken:     token,
+		refreshToken: token,
+		log:          log.New(log.Writer(), "[requester] ", 0),
 	}
 }
 
@@ -64,15 +66,15 @@ func (r *requester) request(
 	}
 
 	// fmt.Println(ApiURL + path)
-	Url, err := url.Parse(ApiURL + path)
+	URL, err := url.Parse(ApiURL + path)
 	if err != nil {
 		return err
 	}
-	Url.RawQuery = queryParams.Encode()
+	URL.RawQuery = queryParams.Encode()
 
-	r.log.Printf("http: %s %s", string(method), Url.String())
+	r.log.Printf("http: %s %s", string(method), URL.String())
 
-	req, err := http.NewRequest(string(method), Url.String(), buf)
+	req, err := http.NewRequest(string(method), URL.String(), buf)
 	if err != nil {
 		return err
 	}
@@ -127,12 +129,43 @@ func (r *requester) request(
 	return nil
 }
 
+func (r *requester) refreshToken() error {
+	jwtToken, refreshToken, err := auth.GetNewToken(ApiURL+"/auth/refresh", r.refreshToken)
+
+	if err != nil {
+		return err
+	}
+
+	r.token = jwtToken
+	r.refreshToken = refreshToken
+
+	config.SetAuthToken(r.token, r.refreshToken)
+	config.Write()
+
+	return nil
+}
+
+func (r *requester) authedReq(call func() error) (err error) {
+	err = call()
+
+	if err == auth.ErrorUnauthorized {
+		err = r.refreshToken()
+		if err == nil {
+			err = call()
+		}
+	}
+
+	return err
+}
+
 func (r *requester) get(
 	path string,
 	result interface{},
 	params map[string]string,
 ) error {
-	return r.request(GET, http.StatusOK, path, nil, result, params)
+	return authedReq(func() error {
+		return r.request(GET, http.StatusOK, path, nil, result, params)
+	})
 }
 
 func (r *requester) post(
@@ -141,7 +174,9 @@ func (r *requester) post(
 	result interface{},
 	params map[string]string,
 ) error {
-	return r.request(POST, http.StatusCreated, path, data, result, params)
+	return authedReq(func() error {
+		return r.request(POST, http.StatusCreated, path, data, result, params)
+	})
 }
 
 func (r *requester) put(
@@ -150,7 +185,9 @@ func (r *requester) put(
 	result interface{},
 	params map[string]string,
 ) error {
-	return r.request(PUT, http.StatusOK, path, data, result, params)
+	return authedReq(func() error {
+		return r.request(PUT, http.StatusOK, path, data, result, params)
+	})
 }
 
 func (r *requester) del(
@@ -159,5 +196,7 @@ func (r *requester) del(
 	result interface{},
 	params map[string]string,
 ) error {
-	return r.request(DELETE, http.StatusNoContent, path, data, result, params)
+	return authedReq(func() error {
+		return r.request(DELETE, http.StatusNoContent, path, data, result, params)
+	})
 }

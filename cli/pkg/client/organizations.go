@@ -104,10 +104,10 @@ func (c *Organizations) UpdateOrganization(
 	return result, err
 }
 
-// GetUpgradeUrl returns an URL to a service
+// GetUpgradeURL returns an URL to a service
 // that creates a new subscription for the named organization
 // To be called to turn a non-paid organization into a paid one
-func (c *Organizations) GetUpgradeUrl(
+func (c *Organizations) GetUpgradeURL(
 	organizationName string,
 ) (url string, err error) {
 	var result models.StartSubscriptionResponse
@@ -123,16 +123,16 @@ func (c *Organizations) GetUpgradeUrl(
 		return "", err
 	}
 
-	url = result.Url
+	url = result.URL
 
 	return url, nil
 }
 
-// GetManagementUrl returns an URL to a service
+// GetManagementURL returns an URL to a service
 // that manages an existing subscription for the named organization
 // To be called to update payment method or cancel an existing
 // plan
-func (c *Organizations) GetManagementUrl(
+func (c *Organizations) GetManagementURL(
 	organizationName string,
 ) (url string, err error) {
 	var result models.ManageSubscriptionResponse
@@ -148,7 +148,7 @@ func (c *Organizations) GetManagementUrl(
 		return "", err
 	}
 
-	url = result.Url
+	url = result.URL
 
 	return url, nil
 }

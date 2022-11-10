@@ -298,7 +298,7 @@ func (f *FakeRepo) GetChildrenRoles(
 	panic("not implemented")
 }
 
-func (f *FakeRepo) GetDb() *gorm.DB {
+func (f *FakeRepo) GetDB() *gorm.DB {
 	panic("not implemented")
 }
 
@@ -689,6 +689,13 @@ func (f *FakeRepo) OrganizationSetPaid(
 func (f *FakeRepo) GetUserProjects(
 	userID uint,
 	projects *[]models.Project,
+) repo.IRepo {
+	panic("not implemented")
+}
+
+func (f *FakeRepo) FindUserWithRefreshToken(
+	token string,
+	user *models.User,
 ) repo.IRepo {
 	panic("not implemented")
 }

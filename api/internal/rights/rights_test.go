@@ -9,31 +9,29 @@ import (
 	"github.com/wearedevx/keystone/api/internal/emailer"
 	"github.com/wearedevx/keystone/api/pkg/message"
 	"github.com/wearedevx/keystone/api/pkg/models"
-	. "github.com/wearedevx/keystone/api/pkg/models"
 	"github.com/wearedevx/keystone/api/pkg/repo"
-	. "github.com/wearedevx/keystone/api/pkg/repo"
 	"gorm.io/gorm"
 )
 
 var (
-	fakeRoles                 []Role
+	fakeRoles                 []models.Role
 	fakeUserRole              map[uint]string
-	fakeEnvironmentTypes      []EnvironmentType
-	fakeRolesEnvironmentTypes []RolesEnvironmentType
-	fakeProjects              []Project
-	fakeOrganizations         []Organization
+	fakeEnvironmentTypes      []models.EnvironmentType
+	fakeRolesEnvironmentTypes []models.RolesEnvironmentType
+	fakeProjects              []models.Project
+	fakeOrganizations         []models.Organization
 )
 
 const (
 	DEV     int = 0
-	LEAD        = 1
-	DEVOPS      = 2
-	ADMIN       = 3
-	NOTHING     = 4
+	LEAD    int = 1
+	DEVOPS  int = 2
+	ADMIN   int = 3
+	NOTHING int = 4
 )
 
 func initFakeRoles() {
-	fakeRoles = []Role{
+	fakeRoles = []models.Role{
 		{
 			ID:           1,
 			Name:         "developer",
@@ -78,7 +76,7 @@ func initFakeUserRoles() {
 }
 
 func initFakeEnvironmentTypes() {
-	fakeEnvironmentTypes = []EnvironmentType{
+	fakeEnvironmentTypes = []models.EnvironmentType{
 		{
 			ID:   1,
 			Name: "dev",
@@ -95,7 +93,7 @@ func initFakeEnvironmentTypes() {
 }
 
 func initFakeRolesEnvironmentTypes() {
-	fakeRolesEnvironmentTypes = []RolesEnvironmentType{}
+	fakeRolesEnvironmentTypes = []models.RolesEnvironmentType{}
 
 	matrix := [][]struct {
 		read  bool
@@ -126,7 +124,7 @@ func initFakeRolesEnvironmentTypes() {
 	for n, line := range matrix {
 		for m, r := range line {
 			fakeRolesEnvironmentTypes = append(fakeRolesEnvironmentTypes,
-				RolesEnvironmentType{
+				models.RolesEnvironmentType{
 					ID:                uint(len(fakeRolesEnvironmentTypes) + 1),
 					RoleID:            fakeRoles[n].ID,
 					Role:              fakeRoles[n],
@@ -148,8 +146,8 @@ func init() {
 	initFakeEnvironmentTypes()
 	initFakeRolesEnvironmentTypes()
 
-	fakeProjects = make([]Project, 0)
-	fakeOrganizations = make([]Organization, 0)
+	fakeProjects = make([]models.Project, 0)
+	fakeOrganizations = make([]models.Organization, 0)
 }
 
 type FakeRepo struct {
@@ -164,37 +162,37 @@ func newFakeRepo() *FakeRepo {
 	return f
 }
 
-func (f *FakeRepo) CreateEnvironment(_ *Environment) IRepo {
+func (f *FakeRepo) CreateEnvironment(_ *models.Environment) repo.IRepo {
 	f.called = append(f.called, "CreateEnvironment")
 	return f
 }
 
-func (f *FakeRepo) CreateEnvironmentType(_ *EnvironmentType) IRepo {
+func (f *FakeRepo) CreateEnvironmentType(_ *models.EnvironmentType) repo.IRepo {
 	f.called = append(f.called, "CreateEnvironmentType")
 	return f
 }
 
-func (f *FakeRepo) CreateLoginRequest() LoginRequest {
+func (f *FakeRepo) CreateLoginRequest() models.LoginRequest {
 	f.called = append(f.called, "CreateLoginRequest")
-	return LoginRequest{}
+	return models.LoginRequest{}
 }
 
-func (f *FakeRepo) CreateProjectMember(_ *ProjectMember, _ *Role) IRepo {
+func (f *FakeRepo) CreateProjectMember(_ *models.ProjectMember, _ *models.Role) repo.IRepo {
 	f.called = append(f.called, "CreateProjectMember")
 	return f
 }
 
-func (f *FakeRepo) CreateRole(_ *Role) IRepo {
+func (f *FakeRepo) CreateRole(_ *models.Role) repo.IRepo {
 	f.called = append(f.called, "CreateRole")
 	return f
 }
 
-func (f *FakeRepo) CreateRoleEnvironmentType(_ *RolesEnvironmentType) IRepo {
+func (f *FakeRepo) CreateRoleEnvironmentType(_ *models.RolesEnvironmentType) repo.IRepo {
 	f.called = append(f.called, "CreateRoleEnvironmentType")
 	return f
 }
 
-func (f *FakeRepo) CreateSecret(_ *Secret) {
+func (f *FakeRepo) CreateSecret(_ *models.Secret) {
 	f.called = append(f.called, "CreateSecret")
 }
 
@@ -203,248 +201,248 @@ func (f *FakeRepo) DeleteLoginRequest(_ string) bool {
 	return false
 }
 
-func (f *FakeRepo) DeleteMessage(_ uint, _ uint) IRepo {
+func (f *FakeRepo) DeleteMessage(_ uint, _ uint) repo.IRepo {
 	f.called = append(f.called, "DeleteMessage")
 	return f
 }
 
-func (f *FakeRepo) DeleteExpiredMessages() IRepo {
+func (f *FakeRepo) DeleteExpiredMessages() repo.IRepo {
 	f.called = append(f.called, "DeleteExpiredMessages")
 	return f
 }
 
 func (f *FakeRepo) GetGroupedMessagesWillExpireByUser(
 	groupedMessageUser *map[uint]emailer.GroupedMessagesUser,
-) IRepo {
+) repo.IRepo {
 	f.called = append(f.called, "GetGroupedMessagesWillExpireByUser")
 	return f
 }
 
 func (f *FakeRepo) FindUsers(
 	_ []string,
-	_ *map[string]User,
+	_ *map[string]models.User,
 	_ *[]string,
-) IRepo {
+) repo.IRepo {
 	f.called = append(f.called, "FindUsers")
 	return f
 }
 
-func (f *FakeRepo) GetDb() *gorm.DB {
-	f.called = append(f.called, "GetDb")
+func (f *FakeRepo) GetDB() *gorm.DB {
+	f.called = append(f.called, "GetDB")
 	return nil
 }
 
-func (f *FakeRepo) GetEnvironment(_ *Environment) IRepo {
+func (f *FakeRepo) GetEnvironment(_ *models.Environment) repo.IRepo {
 	f.called = append(f.called, "GetEnvironment")
 	return f
 }
 
 func (f *FakeRepo) GetEnvironmentsByProjectUUID(
 	_ string,
-	_ *[]Environment,
-) IRepo {
+	_ *[]models.Environment,
+) repo.IRepo {
 	f.called = append(f.called, "GetEnvironmentsByProjectUUID")
 	return f
 }
 
-func (f *FakeRepo) GetEnvironmentPublicKeys(_ string, _ *PublicKeys) IRepo {
+func (f *FakeRepo) GetEnvironmentPublicKeys(_ string, _ *models.PublicKeys) repo.IRepo {
 	f.called = append(f.called, "GetEnvironmentPublicKeys")
 	return f
 }
 
-func (f *FakeRepo) GetEnvironmentType(_ *EnvironmentType) IRepo {
+func (f *FakeRepo) GetEnvironmentType(_ *models.EnvironmentType) repo.IRepo {
 	f.called = append(f.called, "GetEnvironmentType")
 	return f
 }
 
-func (f *FakeRepo) GetLoginRequest(_ string) (LoginRequest, bool) {
+func (f *FakeRepo) GetLoginRequest(_ string) (models.LoginRequest, bool) {
 	f.called = append(f.called, "GetLoginRequest")
-	return LoginRequest{}, false
+	return models.LoginRequest{}, false
 }
 
 func (f *FakeRepo) GetMessagesForUserOnEnvironment(
-	_ Device,
-	_ Environment,
-	_ *Message,
-) IRepo {
+	_ models.Device,
+	_ models.Environment,
+	_ *models.Message,
+) repo.IRepo {
 	f.called = append(f.called, "GetMessagesForUserOnEnvironment")
 	return f
 }
 
-func (f *FakeRepo) GetOrCreateEnvironment(_ *Environment) IRepo {
+func (f *FakeRepo) GetOrCreateEnvironment(_ *models.Environment) repo.IRepo {
 	f.called = append(f.called, "GetOrCreateEnvironment")
 	return f
 }
 
-func (f *FakeRepo) GetOrCreateEnvironmentType(_ *EnvironmentType) IRepo {
+func (f *FakeRepo) GetOrCreateEnvironmentType(_ *models.EnvironmentType) repo.IRepo {
 	f.called = append(f.called, "GetOrCreateEnvironmentType")
 	return f
 }
 
-func (f *FakeRepo) GetOrCreateProject(_ *Project) IRepo {
+func (f *FakeRepo) GetOrCreateProject(_ *models.Project) repo.IRepo {
 	f.called = append(f.called, "GetOrCreateProject")
 	return f
 }
 
-func (f *FakeRepo) GetOrCreateProjectMember(_ *ProjectMember, _ string) IRepo {
+func (f *FakeRepo) GetOrCreateProjectMember(_ *models.ProjectMember, _ string) repo.IRepo {
 	f.called = append(f.called, "GetOrCreateProjectMember")
 	return f
 }
 
-func (f *FakeRepo) GetOrCreateRole(_ *Role) IRepo {
+func (f *FakeRepo) GetOrCreateRole(_ *models.Role) repo.IRepo {
 	f.called = append(f.called, "GetOrCreateRole")
 	return f
 }
 
-func (f *FakeRepo) GetOrCreateRoleEnvType(_ *RolesEnvironmentType) IRepo {
+func (f *FakeRepo) GetOrCreateRoleEnvType(_ *models.RolesEnvironmentType) repo.IRepo {
 	f.called = append(f.called, "GetOrCreateRoleEnvType")
 	return f
 }
 
-func (f *FakeRepo) GetOrCreateUser(_ *User) IRepo {
+func (f *FakeRepo) GetOrCreateUser(_ *models.User) repo.IRepo {
 	f.called = append(f.called, "GetOrCreateUser")
 	return f
 }
 
-func (f *FakeRepo) GetProject(_ *Project) IRepo {
+func (f *FakeRepo) GetProject(_ *models.Project) repo.IRepo {
 	f.called = append(f.called, "GetProject")
 	return f
 }
 
-func (f *FakeRepo) GetProjectByUUID(_ string, _ *Project) IRepo {
+func (f *FakeRepo) GetProjectByUUID(_ string, _ *models.Project) repo.IRepo {
 	f.called = append(f.called, "GetProjectByUUID")
 	return f
 }
 
-func (f *FakeRepo) GetRole(_ *Role) IRepo {
+func (f *FakeRepo) GetRole(_ *models.Role) repo.IRepo {
 	f.called = append(f.called, "GetRole")
 	return f
 }
 
-func (f *FakeRepo) GetRoles(_ *[]Role) IRepo {
+func (f *FakeRepo) GetRoles(_ *[]models.Role) repo.IRepo {
 	f.called = append(f.called, "GetRoles")
 	return f
 }
 
 func (f *FakeRepo) GetRolesMemberCanInvite(
-	projectMember ProjectMember,
-	roles *[]Role,
-) IRepo {
+	projectMember models.ProjectMember,
+	roles *[]models.Role,
+) repo.IRepo {
 	f.called = append(f.called, "GetRolesMemberCanInvite")
 	return f
 }
 
-func (f *FakeRepo) GetSecretByName(_ string, _ *Secret) {
+func (f *FakeRepo) GetSecretByName(_ string, _ *models.Secret) {
 	f.called = append(f.called, "GetSecretByName")
 }
 
-func (f *FakeRepo) GetUser(_ *User) IRepo {
+func (f *FakeRepo) GetUser(_ *models.User) repo.IRepo {
 	f.called = append(f.called, "GetUser")
 	return f
 }
 
 func (f *FakeRepo) ListProjectMembers(
 	userIDList []string,
-	projectMember *[]ProjectMember,
-) IRepo {
+	projectMember *[]models.ProjectMember,
+) repo.IRepo {
 	f.called = append(f.called, "ListProjectMembers")
 	return f
 }
 
-func (f *FakeRepo) ProjectAddMembers(_ Project, _ []MemberRole, _ User) IRepo {
+func (f *FakeRepo) ProjectAddMembers(_ models.Project, _ []models.MemberRole, _ models.User) repo.IRepo {
 	f.called = append(f.called, "ProjectAddMembers")
 	return f
 }
 
 func (f *FakeRepo) UsersInMemberRoles(
-	mers []MemberRole,
-) (map[string]User, []string) {
+	mers []models.MemberRole,
+) (map[string]models.User, []string) {
 	f.called = append(f.called, "UsersInMemberRoles")
-	return map[string]User{}, []string{}
+	return map[string]models.User{}, []string{}
 }
 
-func (f *FakeRepo) ProjectGetMembers(_ *Project, _ *[]ProjectMember) IRepo {
+func (f *FakeRepo) ProjectGetMembers(_ *models.Project, _ *[]models.ProjectMember) repo.IRepo {
 	f.called = append(f.called, "ProjectGetMembers")
 	return f
 }
 
-func (f *FakeRepo) ProjectLoadUsers(_ *Project) IRepo {
+func (f *FakeRepo) ProjectLoadUsers(_ *models.Project) repo.IRepo {
 	f.called = append(f.called, "ProjectLoadUsers")
 	return f
 }
 
-func (f *FakeRepo) ProjectRemoveMembers(_ Project, _ []string) IRepo {
+func (f *FakeRepo) ProjectRemoveMembers(_ models.Project, _ []string) repo.IRepo {
 	f.called = append(f.called, "ProjectRemoveMembers")
 	return f
 }
 
-func (f *FakeRepo) ProjectSetRoleForUser(_ Project, _ User, _ Role) IRepo {
+func (f *FakeRepo) ProjectSetRoleForUser(_ models.Project, _ models.User, _ models.Role) repo.IRepo {
 	f.called = append(f.called, "ProjectSetRoleForUser")
 	return f
 }
 
-func (f *FakeRepo) RemoveOldMessageForRecipient(_ uint, _ string) IRepo {
+func (f *FakeRepo) RemoveOldMessageForRecipient(_ uint, _ string) repo.IRepo {
 	f.called = append(f.called, "RemoveOldMessageForRecipient")
 	return f
 }
 
-func (f *FakeRepo) SetLoginRequestCode(_ string, _ string) LoginRequest {
+func (f *FakeRepo) SetLoginRequestCode(_ string, _ string) models.LoginRequest {
 	f.called = append(f.called, "SetLoginRequestCode")
-	return LoginRequest{}
+	return models.LoginRequest{}
 }
 
-func (f *FakeRepo) SetNewVersionID(_ *Environment) error {
+func (f *FakeRepo) SetNewVersionID(_ *models.Environment) error {
 	f.called = append(f.called, "SetNewVersionID")
 	return f.err
 }
 
-func (f *FakeRepo) WriteMessage(_ User, _ Message) IRepo {
+func (f *FakeRepo) WriteMessage(_ models.User, _ models.Message) repo.IRepo {
 	f.called = append(f.called, "WriteMessage")
 	return f
 }
 
 func (f *FakeRepo) CheckMembersAreInProject(
-	_ Project,
+	_ models.Project,
 	_ []string,
 ) ([]string, error) {
 	f.called = append(f.called, "{")
 	return []string{}, nil
 }
 
-func (f *FakeRepo) DeleteAllProjectMembers(project *Project) IRepo {
+func (f *FakeRepo) DeleteAllProjectMembers(project *models.Project) repo.IRepo {
 	f.called = append(f.called, "DeleteAllProjectMembers")
 	return f
 }
 
-func (f *FakeRepo) DeleteProject(project *Project) IRepo {
+func (f *FakeRepo) DeleteProject(project *models.Project) repo.IRepo {
 	f.called = append(f.called, "DeleteProject")
 	return f
 }
 
-func (f *FakeRepo) DeleteProjectsEnvironments(project *Project) IRepo {
+func (f *FakeRepo) DeleteProjectsEnvironments(project *models.Project) repo.IRepo {
 	f.called = append(f.called, "DeleteProjectsEnvironments")
 	return f
 }
 
 func (f *FakeRepo) GetActivityLogs(
 	projectID string,
-	options GetLogsOptions,
-	logs *[]ActivityLog,
-) IRepo {
+	options models.GetLogsOptions,
+	logs *[]models.ActivityLog,
+) repo.IRepo {
 	f.called = append(f.called, "GetActivityLogs")
 	return f
 }
 
-func (f *FakeRepo) GetMessage(message *Message) IRepo {
+func (f *FakeRepo) GetMessage(message *models.Message) repo.IRepo {
 	f.called = append(f.called, "GetMessage")
 	return f
 }
 
 func (f *FakeRepo) GetProjectsOrganization(
 	projectuuid string,
-	orga *Organization,
-) IRepo {
-	var project *Project
+	orga *models.Organization,
+) repo.IRepo {
+	var project *models.Project
 
 	for _, p := range fakeProjects {
 		if p.UUID == projectuuid {
@@ -483,17 +481,17 @@ func (f *FakeRepo) SetNewlyCreatedDevice(
 	return f
 }
 
-func (f *FakeRepo) OrganizationCountMembers(_ *Organization, _ *int64) IRepo {
+func (f *FakeRepo) OrganizationCountMembers(_ *models.Organization, _ *int64) repo.IRepo {
 	f.called = append(f.called, "OrganizationCountMembers")
 	return f
 }
 
-func (f *FakeRepo) GetUserByEmail(_ string, _ *[]User) IRepo {
+func (f *FakeRepo) GetUserByEmail(_ string, _ *[]models.User) repo.IRepo {
 	f.called = append(f.called, "GetUserByEmail")
 	return f
 }
 
-func (f *FakeRepo) IsMemberOfProject(_ *Project, _ *ProjectMember) IRepo {
+func (f *FakeRepo) IsMemberOfProject(_ *models.Project, _ *models.ProjectMember) repo.IRepo {
 	f.called = append(f.called, "IsMemberOfProject")
 	return f
 }
@@ -504,52 +502,52 @@ func (f *FakeRepo) MessageService() message.MessageService {
 }
 
 func (f *FakeRepo) ProjectGetAdmins(
-	project *Project,
-	members *[]ProjectMember,
-) IRepo {
+	project *models.Project,
+	members *[]models.ProjectMember,
+) repo.IRepo {
 	f.called = append(f.called, "ProjectGetAdmins")
 	return f
 }
 
 func (f *FakeRepo) ProjectIsMemberAdmin(
-	project *Project,
-	member *ProjectMember,
+	project *models.Project,
+	member *models.ProjectMember,
 ) bool {
 	f.called = append(f.called, "ProjectIsMemberAdmin")
 	return false
 }
 
-func (f *FakeRepo) SaveActivityLog(al *ActivityLog) IRepo {
+func (f *FakeRepo) SaveActivityLog(al *models.ActivityLog) repo.IRepo {
 	f.called = append(f.called, "SaveActivityLog")
 	return f
 }
 
-func (f *FakeRepo) GetDevices(_ uint, _ *[]Device) IRepo {
+func (f *FakeRepo) GetDevices(_ uint, _ *[]models.Device) repo.IRepo {
 	f.called = append(f.called, "GetDevices")
 	return f
 }
 
-func (f *FakeRepo) GetNewlyCreatedDevices(_ *[]Device) IRepo {
+func (f *FakeRepo) GetNewlyCreatedDevices(_ *[]models.Device) repo.IRepo {
 	f.called = append(f.called, "GetNewlyCreatedDevices")
 	return f
 }
 
-func (f *FakeRepo) GetDevice(device *Device) IRepo {
+func (f *FakeRepo) GetDevice(device *models.Device) repo.IRepo {
 	f.called = append(f.called, "GetDevice")
 	return f
 }
 
-func (f *FakeRepo) GetDeviceByUserID(userID uint, device *Device) IRepo {
+func (f *FakeRepo) GetDeviceByUserID(userID uint, device *models.Device) repo.IRepo {
 	f.called = append(f.called, "GetDeviceByUserID")
 	return f
 }
 
-func (f *FakeRepo) UpdateDeviceLastUsedAt(deviceUID string) IRepo {
+func (f *FakeRepo) UpdateDeviceLastUsedAt(deviceUID string) repo.IRepo {
 	f.called = append(f.called, "UpdateDeviceLastUsedAt")
 	return f
 }
 
-func (f *FakeRepo) RevokeDevice(userID uint, deviceUID string) IRepo {
+func (f *FakeRepo) RevokeDevice(userID uint, deviceUID string) repo.IRepo {
 	f.called = append(f.called, "RevokeDevice")
 	return f
 }
@@ -557,51 +555,51 @@ func (f *FakeRepo) RevokeDevice(userID uint, deviceUID string) IRepo {
 func (f *FakeRepo) GetAdminsFromUserProjects(
 	userID uint,
 	adminProjectsMap *map[string][]string,
-) IRepo {
+) repo.IRepo {
 	f.called = append(f.called, "GetAdminsFromUserProjects")
 	return f
 }
 
-func (f *FakeRepo) CreateOrganization(orga *Organization) IRepo {
+func (f *FakeRepo) CreateOrganization(orga *models.Organization) repo.IRepo {
 	f.called = append(f.called, "CreateOrganization")
 	return f
 }
 
-func (f *FakeRepo) UpdateOrganization(orga *Organization) IRepo {
+func (f *FakeRepo) UpdateOrganization(orga *models.Organization) repo.IRepo {
 	f.called = append(f.called, "UpdateOrganization")
 	return f
 }
 
 func (f *FakeRepo) OrganizationSetCustomer(
-	organization *Organization,
+	organization *models.Organization,
 	customer string,
-) IRepo {
+) repo.IRepo {
 	f.called = append(f.called, "OrganizationSetCustomer")
 	return f
 }
 
 func (f *FakeRepo) OrganizationSetSubscription(
-	organization *Organization,
+	organization *models.Organization,
 	subscription string,
-) IRepo {
+) repo.IRepo {
 	f.called = append(f.called, "OrganizationSetSubscription")
 	return f
 }
 
-func (f *FakeRepo) GetOrganization(orga *Organization) IRepo {
+func (f *FakeRepo) GetOrganization(orga *models.Organization) repo.IRepo {
 	f.called = append(f.called, "GetOrganization")
 	return f
 }
 
-func (f *FakeRepo) GetOrganizations(userID uint, result *[]Organization) IRepo {
+func (f *FakeRepo) GetOrganizations(userID uint, result *[]models.Organization) repo.IRepo {
 	f.called = append(f.called, "GetOrganizations")
 	return f
 }
 
 func (f *FakeRepo) GetOwnedOrganizations(
 	userID uint,
-	result *[]Organization,
-) IRepo {
+	result *[]models.Organization,
+) repo.IRepo {
 	f.called = append(f.called, "GetOwnedOrganizations")
 	return f
 }
@@ -609,8 +607,8 @@ func (f *FakeRepo) GetOwnedOrganizations(
 func (f *FakeRepo) GetOwnedOrganizationByName(
 	userID uint,
 	name string,
-	orgas *[]Organization,
-) IRepo {
+	orgas *[]models.Organization,
+) repo.IRepo {
 	f.called = append(f.called, "GetOwnedOrganizations")
 	return f
 }
@@ -618,24 +616,24 @@ func (f *FakeRepo) GetOwnedOrganizationByName(
 func (f *FakeRepo) GetOrganizationByName(
 	userID uint,
 	name string,
-	orga *[]Organization,
-) IRepo {
+	orga *[]models.Organization,
+) repo.IRepo {
 	f.called = append(f.called, "GetOrganizationByName")
 	return f
 }
 
 func (f *FakeRepo) GetOrganizationProjects(
-	_ *Organization,
-	_ *[]Project,
-) IRepo {
+	_ *models.Organization,
+	_ *[]models.Project,
+) repo.IRepo {
 	f.called = append(f.called, "GetOrganizationProjects")
 	return f
 }
 
 func (f *FakeRepo) GetOrganizationMembers(
 	orgaID uint,
-	result *[]ProjectMember,
-) IRepo {
+	result *[]models.ProjectMember,
+) repo.IRepo {
 	{
 		f.called = append(f.called, "GetOrganizationMembers")
 
@@ -657,7 +655,7 @@ func (f *FakeRepo) GetOrganizationMembers(
 			return f
 		}
 
-		*result = make([]ProjectMember, 0)
+		*result = make([]models.ProjectMember, 0)
 		for _, p := range fakeProjects {
 			if p.OrganizationID == orgaID {
 				*result = append(*result, p.Members...)
@@ -672,7 +670,7 @@ func (f *FakeRepo) GetOrganizationMembers(
 	}
 }
 
-func (f *FakeRepo) IsUserOwnerOfOrga(_ *User, _ *Organization) (bool, error) {
+func (f *FakeRepo) IsUserOwnerOfOrga(_ *models.User, _ *models.Organization) (bool, error) {
 	f.called = append(f.called, "IsUserOwnerOfOrga")
 	return false, f.err
 }
@@ -697,35 +695,35 @@ func (f *FakeRepo) IsProjectOrganizationPaid(
 	return paid, f.err
 }
 
-func (f *FakeRepo) CreateCheckoutSession(_ *CheckoutSession) IRepo {
+func (f *FakeRepo) CreateCheckoutSession(_ *models.CheckoutSession) repo.IRepo {
 	f.called = append(f.called, "CreateCheckoutSession")
 	return f
 }
 
-func (f *FakeRepo) GetCheckoutSession(_ string, _ *CheckoutSession) IRepo {
+func (f *FakeRepo) GetCheckoutSession(_ string, _ *models.CheckoutSession) repo.IRepo {
 	f.called = append(f.called, "GetCheckoutSession")
 	return f
 }
 
-func (f *FakeRepo) UpdateCheckoutSession(_ *CheckoutSession) IRepo {
+func (f *FakeRepo) UpdateCheckoutSession(_ *models.CheckoutSession) repo.IRepo {
 	f.called = append(f.called, "UpdateCheckoutSession")
 	return f
 }
 
-func (f *FakeRepo) DeleteCheckoutSession(_ *CheckoutSession) IRepo {
+func (f *FakeRepo) DeleteCheckoutSession(_ *models.CheckoutSession) repo.IRepo {
 	f.called = append(f.called, "DeleteCheckoutSession")
 	return f
 }
 
 func (f *FakeRepo) OrganizationSetPaid(
-	organization *Organization,
+	organization *models.Organization,
 	paid bool,
-) IRepo {
+) repo.IRepo {
 	f.called = append(f.called, "OrganizationSetPaid")
 	return f
 }
 
-func (f *FakeRepo) GetUserProjects(userID uint, projects *[]Project) IRepo {
+func (f *FakeRepo) GetUserProjects(userID uint, projects *[]models.Project) repo.IRepo {
 	f.called = append(f.called, "GetUserProjects")
 	return f
 }
@@ -733,17 +731,17 @@ func (f *FakeRepo) GetUserProjects(userID uint, projects *[]Project) IRepo {
 func getRoleByEnvironmentTypeAndRole(
 	environmentTypeID uint,
 	roleID uint,
-) RolesEnvironmentType {
+) models.RolesEnvironmentType {
 	for _, re := range fakeRolesEnvironmentTypes {
 		if re.RoleID == roleID && re.EnvironmentTypeID == environmentTypeID {
 			return re
 		}
 	}
 
-	return RolesEnvironmentType{}
+	return models.RolesEnvironmentType{}
 }
 
-func findRole(role *Role) {
+func findRole(role *models.Role) {
 	for _, r := range fakeRoles {
 		if r.Name == role.Name {
 			*role = r
@@ -756,13 +754,13 @@ func findRole(role *Role) {
 	*role = fakeRoles[NOTHING]
 }
 
-func getRoleByUserID(userID uint) (role Role) {
+func getRoleByUserID(userID uint) (role models.Role) {
 	roleName, ok := fakeUserRole[userID]
 	if !ok {
 		roleName = "nothing"
 	}
 
-	role = Role{Name: roleName}
+	role = models.Role{Name: roleName}
 	findRole(&role)
 
 	return role
@@ -779,8 +777,8 @@ func (f *FakeRepo) ClearErr() repo.IRepo {
 }
 
 func (fakeRepo *FakeRepo) GetRolesEnvironmentType(
-	rolesEnvironmentType *RolesEnvironmentType,
-) IRepo {
+	rolesEnvironmentType *models.RolesEnvironmentType,
+) repo.IRepo {
 	if rolesEnvironmentType.EnvironmentTypeID == 0 {
 		fakeRepo.err = repo.ErrorNotFound
 	}
@@ -796,7 +794,7 @@ func (fakeRepo *FakeRepo) GetRolesEnvironmentType(
 	return fakeRepo
 }
 
-func (fakeRepo *FakeRepo) GetProjectMember(projectMember *ProjectMember) IRepo {
+func (fakeRepo *FakeRepo) GetProjectMember(projectMember *models.ProjectMember) repo.IRepo {
 	if projectMember.UserID == 0 {
 		fakeRepo.err = repo.ErrorNotFound
 		return fakeRepo
@@ -809,28 +807,32 @@ func (fakeRepo *FakeRepo) GetProjectMember(projectMember *ProjectMember) IRepo {
 	return fakeRepo
 }
 
-func (fakeRepo *FakeRepo) GetInvitableRoles(role Role, roles *[]Role) IRepo {
+func (fakeRepo *FakeRepo) GetInvitableRoles(role models.Role, roles *[]models.Role) repo.IRepo {
 	// return fakeRepo
 	// TODO
 	return fakeRepo
 }
 
-func (fakeRepo *FakeRepo) GetChildrenRoles(role Role, roles *[]Role) IRepo {
+func (fakeRepo *FakeRepo) GetChildrenRoles(role models.Role, roles *[]models.Role) repo.IRepo {
 	switch role.ID {
 	case 4:
-		*roles = []Role{fakeRoles[DEV], fakeRoles[LEAD], fakeRoles[DEVOPS]}
+		*roles = []models.Role{fakeRoles[DEV], fakeRoles[LEAD], fakeRoles[DEVOPS]}
 	case 3:
-		*roles = []Role{fakeRoles[DEV], fakeRoles[LEAD]}
+		*roles = []models.Role{fakeRoles[DEV], fakeRoles[LEAD]}
 
 	case 2:
-		*roles = []Role{fakeRoles[DEV]}
+		*roles = []models.Role{fakeRoles[DEV]}
 
 	default:
-		*roles = []Role{}
+		*roles = []models.Role{}
 		fakeRepo.err = repo.ErrorNotFound
 	}
 
 	return fakeRepo
+}
+
+func (f *FakeRepo) FindUserWithRefreshToken(token string, user *models.User) repo.IRepo {
+	panic("not implemented")
 }
 
 type rw struct {
@@ -841,49 +843,49 @@ type rw struct {
 
 func TestCanUserHasRightEnvironment(t *testing.T) {
 	fakeRepo := newFakeRepo()
-	project := &Project{}
+	project := &models.Project{}
 
-	userDev := &User{ID: 1, Username: "dev", UserID: "dev"}
-	userLeadDev := &User{ID: 2, Username: "lead", UserID: "lead"}
-	userDevops := &User{ID: 3, Username: "devops", UserID: "devops"}
-	userAdmin := &User{ID: 4, Username: "admin", UserID: "admin"}
-	notUser := &User{ID: 0, Username: "---", UserID: "---"}
+	userDev := &models.User{ID: 1, Username: "dev", UserID: "dev"}
+	userLeadDev := &models.User{ID: 2, Username: "lead", UserID: "lead"}
+	userDevops := &models.User{ID: 3, Username: "devops", UserID: "devops"}
+	userAdmin := &models.User{ID: 4, Username: "admin", UserID: "admin"}
+	notUser := &models.User{ID: 0, Username: "---", UserID: "---"}
 
-	environmentDev := &Environment{
+	environmentDev := &models.Environment{
 		ID:                1,
 		Name:              "dev",
 		EnvironmentTypeID: 1,
-		EnvironmentType: EnvironmentType{
+		EnvironmentType: models.EnvironmentType{
 			ID:   1,
 			Name: "dev",
 		},
 	}
-	environmentStaging := &Environment{
+	environmentStaging := &models.Environment{
 		ID:                2,
 		Name:              "staging",
 		EnvironmentTypeID: 2,
-		EnvironmentType: EnvironmentType{
+		EnvironmentType: models.EnvironmentType{
 			ID:   2,
 			Name: "staging",
 		},
 	}
-	environmentProd := &Environment{
+	environmentProd := &models.Environment{
 		ID:                3,
 		Name:              "prod",
 		EnvironmentTypeID: 3,
-		EnvironmentType: EnvironmentType{
+		EnvironmentType: models.EnvironmentType{
 			ID:   3,
 			Name: "prod",
 		},
 	}
-	environmentNot := &Environment{
+	environmentNot := &models.Environment{
 		ID:                4,
 		Name:              "---",
 		EnvironmentTypeID: 0,
-		EnvironmentType:   EnvironmentType{},
+		EnvironmentType:   models.EnvironmentType{},
 	}
 
-	users := map[string]*User{
+	users := map[string]*models.User{
 		"developer":      userDev,
 		"lead developer": userLeadDev,
 		"devops":         userDevops,
@@ -891,7 +893,7 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 		"---":            notUser,
 	}
 
-	environments := map[string]*Environment{
+	environments := map[string]*models.Environment{
 		"dev":     environmentDev,
 		"staging": environmentStaging,
 		"prod":    environmentProd,
@@ -999,8 +1001,8 @@ func TestCanUserHasRightEnvironment(t *testing.T) {
 func TestCanRoleAddRole(t *testing.T) {
 	type args struct {
 		Repo         repo.IRepo
-		role         Role
-		roleToInvite Role
+		role         models.Role
+		roleToInvite models.Role
 	}
 
 	tests := []struct {
@@ -1173,8 +1175,8 @@ func TestCanRoleAddRole(t *testing.T) {
 			name: "error on bad role",
 			args: args{
 				Repo:         newFakeRepo(),
-				role:         Role{ID: 12384, CanAddMember: true},
-				roleToInvite: Role{ID: 25892},
+				role:         models.Role{ID: 12384, CanAddMember: true},
+				roleToInvite: models.Role{ID: 25892},
 			},
 			wantCan: false,
 			wantErr: true,
@@ -1209,23 +1211,23 @@ func TestCanRoleAddRole(t *testing.T) {
 }
 
 func TestUserCanSetMemberRole(t *testing.T) {
-	organization := Organization{}
+	organization := models.Organization{}
 	faker.FakeData(&organization)
 
-	project := Project{
+	project := models.Project{
 		ID:             12,
 		UUID:           "8E733BFA-FFC7-412D-91AB-D1A9C3210A56",
 		OrganizationID: organization.ID,
 		Organization:   organization,
 	}
 
-	userDev := &User{ID: 1, Username: "dev", UserID: "dev"}
-	userLeadDev := &User{ID: 2, Username: "lead", UserID: "lead"}
-	userDevops := &User{ID: 3, Username: "devops", UserID: "devops"}
-	userAdmin := &User{ID: 4, Username: "admin", UserID: "admin"}
-	userAdminNotOwner := &User{ID: 5, Username: "notowner", UserID: "notowner"}
-	userNot := &User{ID: 0, Username: "---", UserID: "---"}
-	userBadRole := &User{ID: 135, Username: "badrole", UserID: "badrole"}
+	userDev := &models.User{ID: 1, Username: "dev", UserID: "dev"}
+	userLeadDev := &models.User{ID: 2, Username: "lead", UserID: "lead"}
+	userDevops := &models.User{ID: 3, Username: "devops", UserID: "devops"}
+	userAdmin := &models.User{ID: 4, Username: "admin", UserID: "admin"}
+	userAdminNotOwner := &models.User{ID: 5, Username: "notowner", UserID: "notowner"}
+	userNot := &models.User{ID: 0, Username: "---", UserID: "---"}
+	userBadRole := &models.User{ID: 135, Username: "badrole", UserID: "badrole"}
 
 	organization.UserID = userAdmin.ID
 	organization.User = *userAdmin
@@ -1233,7 +1235,7 @@ func TestUserCanSetMemberRole(t *testing.T) {
 	fakeOrganizations = append(fakeOrganizations, organization)
 	fakeProjects = append(fakeProjects, project)
 
-	users := map[string]*User{
+	users := map[string]*models.User{
 		"dev":      userDev,
 		"lead":     userLeadDev,
 		"devops":   userDevops,
@@ -1243,7 +1245,7 @@ func TestUserCanSetMemberRole(t *testing.T) {
 		"bad":      userBadRole,
 	}
 
-	rightsMatrix := map[string]map[*User]map[int]struct {
+	rightsMatrix := map[string]map[*models.User]map[int]struct {
 		can bool
 		err bool
 	}{
@@ -1601,15 +1603,15 @@ func TestUserCanSetMemberRole(t *testing.T) {
 }
 
 func TestCanUserAddMemberWithRole(t *testing.T) {
-	project := Project{}
+	project := models.Project{}
 
-	userNotFound := &User{ID: 0, Username: "---", UserID: "---"}
-	userDev := &User{ID: 1, Username: "dev", UserID: "dev"}
-	userLeadDev := &User{ID: 2, Username: "lead", UserID: "lead"}
-	userDevops := &User{ID: 3, Username: "devops", UserID: "devops"}
-	userAdmin := &User{ID: 4, Username: "admin", UserID: "admin"}
+	userNotFound := &models.User{ID: 0, Username: "---", UserID: "---"}
+	userDev := &models.User{ID: 1, Username: "dev", UserID: "dev"}
+	userLeadDev := &models.User{ID: 2, Username: "lead", UserID: "lead"}
+	userDevops := &models.User{ID: 3, Username: "devops", UserID: "devops"}
+	userAdmin := &models.User{ID: 4, Username: "admin", UserID: "admin"}
 
-	users := map[string]*User{
+	users := map[string]*models.User{
 		"dev":    userDev,
 		"lead":   userLeadDev,
 		"devops": userDevops,
@@ -1622,7 +1624,7 @@ func TestCanUserAddMemberWithRole(t *testing.T) {
 		err bool
 	}
 
-	rightsMatrix := map[string]map[*User]want{
+	rightsMatrix := map[string]map[*models.User]want{
 		"dev": {
 			userDev:     {can: false, err: false},
 			userLeadDev: {can: false, err: false},
@@ -1695,9 +1697,9 @@ func TestCanUserAddMemberWithRole(t *testing.T) {
 	}
 }
 
-func fakeManyOrgs(orgs []*Organization) {
+func fakeManyOrgs(orgs []*models.Organization) {
 	for _, org := range orgs {
-		o := Organization{}
+		o := models.Organization{}
 		err := faker.FakeData(&o)
 		if err != nil {
 			panic(err)
@@ -1707,9 +1709,9 @@ func fakeManyOrgs(orgs []*Organization) {
 	}
 }
 
-func fakeManyProjects(projects []*Project) {
+func fakeManyProjects(projects []*models.Project) {
 	for _, project := range projects {
-		p := Project{}
+		p := models.Project{}
 		err := faker.FakeData(&p)
 		if err != nil {
 			panic(err)
@@ -1719,10 +1721,10 @@ func fakeManyProjects(projects []*Project) {
 }
 
 func TestHasOrganizationNotPaidAndHasNonAdmin(t *testing.T) {
-	freeFailingOrg := Organization{}
-	freeOKOrg := Organization{}
-	paidOrg := Organization{}
-	fakeManyOrgs([]*Organization{&freeFailingOrg, &freeOKOrg, &paidOrg})
+	freeFailingOrg := models.Organization{}
+	freeOKOrg := models.Organization{}
+	paidOrg := models.Organization{}
+	fakeManyOrgs([]*models.Organization{&freeFailingOrg, &freeOKOrg, &paidOrg})
 	paidOrg.Paid = true
 
 	fakeOrganizations = append(
@@ -1732,11 +1734,11 @@ func TestHasOrganizationNotPaidAndHasNonAdmin(t *testing.T) {
 		paidOrg,
 	)
 
-	badFreeProject := Project{}
-	okFreeProject := Project{}
-	okPaidProject := Project{}
-	projectBadOrg := Project{}
-	fakeManyProjects([]*Project{
+	badFreeProject := models.Project{}
+	okFreeProject := models.Project{}
+	okPaidProject := models.Project{}
+	projectBadOrg := models.Project{}
+	fakeManyProjects([]*models.Project{
 		&badFreeProject,
 		&okFreeProject,
 		&okPaidProject,
@@ -1749,7 +1751,7 @@ func TestHasOrganizationNotPaidAndHasNonAdmin(t *testing.T) {
 	okPaidProject.OrganizationID = paidOrg.ID
 	okPaidProject.Organization = paidOrg
 
-	badFreeProject.Members = []ProjectMember{
+	badFreeProject.Members = []models.ProjectMember{
 		{
 			ProjectID: badFreeProject.ID,
 			Role:      fakeRoles[ADMIN],
@@ -1760,7 +1762,7 @@ func TestHasOrganizationNotPaidAndHasNonAdmin(t *testing.T) {
 		},
 	}
 
-	okFreeProject.Members = []ProjectMember{
+	okFreeProject.Members = []models.ProjectMember{
 		{
 			ProjectID: okFreeProject.ID,
 			Role:      fakeRoles[ADMIN],
@@ -1771,7 +1773,7 @@ func TestHasOrganizationNotPaidAndHasNonAdmin(t *testing.T) {
 		},
 	}
 
-	okPaidProject.Members = []ProjectMember{
+	okPaidProject.Members = []models.ProjectMember{
 		{
 			ProjectID: okPaidProject.ID,
 			Role:      fakeRoles[ADMIN],
@@ -1840,7 +1842,7 @@ func TestHasOrganizationNotPaidAndHasNonAdmin(t *testing.T) {
 			name: "project does not exists",
 			args: args{
 				Repo:    newFakeRepo(),
-				project: Project{},
+				project: models.Project{},
 			},
 			wantHas: false,
 			wantErr: true,

@@ -7,7 +7,7 @@ func (r *Repo) CreateCheckoutSession(cs *models.CheckoutSession) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Model(&models.CheckoutSession{}).
 		Create(cs).
 		Error
@@ -23,7 +23,7 @@ func (r *Repo) GetCheckoutSession(
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Model(&models.CheckoutSession{}).
 		Where("session_id = ?", sessionID).
 		First(&cs).
@@ -37,7 +37,7 @@ func (r *Repo) UpdateCheckoutSession(cs *models.CheckoutSession) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().Save(cs).Error
+	r.err = r.GetDB().Save(cs).Error
 
 	return r
 }
@@ -47,7 +47,7 @@ func (r *Repo) DeleteCheckoutSession(cs *models.CheckoutSession) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().Delete(cs).Error
+	r.err = r.GetDB().Delete(cs).Error
 
 	return r
 }

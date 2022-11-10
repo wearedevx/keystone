@@ -42,10 +42,10 @@ organization to a paid plan using this command.
 
 		organizationName = mustGetOrganizationName(o, args)
 
-		url, err := o.GetUpgradeUrl(organizationName)
+		url, err := o.GetUpgradeURL(organizationName)
 		exitIfErr(err)
 
-		display.UpgradeUrl(url)
+		display.UpgradeURL(url)
 	},
 }
 

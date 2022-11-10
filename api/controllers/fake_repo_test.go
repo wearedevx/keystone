@@ -85,7 +85,7 @@ func (f *fakeRepo) RemoveOldMessageForRecipent(deviceID uint, environmentID stri
 	return f
 }
 
-func (f *fakeRepo) DeleteMessage(id uint, recipientId uint) repo.IRepo {
+func (f *fakeRepo) DeleteMessage(id uint, recipientID uint) repo.IRepo {
 	if f.err != nil {
 		return f
 	}
@@ -94,7 +94,7 @@ func (f *fakeRepo) DeleteMessage(id uint, recipientId uint) repo.IRepo {
 		f.err = e
 		return f
 	}
-	f.Repo.DeleteMessage(id, recipientId)
+	f.Repo.DeleteMessage(id, recipientID)
 	return f
 }
 
@@ -407,13 +407,13 @@ func (f *fakeRepo) GetChildrenRoles(role models.Role, roles *[]models.Role) repo
 	return f
 }
 
-func (f *fakeRepo) GetDb() *gorm.DB {
-	f.called = append(f.called, "GetDb")
-	if e, ok := f.crashers["GetDb"]; ok {
+func (f *fakeRepo) GetDB() *gorm.DB {
+	f.called = append(f.called, "GetDB")
+	if e, ok := f.crashers["GetDB"]; ok {
 		f.err = e
 		return nil
 	}
-	return f.Repo.GetDb()
+	return f.Repo.GetDB()
 }
 
 func (f *fakeRepo) GetEnvironment(environment *models.Environment) repo.IRepo {
@@ -584,7 +584,7 @@ func (f *fakeRepo) GetOrCreateUser(user *models.User) repo.IRepo {
 	return f
 }
 
-func (f *fakeRepo) GetProjectByUUID(projectId string, project *models.Project) repo.IRepo {
+func (f *fakeRepo) GetProjectByUUID(projectID string, project *models.Project) repo.IRepo {
 	if f.err != nil {
 		return f
 	}
@@ -593,11 +593,11 @@ func (f *fakeRepo) GetProjectByUUID(projectId string, project *models.Project) r
 		f.err = e
 		return f
 	}
-	f.Repo.GetProjectByUUID(projectId, project)
+	f.Repo.GetProjectByUUID(projectID, project)
 	return f
 }
 
-func (f *fakeRepo) GetProjectsOrganization(organizationId string, organization *models.Organization) repo.IRepo {
+func (f *fakeRepo) GetProjectsOrganization(organizationID string, organization *models.Organization) repo.IRepo {
 	if f.err != nil {
 		return f
 	}
@@ -606,7 +606,7 @@ func (f *fakeRepo) GetProjectsOrganization(organizationId string, organization *
 		f.err = e
 		return f
 	}
-	f.Repo.GetProjectsOrganization(organizationId, organization)
+	f.Repo.GetProjectsOrganization(organizationID, organization)
 	return f
 }
 
@@ -675,7 +675,7 @@ func (f *fakeRepo) GetUser(user *models.User) repo.IRepo {
 	return f
 }
 
-func (f *fakeRepo) GetUserByEmail(userId string, users *[]models.User) repo.IRepo {
+func (f *fakeRepo) GetUserByEmail(userID string, users *[]models.User) repo.IRepo {
 	if f.err != nil {
 		return f
 	}
@@ -684,7 +684,7 @@ func (f *fakeRepo) GetUserByEmail(userId string, users *[]models.User) repo.IRep
 		f.err = e
 		return f
 	}
-	f.Repo.GetUserByEmail(userId, users)
+	f.Repo.GetUserByEmail(userID, users)
 	return f
 }
 
@@ -879,7 +879,7 @@ func (f *fakeRepo) SetLoginRequestCode(code string, otherCode string) models.Log
 	return f.Repo.SetLoginRequestCode(code, otherCode)
 }
 
-func (f *fakeRepo) GetDevices(userId uint, devices *[]models.Device) repo.IRepo {
+func (f *fakeRepo) GetDevices(userID uint, devices *[]models.Device) repo.IRepo {
 	if f.err != nil {
 		return f
 	}
@@ -888,7 +888,7 @@ func (f *fakeRepo) GetDevices(userId uint, devices *[]models.Device) repo.IRepo 
 		f.err = e
 		return f
 	}
-	f.Repo.GetDevices(userId, devices)
+	f.Repo.GetDevices(userID, devices)
 	return f
 }
 
@@ -1176,6 +1176,19 @@ func (f *fakeRepo) GetUserProjects(userID uint, projects *[]models.Project) repo
 	return f
 }
 
+func (f *fakeRepo) FindUserWithRefreshToken(refreshToken string, user *models.User) repo.IRepo {
+	if f.err != nil {
+		return f
+	}
+	f.called = append(f.called, "FindUserWithRefreshToken")
+	if e, ok := f.crashers["FindUserWithRefreshToken"]; ok {
+		f.err = e
+		return f
+	}
+	f.Repo.FindUserWithRefreshToken(refreshToken, user)
+	return f
+}
+
 // +-------------------------
 
 type fakeMessageService struct {
@@ -1194,18 +1207,18 @@ func newFakeMessageService(crashers map[string]error) message.MessageService {
 	}
 }
 
-func (f *fakeMessageService) GetMessageByUuid(uuid string) ([]byte, error) {
-	if e, ok := f.crashers["MessageService.GetMessageByUuid"]; ok {
+func (f *fakeMessageService) GetMessageByUUID(uuid string) ([]byte, error) {
+	if e, ok := f.crashers["MessageService.GetMessageByUUID"]; ok {
 		return nil, e
 	}
 
-	return f.MessageService.GetMessageByUuid(uuid)
+	return f.MessageService.GetMessageByUUID(uuid)
 }
 
-func (f *fakeMessageService) WriteMessageWithUuid(uuid string, message []byte) error {
-	if e, ok := f.crashers["MessageService.WriteMessageWithUuid"]; ok {
+func (f *fakeMessageService) WriteMessageWithUUID(uuid string, message []byte) error {
+	if e, ok := f.crashers["MessageService.WriteMessageWithUUID"]; ok {
 		return e
 	}
 
-	return f.MessageService.WriteMessageWithUuid(uuid, message)
+	return f.MessageService.WriteMessageWithUUID(uuid, message)
 }

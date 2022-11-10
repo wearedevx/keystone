@@ -37,7 +37,7 @@ func (repo *Repo) GetMessagesForUserOnEnvironment(
 		return repo
 	}
 
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Model(&models.Message{}).
 		Preload("Sender").
 		Where("recipient_device_id = ? AND environment_id = ?", device.ID, environment.EnvironmentID).
@@ -56,7 +56,7 @@ func (repo *Repo) GetMessage(message *models.Message) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Where(message).
 		First(message).
 		Error
@@ -70,7 +70,7 @@ func (repo *Repo) WriteMessage(user models.User, message models.Message) IRepo {
 	}
 
 	message.SenderID = user.ID
-	repo.err = repo.GetDb().Create(&message).Error
+	repo.err = repo.GetDB().Create(&message).Error
 	return repo
 }
 
@@ -79,7 +79,7 @@ func (repo *Repo) DeleteMessage(messageID uint, userID uint) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Delete(&models.Message{}, messageID).Error
 
 	return repo
@@ -96,7 +96,7 @@ func (repo *Repo) DeleteExpiredMessages() IRepo {
 	case DialectPostgres:
 		// Per project message deletion
 		// NOTE: ::interval is postgres specitfic
-		repo.err = repo.GetDb().
+		repo.err = repo.GetDB().
 			Exec(
 				`DELETE
 FROM messages m
@@ -114,7 +114,7 @@ WHERE
 		// Per project message deletion
 		// NOTE:  is postgres specitfic
 		// This is for the tests only
-		repo.err = repo.GetDb().
+		repo.err = repo.GetDB().
 			Exec(
 				`DELETE
 FROM messages
@@ -147,7 +147,7 @@ func (repo *Repo) GetGroupedMessagesWillExpireByUser(
 	switch dialect {
 	case DialectPostgres:
 		repo.err = repo.
-			GetDb().
+			GetDB().
 			Model(&models.Message{}).
 			Joins("inner join environments on messages.environment_id = environments.environment_id").
 			Joins("inner join projects on environments.project_id = projects.id").
@@ -161,7 +161,7 @@ func (repo *Repo) GetGroupedMessagesWillExpireByUser(
 
 	case DialectSQLite:
 		repo.err = repo.
-			GetDb().
+			GetDB().
 			Model(&models.Message{}).
 			Joins("inner join environments on messages.environment_id = environments.environment_id").
 			Joins("inner join projects on environments.project_id = projects.id").
@@ -218,7 +218,7 @@ func (repo *Repo) RemoveOldMessageForRecipient(
 		return repo
 	}
 
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Model(&models.Message{}).
 		Where("recipient_device_id = ?", publicKeyID).
 		Where("environment_id = ?", environmentID).

@@ -1,7 +1,10 @@
+//go:build !test
 // +build !test
 
 package seed
 
-func Seed() error {
+import "gorm.io/gorm"
+
+func Seed(_ *gorm.DB) error {
 	return nil
 }

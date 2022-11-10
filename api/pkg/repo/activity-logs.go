@@ -6,7 +6,7 @@ import (
 )
 
 func (r *Repo) SaveActivityLog(al *models.ActivityLog) IRepo {
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Omit(clause.Associations).
 		Create(al).
 		Error
@@ -25,7 +25,7 @@ func (r *Repo) GetActivityLogs(
 		return r
 	}
 
-	req := r.GetDb().
+	req := r.GetDB().
 		Model(&models.ActivityLog{}).
 		Joins("inner join projects on activity_logs.project_id = projects.id")
 

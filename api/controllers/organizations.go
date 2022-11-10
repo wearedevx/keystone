@@ -147,7 +147,7 @@ func UpdateOrganization(
 	}
 
 	var isOwner bool
-	var orga *models.Organization = &models.Organization{}
+	var orga = &models.Organization{}
 	inputOrga := models.Organization{}
 
 	if err = inputOrga.Deserialize(body); err != nil {

@@ -11,9 +11,9 @@ type messageService struct {
 }
 
 type MessageService interface {
-	GetMessageByUuid(uuid string) ([]byte, error)
-	WriteMessageWithUuid(uuid string, value []byte) error
-	DeleteMessageWithUuid(uuid string) error
+	GetMessageByUUID(uuid string) ([]byte, error)
+	WriteMessageWithUUID(uuid string, value []byte) error
+	DeleteMessageWithUUID(uuid string) error
 }
 
 func NewMessageService() MessageService {
@@ -22,7 +22,7 @@ func NewMessageService() MessageService {
 	}
 }
 
-func (m *messageService) GetMessageByUuid(uuid string) ([]byte, error) {
+func (m *messageService) GetMessageByUUID(uuid string) ([]byte, error) {
 	value := ""
 	m.redis.Read(uuid, &value)
 
@@ -33,12 +33,12 @@ func (m *messageService) GetMessageByUuid(uuid string) ([]byte, error) {
 	return []byte(value), nil
 }
 
-func (m *messageService) WriteMessageWithUuid(uuid string, value []byte) error {
+func (m *messageService) WriteMessageWithUUID(uuid string, value []byte) error {
 	m.redis.Write(uuid, string(value))
 	return m.redis.Err()
 }
 
-func (m *messageService) DeleteMessageWithUuid(uuid string) error {
+func (m *messageService) DeleteMessageWithUUID(uuid string) error {
 	m.redis.Delete(uuid)
 
 	return m.redis.Err()

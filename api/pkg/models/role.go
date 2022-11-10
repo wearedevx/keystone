@@ -60,17 +60,17 @@ func (rs Roles) MapWithMembersRoleNames(
 		var foundRole *Role
 		for _, role := range rs {
 			if role.Name == roleName {
-				*foundRole = role
+				foundRole = &role
 
 				break
 			}
 		}
 
-		if foundRole == nil {
+		if foundRole != nil {
+			memberRoles[member] = *foundRole
+		} else {
 			return nil, fmt.Errorf("role %s does not exist", roleName)
 		}
-
-		memberRoles[member] = *foundRole
 	}
 
 	return memberRoles, nil

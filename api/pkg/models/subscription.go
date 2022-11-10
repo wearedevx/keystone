@@ -54,7 +54,7 @@ func (pm *CheckoutSession) Serialize(out *string) (err error) {
 
 type StartSubscriptionResponse struct {
 	SessionID string `json:"session_id"`
-	Url       string `json:"url"`
+	URL       string `json:"url"`
 }
 
 func (e *StartSubscriptionResponse) Deserialize(in io.Reader) error {
@@ -72,7 +72,7 @@ func (u *StartSubscriptionResponse) Serialize(out *string) (err error) {
 }
 
 type ManageSubscriptionResponse struct {
-	Url string `json:"url"`
+	URL string `json:"url"`
 }
 
 func (e *ManageSubscriptionResponse) Deserialize(in io.Reader) error {

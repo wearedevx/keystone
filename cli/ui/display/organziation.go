@@ -33,9 +33,9 @@ func OrganizationCreated(organization models.Organization) {
 	ui.PrintSuccess("Organization %s has been created", organization.Name)
 }
 
-// ManageUrl function displays the link the user must follow to manage their
+// ManageURL function displays the link the user must follow to manage their
 // subscritption
-func ManageUrl(url string) {
+func ManageURL(url string) {
 	ui.Print(
 		ui.RenderTemplate(
 			"upgrade-url",
@@ -47,9 +47,9 @@ func ManageUrl(url string) {
 	)
 }
 
-// UpgradeUrl function displays a link the user must follow to upgrade their
+// UpgradeURL function displays a link the user must follow to upgrade their
 // organization
-func UpgradeUrl(url string) {
+func UpgradeURL(url string) {
 	ui.Print(
 		ui.RenderTemplate(
 			"upgrade-url",

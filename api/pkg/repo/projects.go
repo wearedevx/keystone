@@ -17,7 +17,7 @@ func (r *Repo) createProject(project *models.Project) IRepo {
 		return r
 	}
 
-	db := r.GetDb()
+	db := r.GetDB()
 	role := models.Role{
 		Name: "admin",
 	}
@@ -81,7 +81,7 @@ func (r *Repo) getAllEnvironmentTypes(
 		return r
 	}
 
-	db := r.GetDb()
+	db := r.GetDB()
 
 	r.err = db.Model(models.EnvironmentType{}).Find(environmentTypes).Error
 
@@ -93,7 +93,7 @@ func (r *Repo) GetProjectByUUID(uuid string, project *models.Project) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().Where("uuid = ?", uuid).First(project).Error
+	r.err = r.GetDB().Where("uuid = ?", uuid).First(project).Error
 
 	return r
 }
@@ -103,7 +103,7 @@ func (r *Repo) GetProject(project *models.Project) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Preload("Environments").
 		Preload("Organization").
 		Where(&project).
@@ -138,7 +138,7 @@ func (r *Repo) ProjectGetMembers(
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Preload("User").
 		Preload("Role").
 		Where("project_id = ?", project.ID).
@@ -157,7 +157,7 @@ func (r *Repo) ProjectGetAdmins(
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Preload("User").
 		Joins(
 			"inner join roles as r on role_id = r.id and r.name = ?",
@@ -178,7 +178,7 @@ func (r *Repo) ProjectIsMemberAdmin(
 		return false
 	}
 
-	err := r.GetDb().
+	err := r.GetDB().
 		Joins("inner join users as u on u.id = project_members.user_id").
 		Joins("inner join roles as r on role_id = r.id").
 		Where(
@@ -208,7 +208,7 @@ func (r *Repo) IsMemberOfProject(
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Joins(
 			"inner join users as u on u.id = ?",
 			member.UserID,
@@ -255,7 +255,7 @@ func (r *Repo) ProjectAddMembers(
 	}
 
 	pms := make([]models.ProjectMember, 0)
-	db := r.GetDb()
+	db := r.GetDB()
 
 	users, notFounds := r.UsersInMemberRoles(memberRoles)
 
@@ -308,7 +308,7 @@ func (r *Repo) ProjectRemoveMembers(
 		return r
 	}
 
-	db := r.GetDb()
+	db := r.GetDB()
 
 	memberIDs := make([]uint, 0)
 	for _, user := range users {
@@ -329,7 +329,7 @@ func (r *Repo) ProjectLoadUsers(project *models.Project) IRepo {
 		return r
 	}
 
-	r.GetDb().Model(project).Association("Members.User")
+	r.GetDB().Model(project).Association("Members.User")
 
 	return r
 }
@@ -343,7 +343,7 @@ func (r *Repo) ProjectSetRoleForUser(
 		return r
 	}
 
-	db := r.GetDb()
+	db := r.GetDB()
 
 	pm := models.ProjectMember{
 		Project: project,
@@ -399,7 +399,7 @@ func (r *Repo) DeleteProject(project *models.Project) IRepo {
 		return r
 	}
 
-	db := r.GetDb()
+	db := r.GetDB()
 
 	r.err = db.
 		Delete(
@@ -414,7 +414,7 @@ func (r *Repo) DeleteProject(project *models.Project) IRepo {
 
 func (r *Repo) GetUserProjects(userID uint, projects *[]models.Project) IRepo {
 	if err := r.
-		GetDb().
+		GetDB().
 		Joins("inner join project_members pm on projects.ID = pm.project_id").
 		Where("pm.user_id = ?", userID).
 		Find(&projects).
@@ -438,7 +438,7 @@ func (r *Repo) GetProjectsOrganization(
 
 	organization.ID = project.OrganizationID
 
-	r.GetDb().
+	r.GetDB().
 		Model(organization).
 		Where("id = ?", project.OrganizationID).
 		First(organization)

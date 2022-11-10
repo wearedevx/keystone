@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
+
 	"github.com/wearedevx/keystone/api/internal/activitylog"
 	"github.com/wearedevx/keystone/api/pkg/jwt"
 	"github.com/wearedevx/keystone/api/pkg/models"

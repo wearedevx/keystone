@@ -23,7 +23,7 @@ func GithubLoginSuccess() int {
 
 	// Retrieve login_attemps in db
 	Repo := new(repo.Repo)
-	db := Repo.GetDb()
+	db := Repo.GetDB()
 
 	if error := db.Find(&lrs).Error; error != nil {
 		fmt.Println("Error :", error)

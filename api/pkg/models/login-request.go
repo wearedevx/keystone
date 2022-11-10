@@ -1,14 +1,13 @@
 package models
 
 import (
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"io"
-	"math/big"
 	"strings"
 	"time"
 
+	"github.com/wearedevx/keystone/api/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -34,29 +33,8 @@ func (lr *LoginRequest) BeforeUpdate(tx *gorm.DB) (err error) {
 	return nil
 }
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-const (
-	letterIdxBits = 6                    // 6 bits to represent a letter index
-	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-)
-
-func randomString(n int) (string, error) {
-	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
-	ret := make([]byte, n)
-	for i := 0; i < n; i++ {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
-		if err != nil {
-			return "", err
-		}
-		ret[i] = letters[num.Int64()]
-	}
-
-	return string(ret), nil
-}
-
 func NewLoginRequest() (LoginRequest, error) {
-	temporaryCode, err := randomString(16)
+	temporaryCode, err := utils.RandomString(16)
 	if err != nil {
 		return LoginRequest{}, err
 	}

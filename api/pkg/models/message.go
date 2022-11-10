@@ -19,7 +19,7 @@ type Message struct {
 	RecipientID       uint        `json:"recipient_id"`
 	Environment       Environment `json:"environment"         gorm:"References:EnvironmentID" faker:"-"`
 	EnvironmentID     string      `json:"environment_id"`
-	Uuid              string      `json:"uuid"`
+	UUID              string      `json:"uuid"`
 	RecipientDeviceID uint        `json:"recipient_device_id"`
 	SenderDeviceID    uint        `json:"sender_device_id"`
 	CreatedAt         time.Time   `json:"created_at"`

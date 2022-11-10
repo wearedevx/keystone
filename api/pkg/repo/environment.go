@@ -12,7 +12,7 @@ func (repo *Repo) CreateEnvironment(environment *models.Environment) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().Create(&environment).Error
+	repo.err = repo.GetDB().Create(&environment).Error
 
 	return repo
 }
@@ -22,7 +22,7 @@ func (repo *Repo) GetEnvironment(environment *models.Environment) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Preload("EnvironmentType").
 		Preload("Project").
 		Preload("Project.Organization").
@@ -40,7 +40,7 @@ func (repo *Repo) GetOrCreateEnvironment(
 		return repo
 	}
 
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Preload("EnvironmentType").
 		Where(*environment).
 		FirstOrCreate(environment).
@@ -57,7 +57,7 @@ func (repo *Repo) GetEnvironmentsByProjectUUID(
 		return repo
 	}
 
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Model(&models.Environment{}).
 		Joins("inner join projects p on p.id = project_id").
 		Where("p.uuid = ?", projectUUID).
@@ -69,7 +69,7 @@ func (repo *Repo) GetEnvironmentsByProjectUUID(
 
 func (repo *Repo) SetNewVersionID(environment *models.Environment) error {
 	newVersionID := uuid.NewV4().String()
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Model(&models.Environment{}).
 		Where(*environment).
 		Update("version_id", newVersionID).
@@ -82,7 +82,7 @@ func (repo *Repo) GetEnvironmentPublicKeys(
 	environmentID string,
 	publicKeys *models.PublicKeys,
 ) IRepo {
-	rows, err := repo.GetDb().
+	rows, err := repo.GetDB().
 		// all the not deleted devices that are related to a user who can read
 		// the given environment (who has a role with `read=true` for the environment type
 		// of the given environment
@@ -106,12 +106,12 @@ func (repo *Repo) GetEnvironmentPublicKeys(
 	}
 
 	var PublicKey []byte
-	var UserID, PublicKeyId uint
+	var UserID, PublicKeyID uint
 	var UserUID, DeviceUID, DeviceName string
 
 	for rows.Next() {
 		if err := rows.Scan(
-			&PublicKeyId,
+			&PublicKeyID,
 			&DeviceUID,
 			&DeviceName,
 			&PublicKey,
@@ -131,7 +131,7 @@ func (repo *Repo) GetEnvironmentPublicKeys(
 						PublicKey: PublicKey,
 						Name:      DeviceName,
 						UID:       DeviceUID,
-						ID:        PublicKeyId,
+						ID:        PublicKeyID,
 					},
 				)
 				found = true
@@ -146,7 +146,7 @@ func (repo *Repo) GetEnvironmentPublicKeys(
 						PublicKey: PublicKey,
 						Name:      DeviceName,
 						UID:       DeviceUID,
-						ID:        PublicKeyId,
+						ID:        PublicKeyID,
 					},
 				},
 				UserUID: fmt.Sprint(UserUID),
@@ -162,7 +162,7 @@ func (repo *Repo) DeleteProjectsEnvironments(project *models.Project) IRepo {
 	}
 
 	repo.err = repo.
-		GetDb().
+		GetDB().
 		Delete(models.Environment{}, "project_id = ?", project.ID).
 		Error
 

@@ -1,3 +1,6 @@
+//go:build test
+// +build test
+
 package controllers
 
 import (
@@ -284,7 +287,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 				}),
 				in1: nil,
 				Repo: newFakeRepo(map[string]error{
-					"MessageService.GetMessageByUuid": errors.New(
+					"MessageService.GetMessageByUUID": errors.New(
 						"unexpected error",
 					),
 					"DeleteMessage": errors.New("not found"),
@@ -306,7 +309,7 @@ func TestGetMessagesFromProjectByUser(t *testing.T) {
 				}),
 				in1: nil,
 				Repo: newFakeRepo(map[string]error{
-					"MessageService.GetMessageByUuid": errors.New(
+					"MessageService.GetMessageByUUID": errors.New(
 						"unexpected error",
 					),
 				}),
@@ -1094,7 +1097,7 @@ func TestWriteMessages(t *testing.T) {
 					devEnvironment.EnvironmentID,
 				))),
 				Repo: newFakeRepo(map[string]error{
-					"MessageService.WriteMessageWithUuid": errors.New("unexpected error"),
+					"MessageService.WriteMessageWithUUID": errors.New("unexpected error"),
 				}),
 				user: users["admin"],
 			},
@@ -1444,7 +1447,7 @@ func seedMessages(paid bool) (
 ) {
 	users = make(map[string]models.User)
 
-	new(repo.Repo).GetDb().Transaction(func(db *gorm.DB) error {
+	new(repo.Repo).GetDB().Transaction(func(db *gorm.DB) error {
 		faker.FakeData(&project)
 		db.Create(&project)
 
@@ -1551,7 +1554,7 @@ func teardownMessages(
 	users map[string]models.User,
 	messages []models.Message,
 ) {
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		db.Delete(&messages)
 		db.Delete(&project.Environments)
 
@@ -1584,7 +1587,7 @@ func teardownMessages(
 func seedExpiredMessages() []models.Message {
 	messages := []models.Message{}
 
-	new(repo.Repo).GetDb().Transaction(func(db *gorm.DB) error {
+	new(repo.Repo).GetDB().Transaction(func(db *gorm.DB) error {
 		for i := 0; i < 10; i++ {
 			message := models.Message{}
 			faker.FakeData(&message)
@@ -1603,7 +1606,7 @@ func seedExpiredMessages() []models.Message {
 }
 
 func teardownExpiredMessages(messages []models.Message) {
-	new(repo.Repo).GetDb().Transaction(func(db *gorm.DB) error {
+	new(repo.Repo).GetDB().Transaction(func(db *gorm.DB) error {
 		db.Delete(messages)
 		return db.Error
 	})
@@ -1612,7 +1615,7 @@ func teardownExpiredMessages(messages []models.Message) {
 func seedSoonToExpireMessages() []models.Message {
 	messages := []models.Message{}
 
-	new(repo.Repo).GetDb().Transaction(func(db *gorm.DB) error {
+	new(repo.Repo).GetDB().Transaction(func(db *gorm.DB) error {
 		for i := 0; i < 10; i++ {
 			message := models.Message{}
 			faker.FakeData(&message)

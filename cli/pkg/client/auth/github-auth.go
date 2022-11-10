@@ -21,7 +21,7 @@ type PublicKey struct {
 }
 
 type gitHubAuthService struct {
-	apiUrl       string
+	apiURL       string
 	ctx          context.Context
 	conf         *oauth2.Config
 	loginRequest models.LoginRequest
@@ -33,9 +33,9 @@ type gitHubAuthService struct {
 func (g gitHubAuthService) Name() string { return "GitHub" }
 
 // GitHubAuth function returns an instance of GitHubAuth service
-func GitHubAuth(ctx context.Context, apiUrl string) AuthService {
+func GitHubAuth(ctx context.Context, apiURL string) AuthService {
 	return &gitHubAuthService{
-		apiUrl: apiUrl,
+		apiURL: apiURL,
 		ctx:    ctx,
 	}
 }
@@ -43,7 +43,7 @@ func GitHubAuth(ctx context.Context, apiUrl string) AuthService {
 // Start method initiate the oauth process by creating a login request
 // on the Keystone server and requesting a login url to GitHub
 func (g *gitHubAuthService) Start() (string, error) {
-	lr, err := getLoginRequest(g.apiUrl)
+	lr, err := getLoginRequest(g.apiURL)
 	if err != nil {
 		return "", err
 	}
@@ -75,7 +75,7 @@ func (g *gitHubAuthService) WaitForExternalLogin() error {
 	c := make(chan pollResult)
 	var result pollResult
 
-	go pollLoginRequest(g.apiUrl, g.loginRequest.TemporaryCode, c)
+	go pollLoginRequest(g.apiURL, g.loginRequest.TemporaryCode, c)
 
 	result = <-c
 
@@ -104,7 +104,7 @@ func (g gitHubAuthService) Finish(
 	deviceUID string,
 ) (models.User, string, error) {
 	return completeLogin(
-		g.apiUrl,
+		g.apiURL,
 		models.GitHubAccountType,
 		g.token,
 		pk,
@@ -131,4 +131,8 @@ func (g gitHubAuthService) CheckAccount(
 	}
 
 	return false, nil
+}
+
+func (g dummyAuthService) RefreshConnexion(refreshToken string) (string, string, error) {
+	return getNewToken(g.apiURL, refreshToken)
 }

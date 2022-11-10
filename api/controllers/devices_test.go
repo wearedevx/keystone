@@ -1,3 +1,4 @@
+//go:build test
 // +build test
 
 package controllers
@@ -169,7 +170,7 @@ func TestDeleteDevice(t *testing.T) {
 }
 
 func seedDevice(Repo *repo.Repo) (user models.User, device models.Device) {
-	db := Repo.GetDb()
+	db := Repo.GetDB()
 
 	user = models.User{}
 	device = models.Device{}
@@ -188,7 +189,7 @@ func seedDevice(Repo *repo.Repo) (user models.User, device models.Device) {
 }
 
 func teardownDevice(user models.User, device models.Device) {
-	db := new(repo.Repo).GetDb()
+	db := new(repo.Repo).GetDB()
 
 	db.Exec(
 		"delete from user_devices where user_id = ? and device_id = ?",

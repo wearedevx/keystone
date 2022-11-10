@@ -1644,7 +1644,7 @@ func TestGetProjectsOrganization(t *testing.T) {
 }
 
 func seedSingleUser() (user models.User, organization models.Organization) {
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		faker.FakeData(&user)
 		db.Create(&user)
 
@@ -1675,7 +1675,7 @@ func teardownUserAndOrganization(
 	user models.User,
 	organization models.Organization,
 ) {
-	repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		db.Delete(&models.UserDevice{}, "user_id = ?", user.ID)
 
 		for _, device := range user.Devices {
@@ -1696,7 +1696,7 @@ func seedOneProjectForOneUser() (user models.User, organization models.Organizat
 	project.OrganizationID = organization.ID
 	project.Organization = organization
 
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		db.Create(&project)
 
 		return db.Error
@@ -1710,7 +1710,7 @@ func seedOneProjectForOneUser() (user models.User, organization models.Organizat
 }
 
 func teardownProjectWithName(projectName string) {
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		project := models.Project{}
 		db.Where("name = ?", project.Name).First(&project)
 		if db.Error != nil {
@@ -1733,7 +1733,7 @@ func teardownProjectWithName(projectName string) {
 }
 
 func testsSetOrganisationPaid(organization *models.Organization) {
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		organization.Paid = true
 		return db.Save(organization).Error
 	})
@@ -1746,7 +1746,7 @@ func testsSetOrganisationPaid(organization *models.Organization) {
 func testsGetRoles() map[string]models.Role {
 	r := make(map[string]models.Role)
 
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		roles := []models.Role{}
 		db.Find(&roles)
 
@@ -1766,8 +1766,8 @@ func testsGetRoles() map[string]models.Role {
 
 func seedProjectMember(project models.Project, user models.User, role models.Role) (projectMember models.ProjectMember) {
 
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
-		projectMember := models.ProjectMember{
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
+		projectMember = models.ProjectMember{
 			ProjectID: project.ID,
 			Project:   project,
 			UserID:    user.ID,
@@ -1792,7 +1792,7 @@ func seedProjectMember(project models.Project, user models.User, role models.Rol
 func seedProjectMembers(project models.Project, users []models.User, role models.Role) []models.ProjectMember {
 	pms := make([]models.ProjectMember, len(users))
 
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		for idx, user := range users {
 			projectMember := models.ProjectMember{
 				ProjectID: project.ID,
@@ -1819,7 +1819,7 @@ func seedProjectMembers(project models.Project, users []models.User, role models
 }
 
 func teardownProjectMember(projectMember models.ProjectMember) {
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		return db.
 			Model(&models.ProjectMember{}).
 			Delete("id = ?", projectMember.ID).
@@ -1837,7 +1837,7 @@ func teardownProjectMembers(projectMembers []models.ProjectMember) {
 }
 
 func seedManyProjectsForOneUser() (user models.User, organization models.Organization, projects []models.Project) {
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		user, organization = seedSingleUser()
 		projects = make([]models.Project, 10)
 
@@ -1883,7 +1883,7 @@ func teardownProject(project models.Project) {
 }
 
 func teardownManyProjects(projects []models.Project) {
-	repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		for _, project := range projects {
 			db.Delete(
 				&models.ProjectMember{},
@@ -1906,7 +1906,7 @@ func teardownManyProjects(projects []models.Project) {
 func seedEnvironments(project models.Project) []models.Environment {
 	env := make([]models.Environment, 0)
 
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		envTypes := make([]models.EnvironmentType, 0)
 
 		if err := db.Find(&envTypes).Error; err != nil {
@@ -1937,7 +1937,7 @@ func seedEnvironments(project models.Project) []models.Environment {
 }
 
 func teardownEnvironments(environments []models.Environment) {
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		db.Delete(&environments)
 
 		return db.Error

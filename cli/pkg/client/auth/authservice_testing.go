@@ -1,3 +1,4 @@
+//go:build test
 // +build test
 
 package auth
@@ -11,12 +12,12 @@ type AuthService interface {
 	Start() (string, error)
 	WaitForExternalLogin() error
 	CheckAccount(account map[string]string) (bool, error)
-	Finish(pkey []byte, device string, deviceUID string) (models.User, string, error)
+	Finish(pkey []byte, device string, deviceUID string) (models.User, string, string, error)
 }
 
-func GetAuthService(serviceName string, apiUrl string) (AuthService, error) {
+func GetAuthService(serviceName string, apiURL string) (AuthService, error) {
 	a := new(dummyAuthService)
-	a.apiUrl = apiUrl
+	a.apiURL = apiURL
 
 	return a, nil
 }

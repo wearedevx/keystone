@@ -112,7 +112,7 @@ func (svp *SetVariablePayload) Serialize(out *string) (err error) {
 }
 
 type DestroyProjectPayload struct {
-	ProjectId string `json:"project_id"`
+	ProjectID string `json:"project_id"`
 }
 
 func (svp *DestroyProjectPayload) Deserialize(in io.Reader) error {

@@ -25,7 +25,7 @@ func (r *Repo) GetOrganizationByName(
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Preload("User").
 		Joins("left join projects p on p.organization_id = organizations.id").
 		Joins("left join project_members pm on pm.project_id = p.id").
@@ -52,7 +52,7 @@ func (r *Repo) GetOwnedOrganizationByName(
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Preload("User").
 		Where("organizations.user_id = ?", userID).
 		Where("organizations.name = ?", name).
@@ -70,7 +70,7 @@ func (r *Repo) GetOrganizationProjects(
 	orga *models.Organization,
 	projects *[]models.Project,
 ) IRepo {
-	if err := r.GetDb().Where("organization_id = ?", orga.ID).Find(&projects).Error; err != nil {
+	if err := r.GetDB().Where("organization_id = ?", orga.ID).Find(&projects).Error; err != nil {
 		r.err = err
 		return r
 	}
@@ -83,9 +83,9 @@ func (r *Repo) CreateOrganization(orga *models.Organization) IRepo {
 		return r
 	}
 
-	if err := r.GetDb().Where("name = ?", orga.Name).First(&orga).Error; err != nil {
+	if err := r.GetDB().Where("name = ?", orga.Name).First(&orga).Error; err != nil {
 		if errors.Is(gorm.ErrRecordNotFound, err) {
-			r.err = r.GetDb().Omit("paid").Create(&orga).Error
+			r.err = r.GetDB().Omit("paid").Create(&orga).Error
 			return r
 		}
 		r.err = err
@@ -101,7 +101,7 @@ func (r *Repo) GetOrganization(orga *models.Organization) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Where(*orga).
 		Preload("User").
 		First(&orga).
@@ -117,12 +117,12 @@ func (r *Repo) UpdateOrganization(orga *models.Organization) IRepo {
 	}
 
 	foundOrga := models.Organization{}
-	if err := r.GetDb().
+	if err := r.GetDB().
 		Where("name = ? and id != ?", orga.Name, orga.ID).
 		First(&foundOrga).
 		Error; err != nil {
 		if errors.Is(gorm.ErrRecordNotFound, err) {
-			r.err = r.GetDb().Omit("paid", "user_id").Save(&orga).Error
+			r.err = r.GetDB().Omit("paid", "user_id").Save(&orga).Error
 			return r
 		}
 		r.err = err
@@ -145,7 +145,7 @@ func (r *Repo) OrganizationSetCustomer(
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Model(&models.Organization{}).
 		Where("id = ?", organization.ID).
 		Update("customer_id", customer).
@@ -162,7 +162,7 @@ func (r *Repo) OrganizationSetSubscription(
 		return nil
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Model(&models.Organization{}).
 		Where("id = ?", organization.ID).
 		Update("subscription_id", subscription).
@@ -179,7 +179,7 @@ func (r *Repo) OrganizationSetPaid(
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Model(&models.Organization{}).
 		Where(organization).
 		Update("paid", paid).
@@ -196,7 +196,7 @@ func (r *Repo) GetOrganizations(
 		return r
 	}
 
-	err := r.GetDb().
+	err := r.GetDB().
 		Preload("User").
 		Joins("left join projects p on p.organization_id = organizations.id").
 		Joins("left join project_members pm on pm.project_id = p.id").
@@ -220,7 +220,7 @@ func (r *Repo) GetOwnedOrganizations(
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Preload("User").
 		Where("organizations.user_id = ?", userID).
 		Find(&orgas).
@@ -237,7 +237,7 @@ func (r *Repo) OrganizationCountMembers(
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Table("project_members").
 		Joins("inner join projects on projects.id = project_id").
 		Joins("inner join organizations on organizations.id = projects.organization_id").
@@ -256,7 +256,7 @@ func (r *Repo) IsUserOwnerOfOrga(
 ) (isOwner bool, err error) {
 	foundOrga := models.Organization{}
 
-	if err = r.GetDb().
+	if err = r.GetDB().
 		Where("user_id = ?", user.ID).
 		Where("id=?", orga.ID).
 		First(&foundOrga).Error; err != nil {
@@ -282,7 +282,7 @@ func (r *Repo) GetOrganizationMembers(
 		return r
 	}
 
-	err := r.GetDb().
+	err := r.GetDB().
 		Preload("User").
 		Preload("Role").
 		Joins("left join projects p on p.id = project_members.project_id").

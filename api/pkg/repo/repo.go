@@ -1,3 +1,4 @@
+//go:build !test
 // +build !test
 
 package repo
@@ -67,13 +68,11 @@ func getDSN() string {
 // getPostrgres gets the postgres driver for GORM
 func getPostgres() gorm.Dialector {
 	os.TempDir()
-	config := postgres.Config{
-		DSN: getDSN(),
-		DriverName: "cloudsqlpostgres",
-	}
+	dbDriverName = getOrDefault(dbDriverName, "DB_DRIVER", "postgres")
 
-	if dbDriverName != "" {
-		config.DriverName = dbDriverName
+	config := postgres.Config{
+		DSN:        getDSN(),
+		DriverName: dbDriverName,
 	}
 
 	return postgres.New(config)
@@ -110,7 +109,7 @@ func (repo *Repo) ClearErr() IRepo {
 	return repo
 }
 
-func (repo *Repo) GetDb() *gorm.DB {
+func (repo *Repo) GetDB() *gorm.DB {
 	return db
 }
 

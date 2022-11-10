@@ -36,8 +36,8 @@ func WaitAPIStart() error {
 	return errors.New("server start timeout")
 }
 
-func isServerResponse(serverUrl string) bool {
-	request, _ := http.NewRequest("GET", serverUrl, nil)
+func isServerResponse(serverURL string) bool {
+	request, _ := http.NewRequest("GET", serverURL, nil)
 
 	timeout := time.Duration(1 * time.Second)
 
@@ -52,7 +52,7 @@ func isServerResponse(serverUrl string) bool {
 	return err == nil
 }
 
-func pollServer(serverUrl string, c chan bool, maxAttempts int) {
+func pollServer(serverURL string, c chan bool, maxAttempts int) {
 	var done = false
 	attemps := 0
 
@@ -63,7 +63,7 @@ func pollServer(serverUrl string, c chan bool, maxAttempts int) {
 			done = true
 		}
 
-		isServerStarted := isServerResponse(serverUrl)
+		isServerStarted := isServerResponse(serverURL)
 
 		if isServerStarted {
 			done = true
@@ -74,13 +74,13 @@ func pollServer(serverUrl string, c chan bool, maxAttempts int) {
 	}
 }
 
-func waitForServerStarted(serverUrl string) bool {
+func waitForServerStarted(serverURL string) bool {
 	const max_attempts int = 40
 	var result bool
 
 	c := make(chan bool)
 
-	go pollServer(serverUrl, c, max_attempts)
+	go pollServer(serverURL, c, max_attempts)
 
 	result = <-c
 
@@ -180,7 +180,7 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 
 	for _, orga := range user.Organizations {
 		orga.Paid = true
-		Repo.GetDb().Save(&orga)
+		Repo.GetDB().Save(&orga)
 	}
 
 	if err := Repo.Err(); err != nil {
@@ -316,13 +316,13 @@ func MakeOrgaFree(env *testscript.Env) error {
 	Repo := new(repo.Repo)
 
 	user := models.User{UserID: userID}
-	if err := Repo.GetDb().Preload("Organizations").Where("user_id = ?", userID).First(&user).Error; err != nil {
+	if err := Repo.GetDB().Preload("Organizations").Where("user_id = ?", userID).First(&user).Error; err != nil {
 		return err
 	}
 
 	for _, orga := range user.Organizations {
 		orga.Paid = false
-		if err := Repo.GetDb().Save(&orga).Error; err != nil {
+		if err := Repo.GetDB().Save(&orga).Error; err != nil {
 			return err
 		}
 

@@ -14,14 +14,14 @@ type KeystoneClientImpl struct {
 // NewKeystoneClient function returns a new instance of KeysotneClient
 func NewKeystoneClient() (KeystoneClient, *errors.Error) {
 	account, index := config.GetCurrentAccount()
-	token := config.GetAuthToken()
+	token, refreshTokent := config.GetAuthToken()
 
 	if index < 0 {
 		return nil, errors.MustBeLoggedIn(nil)
 	}
 
 	return &KeystoneClientImpl{
-		r: newRequester(account.UserID, token),
+		r: newRequester(account.UserID, token, refreshToken),
 	}, nil
 }
 

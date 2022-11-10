@@ -417,7 +417,7 @@ func TestPutMembersSetRole(t *testing.T) {
 func seedMembers(
 	paid bool,
 ) (project models.Project, users map[string]models.User) {
-	new(repo.Repo).GetDb().Transaction(func(db *gorm.DB) error {
+	new(repo.Repo).GetDB().Transaction(func(db *gorm.DB) error {
 		roles := make([]models.Role, 5)
 
 		db.Model(&models.Role{}).Find(&roles)
@@ -469,7 +469,7 @@ func seedMembers(
 }
 
 func teardownMembers(project models.Project, users map[string]models.User) {
-	new(repo.Repo).GetDb().Transaction(func(db *gorm.DB) error {
+	new(repo.Repo).GetDB().Transaction(func(db *gorm.DB) error {
 		db.
 			Exec("delete from project_members where project_id = ?", project.ID).
 			Exec(`

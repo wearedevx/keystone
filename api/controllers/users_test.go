@@ -333,25 +333,25 @@ func TestGetAuthRedirect(t *testing.T) {
 		Version:       "test-version",
 	}.Encode()
 
-	okUrl, _ := url.Parse(
+	okURL, _ := url.Parse(
 		fmt.Sprintf(
 			"http://tests.com/redirect?state=%s&code=123456",
 			goodState,
 		),
 	)
-	tooShortCodeUrl, _ := url.Parse(
+	tooShortCodeURL, _ := url.Parse(
 		fmt.Sprintf(
 			"http://tests.com/redirect?state=%s&code=123456",
 			tooShortState,
 		),
 	)
-	notFoundUrl, _ := url.Parse(
+	notFoundURL, _ := url.Parse(
 		fmt.Sprintf(
 			"http://tests.com/redirect?state=%s&code=123456",
 			notFoundState,
 		),
 	)
-	badUrl, _ := url.Parse("http://tests.com/redirect?state=rubbish")
+	badURL, _ := url.Parse("http://tests.com/redirect?state=rubbish")
 
 	type args struct {
 		w    http.ResponseWriter
@@ -371,7 +371,7 @@ func TestGetAuthRedirect(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: okUrl,
+					URL: okURL,
 				},
 				in2:  router.Params{},
 				Repo: newFakeRepo(noCrashers),
@@ -387,7 +387,7 @@ func TestGetAuthRedirect(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: badUrl,
+					URL: badURL,
 				},
 				in2:  router.Params{},
 				Repo: newFakeRepo(noCrashers),
@@ -403,7 +403,7 @@ func TestGetAuthRedirect(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: tooShortCodeUrl,
+					URL: tooShortCodeURL,
 				},
 				in2:  router.Params{},
 				Repo: newFakeRepo(noCrashers),
@@ -419,7 +419,7 @@ func TestGetAuthRedirect(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: notFoundUrl,
+					URL: notFoundURL,
 				},
 				in2:  router.Params{},
 				Repo: newFakeRepo(noCrashers),
@@ -556,13 +556,13 @@ func TestGetLoginRequest(t *testing.T) {
 	lr := seedLoginRequest()
 	defer teardownLoginRequest(lr)
 
-	okUrl, _ := url.Parse(
+	okURL, _ := url.Parse(
 		fmt.Sprintf("http://tests.com/login-request?code=%s", lr.TemporaryCode),
 	)
-	notFoundUrl, _ := url.Parse(
+	notFoundURL, _ := url.Parse(
 		"http://tests.com/login-request?code=notacodebutitcouldhavebeenjusthavetobelongenough",
 	)
-	tooShortUrl, _ := url.Parse(
+	tooShortURL, _ := url.Parse(
 		"http://tests.com/login-request?code=notaco",
 	)
 
@@ -585,7 +585,7 @@ func TestGetLoginRequest(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: okUrl,
+					URL: okURL,
 				},
 				in2:  router.Params{},
 				Repo: newFakeRepo(noCrashers),
@@ -600,7 +600,7 @@ func TestGetLoginRequest(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: notFoundUrl,
+					URL: notFoundURL,
 				},
 				in2:  router.Params{},
 				Repo: newFakeRepo(noCrashers),
@@ -615,7 +615,7 @@ func TestGetLoginRequest(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: tooShortUrl,
+					URL: tooShortURL,
 				},
 				in2:  router.Params{},
 				Repo: newFakeRepo(noCrashers),
@@ -630,7 +630,7 @@ func TestGetLoginRequest(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: okUrl,
+					URL: okURL,
 				},
 				in2: router.Params{},
 				Repo: newFakeRepo(map[string]error{
@@ -845,7 +845,7 @@ func TestGetUserKeys(t *testing.T) {
 }
 
 func seedOnlyDevice() (device models.Device) {
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		faker.FakeData(&device)
 		db.Create(&device)
 
@@ -859,7 +859,7 @@ func seedOnlyDevice() (device models.Device) {
 }
 
 func teardownOnlyDevice(device models.Device) {
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		db.Delete(&device)
 		return db.Error
 	})
@@ -869,7 +869,7 @@ func teardownOnlyDevice(device models.Device) {
 }
 
 func seedLoginRequest() (lr models.LoginRequest) {
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		lr.TemporaryCode = faker.UUIDDigit()
 
 		db.Create(&lr)
@@ -884,7 +884,7 @@ func seedLoginRequest() (lr models.LoginRequest) {
 }
 
 func teardownLoginRequest(lr models.LoginRequest) {
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		db.Delete(&lr)
 
 		return db.Error

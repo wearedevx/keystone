@@ -36,13 +36,13 @@ func TestMakeToken(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := MakeToken(tt.args.user, tt.args.deviceUID, tt.args.when)
+			gotToken, _, err := MakeToken(tt.args.user, tt.args.deviceUID, tt.args.when)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("MakeToken() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
-				t.Errorf("MakeToken() = %v, want %v", got, tt.want)
+			if gotToken != tt.want {
+				t.Errorf("MakeToken() = %v, want %v", gotToken, tt.want)
 			}
 		})
 	}
@@ -52,7 +52,7 @@ func TestVerifyToken(t *testing.T) {
 	type args struct {
 		token string
 	}
-	okToken, _ := MakeToken(models.User{UserID: "memberx@github"}, "unique-device-id", time.Now())
+	okToken, _, _ := MakeToken(models.User{UserID: "memberx@github"}, "unique-device-id", time.Now())
 	tests := []struct {
 		name         string
 		args         args

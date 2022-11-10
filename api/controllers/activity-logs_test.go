@@ -336,7 +336,7 @@ func seedActivityLogs(paid bool) (models.Project, models.Organization, models.Us
 	var device models.Device
 
 	Repo := new(repo.Repo)
-	db := Repo.GetDb()
+	db := Repo.GetDB()
 
 	user = models.User{}
 	device = models.Device{}
@@ -378,7 +378,7 @@ func seedActivityLogs(paid bool) (models.Project, models.Organization, models.Us
 		panic(fmt.Sprintf("prod environment not found for %d", project.ID))
 	}
 
-	err := Repo.GetDb().Exec(
+	err := Repo.GetDB().Exec(
 		`insert into activity_logs (user_id, project_id, environment_id, action, success, message, created_at, updated_at)
 values
 (@userID, @projectID, @prodID,    "GetMessagesFromProjectByUser", true,  "",                                                           CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -407,7 +407,7 @@ values
 
 func teardownActivityLogs(p models.Project, o models.Organization, u models.User) {
 	Repo := new(repo.Repo)
-	db := Repo.GetDb()
+	db := Repo.GetDB()
 
 	db.Exec(
 		`delete from activity_logs where project_id = @project_id`,

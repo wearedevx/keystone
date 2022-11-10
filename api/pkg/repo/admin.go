@@ -1,3 +1,4 @@
+//go:build !test
 // +build !test
 
 package repo
@@ -6,7 +7,7 @@ func (r *Repo) GetAdminsFromUserProjects(
 	userID uint,
 	adminProjectsMap *map[string][]string,
 ) IRepo {
-	rows, err := r.GetDb().Raw(`
+	rows, err := r.GetDB().Raw(`
 SELECT
 	u.email,
 	p.name

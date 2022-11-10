@@ -6,6 +6,8 @@ import (
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v4"
+
+	"github.com/wearedevx/keystone/api/internal/utils"
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 
@@ -21,13 +23,17 @@ type customClaims struct {
 	jwt.StandardClaims
 }
 
-func MakeToken(user models.User, deviceUID string, when time.Time) (string, error) {
+func createRefreshToken() (string, error) {
+	return utils.RandomString(64)
+}
+
+func MakeToken(user models.User, deviceUID string, when time.Time) (string, string, error) {
 	salt := []byte(salt)
 
 	claims := customClaims{
 		DeviceUID: deviceUID,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: when.Add(30 * 24 * time.Hour).Unix(),
+			ExpiresAt: when.Add(24 * time.Hour).Unix(),
 			IssuedAt:  when.Unix(),
 			Issuer:    "keystone",
 			Subject:   user.UserID,
@@ -36,7 +42,17 @@ func MakeToken(user models.User, deviceUID string, when time.Time) (string, erro
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString(salt)
+	refreshToken, err := createRefreshToken()
+	if err != nil {
+		return "", "", err
+	}
+
+	signed, err := token.SignedString(salt)
+	if err != nil {
+		return "", "", err
+	}
+
+	return signed, refreshToken, nil
 }
 
 func cleanUpToken(token string) string {

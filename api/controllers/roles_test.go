@@ -180,7 +180,7 @@ func TestGetRoles(t *testing.T) {
 }
 
 func teardownRoles() {
-	repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		db.Delete(
 			&models.Roles{},
 			"1 = 1",
@@ -190,7 +190,7 @@ func teardownRoles() {
 	})
 }
 func seedRoles() {
-	repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		seed.Seed(db)
 		return db.Error
 	})

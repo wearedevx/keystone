@@ -19,7 +19,7 @@ func TestNewMessageService(t *testing.T) {
 	})
 }
 
-func TestMessageService_GetMessageByUuid(t *testing.T) {
+func TestMessageService_GetMessageByUUID(t *testing.T) {
 	type args struct {
 		uuid string
 	}
@@ -58,10 +58,10 @@ func TestMessageService_GetMessageByUuid(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m := NewMessageService().(*messageService)
 			m.redis.SetupFixtures(tt.fixtures)
-			got, err := m.GetMessageByUuid(tt.args.uuid)
+			got, err := m.GetMessageByUUID(tt.args.uuid)
 			if (err != nil) != tt.wantErr {
 				t.Errorf(
-					"MessageService.GetMessageByUuid() error = %v, wantErr %v",
+					"MessageService.GetMessageByUUID() error = %v, wantErr %v",
 					err,
 					tt.wantErr,
 				)
@@ -69,7 +69,7 @@ func TestMessageService_GetMessageByUuid(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf(
-					"MessageService.GetMessageByUuid() = %v, want %v",
+					"MessageService.GetMessageByUUID() = %v, want %v",
 					got,
 					tt.want,
 				)
@@ -78,7 +78,7 @@ func TestMessageService_GetMessageByUuid(t *testing.T) {
 	}
 }
 
-func TestMessageService_WriteMessageWithUuid(t *testing.T) {
+func TestMessageService_WriteMessageWithUUID(t *testing.T) {
 	type args struct {
 		uuid  string
 		value []byte
@@ -103,9 +103,9 @@ func TestMessageService_WriteMessageWithUuid(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m := NewMessageService().(*messageService)
 			m.redis.SetupFixtures(tt.fixtures)
-			if err := m.WriteMessageWithUuid(tt.args.uuid, tt.args.value); (err != nil) != tt.wantErr {
+			if err := m.WriteMessageWithUUID(tt.args.uuid, tt.args.value); (err != nil) != tt.wantErr {
 				t.Errorf(
-					"MessageService.WriteMessageWithUuid() error = %v, wantErr %v",
+					"MessageService.WriteMessageWithUUID() error = %v, wantErr %v",
 					err,
 					tt.wantErr,
 				)
@@ -114,7 +114,7 @@ func TestMessageService_WriteMessageWithUuid(t *testing.T) {
 	}
 }
 
-func TestMessageService_DeleteMessageWithUuid(t *testing.T) {
+func TestMessageService_DeleteMessageWithUUID(t *testing.T) {
 	type args struct {
 		uuid string
 	}
@@ -139,16 +139,16 @@ func TestMessageService_DeleteMessageWithUuid(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m := NewMessageService().(*messageService)
 			m.redis.SetupFixtures(tt.fixtures)
-			if err := m.DeleteMessageWithUuid(tt.args.uuid); (err != nil) != tt.wantErr {
+			if err := m.DeleteMessageWithUUID(tt.args.uuid); (err != nil) != tt.wantErr {
 				t.Errorf(
-					"MessageService.DeleteMessageWithUuid() error = %v, wantErr %v",
+					"MessageService.DeleteMessageWithUUID() error = %v, wantErr %v",
 					err,
 					tt.wantErr,
 				)
 			}
 			if _, ok := tt.fixtures[tt.args.uuid]; ok {
 				t.Errorf(
-					"MessageService.DeleteMessageWithUuid() still has uuid %v",
+					"MessageService.DeleteMessageWithUUID() still has uuid %v",
 					tt.args.uuid,
 				)
 			}

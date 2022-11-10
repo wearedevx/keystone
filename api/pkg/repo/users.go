@@ -3,9 +3,11 @@ package repo
 import (
 	"errors"
 	"fmt"
+	"time"
+
+	"gorm.io/gorm"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
-	"gorm.io/gorm"
 )
 
 func (r *Repo) GetUser(user *models.User) IRepo {
@@ -13,7 +15,7 @@ func (r *Repo) GetUser(user *models.User) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Preload("Devices").
 		Where("user_id = ?", user.UserID).
 		First(user).
@@ -29,7 +31,7 @@ func (r *Repo) findDeletedDevice(
 		return r.Err()
 	}
 
-	err = r.GetDb().
+	err = r.GetDB().
 		Unscoped().
 		Where("uid = ?", device.UID).
 		First(&device).
@@ -48,7 +50,7 @@ func (r *Repo) undeleteOrCreateDevices(
 	for _, userDevice := range user.Devices {
 		if err := r.findDeletedDevice(&userDevice); err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				if err := r.AddNewDevice(
+				if err = r.AddNewDevice(
 					userDevice,
 					*user,
 				).Err(); err != nil {
@@ -77,7 +79,7 @@ func (r *Repo) GetOrCreateUser(user *models.User) IRepo {
 		return r
 	}
 
-	db := r.GetDb()
+	db := r.GetDB()
 
 	foundUser := models.User{
 		AccountType: user.AccountType,
@@ -149,7 +151,7 @@ func (r *Repo) FindUsers(
 
 	userSlice := make([]models.User, 0)
 
-	db := r.GetDb()
+	db := r.GetDB()
 
 	r.err = db.Where("user_id IN ?", userIDs).Find(&userSlice).Error
 
@@ -181,8 +183,26 @@ func (r *Repo) GetUserByEmail(email string, users *[]models.User) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().Where("email = ?", email).Find(users).Error
+	r.err = r.GetDB().Where("email = ?", email).Find(users).Error
 	if len(*users) == 0 {
+		r.err = ErrorNotFound
+	}
+
+	return r
+}
+
+func (r *Repo) FindUserWithRefreshToken(token string, user *models.User) IRepo {
+	if r.Err() != nil {
+		return r
+	}
+
+	r.err = r.GetDB().
+		Where("refresh_token = ?", token).
+		Where("refresh_expiration NOT NULL").
+		Where("refresh_expiration <= ?", time.Now()).
+		First(user).
+		Error
+	if user == nil {
 		r.err = ErrorNotFound
 	}
 

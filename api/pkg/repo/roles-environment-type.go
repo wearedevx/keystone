@@ -11,7 +11,7 @@ func (repo *Repo) CreateRoleEnvironmentType(
 		return repo
 	}
 
-	repo.err = repo.GetDb().Create(&rolesEnvironmentType).Error
+	repo.err = repo.GetDB().Create(&rolesEnvironmentType).Error
 
 	return repo
 }
@@ -23,7 +23,7 @@ func (repo *Repo) GetOrCreateRoleEnvType(
 		return repo
 	}
 
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Where(
 			"role_id = ? and environment_type_id = ?",
 			ret.RoleID,
@@ -42,7 +42,7 @@ func (repo *Repo) GetRolesEnvironmentType(
 		return repo
 	}
 
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Where(*rolesEnvironmentType).
 		First(&rolesEnvironmentType).
 		Error

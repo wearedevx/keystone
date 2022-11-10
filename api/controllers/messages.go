@@ -119,7 +119,7 @@ func GetMessagesFromProjectByUser(
 			curr.Environment = environment
 			curr.Message.Payload, err = Repo.
 				MessageService().
-				GetMessageByUuid(curr.Message.Uuid)
+				GetMessageByUUID(curr.Message.UUID)
 
 			if err != nil {
 				fmt.Printf(
@@ -290,7 +290,7 @@ func WriteMessages(
 
 		messageToWrite := &models.Message{
 			RecipientID:       clientMessage.RecipientID,
-			Uuid:              uuid.NewV4().String(),
+			UUID:              uuid.NewV4().String(),
 			EnvironmentID:     clientMessage.EnvironmentID,
 			SenderID:          user.ID,
 			RecipientDeviceID: clientMessage.RecipientDeviceID,
@@ -306,8 +306,8 @@ func WriteMessages(
 
 		if err = Repo.
 			MessageService().
-			WriteMessageWithUuid(
-				messageToWrite.Uuid,
+			WriteMessageWithUUID(
+				messageToWrite.UUID,
 				clientMessage.Payload,
 			); err != nil {
 			status = http.StatusInternalServerError
@@ -400,7 +400,7 @@ func DeleteMessage(
 
 	if err = Repo.
 		MessageService().
-		DeleteMessageWithUuid(message.Uuid); err != nil {
+		DeleteMessageWithUUID(message.UUID); err != nil {
 		fmt.Printf("Error deleting message on redis: %+v\n", err)
 	}
 

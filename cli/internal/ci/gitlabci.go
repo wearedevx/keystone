@@ -25,7 +25,7 @@ var (
 const GitlabCI CiServiceType = "gitlab-ci"
 
 type GitlabOptions struct {
-	BaseUrl string `yaml:"base_url"`
+	BaseURL string `yaml:"base_url"`
 	Project string `yaml:"project"`
 }
 
@@ -44,7 +44,7 @@ type gitlabCiService struct {
 	log           *log.Logger
 	err           error
 	name          string
-	apiUrl        string
+	apiURL        string
 	ctx           *core.Context
 	apiKey        ApiKey
 	client        *gitlab.Client
@@ -55,8 +55,8 @@ type gitlabCiService struct {
 
 // configServiceName function returns the key to find the ApiKey
 // in the configuration file
-func configServiceName(baseUrl string) string {
-	domain := strings.TrimPrefix(baseUrl, "https://")
+func configServiceName(baseURL string) string {
+	domain := strings.TrimPrefix(baseURL, "https://")
 	domain = strings.TrimPrefix(domain, "http://")
 	domain = strings.ReplaceAll(domain, ".", "#")
 
@@ -64,7 +64,7 @@ func configServiceName(baseUrl string) string {
 }
 
 // GitLabCi function return a `CiService` that works with the GitLab API
-func GitLabCi(ctx *core.Context, name string, apiUrl string) CiService {
+func GitLabCi(ctx *core.Context, name string, apiURL string) CiService {
 	kf := keystonefile.KeystoneFile{}
 	kf.Load(ctx.Wd)
 
@@ -78,12 +78,12 @@ func GitLabCi(ctx *core.Context, name string, apiUrl string) CiService {
 		err:    nil,
 		log:    log.New(log.Writer(), "[GitlabCi] ", 0),
 		name:   name,
-		apiUrl: apiUrl,
+		apiURL: apiURL,
 		ctx:    ctx,
 		apiKey: ApiKey(apiKey),
 		client: &gitlab.Client{},
 		options: GitlabOptions{
-			BaseUrl: savedService.Options[OPTION_KEY_BASE_URL],
+			BaseURL: savedService.Options[OPTION_KEY_BASE_URL],
 			Project: savedService.Options[OPTION_KEY_PROJECT],
 		},
 		environment:   "",
@@ -118,9 +118,9 @@ default:
 
 // Type method returns the type of the service
 func (g *gitlabCiService) Type() string {
-	baseUrl := g.options.BaseUrl
+	baseURL := g.options.BaseURL
 
-	return configServiceName(baseUrl)
+	return configServiceName(baseURL)
 }
 
 // Setup method starts th ci service setu process, asking
@@ -130,12 +130,12 @@ func (g *gitlabCiService) Setup() CiService {
 		return g
 	}
 
-	g.options.BaseUrl = g.askForBaseUrl()
+	g.options.BaseURL = g.askForBaseURL()
 	g.apiKey = ApiKey(g.askForPersonalAccessToken())
 	g.options.Project = g.askForProjectName()
 
 	config.SetServiceApiKey(
-		configServiceName(g.options.BaseUrl),
+		configServiceName(g.options.BaseURL),
 		string(g.apiKey),
 	)
 	config.Write()
@@ -146,7 +146,7 @@ func (g *gitlabCiService) Setup() CiService {
 // GetOptions method returns the service options
 func (g *gitlabCiService) GetOptions() map[string]string {
 	return map[string]string{
-		OPTION_KEY_BASE_URL: g.options.BaseUrl,
+		OPTION_KEY_BASE_URL: g.options.BaseURL,
 		OPTION_KEY_PROJECT:  g.options.Project,
 	}
 }
@@ -164,7 +164,7 @@ func (g *gitlabCiService) PushSecret(
 	g.environment = environment
 	g.log.Printf(
 		"Sending secrets to %s/%s on environment %s\n",
-		g.options.BaseUrl,
+		g.options.BaseURL,
 		g.options.Project,
 		environment,
 	)
@@ -285,14 +285,14 @@ func (g *gitlabCiService) CheckSetup() CiService {
 	}
 
 	g.log.Printf(
-		"Current setup for %s:\n\tBaseUrl: %s,\n\t,Project: %s\n\t,ApiKey: %s\n",
+		"Current setup for %s:\n\tBaseURL: %s,\n\t,Project: %s\n\t,ApiKey: %s\n",
 		g.Name(),
-		g.options.BaseUrl,
+		g.options.BaseURL,
 		g.options.Project,
 		g.apiKey,
 	)
 
-	if len(g.options.BaseUrl) == 0 ||
+	if len(g.options.BaseURL) == 0 ||
 		len(g.apiKey) == 0 ||
 		len(g.options.Project) == 0 {
 		g.err = ErrorMissingCiInformation
@@ -306,8 +306,8 @@ func (g *gitlabCiService) Error() error {
 	return g.err
 }
 
-func (g *gitlabCiService) askForBaseUrl() string {
-	original := g.options.BaseUrl
+func (g *gitlabCiService) askForBaseURL() string {
+	original := g.options.BaseURL
 
 	if original == "" {
 		original = "gitlab.com"

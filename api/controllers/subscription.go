@@ -90,7 +90,7 @@ func PostSubscription(
 
 	response = &models.StartSubscriptionResponse{
 		SessionID: sessionID,
-		Url:       url,
+		URL:       url,
 	}
 
 done:
@@ -348,7 +348,7 @@ func ManageSubscription(
 	}
 
 	result = &models.ManageSubscriptionResponse{
-		Url: url,
+		URL: url,
 	}
 
 done:

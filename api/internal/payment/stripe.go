@@ -46,18 +46,18 @@ func (sp *stripePayment) StartCheckout(
 	var cus *stripe.Customer
 	var ses *stripe.CheckoutSession
 
-	successUrl := fmt.Sprintf(
+	successURL := fmt.Sprintf(
 		"https://%s/checkout-success?session_id={CHECKOUT_SESSION_ID}",
 		constants.Domain,
 	)
-	cancelUrl := fmt.Sprintf(
+	cancelURL := fmt.Sprintf(
 		"https://%s/checkout-cancel?session_id={CHECKOUT_SESSION_ID}",
 		constants.Domain,
 	)
 
 	sessionParams := stripe.CheckoutSessionParams{
-		SuccessURL:         stripe.String(successUrl),
-		CancelURL:          stripe.String(cancelUrl),
+		SuccessURL:         stripe.String(successURL),
+		CancelURL:          stripe.String(cancelURL),
 		PaymentMethodTypes: stripe.StringSlice([]string{"card"}),
 		Mode: stripe.String(
 			string(stripe.CheckoutSessionModeSubscription),
@@ -265,7 +265,6 @@ done:
 	return subscription, err
 }
 
-//
 func stripeGetSeats(subscriptionID string) (seats int, err error) {
 	var inv *stripe.Invoice
 	params := stripe.InvoiceParams{
@@ -287,7 +286,6 @@ done:
 	return seats, err
 }
 
-//
 func stripeSubscriptionStatus(
 	in stripe.SubscriptionStatus,
 ) (out SubscriptionStatus) {

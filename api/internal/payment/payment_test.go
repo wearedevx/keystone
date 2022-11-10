@@ -42,7 +42,7 @@ func Test_stripePayment_StartCheckout(t *testing.T) {
 		args           args
 		wantSessionID  string
 		wantCustomerID string
-		wantUrl        string
+		wantURL        string
 		wantErr        bool
 	}{
 		{
@@ -65,7 +65,7 @@ func Test_stripePayment_StartCheckout(t *testing.T) {
 			},
 			wantSessionID:  "session-id",
 			wantCustomerID: "customer-id",
-			wantUrl:        "http://session.url",
+			wantURL:        "http://session.url",
 			wantErr:        false,
 		},
 		{
@@ -88,14 +88,14 @@ func Test_stripePayment_StartCheckout(t *testing.T) {
 			},
 			wantSessionID:  "session-id",
 			wantCustomerID: "customer-12",
-			wantUrl:        "http://session.url",
+			wantURL:        "http://session.url",
 			wantErr:        false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sp := &stripePayment{}
-			gotSessionID, gotCustomerID, gotUrl, err := sp.StartCheckout(tt.args.organization, tt.args.seats)
+			gotSessionID, gotCustomerID, gotURL, err := sp.StartCheckout(tt.args.organization, tt.args.seats)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("stripePayment.StartCheckout() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -106,8 +106,8 @@ func Test_stripePayment_StartCheckout(t *testing.T) {
 			if gotCustomerID != tt.wantCustomerID {
 				t.Errorf("stripePayment.StartCheckout() gotCustomerID = %v, want %v", gotCustomerID, tt.wantCustomerID)
 			}
-			if gotUrl != tt.wantUrl {
-				t.Errorf("stripePayment.StartCheckout() gotUrl = %v, want %v", gotUrl, tt.wantUrl)
+			if gotURL != tt.wantURL {
+				t.Errorf("stripePayment.StartCheckout() gotURL = %v, want %v", gotURL, tt.wantURL)
 			}
 		})
 	}
@@ -121,7 +121,7 @@ func Test_stripePayment_GetManagementLink(t *testing.T) {
 		name    string
 		sp      *stripePayment
 		args    args
-		wantUrl string
+		wantURL string
 		wantErr bool
 	}{
 		{
@@ -132,20 +132,20 @@ func Test_stripePayment_GetManagementLink(t *testing.T) {
 					CustomerID: "customer-id",
 				},
 			},
-			wantUrl: "http://portal-session.url",
+			wantURL: "http://portal-session.url",
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sp := &stripePayment{}
-			gotUrl, err := sp.GetManagementLink(tt.args.organization)
+			gotURL, err := sp.GetManagementLink(tt.args.organization)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("stripePayment.GetManagementLink() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if gotUrl != tt.wantUrl {
-				t.Errorf("stripePayment.GetManagementLink() = %v, want %v", gotUrl, tt.wantUrl)
+			if gotURL != tt.wantURL {
+				t.Errorf("stripePayment.GetManagementLink() = %v, want %v", gotURL, tt.wantURL)
 			}
 		})
 	}

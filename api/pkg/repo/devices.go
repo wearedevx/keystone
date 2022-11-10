@@ -15,7 +15,7 @@ func (r *Repo) GetDevice(device *models.Device) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Where(&device).
 		First(device).
 		Error
@@ -28,7 +28,7 @@ func (r *Repo) GetDeviceByUserID(userID uint, device *models.Device) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Joins("left join user_devices on user_devices.device_id = devices.id").
 		Joins("left join users on users.id = user_devices.user_id").
 		Where(&device).
@@ -44,7 +44,7 @@ func (r *Repo) GetDevices(userID uint, devices *[]models.Device) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Joins("left join user_devices on user_devices.device_id = devices.id").
 		Joins("left join users on users.id = user_devices.user_id").
 		Where("users.id = ?", userID).
@@ -58,7 +58,7 @@ func (r *Repo) GetNewlyCreatedDevices(devices *[]models.Device) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Preload("Users").
 		Joins("left join user_devices on user_devices.device_id = devices.id").
 		Where("user_devices.newly_created = true").
@@ -83,7 +83,7 @@ func (r *Repo) UpdateDeviceLastUsedAt(deviceUID string) IRepo {
 
 	device.LastUsedAt = time.Now()
 
-	r.err = r.GetDb().Save(&device).Error
+	r.err = r.GetDB().Save(&device).Error
 
 	return r
 }
@@ -94,7 +94,7 @@ func (r *Repo) RevokeDevice(userID uint, deviceUID string) IRepo {
 	}
 
 	device := models.Device{}
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Joins("left join user_devices on user_devices.device_id = devices.id").
 		Joins("left join users on users.id = user_devices.user_id").
 		Where("users.id = ? and devices.uid = ?", userID, deviceUID).
@@ -106,7 +106,7 @@ func (r *Repo) RevokeDevice(userID uint, deviceUID string) IRepo {
 	}
 
 	// Remove message aimed for the device
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Model(&models.Message{}).
 		Where("recipient_device_id = ? and sender_device_id = ?", device.ID, device.ID).
 		Delete(models.Message{}).Error
@@ -115,7 +115,7 @@ func (r *Repo) RevokeDevice(userID uint, deviceUID string) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().
+	r.err = r.GetDB().
 		Delete(&device).Error
 
 	if r.err != nil {
@@ -129,7 +129,7 @@ func (r *Repo) AddNewDevice(
 	device models.Device,
 	user models.User,
 ) IRepo {
-	db := r.GetDb()
+	db := r.GetDB()
 
 	// TODO: this should probably go to the controller
 	matched, _ := regexp.MatchString(`^[a-zA-Z0-9\.\-\_]{1,}$`, device.Name)
@@ -169,7 +169,7 @@ func (r *Repo) AddNewDevice(
 
 func (r *Repo) SetNewlyCreatedDevice(flag bool, deviceID uint, userID uint) IRepo {
 
-	if err := r.GetDb().Model(&models.UserDevice{}).Where("user_id = ? and device_id = ?", userID, deviceID).Update("newly_created", flag).Error; err != nil {
+	if err := r.GetDB().Model(&models.UserDevice{}).Where("user_id = ? and device_id = ?", userID, deviceID).Update("newly_created", flag).Error; err != nil {
 		r.err = err
 	}
 	return r

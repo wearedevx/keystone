@@ -78,7 +78,7 @@ func (s *LoginService) LogIntoExisitingAccount(accountIndex int) {
 		publicKey = keyPair.Public.Value
 	}
 
-	_, jwtToken, err := s.c.Finish(
+	_, jwtToken, refreshToken, err := s.c.Finish(
 		publicKey,
 		config.GetDeviceName(),
 		config.GetDeviceUID(),
@@ -88,7 +88,7 @@ func (s *LoginService) LogIntoExisitingAccount(accountIndex int) {
 		return
 	}
 
-	config.SetAuthToken(jwtToken)
+	config.SetAuthToken(jwtToken, refreshToken)
 	config.Write()
 }
 
@@ -105,7 +105,7 @@ func (s *LoginService) CreateAccountAndLogin() {
 
 	// Transfer credentials to the server
 	// Create (or get) the user info
-	user, jwtToken, err := s.c.Finish(
+	user, jwtToken, refreshToken err := s.c.Finish(
 		keyPair.Public.Value,
 		deviceName,
 		deviceUID,
@@ -138,7 +138,7 @@ func (s *LoginService) CreateAccountAndLogin() {
 	config.SetUserPrivateKey(keyPair.Private.Value)
 
 	config.SetCurrentAccount(accountIndex)
-	config.SetAuthToken(jwtToken)
+	config.SetAuthToken(jwtToken, refreshToken)
 	config.Write()
 }
 

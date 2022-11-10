@@ -43,7 +43,7 @@ type gitHubCiService struct {
 	err          error
 	log          *log.Logger
 	name         string
-	apiUrl       string
+	apiURL       string
 	ctx          *core.Context
 	servicesKeys ServicesKeys
 	apiKey       ApiKey
@@ -67,7 +67,7 @@ var (
 )
 
 // GitHubCi function return a `CiService` that works with the GitHub API
-func GitHubCi(ctx *core.Context, name string, apiUrl string) CiService {
+func GitHubCi(ctx *core.Context, name string, apiURL string) CiService {
 	kf := keystonefile.KeystoneFile{}
 	kf.Load(ctx.Wd)
 
@@ -77,7 +77,7 @@ func GitHubCi(ctx *core.Context, name string, apiUrl string) CiService {
 		err:    nil,
 		log:    log.New(log.Writer(), "[GitHubCI] ", 0),
 		name:   name,
-		apiUrl: apiUrl,
+		apiURL: apiURL,
 		ctx:    ctx,
 		servicesKeys: ServicesKeys{
 			"Owner":   savedService.Options["Owner"],
@@ -131,7 +131,7 @@ func (g *gitHubCiService) Setup() CiService {
 
 	// These are the prompts for keys and such
 	// as those are all github specifics
-	g.askForRepoUrl()
+	g.askForRepoURL()
 	g.askForApiKey()
 
 	return g
@@ -253,32 +253,32 @@ func (g *gitHubCiService) setApiKey(apiKey ApiKey) {
 	config.Write()
 }
 
-func (g *gitHubCiService) askForRepoUrl() CiService {
+func (g *gitHubCiService) askForRepoURL() CiService {
 	// serviceName := availableServices[GithubCI]
 	serviceOptions := g.getOptions()
 	owner := serviceOptions["Owner"]
 	project := serviceOptions["Project"]
 
-	serviceUrl := ""
+	serviceURL := ""
 
 	if serviceOptions["Owner"] != "" && serviceOptions["Project"] != "" {
-		serviceUrl = "https://github.com/" + serviceOptions["Owner"] + "/" + serviceOptions["Project"]
-		g.log.Printf("Existing Repo in service options: %sv\n", serviceUrl)
+		serviceURL = "https://github.com/" + serviceOptions["Owner"] + "/" + serviceOptions["Project"]
+		g.log.Printf("Existing Repo in service options: %sv\n", serviceURL)
 	}
 
 	urlIsValid := false
 
 	for !urlIsValid {
-		serviceUrl = prompts.StringInput(
+		serviceURL = prompts.StringInput(
 			"GitHub repository URL",
-			serviceUrl,
+			serviceURL,
 		)
 
 		// url.URL will say the url is invalid if it ends with a slash ?
-		serviceUrl = strings.TrimSuffix(serviceUrl, "/")
-		g.log.Printf("User input service url: %s\n", serviceUrl)
+		serviceURL = strings.TrimSuffix(serviceURL, "/")
+		g.log.Printf("User input service url: %s\n", serviceURL)
 
-		u, err := new(url.URL).Parse(serviceUrl)
+		u, err := new(url.URL).Parse(serviceURL)
 		if err != nil {
 			ui.Print(ui.RenderTemplate(
 				"malformed-url",

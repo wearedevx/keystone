@@ -12,7 +12,7 @@ func (repo *Repo) GetProjectMember(projectMember *models.ProjectMember) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Preload("Role").
 		Where(
 			"project_id = ? AND user_id = ?",
@@ -33,7 +33,7 @@ func (repo *Repo) ListProjectMembers(
 		return repo
 	}
 
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Preload("Role").
 		Joins("left join users on users.id = project_members.user_id").
 		Where("users.user_id IN (?)", userIDList).
@@ -47,13 +47,13 @@ func (repo *Repo) CreateProjectMember(
 	projectMember *models.ProjectMember,
 	role *models.Role,
 ) IRepo {
-	if repo != nil {
+	if repo.err != nil {
 		return repo
 	}
 
 	projectMember.RoleID = role.ID
 
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Create(&projectMember).
 		Error
 
@@ -101,7 +101,7 @@ func (repo *Repo) DeleteAllProjectMembers(project *models.Project) IRepo {
 	}
 
 	repo.err = repo.
-		GetDb().
+		GetDB().
 		Delete(models.ProjectMember{}, "project_id = ?", project.ID).
 		Error
 

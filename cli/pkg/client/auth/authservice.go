@@ -1,3 +1,4 @@
+//go:build !test
 // +build !test
 
 package auth
@@ -18,14 +19,14 @@ type AuthService interface {
 		pkey []byte,
 		device string,
 		deviceUID string,
-	) (models.User, string, error)
+	) (models.User, string, string, error)
 }
 
 // GetAuthService function returns the instance of an AuthService implementor
 // based on `serviceName`
 func GetAuthService(
 	serviceName string,
-	apiUrl string,
+	apiURL string,
 ) (AuthService, error) {
 	var c AuthService
 	var err error
@@ -33,10 +34,10 @@ func GetAuthService(
 
 	switch serviceName {
 	case "github":
-		c = GitHubAuth(ctx, apiUrl)
+		c = GitHubAuth(ctx, apiURL)
 
 	case "gitlab":
-		c = GitlabAuth(ctx, apiUrl)
+		c = GitlabAuth(ctx, apiURL)
 
 	default:
 		err = fmt.Errorf("unknown service name %s", serviceName)

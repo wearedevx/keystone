@@ -1,3 +1,4 @@
+//go:build test
 // +build test
 
 package repo
@@ -69,7 +70,7 @@ func (repo *Repo) ClearErr() IRepo {
 	return repo
 }
 
-func (repo *Repo) GetDb() *gorm.DB {
+func (repo *Repo) GetDB() *gorm.DB {
 	return db
 }
 

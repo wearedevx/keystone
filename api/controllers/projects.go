@@ -83,7 +83,7 @@ func PostProject(
 		}
 
 		// TODO: use repo specific function for that
-		if err = Repo.GetDb().Save(&orgaOwner).Error; err != nil {
+		if err = Repo.GetDB().Save(&orgaOwner).Error; err != nil {
 			status = http.StatusInternalServerError
 			err = apierrors.ErrorFailedToCreateResource(err)
 		}
@@ -114,7 +114,7 @@ func GetProjects(
 		Action: "GetProjects",
 	}
 
-	var result *models.GetProjectsResponse = &models.GetProjectsResponse{}
+	var result = &models.GetProjectsResponse{}
 
 	if err = Repo.
 		GetUserProjects(user.ID, &result.Projects).
@@ -574,12 +574,12 @@ func DeleteProject(
 		Action: "DeleteProject",
 	}
 
-	projectId := params.Get("projectID")
+	projectID := params.Get("projectID")
 	var project models.Project
 	var userIsAdmin bool
 
 	if err = Repo.
-		GetProjectByUUID(projectId, &project).
+		GetProjectByUUID(projectID, &project).
 		Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound
@@ -635,10 +635,10 @@ func GetProjectsOrganization(
 	}
 
 	var result *models.Organization
-	projectId := params.Get("projectID")
+	projectID := params.Get("projectID")
 	var organization models.Organization
 
-	if projectId == "" {
+	if projectID == "" {
 		status = http.StatusBadRequest
 		err = apierrors.ErrorBadRequest(errors.New("no project id"))
 
@@ -646,7 +646,7 @@ func GetProjectsOrganization(
 	}
 
 	if err = Repo.
-		GetProjectsOrganization(projectId, &organization).
+		GetProjectsOrganization(projectID, &organization).
 		Err(); err != nil {
 		if errors.Is(err, repo.ErrorNotFound) {
 			status = http.StatusNotFound

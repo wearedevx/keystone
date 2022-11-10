@@ -15,15 +15,15 @@ func LoginLink(name, url string) {
 			"login visit",
 			`Visit the URL below to login with your {{ .Service }} account:
 
-{{ .Url | indent 8 }}
+{{ .URL | indent 8 }}
 
 Waiting for you to login with your {{ .Service }} Account...`,
 			struct {
 				Service string
-				Url     string
+				URL     string
 			}{
 				Service: name,
-				Url:     url,
+				URL:     url,
 			},
 		),
 	)

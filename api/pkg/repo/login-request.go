@@ -15,7 +15,7 @@ func (repo *Repo) CreateLoginRequest() models.LoginRequest {
 	}
 
 	if repo.Err() == nil {
-		repo.err = repo.GetDb().Create(&lr).Error
+		repo.err = repo.GetDB().Create(&lr).Error
 	}
 
 	return lr
@@ -26,7 +26,7 @@ func (repo *Repo) GetLoginRequest(code string) (models.LoginRequest, bool) {
 
 	if repo.Err() == nil {
 		repo.err = repo.
-			GetDb().
+			GetDB().
 			Where("temporary_code = ?", code).
 			First(&lr).
 			Error
@@ -48,7 +48,7 @@ func (repo *Repo) SetLoginRequestCode(
 		return lr
 	}
 
-	repo.err = repo.GetDb().Where(
+	repo.err = repo.GetDB().Where(
 		"temporary_code = ?",
 		code,
 	).First(&lr).Error
@@ -60,7 +60,7 @@ func (repo *Repo) SetLoginRequestCode(
 	lr.TemporaryCode = code
 	lr.AuthCode = authCode
 
-	repo.err = repo.GetDb().Save(&lr).Error
+	repo.err = repo.GetDB().Save(&lr).Error
 
 	return lr
 }
@@ -76,7 +76,7 @@ func (repo *Repo) DeleteLoginRequest(code string) bool {
 		return false
 	}
 
-	repo.err = repo.GetDb().Where(
+	repo.err = repo.GetDB().Where(
 		"temporary_code = ?",
 		code,
 	).First(&lr).Error
@@ -85,7 +85,7 @@ func (repo *Repo) DeleteLoginRequest(code string) bool {
 		return false
 	}
 
-	repo.err = repo.GetDb().Delete(&lr).Error
+	repo.err = repo.GetDB().Delete(&lr).Error
 
 	return repo.Err() == nil
 }

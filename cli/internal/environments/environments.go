@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+
 	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
@@ -68,7 +69,10 @@ func (s *environmentService) GetAccessibleEnvironments() []models.Environment {
 	sp.Stop()
 
 	if err != nil {
-		if errors.Is(err, auth.ErrorUnauthorized) {
+		if errors.Is(err, auth.ErrorUnauthorized) ||
+			errors.Is(err, auth.ErrorRefreshNotFound) ||
+			errors.Is(err, auth.ErrorNoToken) ||
+			errors.Is(err, auth.ErrorNoRefresh) {
 			config.Logout()
 			s.ctx.SetError(kserrors.InvalidConnectionToken(err))
 		} else if errors.Is(err, auth.ErrorServiceNotAvailable) {

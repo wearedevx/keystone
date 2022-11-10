@@ -9,13 +9,13 @@ func (r *Repo) GetRoles(roles *[]models.Role) IRepo {
 		return r
 	}
 
-	r.err = r.GetDb().Find(roles).Error
+	r.err = r.GetDB().Find(roles).Error
 
 	return r
 }
 
 func (repo *Repo) CreateRole(role *models.Role) IRepo {
-	repo.err = repo.GetDb().Create(role).Error
+	repo.err = repo.GetDB().Create(role).Error
 	return repo
 }
 
@@ -24,7 +24,7 @@ func (repo *Repo) GetRole(role *models.Role) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().
+	repo.err = repo.GetDB().
 		Where(*role).
 		First(role).
 		Error
@@ -37,13 +37,13 @@ func (repo *Repo) GetOrCreateRole(role *models.Role) IRepo {
 		return repo
 	}
 
-	repo.err = repo.GetDb().Where(&role).FirstOrCreate(&role).Error
+	repo.err = repo.GetDB().Where(&role).FirstOrCreate(&role).Error
 
 	return repo
 }
 
 func (r *Repo) GetInvitableRoles(role models.Role, roles *[]models.Role) IRepo {
-	r.err = r.GetDb().Model(&models.Role{}).
+	r.err = r.GetDB().Model(&models.Role{}).
 		Joins("left join roles_environment_types on roles_environment_types.role_id = roles.id").
 		Where("roles_environment_types.role_id = ? and roles_environment_types.invite = true", role.ID).
 		Find(roles).Error

@@ -40,10 +40,10 @@ Gives you a link to update your payment method or cancel your plan.
 
 		organizationName = mustGetOrganizationName(o, args)
 
-		url, err := o.GetManagementUrl(organizationName)
+		url, err := o.GetManagementURL(organizationName)
 		exitIfErr(err)
 
-		display.ManageUrl(url)
+		display.ManageURL(url)
 	},
 }
 

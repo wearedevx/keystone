@@ -100,7 +100,10 @@ func shouldFetchMessages() (core.ChangesByEnvironment, messages.MessageService) 
 // its own way.
 func handleClientError(err error) {
 	switch {
-	case errors.Is(err, auth.ErrorUnauthorized):
+	case errors.Is(err, auth.ErrorUnauthorized),
+		errors.Is(err, auth.ErrorRefreshNotFound),
+		errors.Is(err, auth.ErrorNoToken),
+		errors.Is(err, auth.ErrorNoRefresh):
 		config.Logout()
 		kserrors.InvalidConnectionToken(err).Print()
 

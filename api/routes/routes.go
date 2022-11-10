@@ -19,6 +19,8 @@ func CreateRoutes(w http.ResponseWriter, r *http.Request) {
 	router.GET("/healthcheck", GetHealthCheck)
 	router.GET("/", AuthedHandler(GetUser))
 
+	router.GET("/auth/refresh", RegularHandler(RefreshToken))
+
 	router.POST("/projects", AuthedHandler(PostProject))
 	router.DELETE("/projects/:projectID/", AuthedHandler(DeleteProject))
 	router.GET("/projects", AuthedHandler(GetProjects))

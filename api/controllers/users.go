@@ -12,7 +12,7 @@ import (
 
 	"github.com/wearedevx/keystone/api/internal/activitylog"
 	apierrors "github.com/wearedevx/keystone/api/internal/errors"
-	. "github.com/wearedevx/keystone/api/pkg/apierrors"
+	localerrors "github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/jwt"
 	"github.com/wearedevx/keystone/api/pkg/notification"
 
@@ -120,7 +120,7 @@ func PostUserToken(
 
 	var user models.User
 	var serializedUser string
-	var jwtToken string
+	var jwtToken, refreshToken string
 	var responseBody bytes.Buffer
 	var msg string
 
@@ -169,7 +169,7 @@ func PostUserToken(
 	}}
 
 	if err = Repo.GetOrCreateUser(&user).Err(); err != nil {
-		if errors.Is(err, ErrorBadDeviceName) {
+		if errors.Is(err, localerrors.ErrorBadDeviceName) {
 			msg = err.Error()
 			status = http.StatusConflict
 		} else {
@@ -187,21 +187,21 @@ func PostUserToken(
 	}
 
 	for _, device := range newDevices {
-		// Newly created devices only have one user
-		user := device.Users[0]
+		// Newly created devices only have one deviceUser
+		deviceUser := device.Users[0]
 
 		var adminProjectsMap map[string][]string
-		if err = Repo.GetAdminsFromUserProjects(user.ID, &adminProjectsMap).Err(); err != nil {
+		if err = Repo.GetAdminsFromUserProjects(deviceUser.ID, &adminProjectsMap).Err(); err != nil {
 			status = http.StatusInternalServerError
 			msg = err.Error()
 			goto done
 		}
-		if err = notification.SendEmailForNewDevices(device, adminProjectsMap, user); err != nil {
+		if err = notification.SendEmailForNewDevices(device, adminProjectsMap, deviceUser); err != nil {
 			status = http.StatusInternalServerError
 			msg = err.Error()
 			goto done
 		}
-		if err = Repo.SetNewlyCreatedDevice(false, device.ID, user.ID).Err(); err != nil {
+		if err = Repo.SetNewlyCreatedDevice(false, device.ID, deviceUser.ID).Err(); err != nil {
 			status = http.StatusInternalServerError
 			msg = err.Error()
 			goto done
@@ -210,8 +210,19 @@ func PostUserToken(
 	}
 
 	log.User = user
-	jwtToken, err = jwt.MakeToken(user, payload.DeviceUID, time.Now())
+	jwtToken, refreshToken, err = jwt.MakeToken(user, payload.DeviceUID, time.Now())
 
+	if err != nil {
+		msg = "Internal Server Error"
+		status = http.StatusInternalServerError
+
+		goto done
+	}
+
+	// Save user’s refreshToken
+	user.RefreshToken = refreshToken
+	user.RefreshExpiration = time.Now().Add(30 * 24 * time.Hour)
+	err = Repo.GetDB().Save(&user).Error
 	if err != nil {
 		msg = "Internal Server Error"
 		status = http.StatusInternalServerError
@@ -237,14 +248,57 @@ done:
 		responseBody = *bytes.NewBuffer(serializedUserBytes)
 
 		w.Header().Add("Authorization", fmt.Sprintf("Bearer %s", jwtToken))
+		w.Header().Add("X-Refresh-Token", refreshToken)
 		w.Header().Add("Content-Type", "application/octet-stream")
 		w.Header().Add("Content-Length", strconv.Itoa(responseBody.Len()))
 
-		if _, err := w.Write(responseBody.Bytes()); err != nil {
-			fmt.Printf("err: %+v\n", err)
+		if _, writeErr := w.Write(responseBody.Bytes()); writeErr != nil {
+			fmt.Printf("err: %+v\n", writeErr)
 		}
 	}
 
+	return status, err
+}
+
+func RefreshToken(w http.ResponseWriter, r *http.Request, _ router.Params, Repo repo.IRepo) (int, error) {
+	var err error
+	var jwtToken, refreshToken string
+	status := http.StatusOK
+	user := models.User{}
+
+	refreshToken = r.Header.Get("x-refresh-token")
+	deviceUID := r.Header.Get("x-device")
+
+	if refreshToken == "" {
+		status = http.StatusBadRequest
+		err = errors.New("bad request")
+
+		goto done
+	}
+
+	if err = Repo.FindUserWithRefreshToken(refreshToken, &user).Err(); err != nil {
+		status = http.StatusNotFound
+		goto done
+	}
+
+	jwtToken, refreshToken, err = jwt.MakeToken(user, deviceUID, time.Now())
+
+	if err != nil {
+		status = http.StatusInternalServerError
+		goto done
+	}
+
+	// Save user’s refreshToken
+	user.RefreshToken = refreshToken
+	if err = Repo.GetDB().Save(&user).Error; err != nil {
+		status = http.StatusInternalServerError
+		goto done
+	}
+
+	w.Header().Add("Authorization", fmt.Sprintf("Bearer %s", jwtToken))
+	w.Header().Add("X-Refresh-Token", refreshToken)
+
+done:
 	return status, err
 }
 
@@ -320,8 +374,8 @@ done:
 
 	w.Header().Add("Content-Type", "text/html")
 	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
-	if _, err = fmt.Fprint(w, response); err != nil {
-		fmt.Printf("err: %+v\n", err)
+	if _, printErr := fmt.Fprint(w, response); printErr != nil {
+		fmt.Printf("err: %+v\n", printErr)
 	}
 
 	return status, err
@@ -363,7 +417,7 @@ done:
 	if err == nil {
 		w.Header().Add("Content-Type", "application/json; charset=utf-8")
 		w.Header().Add("Content-Length", strconv.Itoa(len(response)))
-		if _, err := fmt.Fprint(w, response); err != nil {
+		if _, err = fmt.Fprint(w, response); err != nil {
 			fmt.Printf("err: %+v\n", err)
 		}
 	} else {
@@ -425,8 +479,8 @@ done:
 
 	w.Header().Add("Content-Length", strconv.Itoa(len(response)))
 
-	if _, err := fmt.Fprint(w, response); err != nil {
-		fmt.Printf("err: %+v\n", err)
+	if _, printErr := fmt.Fprint(w, response); printErr != nil {
+		fmt.Printf("err: %+v\n", printErr)
 	}
 
 	return status, err

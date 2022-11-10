@@ -53,7 +53,7 @@ func TestPostSubscription(t *testing.T) {
 			},
 			wantResponse: &models.StartSubscriptionResponse{
 				SessionID: "session-id",
-				Url:       "http://session.url",
+				URL:       "http://session.url",
 			},
 			wantStatus: http.StatusOK,
 			wantErr:    "",
@@ -253,10 +253,10 @@ func TestGetCheckoutSuccess(t *testing.T) {
 	csd := seedCheckoutSession()
 	defer teardownCheckoutSession(csd)
 
-	okUrl, _ := url.Parse(fmt.Sprintf("http://tests.com?session_id=%s", cs.SessionID))
-	koUrl, _ := url.Parse("http://tests.com?session_id=not-a-session-id")
+	okURL, _ := url.Parse(fmt.Sprintf("http://tests.com?session_id=%s", cs.SessionID))
+	koURL, _ := url.Parse("http://tests.com?session_id=not-a-session-id")
 
-	dUrl, _ := url.Parse(fmt.Sprintf("http://tests.com?sessions_id=%s", csd.SessionID))
+	dURL, _ := url.Parse(fmt.Sprintf("http://tests.com?sessions_id=%s", csd.SessionID))
 
 	type args struct {
 		w    http.ResponseWriter
@@ -276,7 +276,7 @@ func TestGetCheckoutSuccess(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: okUrl,
+					URL: okURL,
 				},
 				in2:  router.Params{},
 				Repo: newFakeRepo(noCrashers),
@@ -290,7 +290,7 @@ func TestGetCheckoutSuccess(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: koUrl,
+					URL: koURL,
 				},
 				in2:  router.Params{},
 				Repo: newFakeRepo(noCrashers),
@@ -304,7 +304,7 @@ func TestGetCheckoutSuccess(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: dUrl,
+					URL: dURL,
 				},
 				in2: router.Params{},
 				Repo: newFakeRepo(map[string]error{
@@ -345,10 +345,10 @@ func TestGetCheckoutCancel(t *testing.T) {
 	csd := seedCheckoutSession()
 	defer teardownCheckoutSession(csd)
 
-	okUrl, _ := url.Parse(fmt.Sprintf("http://tests.com?session_id=%s", cs.SessionID))
-	koUrl, _ := url.Parse("http://tests.com?session_id=not-a-session-id")
+	okURL, _ := url.Parse(fmt.Sprintf("http://tests.com?session_id=%s", cs.SessionID))
+	koURL, _ := url.Parse("http://tests.com?session_id=not-a-session-id")
 
-	dUrl, _ := url.Parse(fmt.Sprintf("http://tests.com?session_id=%s", csd.SessionID))
+	dURL, _ := url.Parse(fmt.Sprintf("http://tests.com?session_id=%s", csd.SessionID))
 
 	type args struct {
 		w    http.ResponseWriter
@@ -368,7 +368,7 @@ func TestGetCheckoutCancel(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: okUrl,
+					URL: okURL,
 				},
 				in2:  router.Params{},
 				Repo: newFakeRepo(noCrashers),
@@ -381,7 +381,7 @@ func TestGetCheckoutCancel(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: koUrl,
+					URL: koURL,
 				},
 				in2:  router.Params{},
 				Repo: newFakeRepo(noCrashers),
@@ -395,7 +395,7 @@ func TestGetCheckoutCancel(t *testing.T) {
 			args: args{
 				w: newMockResponse(),
 				r: &http.Request{
-					URL: dUrl,
+					URL: dURL,
 				},
 				in2: router.Params{},
 				Repo: newFakeRepo(map[string]error{
@@ -1049,7 +1049,7 @@ func TestPostStripeWebhook(t *testing.T) {
 
 			if tt.wantOrganization != nil {
 				gotOrganization := models.Organization{}
-				repo.NewRepo().GetDb().First(&gotOrganization, tt.wantOrganization.ID)
+				repo.NewRepo().GetDB().First(&gotOrganization, tt.wantOrganization.ID)
 
 				if gotOrganization.CustomerID != tt.wantOrganization.CustomerID ||
 					gotOrganization.SubscriptionID != tt.wantOrganization.SubscriptionID ||
@@ -1094,7 +1094,7 @@ func TestManageSubscription(t *testing.T) {
 				user: user,
 			},
 			want: &models.ManageSubscriptionResponse{
-				Url: "http://portal-session.url",
+				URL: "http://portal-session.url",
 			},
 			wantStatus: http.StatusOK,
 			wantErr:    "",
@@ -1162,7 +1162,7 @@ func TestManageSubscription(t *testing.T) {
 func seedCheckoutSession() models.CheckoutSession {
 	cs := models.CheckoutSession{}
 
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		faker.FakeData(&cs)
 
 		db.Create(&cs)
@@ -1178,7 +1178,7 @@ func seedCheckoutSession() models.CheckoutSession {
 }
 
 func teardownCheckoutSession(cs models.CheckoutSession) {
-	err := repo.NewRepo().GetDb().Transaction(func(db *gorm.DB) error {
+	err := repo.NewRepo().GetDB().Transaction(func(db *gorm.DB) error {
 		db.Delete(&cs)
 		return db.Error
 	})

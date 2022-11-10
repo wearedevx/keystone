@@ -62,7 +62,7 @@ func init() {
 func GetCiService(
 	serviceName string,
 	ctx *core.Context,
-	apiUrl string,
+	apiURL string,
 ) (CiService, error) {
 	var c CiService
 	var err error
@@ -87,10 +87,10 @@ func GetCiService(
 
 	switch CiServiceType(t) {
 	case GithubCI:
-		c = GitHubCi(ctx, serviceName, apiUrl)
+		c = GitHubCi(ctx, serviceName, apiURL)
 
 	case GitlabCI:
-		c = GitLabCi(ctx, serviceName, apiUrl)
+		c = GitLabCi(ctx, serviceName, apiURL)
 
 	case GenericCI:
 		c = GenericCi(ctx, serviceName)
@@ -111,7 +111,7 @@ func GetCiService(
 func PickCiService(
 	name string,
 	ctx *core.Context,
-	apiUrl string,
+	apiURL string,
 ) (CiService, error) {
 	var err error
 	if err != nil {
@@ -135,9 +135,9 @@ func PickCiService(
 
 	switch CiServiceType(s.Type) {
 	case GithubCI:
-		return GitHubCi(ctx, name, apiUrl), nil
+		return GitHubCi(ctx, name, apiURL), nil
 	case GitlabCI:
-		return GitLabCi(ctx, name, apiUrl), nil
+		return GitLabCi(ctx, name, apiURL), nil
 	case GenericCI:
 		return GenericCi(ctx, name), nil
 	default:
@@ -149,7 +149,7 @@ func PickCiService(
 func SelectCiServiceConfiguration(
 	serviceName string,
 	ctx *core.Context,
-	apiUrl string,
+	apiURL string,
 ) (CiService, error) {
 	var err error
 
@@ -175,7 +175,7 @@ func SelectCiServiceConfiguration(
 		)
 	}
 
-	return GetCiService(serviceName, ctx, apiUrl)
+	return GetCiService(serviceName, ctx, apiURL)
 }
 
 // ListCiServices returns the list of configured CI services

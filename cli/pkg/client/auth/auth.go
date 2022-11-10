@@ -14,9 +14,10 @@ import (
 	"time"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"golang.org/x/oauth2"
+
 	"github.com/wearedevx/keystone/cli/internal/loggers"
 	"github.com/wearedevx/keystone/cli/pkg/constants"
-	"golang.org/x/oauth2"
 )
 
 var authRedirectURL string
@@ -46,7 +47,7 @@ func makeOAuthState(code string) (out string, err error) {
 }
 
 func getLoginRequest(
-	apiUrl string,
+	apiURL string,
 ) (loginRequest models.LoginRequest, err error) {
 	var resp *http.Response
 	timeout := time.Duration(20 * time.Second)
@@ -54,9 +55,9 @@ func getLoginRequest(
 		Timeout: timeout,
 	}
 
-	l.Printf("Get Login Request: %s\n", apiUrl)
+	l.Printf("Get Login Request: %s\n", apiURL)
 
-	request, err := http.NewRequest("POST", apiUrl+"/login-request", nil)
+	request, err := http.NewRequest("POST", apiURL+"/login-request", nil)
 	request.Header.Set("Accept", "application/json; charset=utf-8")
 
 	if err == nil {
@@ -98,7 +99,7 @@ type pollResult struct {
 
 const MAX_ATTEMPTS int = 12
 
-func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
+func pollLoginRequest(apiURL string, code string, c chan pollResult) {
 	done := false
 	attemps := 0
 
@@ -112,7 +113,7 @@ func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
 			Timeout: timeout,
 		}
 
-		u, _ := url.Parse(apiUrl + "/login-request")
+		u, _ := url.Parse(apiURL + "/login-request")
 		q := u.Query()
 		q.Add("code", code)
 
@@ -182,13 +183,13 @@ func pollLoginRequest(apiUrl string, code string, c chan pollResult) {
 }
 
 func completeLogin(
-	apiUrl string,
+	apiURL string,
 	accountType models.AccountType,
 	tok *oauth2.Token,
 	pk []byte,
 	device string,
 	deviceUID string,
-) (models.User, string, error) {
+) (models.User, string, string, error) {
 	var user models.User
 	payload := models.LoginPayload{
 		AccountType: accountType,
@@ -207,7 +208,7 @@ func completeLogin(
 
 	l.Printf("Complete login: %s\n", buf.String())
 
-	req, err := http.NewRequest("POST", apiUrl+"/complete", buf)
+	req, err := http.NewRequest("POST", apiURL+"/complete", buf)
 	req.Header.Add("Accept", "application/octet-stream")
 
 	if err != nil {
@@ -250,5 +251,46 @@ func completeLogin(
 		l.Printf("Got token: %s\n", jwtToken)
 	}
 
-	return user, jwtToken, err
+	refreshToken := resp.Header.Get("X-Refresh-Token")
+
+	if refreshToken == "" {
+		err = fmt.Errorf("no refresh token was returned")
+	} else {
+		l.Printf("Got refresh token: %s\n", refreshToken)
+	}
+
+	return user, jwtToken, refreshToken, err
+}
+
+func GetNewToken(apiURL string, refreshToken string) (string, string, error) {
+	req, _ := http.NewRequest("GET", apiURL+"/auth/refresh")
+	req.Header.Add("Accept", "application/octet-stream")
+	req.Header.Add("X-Refresh-Token", refreshToken)
+
+	timeout := time.Duration(20 * time.Second)
+	client := http.Client{
+		Timeout: timeout,
+	}
+	resp, err := client.Do(req)
+
+	if resp.StatusCode != http.StatusOK {
+		return "", "", ErrorRefreshNotFound
+	}
+
+	jwtToken := resp.Header.Get("Authorization")
+	jwtToken = strings.Replace(jwtToken, "Bearer ", "", 1)
+
+	if jwtToken == "" {
+		err = ErrorNoToken
+	} else {
+		l.Printf("Got token: %s\n", jwtToken)
+	}
+
+	refreshToken = resp.Header.Get("X-Refresh-Token")
+
+	if refreshToken == "" {
+		err = ErrorNoRefresh
+	} else {
+		l.Printf("Got refresh token: %s\n", refreshToken)
+	}
 }
