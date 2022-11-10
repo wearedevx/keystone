@@ -65,15 +65,16 @@ LDFLAGS := $(DB_HOST_FLAG) \
 	$(STRIPE_PRICE_FLAG) \
 	$(STRIPE_WEBHOOK_FLAG) \
 	$(KS_TTL_FLAG) \
-	$(DOMAIN_FLAG) \
-	$(OMIT_SYMBOL_TABLE) \
-	$(OMIT_DWARF_SYMBOL)
+	$(DOMAIN_FLAG) 
+
+OPTIM := $(OMIT_SYMBOL_TABLE) \
+	 $(OMIT_DWARF_SYMBOL) 
 
 build:
 	mkdir ./build
 	go clean
 	go generate
-	go build -ldflags "$(LDFLAGS)" -v -o ./build/server
+	go build -ldflags "$(LDFLAGS) $(OPTIM)" -v -o ./build/server
 
 build-debug:
 	go generate
