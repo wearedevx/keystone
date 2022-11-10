@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
@@ -35,23 +36,23 @@ Once you have configured a new CI service, you can send it secrets using:
 	Example: `ks ci add`,
 	Args:    cobra.NoArgs,
 	Run: func(_ *cobra.Command, _ []string) {
-		serviceName := prompts.ServiceIntegrationName()
+		CIServiceName := prompts.ServiceIntegrationName()
 
-		if _, nameExists := ci.FindCiServiceWithName(ctx, serviceName); nameExists {
-			exit(kserrors.CiServiceAlreadyExists(serviceName, nil))
+		if _, nameExists := ci.FindCiServiceWithName(ctx, CIServiceName); nameExists {
+			exit(kserrors.CiServiceAlreadyExists(CIServiceName, nil))
 		}
 
-		ciService, err := ci.PickCiService(serviceName, ctx, client.ApiURL)
+		ciService, err := ci.PickCiService(CIServiceName, ctx, client.APIURL)
 		if err != nil {
-			exit(kserrors.CouldNotAddService(serviceName, err))
+			exit(kserrors.CouldNotAddService(CIServiceName, err))
 		}
 
 		if err = ciService.Setup().Error(); err != nil {
-			exit(kserrors.CouldNotAddService(serviceName, err))
+			exit(kserrors.CouldNotAddService(CIServiceName, err))
 		}
 
 		if err = ci.AddCiService(ctx, ciService); err != nil {
-			exit(kserrors.CouldNotAddService(serviceName, err))
+			exit(kserrors.CouldNotAddService(CIServiceName, err))
 		}
 
 		display.CiAdded()

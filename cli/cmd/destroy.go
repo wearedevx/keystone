@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/ui/display"
@@ -43,8 +44,8 @@ This is irreversible.
 		c, kcErr := client.NewKeystoneClient()
 		exitIfErr(kcErr)
 
-		projectId := ctx.GetProjectID()
-		projectService := c.Project(projectId)
+		projectID := ctx.GetProjectID()
+		projectService := c.Project(projectID)
 
 		mustBeAdmin(projectService)
 

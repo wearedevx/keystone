@@ -7,9 +7,9 @@ fi
 
 export $(cat .env-test | xargs)
 
-LDFLAGS="-X github.com/wearedevx/keystone/cli/pkg/client.ApiURL=$KSAPI_URL \
+LDFLAGS="-X github.com/wearedevx/keystone/cli/pkg/client.APIURL=${KSAPI_URL} \
 	-X github.com/wearedevx/keystone/api/pkg/jwt.salt=${JWT_SALT}"
-NOSPIN=true
+#NOSPIN=true
 
 DBFILE="${TMPDIR}keystone_gorm.db"
 
@@ -20,12 +20,12 @@ fi
 # Create db file
 touch $DBFILE
 
-cd ../api
+cd ../api || exit
 make -i run-test &
 
-cd ../cli
+cd ../cli || exit
 
-echo "go test -tags test -ldflags \"$LDFLAGS\" -work $@"
+echo "go test -tags test -ldflags \"${LDFLAGS}\" -work" "$@"
 go test -tags test -ldflags "$LDFLAGS" -work "$@"
 
 EXIT_STATUS_CODE=$?
@@ -45,12 +45,11 @@ fi
 # and the API keeps on running.
 # This little for loop here, ensures that
 # we wait long enough, ie. when lsof succeeds
-for i in {0..10}; do
+for _ in {0..10}; do
 	pid=$(lsof -t -i :9001);
-	echo "pid: ${pid}"
 
 	if [ $? -eq 0 ]; then
-		kill -9 $pid;
+		kill -9 "$pid";
 		break;
 	fi
 	sleep 1;

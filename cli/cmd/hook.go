@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
 	"github.com/wearedevx/keystone/cli/ui/display"
 )
 
@@ -37,7 +38,7 @@ The hook is global, meaning that once you've set it up, it will run for every
 project.
 It is also unique (there can only be one hook).`,
 	Example: "ks hook",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		if hook, ok := ctx.GetHook(); ok {
 			display.HookCommand(hook.Command)
 		} else {

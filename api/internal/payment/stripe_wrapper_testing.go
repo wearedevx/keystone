@@ -1,3 +1,4 @@
+//go:build test
 // +build test
 
 package payment
@@ -7,7 +8,7 @@ import (
 	"errors"
 	"time"
 
-	stripe "github.com/stripe/stripe-go/v72"
+	stripe "github.com/stripe/stripe-go/v73"
 )
 
 func newPortalSession(params *stripe.BillingPortalSessionParams) (*stripe.BillingPortalSession, error) {
@@ -36,7 +37,7 @@ func newUsageRecord(params *stripe.UsageRecordParams) (*stripe.UsageRecord, erro
 	return &stripe.UsageRecord{}, nil
 }
 
-func getNextInvoice(params *stripe.InvoiceParams) (*stripe.Invoice, error) {
+func getNextInvoice(params *stripe.InvoiceUpcomingParams) (*stripe.Invoice, error) {
 	return &stripe.Invoice{
 		Lines: &stripe.InvoiceLineList{
 			Data: []*stripe.InvoiceLine{{Quantity: 1}},

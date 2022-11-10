@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+
 	"github.com/wearedevx/keystone/cli/internal/utils"
 	"github.com/wearedevx/keystone/cli/ui/display"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
@@ -37,7 +38,7 @@ parameters.
 The it will be run when environments change.`,
 	Args:    cobra.ExactArgs(1),
 	Example: "ks hook add backup-secrets.sh",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if hook, ok := ctx.GetHook(); ok {
 			if !prompts.ConfirmHookOverwrite(hook) {
 				exit(nil)

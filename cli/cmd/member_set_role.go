@@ -20,6 +20,7 @@ import (
 	"regexp"
 
 	"github.com/spf13/cobra"
+
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/members"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
@@ -29,7 +30,7 @@ import (
 )
 
 var (
-	memberId string
+	memberID string
 	roleName string
 )
 
@@ -58,15 +59,15 @@ ks member set-role sandra@github`,
 		}
 
 		if argc >= 1 {
-			memberId = args[0]
+			memberID = args[0]
 		}
 
 		if argc == 2 {
 			roleName = args[1]
 		}
 
-		if !r.Match([]byte(memberId)) {
-			return fmt.Errorf("invalid member id: %s", memberId)
+		if !r.Match([]byte(memberID)) {
+			return fmt.Errorf("invalid member id: %s", memberID)
 		}
 
 		return nil
@@ -82,7 +83,7 @@ ks member set-role sandra@github`,
 
 		projectID := ctx.GetProjectID()
 		// Ensure member exists
-		r, err := c.Users().CheckUsersExist([]string{memberId})
+		r, err := c.Users().CheckUsersExist([]string{memberID})
 		if err != nil || r.Error != "" {
 			handleClientError(err)
 			exit(kserrors.UsersDontExist(r.Error, err))
@@ -95,7 +96,7 @@ ks member set-role sandra@github`,
 		// If user didnot provide a role,
 		// prompt it
 		if roleName == "" {
-			r, err := prompts.PromptRole(memberId, roles)
+			r, err := prompts.PromptRole(memberID, roles)
 			exitIfErr(err)
 
 			roleName = r.Name
@@ -110,7 +111,7 @@ ks member set-role sandra@github`,
 			members.SetMemberRole(
 				c,
 				projectID,
-				memberId,
+				memberID,
 				roleName,
 				roles,
 			),

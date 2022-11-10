@@ -30,12 +30,12 @@ func (u *Users) CheckUsersExist(
 // GetEnvironmentPublicKeys method get the public keys of all the devices
 // that have a read access to the environment
 func (u *Users) GetEnvironmentPublicKeys(
-	environmentId string,
+	environmentID string,
 ) (models.PublicKeys, error) {
 	var err error
 	var result models.PublicKeys
 
-	err = u.r.get("/environments/"+environmentId+"/public-keys", &result, nil)
+	err = u.r.get("/environments/"+environmentID+"/public-keys", &result, nil)
 
 	return result, err
 }

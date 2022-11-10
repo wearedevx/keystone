@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wearedevx/keystone/api/pkg/models"
+
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
@@ -63,7 +64,7 @@ ks ci send --env prod
 			ciService, err := ci.GetCiService(
 				serviceDef.Name,
 				ctx,
-				client.ApiURL,
+				client.APIURL,
 			)
 			exitIfErr(err)
 

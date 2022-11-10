@@ -7,18 +7,22 @@ services:
       POSTGRES_PASSWORD: ks
       POSTGRES_USER: ks
       POSTGRES_DB: ks
+    networks:
+      - keystone_net
     ports:
       - 5432:5432
 
   adminer:
     image: adminer
+    networks:
+      - keystone_net
     ports:
-      - 8080:8080
+      - 8090:8080
 
   redis:
     image: "redis:alpine"
-    ports:
-      - 6379:6379
+    networks:
+        - keystone_net
 
   api:
     depends_on:
@@ -41,6 +45,8 @@ services:
       - REDIS_INDEX=0
     volumes:
       - ./api/:/home/golang/app:delegated
+    networks:
+      - keystone_net 
     ports:
       - "9001:9001"
       - "8000:40000"
@@ -52,6 +58,7 @@ services:
     build:
       context: ./api/
       dockerfile: ../Dockerfile-api
+    image: keystone/api:debug
     security_opt:
       - seccomp:unconfined
     user: "${UID}:${GID}"
@@ -68,6 +75,8 @@ services:
       - STRIPE_WEBHOOK_SECRET=whsec_LM3LntrpUcx821XOLck9FvwpsUoLW0rX
     volumes:
       - ./api/:/home/golang/app:delegated
+    networks:
+      - keystone_net 
     ports:
       - "9001:9001"
       - "8000:40000"
@@ -80,13 +89,19 @@ services:
       dockerfile: ./Dockerfile-cli
     user: "${UID}:${GID}"
     container_name: ks_cli
-    working_dir: /home/golang/app
+    working_dir: /home/golang/app/cli
     environment:
-      - KSAPI_URL=http://api:9001
+      - KSAPI_URL=http://apidebug:9001
     volumes:
       - ./:/home/golang/app:delegated
+    networks:
+        - keystone_net
     command: sh -c "tail -f /dev/null"
 
 volumes:
   db_data: {}
   go: {}
+
+networks:
+  keystone_net:
+    driver: bridge

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/client"
@@ -26,7 +27,7 @@ var orgaProjectCmd = &cobra.Command{
 		exitIfErr(kf.Load(ctx.Wd).Err())
 
 		// FIXME: couldn't we merge thes two calls ?
-		orga, err := c.Organizations().GetByName(orgaName, client.ALL_KNWON)
+		orga, err := c.Organizations().GetByName(orgaName, client.AllKnown)
 		if err != nil {
 			handleClientError(err)
 			exit(kserrors.OrganizationDoesNotExist(err))

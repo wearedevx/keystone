@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/wearedevx/keystone/api/pkg/models"
+
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/projects"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
@@ -45,7 +46,7 @@ Created files and directories:
 
 		// Retrieve working directry
 		currentfolder, err := os.Getwd()
-		ctx := core.New(core.CTX_INIT)
+		ctx = core.New(core.CTX_INIT)
 
 		if err != nil {
 			exit(kserrors.NoWorkingDirectory(err))

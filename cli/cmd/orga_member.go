@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/client"
@@ -25,7 +26,7 @@ var orgaMemberCmd = &cobra.Command{
 		kf := keystonefile.KeystoneFile{}
 		exitIfErr(kf.Load(ctx.Wd).Err())
 
-		orga, err := c.Organizations().GetByName(orgaName, client.OWNED_ONLY)
+		orga, err := c.Organizations().GetByName(orgaName, client.OwnedOnly)
 		if err != nil {
 			handleClientError(err)
 			exit(kserrors.OrganizationDoesNotExist(nil))

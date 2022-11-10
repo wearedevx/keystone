@@ -12,7 +12,9 @@ import (
 
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
+
 	"github.com/wearedevx/keystone/api/pkg/models"
+
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 )
@@ -58,8 +60,20 @@ func GetAllAccounts() []map[string]string {
 		accounts := make([]map[string]string, len(a))
 
 		for i, r := range a {
-			rawAccount := r.(map[interface{}]interface{})
-			castAccount(rawAccount, &accounts[i])
+			aty := reflect.TypeOf(r).String()
+			switch aty {
+			case "map[string]interface {}":
+				rawAccount := r.(map[string]interface{})
+				account := make(map[string]string)
+				for k, v := range rawAccount {
+					account[k] = v.(string)
+				}
+
+				accounts[i] = account
+			case "map[interface {}]interface {}":
+				rawAccount := r.(map[interface{}]interface{})
+				castAccount(rawAccount, &accounts[i])
+			}
 		}
 
 		return accounts
@@ -162,7 +176,7 @@ func SetCurrentAccount(index int) {
 // Saves the jwt token
 func SetAuthToken(token string, refreshToken string) {
 	viper.Set("auth_token", token)
-  viper.Set("refresh_token", refreshToken)
+	viper.Set("refresh_token", refreshToken)
 }
 
 // GetAuthToken function returns the latest auth token we obtained
@@ -265,7 +279,7 @@ func CheckExpiredTokenError(err *kserrors.Error) {
 // Logout function logs the user oud
 func Logout() {
 	SetCurrentAccount(-1)
-	SetAuthToken("" , "")
+	SetAuthToken("", "")
 	Write()
 }
 

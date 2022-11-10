@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/spf13/cobra"
+
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/client"
@@ -31,7 +32,7 @@ ks ci edit my-gitub-ci-service`,
 
 		if len(args) == 1 {
 			serviceName = args[0]
-			ciService, err = ci.GetCiService(serviceName, ctx, client.ApiURL)
+			ciService, err = ci.GetCiService(serviceName, ctx, client.APIURL)
 			found = err == nil
 		}
 
@@ -39,7 +40,7 @@ ks ci edit my-gitub-ci-service`,
 			ciService, err = ci.SelectCiServiceConfiguration(
 				serviceName,
 				ctx,
-				client.ApiURL,
+				client.APIURL,
 			)
 			if err != nil {
 				if errors.Is(err, ci.ErrorNoCIServices) {

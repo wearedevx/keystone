@@ -14,7 +14,7 @@ type KeystoneClientImpl struct {
 // NewKeystoneClient function returns a new instance of KeysotneClient
 func NewKeystoneClient() (KeystoneClient, *errors.Error) {
 	account, index := config.GetCurrentAccount()
-	token, refreshTokent := config.GetAuthToken()
+	token, refreshToken := config.GetAuthToken()
 
 	if index < 0 {
 		return nil, errors.MustBeLoggedIn(nil)
@@ -34,11 +34,11 @@ func (client *KeystoneClientImpl) Roles() *Roles {
 }
 
 // Project method returns an interface to interact with projects
-func (client *KeystoneClientImpl) Project(projectId string) *Project {
+func (client *KeystoneClientImpl) Project(projectID string) *Project {
 	return &Project{
 		log: log.New(log.Writer(), "[Project] ", 0),
 		r:   client.r,
-		id:  projectId,
+		id:  projectID,
 	}
 }
 

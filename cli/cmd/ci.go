@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
 	"github.com/wearedevx/keystone/cli/internal/ci"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/pkg/core"
@@ -32,7 +33,7 @@ var ciCmd = &cobra.Command{
 Used without arguments, lists CI services this project has been setup with.
 `,
 	Run: func(_ *cobra.Command, _ []string) {
-		ctx := core.New(core.CTX_RESOLVE)
+		ctx = core.New(core.CTX_RESOLVE)
 
 		services, err := ci.ListCiServices(ctx)
 		if err != nil {

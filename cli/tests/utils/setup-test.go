@@ -75,12 +75,12 @@ func pollServer(serverURL string, c chan bool, maxAttempts int) {
 }
 
 func waitForServerStarted(serverURL string) bool {
-	const max_attempts int = 40
+	const maxAttempts int = 40
 	var result bool
 
 	c := make(chan bool)
 
-	go pollServer(serverURL, c, max_attempts)
+	go pollServer(serverURL, c, maxAttempts)
 
 	result = <-c
 
@@ -99,7 +99,7 @@ func CreateFakeUserWithUsername(
 		return err
 	}
 
-	keyPair, err := keys.New(keys.TypeEC)
+	keyPair, _ := keys.New(keys.TypeEC)
 
 	deviceUID := uuid.NewV4().String()
 	device := "device-test-" + deviceUID
@@ -115,7 +115,7 @@ func CreateFakeUserWithUsername(
 		return err
 	}
 
-	token, err := jwt.MakeToken(user, deviceUID, time.Now())
+	token, refreshToken, _ := jwt.MakeToken(user, deviceUID, time.Now())
 	configDir := getConfigDir(env)
 	pathToKeystoneFile := path.Join(configDir, "keystone2.yaml")
 
@@ -133,6 +133,7 @@ accounts:
   user_id: `+user.UserID+`
   username: `+user.Username+`
 auth_token: `+token+`
+refresh_token: `+refreshToken+`
 device: `+device+`
 device_uid: `+deviceUID+`
 public_key: !!binary `+pub+`
@@ -159,7 +160,7 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 		return err
 	}
 
-	keyPair, err := keys.New(keys.TypeEC)
+	keyPair, _ := keys.New(keys.TypeEC)
 
 	device := "device-test"
 	deviceUID := uuid.NewV4().String()
@@ -174,8 +175,8 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 		},
 	}
 
-	if err := Repo.GetOrCreateUser(&user).Err(); err != nil {
-		return err
+	if userErr := Repo.GetOrCreateUser(&user).Err(); userErr != nil {
+		return userErr
 	}
 
 	for _, orga := range user.Organizations {
@@ -183,15 +184,15 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 		Repo.GetDB().Save(&orga)
 	}
 
-	if err := Repo.Err(); err != nil {
-		fmt.Println("Get Or Create User", err)
+	if orgaErr := Repo.Err(); orgaErr != nil {
+		fmt.Println("Get Or Create User", orgaErr)
 		os.Exit(1)
 	}
 
 	env.Setenv("USER_ID", user.UserID)
 	fmt.Printf("user.UserID: %+v\n", user.UserID)
 
-	token, err := jwt.MakeToken(user, deviceUID, time.Now())
+	token, refreshToken, _ := jwt.MakeToken(user, deviceUID, time.Now())
 	configDir := getConfigDir(env)
 	pathToKeystoneFile := path.Join(configDir, "keystone.yaml")
 
@@ -209,6 +210,7 @@ accounts:
   user_id: `+user.UserID+`
   username: `+user.Username+`
 auth_token: `+token+`
+refresh_token: `+refreshToken+`
 device: `+device+`
 device_uid: `+deviceUID+`
 public_key: !!binary `+pub+`
@@ -239,7 +241,7 @@ func CreateProject(env *testscript.Env) (err error) {
 		return err
 	}
 
-	keyPair, err := keys.New(keys.TypeEC)
+	keyPair, _ := keys.New(keys.TypeEC)
 
 	device := "device-test"
 	deviceUID := uuid.NewV4().String()
@@ -260,10 +262,10 @@ func CreateProject(env *testscript.Env) (err error) {
 			user,
 		)
 
-	if err := Repo.Err(); err != nil {
+	if repoErr := Repo.Err(); repoErr != nil {
 		fmt.Println(
 			"Get Or Create User, or Project, or add Member to Project",
-			err,
+			repoErr,
 		)
 		os.Exit(1)
 	}
@@ -271,7 +273,7 @@ func CreateProject(env *testscript.Env) (err error) {
 	cwd := env.Getenv("WORK")
 
 	pathToKeystoneFile := path.Join(cwd, "keystone.yaml")
-	err = ioutil.WriteFile(
+	ioutil.WriteFile(
 		pathToKeystoneFile,
 		[]byte(`project_id: `+project.UUID+`
 name: `+project.Name+`

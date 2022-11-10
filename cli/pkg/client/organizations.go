@@ -11,8 +11,8 @@ import (
 type GetOptions bool
 
 const (
-	OWNED_ONLY GetOptions = true
-	ALL_KNWON  GetOptions = false
+	OwnedOnly GetOptions = true
+	AllKnown  GetOptions = false
 )
 
 type Organizations struct {

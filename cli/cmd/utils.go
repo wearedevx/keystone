@@ -10,6 +10,7 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/models"
+
 	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/messages"
@@ -35,15 +36,12 @@ func exit(err error) {
 func exitIfErr(err error) {
 	if err == nil {
 		return
-	}
-	if err != nil {
-		if display.Error(err) {
-			if debug {
-				fmt.Fprintln(os.Stderr, "\nStacktrace for the previous error:")
-				d.PrintStack()
-			}
-			os.Exit(1)
+	} else if display.Error(err) {
+		if debug {
+			fmt.Fprintln(os.Stderr, "\nStacktrace for the previous error:")
+			d.PrintStack()
 		}
+		os.Exit(1)
 	}
 }
 

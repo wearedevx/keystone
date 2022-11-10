@@ -78,13 +78,13 @@ ks secret add PORT`,
 		}
 
 		if !useCache {
-			environmentValueMap, err := secretService.SetValuesForEnvironments(
+			environmentValueMap, setErr := secretService.SetValuesForEnvironments(
 				secretName,
 				secretValue,
 				ctx.AccessibleEnvironments,
 				skipPrompts,
 			)
-			exitIfErr(err)
+			exitIfErr(setErr)
 
 			changes, messageService := mustFetchMessages()
 			flag := core.S_REQUIRED

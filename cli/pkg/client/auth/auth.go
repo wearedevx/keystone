@@ -13,8 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wearedevx/keystone/api/pkg/models"
 	"golang.org/x/oauth2"
+
+	"github.com/wearedevx/keystone/api/pkg/models"
 
 	"github.com/wearedevx/keystone/cli/internal/loggers"
 	"github.com/wearedevx/keystone/cli/pkg/constants"
@@ -97,7 +98,7 @@ type pollResult struct {
 	err      error
 }
 
-const MAX_ATTEMPTS int = 12
+const MaxAttempts int = 12
 
 func pollLoginRequest(apiURL string, code string, c chan pollResult) {
 	done := false
@@ -175,7 +176,7 @@ func pollLoginRequest(apiURL string, code string, c chan pollResult) {
 			done = true
 		}
 
-		if attemps == MAX_ATTEMPTS {
+		if attemps == MaxAttempts {
 			l.Println("Max attempts reached")
 			done = true
 		}
@@ -203,7 +204,7 @@ func completeLogin(
 	buf := bytes.NewBuffer(requestPayload)
 	err := json.NewEncoder(buf).Encode(&payload)
 	if err != nil {
-		return user, "", err
+		return user, "", "", err
 	}
 
 	l.Printf("Complete login: %s\n", buf.String())
@@ -212,7 +213,7 @@ func completeLogin(
 	req.Header.Add("Accept", "application/octet-stream")
 
 	if err != nil {
-		return user, "", err
+		return user, "", "", err
 	}
 
 	timeout := time.Duration(20 * time.Second)
@@ -222,7 +223,7 @@ func completeLogin(
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return user, "", err
+		return user, "", "", err
 	}
 
 	if resp.StatusCode != 200 {
@@ -230,12 +231,12 @@ func completeLogin(
 		sbuf := new(strings.Builder)
 		_, err = io.Copy(sbuf, resp.Body)
 		if err != nil {
-			return user, "", err
+			return user, "", "", err
 		}
 
 		bodyBytes := []byte(sbuf.String())
 
-		return user, "", fmt.Errorf(
+		return user, "", "", fmt.Errorf(
 			"failed to complete login: %s",
 			string(bodyBytes),
 		)
@@ -262,8 +263,14 @@ func completeLogin(
 	return user, jwtToken, refreshToken, err
 }
 
+// GetNewToken function gets a new JWT from the API using a refreshToken
 func GetNewToken(apiURL string, refreshToken string) (string, string, error) {
-	req, _ := http.NewRequest("GET", apiURL+"/auth/refresh")
+	url := apiURL + "/auth/refresh"
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", "", err
+	}
+
 	req.Header.Add("Accept", "application/octet-stream")
 	req.Header.Add("X-Refresh-Token", refreshToken)
 
@@ -272,6 +279,9 @@ func GetNewToken(apiURL string, refreshToken string) (string, string, error) {
 		Timeout: timeout,
 	}
 	resp, err := client.Do(req)
+	if err != nil {
+		return "", "", err
+	}
 
 	if resp.StatusCode != http.StatusOK {
 		return "", "", ErrorRefreshNotFound
@@ -293,4 +303,6 @@ func GetNewToken(apiURL string, refreshToken string) (string, string, error) {
 	} else {
 		l.Printf("Got refresh token: %s\n", refreshToken)
 	}
+
+	return jwtToken, refreshToken, err
 }

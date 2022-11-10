@@ -101,9 +101,9 @@ func (p *Project) RemoveMembers(members []string) error {
 
 // Changes the role of a member
 // memberId should have the form <username>@<github|gitlab>
-func (p *Project) SetMemberRole(memberId string, role string) (err error) {
+func (p *Project) SetMemberRole(memberID string, role string) (err error) {
 	payload := models.SetMemberRolePayload{
-		MemberID: memberId,
+		MemberID: memberID,
 		RoleName: role,
 	}
 

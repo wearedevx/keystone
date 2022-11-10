@@ -1,9 +1,9 @@
 package client
 
-var ApiURL string //= "http://localhost:9001"
+var APIURL string //= "http://localhost:9001"
 
 type KeystoneClient interface {
-	Project(projectId string) *Project
+	Project(projectID string) *Project
 	Roles() *Roles
 	Users() *Users
 	Messages() *Messages

@@ -7,6 +7,7 @@ import (
 	"github.com/cossacklabs/themis/gothemis/keys"
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/api/pkg/models"
+
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/pkg/client"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
@@ -66,9 +67,9 @@ func (s *LoginService) LogIntoExisitingAccount(accountIndex int) {
 
 	publicKey, err := config.GetUserPublicKey()
 	if errors.Is(err, config.ErrorNoPublicKey) {
-		keyPair, err := keys.New(keys.TypeEC)
-		if err != nil {
-			s.err = err
+		keyPair, keyErr := keys.New(keys.TypeEC)
+		if keyErr != nil {
+			s.err = keyErr
 			return
 		}
 		config.SetUserPublicKey(keyPair.Public.Value)
@@ -105,7 +106,7 @@ func (s *LoginService) CreateAccountAndLogin() {
 
 	// Transfer credentials to the server
 	// Create (or get) the user info
-	user, jwtToken, refreshToken err := s.c.Finish(
+	user, jwtToken, refreshToken, err := s.c.Finish(
 		keyPair.Public.Value,
 		deviceName,
 		deviceUID,
@@ -208,5 +209,5 @@ func (ls *LoginService) PromptDeviceName(skipPrompts bool) *LoginService {
 func selectAuthService(serviceName string) (auth.AuthService, error) {
 	serviceName = prompts.SelectAuthService(serviceName)
 
-	return auth.GetAuthService(serviceName, client.ApiURL)
+	return auth.GetAuthService(serviceName, client.APIURL)
 }

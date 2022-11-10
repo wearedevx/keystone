@@ -9,7 +9,8 @@ import (
 	"strings"
 	"time"
 
-	stripe "github.com/stripe/stripe-go/v72"
+	stripe "github.com/stripe/stripe-go/v73"
+
 	"github.com/wearedevx/keystone/api/internal/constants"
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
@@ -267,7 +268,7 @@ done:
 
 func stripeGetSeats(subscriptionID string) (seats int, err error) {
 	var inv *stripe.Invoice
-	params := stripe.InvoiceParams{
+	params := stripe.InvoiceUpcomingParams{
 		Subscription: stripe.String(subscriptionID),
 	}
 

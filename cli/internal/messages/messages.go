@@ -8,6 +8,7 @@ import (
 
 	"github.com/wearedevx/keystone/api/pkg/apierrors"
 	"github.com/wearedevx/keystone/api/pkg/models"
+
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/crypto"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
@@ -173,7 +174,7 @@ func (s *messageService) fetchNewMessages(
 
 	for env, gmr := range result.Environments {
 		s.log.Printf("Got message for environment %s: %s\n",
-			env, gmr.Message.Uuid)
+			env, gmr.Message.UUID)
 	}
 
 	s.err = s.decryptMessages(result)
@@ -356,10 +357,10 @@ func (s *messageService) SendEnvironmentsToOneMember(
 
 	sentEnvironmentCount := 3
 	for _, environment := range environments {
-		environmentId := environment.EnvironmentID
+		environmentID := environment.EnvironmentID
 
 		userPublicKeys, err := s.client.Users().
-			GetEnvironmentPublicKeys(environmentId)
+			GetEnvironmentPublicKeys(environmentID)
 		if err != nil {
 			if errors.Is(err, auth.ErrorUnauthorized) {
 				s.err = kserrors.InvalidConnectionToken(err)
@@ -448,11 +449,11 @@ func (s *messageService) prepareMessages(
 	senderPrivateKey []byte,
 	environment models.Environment,
 ) ([]models.MessageToWritePayload, *kserrors.Error) {
-	environmentId := environment.EnvironmentID
+	environmentID := environment.EnvironmentID
 	messages := make([]models.MessageToWritePayload, 0)
 
 	userPublicKeys, err := s.client.Users().
-		GetEnvironmentPublicKeys(environmentId)
+		GetEnvironmentPublicKeys(environmentID)
 	if err != nil {
 		if errors.Is(err, auth.ErrorUnauthorized) {
 			return messages, kserrors.PermissionDenied(environment.Name, err)

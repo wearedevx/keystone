@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/wearedevx/keystone/api/pkg/apierrors"
+
+	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/pkg/client/auth"
 )
 
@@ -35,7 +37,7 @@ func newRequester(userID string, token string, refreshToken string) requester {
 	return requester{
 		userID:       userID,
 		jwtToken:     token,
-		refreshToken: token,
+		refreshToken: refreshToken,
 		log:          log.New(log.Writer(), "[requester] ", 0),
 	}
 }
@@ -66,7 +68,7 @@ func (r *requester) request(
 	}
 
 	// fmt.Println(ApiURL + path)
-	URL, err := url.Parse(ApiURL + path)
+	URL, err := url.Parse(APIURL + path)
 	if err != nil {
 		return err
 	}
@@ -81,10 +83,6 @@ func (r *requester) request(
 
 	req.Header.Set("Content-Type", "application/octet-stream")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.jwtToken))
-
-	if err != nil {
-		return err
-	}
 
 	timeout := time.Duration(20 * time.Second)
 	c := http.Client{
@@ -129,17 +127,17 @@ func (r *requester) request(
 	return nil
 }
 
-func (r *requester) refreshToken() error {
-	jwtToken, refreshToken, err := auth.GetNewToken(ApiURL+"/auth/refresh", r.refreshToken)
+func (r *requester) refreshConnexion() error {
+	jwtToken, refreshToken, err := auth.GetNewToken(APIURL, r.refreshToken)
 
 	if err != nil {
 		return err
 	}
 
-	r.token = jwtToken
+	r.jwtToken = jwtToken
 	r.refreshToken = refreshToken
 
-	config.SetAuthToken(r.token, r.refreshToken)
+	config.SetAuthToken(r.jwtToken, r.refreshToken)
 	config.Write()
 
 	return nil
@@ -149,7 +147,7 @@ func (r *requester) authedReq(call func() error) (err error) {
 	err = call()
 
 	if err == auth.ErrorUnauthorized {
-		err = r.refreshToken()
+		err = r.refreshConnexion()
 		if err == nil {
 			err = call()
 		}
@@ -163,7 +161,7 @@ func (r *requester) get(
 	result interface{},
 	params map[string]string,
 ) error {
-	return authedReq(func() error {
+	return r.authedReq(func() error {
 		return r.request(GET, http.StatusOK, path, nil, result, params)
 	})
 }
@@ -174,7 +172,7 @@ func (r *requester) post(
 	result interface{},
 	params map[string]string,
 ) error {
-	return authedReq(func() error {
+	return r.authedReq(func() error {
 		return r.request(POST, http.StatusCreated, path, data, result, params)
 	})
 }
@@ -185,7 +183,7 @@ func (r *requester) put(
 	result interface{},
 	params map[string]string,
 ) error {
-	return authedReq(func() error {
+	return r.authedReq(func() error {
 		return r.request(PUT, http.StatusOK, path, data, result, params)
 	})
 }
@@ -196,7 +194,7 @@ func (r *requester) del(
 	result interface{},
 	params map[string]string,
 ) error {
-	return authedReq(func() error {
+	return r.authedReq(func() error {
 		return r.request(DELETE, http.StatusNoContent, path, data, result, params)
 	})
 }

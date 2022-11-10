@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	githubClientId     string
+	githubClientID     string
 	githubClientSecret string
 )
 
@@ -51,7 +51,7 @@ func (g *gitHubAuthService) Start() (string, error) {
 	g.loginRequest = lr
 
 	g.conf = &oauth2.Config{
-		ClientID:     githubClientId,
+		ClientID:     githubClientID,
 		ClientSecret: githubClientSecret,
 		Scopes:       []string{"user", "user:email"},
 		RedirectURL:  authRedirectURL,
@@ -102,7 +102,7 @@ func (g gitHubAuthService) Finish(
 	pk []byte,
 	device string,
 	deviceUID string,
-) (models.User, string, error) {
+) (models.User, string, string, error) {
 	return completeLogin(
 		g.apiURL,
 		models.GitHubAccountType,
@@ -131,8 +131,4 @@ func (g gitHubAuthService) CheckAccount(
 	}
 
 	return false, nil
-}
-
-func (g dummyAuthService) RefreshConnexion(refreshToken string) (string, string, error) {
-	return getNewToken(g.apiURL, refreshToken)
 }

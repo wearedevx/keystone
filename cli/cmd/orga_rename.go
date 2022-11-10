@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
 	"github.com/wearedevx/keystone/cli/pkg/client"
@@ -42,7 +43,7 @@ var renameCmd = &cobra.Command{
 		c, err := client.NewKeystoneClient()
 		exitIfErr(err)
 
-		foundOrga, err := c.Organizations().GetByName(organizationName, client.OWNED_ONLY)
+		foundOrga, err := c.Organizations().GetByName(organizationName, client.OwnedOnly)
 		if err != nil {
 			handleClientError(err)
 			exit(kserrors.YouDoNotOwnTheOrganization(organizationName, nil))

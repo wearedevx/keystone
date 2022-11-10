@@ -8,7 +8,8 @@ import (
 	"testing"
 	"time"
 
-	stripe "github.com/stripe/stripe-go/v72"
+	stripe "github.com/stripe/stripe-go/v73"
+
 	"github.com/wearedevx/keystone/api/pkg/models"
 )
 

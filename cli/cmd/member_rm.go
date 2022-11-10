@@ -21,6 +21,7 @@ import (
 	"regexp"
 
 	"github.com/spf13/cobra"
+
 	"github.com/wearedevx/keystone/cli/internal/config"
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/spinner"
@@ -48,9 +49,9 @@ of the secrets and files.
 			return fmt.Errorf("missing member id")
 		}
 
-		for _, memberId := range args {
-			if !r.Match([]byte(memberId)) {
-				return fmt.Errorf("invalid member id: %s", memberId)
+		for _, memberID := range args {
+			if !r.Match([]byte(memberID)) {
+				return fmt.Errorf("invalid member id: %s", memberID)
 			}
 		}
 
@@ -84,9 +85,9 @@ of the secrets and files.
 
 		membersToRevoke := make([]string, 0)
 
-		for _, memberId := range args {
-			if prompts.ConfirmRevokeAccessToMember(memberId, forceYes) {
-				membersToRevoke = append(membersToRevoke, memberId)
+		for _, memberID := range args {
+			if prompts.ConfirmRevokeAccessToMember(memberID, forceYes) {
+				membersToRevoke = append(membersToRevoke, memberID)
 			}
 		}
 

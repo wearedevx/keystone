@@ -9,16 +9,17 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/wearedevx/keystone/api/pkg/models"
+	"github.com/xanzy/go-gitlab"
+
 	"github.com/wearedevx/keystone/cli/internal/config"
 	"github.com/wearedevx/keystone/cli/internal/keystonefile"
 	"github.com/wearedevx/keystone/cli/pkg/core"
 	"github.com/wearedevx/keystone/cli/ui"
 	"github.com/wearedevx/keystone/cli/ui/prompts"
-	"github.com/xanzy/go-gitlab"
 )
 
 var (
-	gitlabClientId     string
+	gitlabClientID     string
 	gitlabClientSecret string
 )
 
@@ -30,14 +31,14 @@ type GitlabOptions struct {
 }
 
 const (
-	OPTION_KEY_BASE_URL = "base_url"
-	OPTION_KEY_API_KEY  = "api_key"
-	OPTION_KEY_PROJECT  = "project"
+	OptionKeyBaseURL = "base_url"
+	OptionKeyAPIKey  = "api_key"
+	OptionKeyProject = "project"
 )
 
 const (
-	SLOT_SIZE = 1024
-	N_SLOTS   = 5
+	SlotSize = 1024
+	NSlots   = 5
 )
 
 type gitlabCiService struct {
@@ -71,7 +72,7 @@ func GitLabCi(ctx *core.Context, name string, apiURL string) CiService {
 	savedService := kf.GetCiService(name)
 
 	apiKey := config.GetServiceApiKey(
-		configServiceName(savedService.Options[OPTION_KEY_BASE_URL]),
+		configServiceName(savedService.Options[OptionKeyBaseURL]),
 	)
 
 	ciService := &gitlabCiService{
@@ -83,8 +84,8 @@ func GitLabCi(ctx *core.Context, name string, apiURL string) CiService {
 		apiKey: ApiKey(apiKey),
 		client: &gitlab.Client{},
 		options: GitlabOptions{
-			BaseURL: savedService.Options[OPTION_KEY_BASE_URL],
-			Project: savedService.Options[OPTION_KEY_PROJECT],
+			BaseURL: savedService.Options[OptionKeyBaseURL],
+			Project: savedService.Options[OptionKeyProject],
 		},
 		environment:   "",
 		fileVariables: []string{},
@@ -146,8 +147,8 @@ func (g *gitlabCiService) Setup() CiService {
 // GetOptions method returns the service options
 func (g *gitlabCiService) GetOptions() map[string]string {
 	return map[string]string{
-		OPTION_KEY_BASE_URL: g.options.BaseURL,
-		OPTION_KEY_PROJECT:  g.options.Project,
+		OptionKeyBaseURL: g.options.BaseURL,
+		OptionKeyProject: g.options.Project,
 	}
 }
 
@@ -194,7 +195,11 @@ func (g *gitlabCiService) hasVariable(key string) bool {
 	variable, _, err := g.client.ProjectVariables.GetVariable(
 		g.options.Project,
 		key,
-		g.environmentScopeOption(),
+		&gitlab.GetProjectVariableOptions{
+			Filter: &gitlab.VariableFilter{
+				EnvironmentScope: g.environment,
+			},
+		},
 	)
 	if err != nil {
 		g.log.Printf(
@@ -253,7 +258,11 @@ func (g *gitlabCiService) deleteVariable(key string) *gitlabCiService {
 	_, err := g.client.ProjectVariables.RemoveVariable(
 		g.options.Project,
 		key,
-		g.environmentScopeOption(),
+		&gitlab.RemoveProjectVariableOptions{
+			Filter: &gitlab.VariableFilter{
+				EnvironmentScope: g.environment,
+			},
+		},
 	)
 	if err != nil {
 		g.err = err

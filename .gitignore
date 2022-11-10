@@ -8,6 +8,8 @@ __debug_bin
 debug.test
 
 core/tests/
+api/go/
+cli/go/
 
 .keystone
 
