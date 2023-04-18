@@ -35,6 +35,17 @@ jobs:
           keystone_slot_4: ${{ secrets.KEYSTONE_PROD_SLOT_4 }}
           keystone_slot_5: ${{ secrets.KEYSTONE_PROD_SLOT_5 }}
 
+      - name: Snapcraft Release Type
+        id: release_type
+        env:
+          BRANCH: ${{ env.TAG }}
+        run: |-
+          if [[ "$BRANCH" == 'develop' ]]; then
+            echo "::set-output name=release_type::edge"
+          else
+            echo "::set-output name=release_type::stable"
+          fi
+
       - name: Setup Working Directory
         run: |
           cd cli
@@ -60,6 +71,7 @@ jobs:
         uses: snapcore/action-build@v1.0.9
         with:
           path: cli/
+          snapcraft-channel: ${{steps.release_type.outputs.release_type}}
         id: snapcraft
 
       - name: Snapcraft Package
@@ -73,16 +85,6 @@ jobs:
           name: ks-snap
           path: ${{ steps.snapcraft.outputs.snap }}
 
-      - name: Snapcraft Release Type
-        id: release_type
-        env:
-          BRANCH: ${{ env.TAG }}
-        run: |-
-          if [ $BRANCH == 'develop' ]; then
-            echo "::set-output name=release_type::edge"
-          else
-            echo "::set-output name=release_type::stable"
-          fi
 
       - name: Snapcraft Publish Edge
         if: ${{ steps.release_type.outputs.release_type == 'edge' }}
