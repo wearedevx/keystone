@@ -1,10 +1,3 @@
-name: keystone-cli # you probably want to 'snapcraft register <name>'
-base: core20
-version: <%BRANCH%>
-summary: One app for managing your secrets # 79 char long summary
-description: |
-  Manage secrets got your projects in one place.
-confinement: strict
 apps:
   ks:
     command: bin/ks
@@ -14,30 +7,36 @@ apps:
       - network-bind
       - network
       - home
-
+base: core20
+confinement: strict
+description: |
+  Manage secrets got your projects in one place.
+name: keystone-cli # you probably want to 'snapcraft register <name>'
+build-environment:
+  - KSAPI_URL: <%KSAPI_URL%>
+  - AUTH_PROXY: <%AUTH_PROXY%>
+  - VERSION: <%VERSION%>
+  - GITHUB_CLIENT_ID: <%GITHUB_CLIENT_ID%>
+  - GITHUB_CLIENT_SECRET: <%GITHUB_CLIENT_SECRET%>
+  - GITLAB_CLIENT_ID: <%GITLAB_CLIENT_ID%>
+  - GITLAB_CLIENT_SECRET: <%GITLAB_CLIENT_SECRET%>
 parts:
   ks:
-    plugin: go
-    build-environment:
-      - KSAPI_URL: <%KSAPI_URL%>
-      - AUTH_PROXY: <%AUTH_PROXY%>
-      - VERSION: <%VERSION%>
-      - GITHUB_CLIENT_ID: <%GITHUB_CLIENT_ID%>
-      - GITHUB_CLIENT_SECRET: <%GITHUB_CLIENT_SECRET%>
-      - GITLAB_CLIENT_ID: <%GITLAB_CLIENT_ID%>
-      - GITLAB_CLIENT_SECRET: <%GITLAB_CLIENT_SECRET%>
-    override-build: |
+    build-packages: [make, git, libssl-dev, libsodium-dev, pkg-config]
+    build-script: |
       rm -rf themis/
-      git clone https://github.com/cossacklabs/themis.git
+      git clone -b 0.13.13 --depth=1 https://github.com/cossacklabs/themis.git
       make -C themis
       make install -C themis
       rm -rf themis/
       go mod edit -dropreplace github.com/wearedevx/keystone/api
       make build
       chmod +x ks
-    build-packages: [make, git, libssl-dev, libsodium-dev, pkg-config]
-    stage-packages: [libsodium-dev, nano]
     organize:
-      /usr/local/lib: /lib/
       ../build/ks: /bin/ks
+      /usr/local/lib: /lib/
+    plugin: go
     source: .
+    stage-packages: [libsodium-dev, nano]
+summary: One app for managing your secrets # 79 char long summary
+version: <%BRANCH%>
