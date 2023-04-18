@@ -25,6 +25,11 @@ make -i run-test &
 
 cd ../cli
 
+BREW_PREFIX="$(brew --prefix)"
+export CGO_CFLAGS=" -I${BREW_PREFIX}/opt/libthemis/include"
+export CGO_LDFLAGS=" -L${BREW_PREFIX}/opt/libthemis/lib"
+
+
 echo "go test -tags test -ldflags \"$LDFLAGS\" -work $@"
 go test -tags test -ldflags "$LDFLAGS" -work "$@"
 

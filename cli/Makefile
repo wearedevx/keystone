@@ -25,11 +25,19 @@ LDFLAGS := $(API_FLAG) \
 					 $(AUTH_FLAG) \
 					 $(VERSION_FLAG)
 
+# BREW_PREFIX := $(shell brew --prefix)
+CFLAGS := '-I$(BREW_PREFIX)/opt/libthemis/include -I$(BREW_PREFIX)/opt/libsodium/include'
+CLDFLAGS := '-lthemis -lsoter -lsodium -L$(BREW_PREFIX)/opt/libthemis/lib -L$(BREW_PREFIX)/opt/libsodium/lib'
+
 build:
 	go clean
 	go mod edit -replace=github.com/wearedevx/keystone/cmd=./cmd
 	# go mod edit -replace=github.com/wearedevx/keystone/api=../api
-	go build -ldflags "$(LDFLAGS)" -o ks
+	CGO_CFLAGS=$(CFLAGS) CGO_LDFLAGS=$(CLDFLAGS) go build -ldflags "$(LDFLAGS)" -o ks
+	go clean
+
+clean:
+	rm ks
 	go clean
 
 install:
