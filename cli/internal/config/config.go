@@ -13,6 +13,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
 	"github.com/wearedevx/keystone/api/pkg/models"
+
 	kserrors "github.com/wearedevx/keystone/cli/internal/errors"
 	"github.com/wearedevx/keystone/cli/internal/utils"
 )
@@ -58,7 +59,7 @@ func GetAllAccounts() []map[string]string {
 		accounts := make([]map[string]string, len(a))
 
 		for i, r := range a {
-			rawAccount := r.(map[interface{}]interface{})
+			rawAccount := r.(map[string]interface{})
 			castAccount(rawAccount, &accounts[i])
 		}
 
@@ -87,6 +88,12 @@ func GetCurrentAccount() (user models.User, index int) {
 			index < len(accounts) {
 			user = UserFromAccount(accounts[index])
 		}
+	} else if len(accounts) > 0 {
+		index = 0
+		viper.Set("current", index)
+		user = UserFromAccount(accounts[index])
+	} else {
+		panic(fmt.Sprintf("No accounts ? %d", len(accounts)))
 	}
 
 	return user, index
@@ -248,6 +255,8 @@ func InitConfig(cfgFile string) (err error) {
 		if err != nil {
 			panic(err)
 		}
+	} else {
+		// panic(err)
 	}
 
 	return nil
@@ -291,13 +300,13 @@ func RemoveHook() {
 // castAccount casts a map[interface{}]interface{}, which is returned by
 // viper, into a more manageable map[string]string
 func castAccount(
-	rawAccount map[interface{}]interface{},
+	rawAccount map[string]interface{},
 	account *map[string]string,
 ) {
 	*account = make(map[string]string)
 
 	for k, v := range rawAccount {
-		(*account)[k.(string)] = v.(string)
+		(*account)[k] = v.(string)
 	}
 }
 

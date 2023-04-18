@@ -75,12 +75,12 @@ func pollServer(serverUrl string, c chan bool, maxAttempts int) {
 }
 
 func waitForServerStarted(serverUrl string) bool {
-	const max_attempts int = 40
+	const maxAttempts int = 40
 	var result bool
 
 	c := make(chan bool)
 
-	go pollServer(serverUrl, c, max_attempts)
+	go pollServer(serverUrl, c, maxAttempts)
 
 	result = <-c
 
@@ -118,6 +118,7 @@ func CreateFakeUserWithUsername(
 	token, err := jwt.MakeToken(user, deviceUID, time.Now())
 	configDir := getConfigDir(env)
 	pathToKeystoneFile := path.Join(configDir, "keystone2.yaml")
+	fmt.Printf("LS -> tests/utils/setup-test.go:120 -> pathToKeystoneFile: %+v\n", pathToKeystoneFile)
 
 	pub := base64.StdEncoding.EncodeToString(keyPair.Public.Value)
 	priv := base64.StdEncoding.EncodeToString(keyPair.Private.Value)
@@ -125,13 +126,13 @@ func CreateFakeUserWithUsername(
 	/* #nosec */
 	err = ioutil.WriteFile(pathToKeystoneFile, []byte(`
 accounts:
-- fullname: `+user.Fullname+`
-  account_type: "`+string(user.AccountType)+`"
-  email: `+user.Email+`
-  ext_id: "`+user.ExtID+`"
-  fullname: `+user.Fullname+`
-  user_id: `+user.UserID+`
-  username: `+user.Username+`
+  - fullname: `+user.Fullname+`
+    account_type: "`+string(user.AccountType)+`"
+    email: `+user.Email+`
+    ext_id: "`+user.ExtID+`"
+    fullname: `+user.Fullname+`
+    user_id: `+user.UserID+`
+    username: `+user.Username+`
 auth_token: `+token+`
 device: `+device+`
 device_uid: `+deviceUID+`
@@ -201,13 +202,12 @@ func CreateAndLogUser(env *testscript.Env) (err error) {
 	/* #nosec */
 	err = ioutil.WriteFile(pathToKeystoneFile, []byte(`
 accounts:
-- fullname: `+user.Fullname+`
-  account_type: "`+string(user.AccountType)+`"
-  email: `+user.Email+`
-  ext_id: "`+user.ExtID+`"
-  fullname: `+user.Fullname+`
-  user_id: `+user.UserID+`
-  username: `+user.Username+`
+  - fullname: `+user.Fullname+`
+    account_type: "`+string(user.AccountType)+`"
+    email: `+user.Email+`
+    ext_id: "`+user.ExtID+`"
+    user_id: `+user.UserID+`
+    username: `+user.Username+`
 auth_token: `+token+`
 device: `+device+`
 device_uid: `+deviceUID+`

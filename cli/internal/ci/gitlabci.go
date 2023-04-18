@@ -194,7 +194,12 @@ func (g *gitlabCiService) hasVariable(key string) bool {
 	variable, _, err := g.client.ProjectVariables.GetVariable(
 		g.options.Project,
 		key,
-		g.environmentScopeOption(),
+		&gitlab.GetProjectVariableOptions{
+			Filter: &gitlab.VariableFilter{
+				EnvironmentScope: g.environment,
+			},
+		},
+		// g.environmentScopeOption(),
 	)
 	if err != nil {
 		g.log.Printf(
@@ -253,7 +258,9 @@ func (g *gitlabCiService) deleteVariable(key string) *gitlabCiService {
 	_, err := g.client.ProjectVariables.RemoveVariable(
 		g.options.Project,
 		key,
-		g.environmentScopeOption(),
+		&gitlab.RemoveProjectVariableOptions{
+			Filter: &gitlab.VariableFilter{EnvironmentScope: g.environment},
+		},
 	)
 	if err != nil {
 		g.err = err
